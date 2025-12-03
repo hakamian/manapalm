@@ -24,6 +24,18 @@ export default defineConfig(({ mode }) => {
         outDir: 'dist',
         assetsDir: 'assets',
         sourcemap: false,
+        chunkSizeWarningLimit: 1600, // Increased limit to suppress warnings for large AI libs
+        rollupOptions: {
+          output: {
+            manualChunks: {
+              'react-vendor': ['react', 'react-dom'],
+              'ai-vendor': ['@google/genai'],
+              'pdf-vendor': ['pdfjs-dist', 'jspdf'],
+              'db-vendor': ['@supabase/supabase-js'],
+              'ui-vendor': ['react-markdown', 'remark-gfm']
+            }
+          }
+        }
       }
     };
 });

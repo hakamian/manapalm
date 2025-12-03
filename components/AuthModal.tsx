@@ -154,10 +154,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   // --- REAL GOOGLE LOGIN ---
   const handleGoogleLogin = async () => {
     if (!supabase) {
-        console.warn("Supabase client not initialized. Using mock fallback.");
-        // Fallback for dev without env vars
-        onLoginSuccess({ email: 'hhakamian@gmail.com', fullName: 'H Hakamian (Dev)' });
-        onClose();
+        setError('سرویس گوگل در حال حاضر فعال نیست (تنظیمات سرور).');
         return;
     }
 
