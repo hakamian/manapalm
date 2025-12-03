@@ -1,6 +1,6 @@
 
-import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
-import { View, CartItem, User, Order, Product, Notification, Deed, TimelineEvent, PalmType, CommunityEvent, CommunityPost, ProjectProposal, Campaign, Conversation, PointLog, JournalAnalysisReport, DISCReport, EnneagramReport, StrengthsReport, IkigaiReport, DailyChestReward } from './types';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import { View, User, DailyChestReward, PointLog } from './types';
 import { useAppState, useAppDispatch } from './AppContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -13,7 +13,7 @@ import LiveActivityBanner from './components/LiveActivityBanner';
 import AIChatWidget from './components/AIChatWidget';
 import MeaningCompanionWidget from './components/MeaningCompanionWidget';
 import BottomNavBar from './components/BottomNavBar';
-
+import { supabase } from './services/supabaseClient';
 
 const App: React.FC = () => {
     const state = useAppState();
@@ -71,21 +71,57 @@ const App: React.FC = () => {
         });
     };
 
+    // Helper to convert Google user to App User
+    const mapSupabaseUserToAppUser = (supabaseUser: any, existingAppUser?: User): User => {
+        const isAdmin = supabaseUser.email === 'hhakamian@gmail.com' || supabaseUser.email === 'admin@nakhlestanmana.com';
+        
+        // If user already exists in our local "DB" (mock or real), preserve their data
+        if (existingAppUser) {
+             return {
+                 ...existingAppUser,
+                 // Update fields that might have changed from Google
+                 email: supabaseUser.email,
+                 profileImageUrl: supabaseUser.user_metadata?.avatar_url || existingAppUser.profileImageUrl,
+                 isAdmin: isAdmin, // Force admin check based on email
+                 id: supabaseUser.id // Use Supabase ID as authentic ID
+             };
+        }
+
+        // Create new user
+        return {
+            id: supabaseUser.id,
+            name: supabaseUser.user_metadata?.full_name || 'کاربر جدید',
+            fullName: supabaseUser.user_metadata?.full_name,
+            phone: '', // Google doesn't always provide phone
+            email: supabaseUser.email,
+            points: 100,
+            manaPoints: 50, 
+            level: 'جوانه',
+            isAdmin: isAdmin,
+            joinDate: new Date().toISOString(),
+            profileCompletion: { initial: false, additional: false, extra: false },
+            conversations: [],
+            notifications: [],
+            reflectionAnalysesRemaining: 0,
+            ambassadorPacksRemaining: 0,
+            profileImageUrl: supabaseUser.user_metadata?.avatar_url
+        };
+    };
+
     const handleLoginSuccess = useCallback((loginData: { phone?: string; email?: string; fullName?: string }) => {
+        // This handles phone login manual triggers from AuthModal (mock)
         const existingUser = allUsers.find(u => 
             (loginData.phone && u.phone === loginData.phone) || 
             (loginData.email && u.email === loginData.email)
         );
         
-        // Check for specific admin email
+        // Admin check logic for manual login (dev fallback)
         const isAdminLogin = loginData.email === 'hhakamian@gmail.com' || loginData.email === 'admin@nakhlestanmana.com';
 
         if (existingUser) {
-            // Ensure admin privileges are updated if logging in via admin button
             const updatedUser = isAdminLogin ? { ...existingUser, isAdmin: true } : existingUser;
             dispatch({ type: 'LOGIN_SUCCESS', payload: { user: updatedUser, orders: [], keepOpen: false } });
         } else {
-            // Create new user mock
             const newUser: User = {
                 id: isAdminLogin ? 'user_admin_hh' : `user_${Date.now()}`,
                 name: loginData.fullName || 'کاربر جدید',
@@ -93,7 +129,7 @@ const App: React.FC = () => {
                 phone: loginData.phone || '',
                 email: loginData.email,
                 points: isAdminLogin ? 50000 : 100,
-                manaPoints: isAdminLogin ? 10000 : 500, // Initial mana for testing tools
+                manaPoints: isAdminLogin ? 10000 : 500, 
                 level: isAdminLogin ? 'استاد کهنسال' : 'جوانه',
                 isAdmin: isAdminLogin,
                 joinDate: new Date().toISOString(),
@@ -106,6 +142,42 @@ const App: React.FC = () => {
              dispatch({ type: 'LOGIN_SUCCESS', payload: { user: newUser, orders: [], keepOpen: true } });
         }
     }, [allUsers, dispatch]);
+
+    // --- SUPABASE SESSION LISTENER ---
+    useEffect(() => {
+        if (!supabase) return;
+
+        // Check initial session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session?.user) {
+                const existingUser = allUsers.find(u => u.email === session.user.email);
+                const appUser = mapSupabaseUserToAppUser(session.user, existingUser);
+                dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
+            }
+        });
+
+        // Listen for auth changes (e.g., redirect back from Google)
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session?.user) {
+                 // User just logged in or session refreshed
+                 const existingUser = allUsers.find(u => u.email === session.user.email);
+                 const appUser = mapSupabaseUserToAppUser(session.user, existingUser);
+                 
+                 // Only dispatch if user is different to avoid loops
+                 if (!user || user.id !== appUser.id) {
+                     dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
+                     dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: false });
+                 }
+            } else {
+                // User logged out
+                if (user) {
+                    dispatch({ type: 'LOGOUT' });
+                }
+            }
+        });
+
+        return () => subscription.unsubscribe();
+    }, [dispatch, allUsers]); // Dependency on allUsers to find existing data
 
     return (
         <div className="bg-gray-900 text-white min-h-screen overflow-x-hidden">

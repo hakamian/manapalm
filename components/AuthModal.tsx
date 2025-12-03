@@ -2,8 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { XMarkIcon, GoogleIcon, CheckCircleIcon } from './icons';
 import { useAppDispatch, useAppState } from '../AppContext';
-import { User, Order, View } from '../types';
-import { getLevelForPoints } from '../services/gamificationService';
+import { supabase } from '../services/supabaseClient';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -12,7 +11,7 @@ interface AuthModalProps {
 }
 
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }) => {
-  const { user, allUsers } = useAppState(); // Added allUsers to context check
+  const { allUsers } = useAppState();
   const dispatch = useAppDispatch();
   const [step, setStep] = useState(1);
   const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
@@ -30,7 +29,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
   const otpInputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
-  const CORRECT_OTP = '123456'; // For simulation purposes
+  const CORRECT_OTP = '123456'; // For simulation purposes (Phone auth still mocked for now)
 
   useEffect(() => {
     if (isOpen) {
@@ -58,10 +57,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     }
   }, [step, isOpen]);
 
-  // Previous useEffect for name check (Step 3) is now handled by Smart Login logic below
-  
-  if (!isOpen && step === 1) return null;
-
   const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, '');
     setPhoneNumber(value);
@@ -79,7 +74,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
       setIsLoading(true);
       setError('');
       
-      // Smart Login Check
+      // Smart Login Check (Mock DB)
       const existingUser = allUsers.find(u => u.phone === phoneNumber);
       setIsKnownUser(!!existingUser);
       
@@ -97,11 +92,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     setError('');
     if (otp === CORRECT_OTP) {
         if (isKnownUser) {
-             // User exists, log them in immediately
              onLoginSuccess({ phone: phoneNumber });
              onClose();
         } else {
-             // New user, go to name registration
              setStep(3);
         }
     } else {
@@ -153,10 +146,37 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     e.preventDefault();
     if (firstName.trim() && lastName.trim()) {
         const fullName = `${firstName.trim()} ${lastName.trim()}`;
-        // We call onLoginSuccess here because the user object hasn't been created in AppContext yet for this session
-        // This will create the user in AppContext
         onLoginSuccess({ phone: phoneNumber, fullName: fullName });
         setStep(4);
+    }
+  };
+
+  // --- REAL GOOGLE LOGIN ---
+  const handleGoogleLogin = async () => {
+    if (!supabase) {
+        console.warn("Supabase client not initialized. Using mock fallback.");
+        // Fallback for dev without env vars
+        onLoginSuccess({ email: 'hhakamian@gmail.com', fullName: 'H Hakamian (Dev)' });
+        onClose();
+        return;
+    }
+
+    setIsLoading(true);
+    try {
+        const { error } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+                // Ensure this URL is whitelisted in Supabase Auth settings -> Redirect URLs
+                redirectTo: window.location.origin 
+            }
+        });
+        if (error) throw error;
+        // Note: The actual login success happens in App.tsx via onAuthStateChange listener
+        // The user will be redirected to Google, then back to the app.
+    } catch (e: any) {
+        console.error("Google Login Error:", e);
+        setError(e.message || 'خطا در ارتباط با گوگل');
+        setIsLoading(false);
     }
   };
 
@@ -281,7 +301,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     <div className="text-center space-y-6">
         <CheckCircleIcon className="w-16 h-16 text-green-400 mx-auto" />
         <div>
-            <h3 className="text-xl font-bold">عالی بود، {firstName}!</h3>
+            <h3 className="text-xl font-bold">عالی بود، {firstName || 'کاربر عزیز'}!</h3>
             <p className="text-gray-300 mt-2">خوشحالیم که به خانواده نخلستان معنا پیوستید.</p>
         </div>
         <div className="p-4 bg-gray-700/50 rounded-lg border border-gray-600">
@@ -309,7 +329,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         </div>
     </div>
   );
-
 
   return (
     <div
@@ -343,7 +362,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                  'به نخلستان معنا خوش آمدید'}
             </h2>
             <p className="text-gray-400">
-                {step === 1 ? "برای ادامه، شماره موبایل خود را وارد کنید." : 
+                {step === 1 ? "برای ادامه، وارد شوید." : 
                  step === 2 ? `کد تایید ارسال شده به ${phoneNumber} را وارد کنید.` : 
                  step === 3 ? 'برای شخصی‌سازی تجربه شما، لطفا نام خود را وارد کنید.' :
                  'سفر شما آغاز شد.'}
@@ -351,7 +370,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         </div>
         
         {step === 1 && (
-             // Simplified toggle for Step 1, mostly cosmetic as logic is smart now
             <div className="mb-6">
                 <div className="relative w-full bg-gray-700 rounded-full p-1 flex">
                     <button
@@ -379,6 +397,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         )}
         
         {step === 1 ? renderStepOne() : step === 2 ? renderStepTwo() : step === 3 ? renderStepThree() : renderStepFour()}
+        
+        {/* Display error if any (e.g., from Google Auth) */}
+        {step === 1 && error && (
+            <p className="text-red-400 text-sm text-center mt-2">{error}</p>
+        )}
 
         {step === 1 && (
             <>
@@ -389,14 +412,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                 </div>
                 <button
                     type="button"
-                    onClick={() => {
-                        onLoginSuccess({ email: 'hhakamian@gmail.com', fullName: 'H Hakamian (Admin)' });
-                        onClose();
-                    }}
+                    onClick={handleGoogleLogin}
                     className="w-full flex items-center justify-center bg-white hover:bg-gray-200 text-gray-800 font-semibold py-3 px-4 rounded-md transition-all duration-200 text-base mt-4 border border-gray-300"
+                    disabled={isLoading}
                 >
                     <GoogleIcon className="w-5 h-5 ml-3" />
-                    ورود با گوگل (hhakamian@gmail.com)
+                    {isLoading ? 'در حال اتصال به گوگل...' : 'ورود با حساب گوگل'}
                 </button>
             </>
         )}
