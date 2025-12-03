@@ -8,8 +8,9 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, fileURLToPath(new URL('.', import.meta.url)), '');
     
     return {
-      // Use the repo name for production base (GitHub Pages), but root for dev (localhost)
-      base: mode === 'production' ? '/nakhlestan-ma-na---grove-of-meaning/' : '/',
+      // Set base to '/' for Vercel deployment. 
+      // The previous config was specific to GitHub Pages subdirectory.
+      base: '/',
       server: {
         port: 3000,
         host: '0.0.0.0',
