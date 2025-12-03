@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nakhlestan Ma'na</title>
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#111827" />
+    
+    <!-- PWA meta tags for iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Nakhlestan">
+    <link rel="apple-touch-icon" href="https://picsum.photos/seed/nakhlestan-logo/192/192">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+      body {
+        font-family: 'Vazirmatn', sans-serif;
+        overflow-x: hidden; /* Prevent horizontal scroll caused by animations */
+      }
+      
+      /* --- SCROLL ANIMATION STYLES --- */
+      @keyframes slide-in-up {
+          from { opacity: 0; transform: translateY(50px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes slide-in-left {
+          from { opacity: 0; transform: translateX(-50px); }
+          to { opacity: 1; transform: translateX(0); }
+      }
+      @keyframes slide-in-right {
+          from { opacity: 0; transform: translateX(50px); }
+          to { opacity: 1; transform: translateX(0); }
+      }
+      @keyframes draw-line {
+          from { transform: scaleX(0); }
+          to { transform: scaleX(1); }
+      }
+      @keyframes sprout {
+          from { transform: scale(0.3); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+      }
+      @keyframes spread-out-left {
+          from { transform: translateX(100%) scale(0.8); opacity: 0; }
+          to { transform: translateX(0) scale(1); opacity: 1; }
+      }
+      @keyframes spread-out-center {
+          from { transform: scale(0.7); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+      }
+      @keyframes spread-out-right {
+          from { transform: translateX(-100%) scale(0.8); opacity: 0; }
+          to { transform: translateX(0) scale(1); opacity: 1; }
+      }
+      @keyframes gradient-sweep {
+          0% { background-position: 150% 0; }
+          100% { background-position: -50% 0; }
+      }
+      @keyframes rotate-on-scroll {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      /* New Animations for Components */
+      @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+      }
+      @keyframes fade-in-up {
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes pulse-soft {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.7; }
+      }
+       @keyframes fade-in-scale {
+          from { opacity: 0; transform: scale(0.95); }
+          to { opacity: 1; transform: scale(1); }
+      }
+      
+      @keyframes fade-in-down {
+          from { opacity: 0; transform: translateY(-10px); }
+          to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* Utility classes to apply these animations */
+      .scroll-animate {
+          animation-duration: 0.8s;
+          animation-fill-mode: forwards;
+          animation-timing-function: cubic-bezier(0.1, 0.8, 0.2, 1);
+      }
+      .scroll-slide-up { animation-name: slide-in-up; }
+      .scroll-slide-left { animation-name: slide-in-left; }
+      .scroll-slide-right { animation-name: slide-in-right; }
+      .scroll-draw-line { animation-name: draw-line; transform-origin: center; }
+      .scroll-sprout { animation-name: sprout; transform-origin: bottom; }
+      .scroll-spread-left { animation-name: spread-out-left; }
+      .scroll-spread-center { animation-name: spread-out-center; }
+      .scroll-spread-right { animation-name: spread-out-right; }
+      
+      .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
+      .animate-fade-in-up { animation: fade-in-up 0.6s ease-out forwards; }
+      .animate-fade-in-scale { animation: fade-in-scale 0.3s ease-out forwards; }
+      .animate-fade-in-down { animation: fade-in-down 0.3s ease-out forwards; }
+      
+      .gradient-sweep-effect {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.08) 50%, transparent 80%);
+          background-size: 200% 100%;
+          animation: gradient-sweep 1.5s ease-out forwards;
+          animation-play-state: paused;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "@google/genai": "https://aistudiocdn.com/@google/genai@1.28.0",
+    "react/": "https://aistudiocdn.com/react@19.2.0/",
+    "react": "https://aistudiocdn.com/react@19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@19.2.0/",
+    "path": "https://aistudiocdn.com/path@0.12.7",
+    "vite": "https://aistudiocdn.com/vite@7.2.1",
+    "@vitejs/plugin-react": "https://aistudiocdn.com/@vitejs/plugin-react@5.1.0",
+    "url": "https://aistudiocdn.com/url@0.11.4",
+    "@supabase/supabase-js": "https://aistudiocdn.com/@supabase/supabase-js@^2.84.0",
+    "pdfjs-dist": "https://aistudiocdn.com/pdfjs-dist@^5.4.394",
+    "react-markdown": "https://aistudiocdn.com/react-markdown@^10.1.0",
+    "remark-gfm": "https://aistudiocdn.com/remark-gfm@^4.0.1",
+    "jspdf": "https://aistudiocdn.com/jspdf@2.5.1/dist/jspdf.es.min.js"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script type="module" src="/index.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(registration => {
+            console.log('SW registered: ', registration);
+          }).catch(registrationError => {
+            console.log('SW registration failed: ', registrationError);
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

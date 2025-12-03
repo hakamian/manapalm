@@ -1,0 +1,408 @@
+
+import React, { useState, useEffect, useRef } from 'react';
+import { XMarkIcon, GoogleIcon, CheckCircleIcon } from './icons';
+import { useAppDispatch, useAppState } from '../AppContext';
+import { User, Order, View } from '../types';
+import { getLevelForPoints } from '../services/gamificationService';
+
+interface AuthModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onLoginSuccess: (user: { phone?: string; email?: string; fullName?: string }) => void;
+}
+
+const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }) => {
+  const { user, allUsers } = useAppState(); // Added allUsers to context check
+  const dispatch = useAppDispatch();
+  const [step, setStep] = useState(1);
+  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [isValid, setIsValid] = useState(true);
+  const [otp, setOtp] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  
+  // Smart Login state
+  const [isKnownUser, setIsKnownUser] = useState(false);
+
+  const otpInputsRef = useRef<Array<HTMLInputElement | null>>([]);
+
+  const CORRECT_OTP = '123456'; // For simulation purposes
+
+  useEffect(() => {
+    if (isOpen) {
+      // Reset all state on open
+      const timer = setTimeout(() => {
+        setStep(1); 
+        setPhoneNumber(''); 
+        setOtp(''); 
+        setIsValid(true); 
+        setError(''); 
+        setIsLoading(false); 
+        setAuthMode('register'); 
+        setRememberMe(false); 
+        setFirstName(''); 
+        setLastName('');
+        setIsKnownUser(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+  
+  useEffect(() => {
+    if (step === 2 && isOpen) {
+      otpInputsRef.current[0]?.focus();
+    }
+  }, [step, isOpen]);
+
+  // Previous useEffect for name check (Step 3) is now handled by Smart Login logic below
+  
+  if (!isOpen && step === 1) return null;
+
+  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, '');
+    setPhoneNumber(value);
+    setError('');
+    if (value.length > 0) {
+      setIsValid(/^09[0-9]{9}$/.test(value));
+    } else {
+      setIsValid(true);
+    }
+  };
+
+  const handleSubmitPhone = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isValid && phoneNumber.length === 11) {
+      setIsLoading(true);
+      setError('');
+      
+      // Smart Login Check
+      const existingUser = allUsers.find(u => u.phone === phoneNumber);
+      setIsKnownUser(!!existingUser);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setIsLoading(false);
+      setStep(2);
+    } else {
+      setIsValid(false);
+    }
+  };
+
+  const handleOtpSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (otp === CORRECT_OTP) {
+        if (isKnownUser) {
+             // User exists, log them in immediately
+             onLoginSuccess({ phone: phoneNumber });
+             onClose();
+        } else {
+             // New user, go to name registration
+             setStep(3);
+        }
+    } else {
+        setError('کد وارد شده صحیح نمی‌باشد.');
+    }
+  };
+  
+  const handleOtpChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const value = e.target.value.replace(/[^0-9]/g, '');
+    if (value) {
+        const newOtpArr = otp.split('');
+        newOtpArr[index] = value;
+        const newOtp = newOtpArr.join('').substring(0, 6);
+        setOtp(newOtp);
+
+        if (index < 5 && newOtp.length > index) {
+            otpInputsRef.current[index + 1]?.focus();
+        }
+    }
+  };
+
+  const handleOtpKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+      if (e.key === 'Backspace') {
+          const newOtpArr = otp.split('');
+          newOtpArr[index] = '';
+          setOtp(newOtpArr.join(''));
+          if (!e.currentTarget.value && index > 0) {
+            otpInputsRef.current[index - 1]?.focus();
+          }
+      }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+      e.preventDefault();
+      const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').substring(0, 6);
+      if (pastedData) {
+          setOtp(pastedData);
+          otpInputsRef.current.forEach((input, index) => {
+              if (input && pastedData[index]) {
+                  input.value = pastedData[index];
+              }
+          });
+          const lastInputIndex = Math.min(pastedData.length, 6) - 1;
+          otpInputsRef.current[lastInputIndex]?.focus();
+      }
+  };
+
+  const handleNameSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (firstName.trim() && lastName.trim()) {
+        const fullName = `${firstName.trim()} ${lastName.trim()}`;
+        // We call onLoginSuccess here because the user object hasn't been created in AppContext yet for this session
+        // This will create the user in AppContext
+        onLoginSuccess({ phone: phoneNumber, fullName: fullName });
+        setStep(4);
+    }
+  };
+
+  const renderStepOne = () => (
+     <form onSubmit={handleSubmitPhone} className="space-y-6">
+        <div>
+          <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2 text-right">شماره موبایل</label>
+          <input
+            type="tel"
+            id="phone"
+            value={phoneNumber}
+            onChange={handlePhoneNumberChange}
+            placeholder="09123456789"
+            dir="ltr"
+            className={`w-full bg-gray-900 border rounded-md p-3 text-center text-lg tracking-wider ${isValid ? 'border-gray-600 focus:border-amber-500' : 'border-red-500'} focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors`}
+          />
+          {!isValid && phoneNumber.length > 0 && <p className="text-red-400 text-sm mt-2 text-right">لطفاً یک شماره موبایل معتبر وارد کنید.</p>}
+        </div>
+        <div>
+            <label className="flex items-center text-gray-400 cursor-pointer text-sm mb-4">
+                <input 
+                    type="checkbox" 
+                    checked={rememberMe} 
+                    onChange={(e) => setRememberMe(e.target.checked)} 
+                    className="ml-2 bg-gray-900 border-gray-600 text-amber-500 focus:ring-amber-500 focus:ring-offset-gray-800 rounded" 
+                />
+                <span>مرا به خاطر بسپار</span>
+            </label>
+            <button
+              type="submit"
+              disabled={!isValid || phoneNumber.length !== 11 || isLoading}
+              className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-gray-900 font-bold py-3 px-4 rounded-md transition-all duration-300 text-lg"
+            >
+              {isLoading ? 'در حال بررسی...' : 'ارسال کد تایید'}
+            </button>
+        </div>
+      </form>
+  );
+
+  const renderStepTwo = () => (
+      <form onSubmit={handleOtpSubmit} className="space-y-6">
+        <div>
+          <label htmlFor="otp-0" className="sr-only">کد تایید</label>
+          <div className="flex justify-center gap-1 sm:gap-2" dir="ltr">
+            {[...Array(6)].map((_, index) => (
+                <input
+                    key={index}
+                    id={`otp-${index}`}
+                    ref={el => { otpInputsRef.current[index] = el; }}
+                    type="tel"
+                    maxLength={1}
+                    value={otp[index] || ''}
+                    onChange={(e) => handleOtpChange(e, index)}
+                    onKeyDown={(e) => handleOtpKeyDown(e, index)}
+                    onPaste={index === 0 ? handlePaste : undefined}
+                    className="w-10 h-12 sm:w-12 sm:h-14 bg-gray-900 border border-gray-600 rounded-md text-center text-xl sm:text-2xl focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
+                />
+            ))}
+          </div>
+          {error && <p className="text-red-400 text-sm mt-2 text-center">{error}</p>}
+        </div>
+        
+        <div className="flex justify-end items-center text-sm">
+            <div>
+                <button type="button" onClick={() => setStep(1)} className="text-gray-400 hover:text-white transition-colors">ویرایش شماره</button>
+                 <span className="mx-2 text-gray-500">|</span>
+                <button type="button" className="text-gray-400 hover:text-white transition-colors">ارسال مجدد کد</button>
+            </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={otp.length !== 6}
+          className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-gray-900 font-bold py-3 px-4 rounded-md transition-all duration-300 text-lg"
+        >
+          {isKnownUser ? 'ورود به حساب' : 'تایید و ادامه'}
+        </button>
+      </form>
+  );
+
+  const renderStepThree = () => (
+    <form onSubmit={handleNameSubmit} className="space-y-6">
+        <div className="text-center mb-4">
+            <p className="text-sm text-gray-400">شما کاربر جدید هستید. برای تکمیل ثبت‌نام، نام خود را وارد کنید.</p>
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+            <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-300 mb-2 text-right">نام</label>
+                <input
+                    type="text"
+                    id="firstName"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="مثلا: حسین"
+                    className="w-full bg-gray-900 border rounded-md p-3 text-center text-lg border-gray-600 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                    autoFocus
+                />
+            </div>
+            <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-300 mb-2 text-right">نام خانوادگی</label>
+                <input
+                    type="text"
+                    id="lastName"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="مثلا: رضایی"
+                    className="w-full bg-gray-900 border rounded-md p-3 text-center text-lg border-gray-600 focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+            </div>
+        </div>
+        <button
+            type="submit"
+            disabled={!firstName.trim() || !lastName.trim()}
+            className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-gray-900 font-bold py-3 px-4 rounded-md transition-all duration-300 text-lg"
+        >
+            ثبت‌نام و ورود
+        </button>
+    </form>
+  );
+
+  const renderStepFour = () => (
+    <div className="text-center space-y-6">
+        <CheckCircleIcon className="w-16 h-16 text-green-400 mx-auto" />
+        <div>
+            <h3 className="text-xl font-bold">عالی بود، {firstName}!</h3>
+            <p className="text-gray-300 mt-2">خوشحالیم که به خانواده نخلستان معنا پیوستید.</p>
+        </div>
+        <div className="p-4 bg-gray-700/50 rounded-lg border border-gray-600">
+            <h4 className="font-semibold text-green-300">قدم بعدی: پروفایل خود را کامل کنید</h4>
+            <p className="text-sm text-gray-300 mt-2">
+                با تکمیل اطلاعات بیشتر در پروفایل خود، تا <strong>۱۵۰ امتیاز برکت</strong> دیگر هدیه بگیرید و سفر خود را شخصی‌سازی کنید.
+            </p>
+        </div>
+        <div className="flex flex-col gap-3">
+            <button
+              onClick={() => {
+                dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'profile' });
+                onClose();
+              }}
+              className="w-full bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-3 px-4 rounded-md transition-colors"
+            >
+              کامل کردن پروفایل
+            </button>
+            <button
+              onClick={onClose}
+              className="w-full text-gray-300 hover:text-white font-semibold py-2 px-4 rounded-md transition-colors"
+            >
+              فعلا نه، بعدا انجام می‌دهم
+            </button>
+        </div>
+    </div>
+  );
+
+
+  return (
+    <div
+      className={`fixed inset-0 bg-black bg-opacity-70 z-50 flex items-end sm:items-center justify-center transition-opacity duration-300 ${isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="auth-modal-title"
+    >
+      <div
+        className={`bg-gray-800 text-white shadow-2xl w-full sm:max-w-sm sm:w-full relative 
+               rounded-t-2xl sm:rounded-lg 
+               p-6 pt-10 sm:p-8 sm:pt-10
+               transition-transform duration-300 ease-in-out
+               transform ${isOpen ? 'translate-y-0' : 'translate-y-full sm:translate-y-0 sm:scale-95'}`}
+        onClick={e => e.stopPropagation()}
+      >
+        <div className="absolute top-3 right-1/2 translate-x-1/2 w-12 h-1.5 bg-gray-600 rounded-full sm:hidden" aria-hidden="true"></div>
+        <button
+          onClick={onClose}
+          className="absolute top-4 left-4 text-gray-400 hover:text-white"
+          aria-label="Close authentication modal"
+        >
+          <XMarkIcon />
+        </button>
+
+        <div className="text-center mb-8">
+            <h2 id="auth-modal-title" className="text-2xl font-bold mb-2">
+                {step === 3 ? 'افتخار آشنایی با چه کسی را داریم؟' : 
+                 step === 4 ? 'خوش آمدید!' : 
+                 'به نخلستان معنا خوش آمدید'}
+            </h2>
+            <p className="text-gray-400">
+                {step === 1 ? "برای ادامه، شماره موبایل خود را وارد کنید." : 
+                 step === 2 ? `کد تایید ارسال شده به ${phoneNumber} را وارد کنید.` : 
+                 step === 3 ? 'برای شخصی‌سازی تجربه شما، لطفا نام خود را وارد کنید.' :
+                 'سفر شما آغاز شد.'}
+            </p>
+        </div>
+        
+        {step === 1 && (
+             // Simplified toggle for Step 1, mostly cosmetic as logic is smart now
+            <div className="mb-6">
+                <div className="relative w-full bg-gray-700 rounded-full p-1 flex">
+                    <button
+                        onClick={() => setAuthMode('login')}
+                        className={`w-1/2 rounded-full py-2 text-center font-semibold transition-colors z-10 ${authMode === 'login' ? 'text-white' : 'text-gray-400'}`}
+                    >
+                        ورود
+                    </button>
+                    <button
+                        onClick={() => setAuthMode('register')}
+                        className={`w-1/2 rounded-full py-2 text-center font-semibold transition-colors z-10 ${authMode === 'register' ? 'text-white' : 'text-gray-400'}`}
+                    >
+                        ثبت‌نام
+                    </button>
+                    <span
+                        className={`absolute top-1 bottom-1 bg-gray-900 rounded-full shadow-md transition-transform duration-300 ease-in-out z-0`}
+                        style={{
+                            right: '2px',
+                            width: 'calc(50% - 2px)',
+                            transform: authMode === 'login' ? 'translateX(0)' : 'translateX(-100%)',
+                        }}
+                    />
+                </div>
+            </div>
+        )}
+        
+        {step === 1 ? renderStepOne() : step === 2 ? renderStepTwo() : step === 3 ? renderStepThree() : renderStepFour()}
+
+        {step === 1 && (
+            <>
+                <div className="relative flex pt-5 items-center">
+                    <div className="flex-grow border-t border-gray-600"></div>
+                    <span className="flex-shrink mx-4 text-gray-400 text-sm">یا</span>
+                    <div className="flex-grow border-t border-gray-600"></div>
+                </div>
+                <button
+                    type="button"
+                    onClick={() => {
+                        onLoginSuccess({ email: 'hhakamian@gmail.com', fullName: 'H Hakamian (Admin)' });
+                        onClose();
+                    }}
+                    className="w-full flex items-center justify-center bg-white hover:bg-gray-200 text-gray-800 font-semibold py-3 px-4 rounded-md transition-all duration-200 text-base mt-4 border border-gray-300"
+                >
+                    <GoogleIcon className="w-5 h-5 ml-3" />
+                    ورود با گوگل (hhakamian@gmail.com)
+                </button>
+            </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default AuthModal;
