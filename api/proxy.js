@@ -49,7 +49,9 @@ export default async function handler(req, res) {
       // but append a system instruction to simulate their personas, because we don't have their API keys.
       // In a production environment, you would use the respective SDKs here.
 
-      const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
+      // Fallback to the provided key if env var is not set
+      const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY || 'AIzaSyBUd6-TZkkmKRIrkNNitN61pgKu7fVSu3w';
+      
       if (!apiKey) {
         console.error('API Key missing on server');
         return res.status(500).json({ error: 'Server configuration error' });
@@ -102,18 +104,6 @@ export default async function handler(req, res) {
 
       return res.status(200).json(result);
     } 
-    
-    // Placeholder for real implementations:
-    /*
-    else if (provider === 'openai') {
-        const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-        // ... implementation using openai.chat.completions.create
-    } 
-    else if (provider === 'anthropic') {
-        const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
-        // ... implementation using anthropic.messages.create
-    }
-    */
 
   } catch (error) {
     console.error('Proxy Error:', error);
