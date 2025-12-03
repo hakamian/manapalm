@@ -73,7 +73,9 @@ const App: React.FC = () => {
 
     // Helper to convert Google user to App User
     const mapSupabaseUserToAppUser = (supabaseUser: any, existingAppUser?: User): User => {
-        const isAdmin = supabaseUser.email === 'hhakamian@gmail.com' || supabaseUser.email === 'admin@nakhlestanmana.com';
+        const isAdmin = supabaseUser.email === 'hhakamian@gmail.com' || 
+                        supabaseUser.email === 'admin@nakhlestanmana.com' ||
+                        (supabaseUser.phone && supabaseUser.phone === '09222453571'); // Added phone check for admin
         
         // If user already exists in our local "DB" (mock or real), preserve their data
         if (existingAppUser) {
@@ -82,7 +84,7 @@ const App: React.FC = () => {
                  // Update fields that might have changed from Google
                  email: supabaseUser.email,
                  profileImageUrl: supabaseUser.user_metadata?.avatar_url || existingAppUser.profileImageUrl,
-                 isAdmin: isAdmin, // Force admin check based on email
+                 isAdmin: isAdmin, // Force admin check based on email/phone
                  id: supabaseUser.id // Use Supabase ID as authentic ID
              };
         }
@@ -116,14 +118,16 @@ const App: React.FC = () => {
         );
         
         // Admin check logic for manual login (dev fallback)
-        const isAdminLogin = loginData.email === 'hhakamian@gmail.com' || loginData.email === 'admin@nakhlestanmana.com';
+        const isAdminLogin = loginData.email === 'hhakamian@gmail.com' || 
+                             loginData.email === 'admin@nakhlestanmana.com' ||
+                             loginData.phone === '09222453571'; // Specific admin phone
 
         if (existingUser) {
             const updatedUser = isAdminLogin ? { ...existingUser, isAdmin: true } : existingUser;
             dispatch({ type: 'LOGIN_SUCCESS', payload: { user: updatedUser, orders: [], keepOpen: false } });
         } else {
             const newUser: User = {
-                id: isAdminLogin ? 'user_admin_hh' : `user_${Date.now()}`,
+                id: isAdminLogin ? 'user_admin_custom' : `user_${Date.now()}`,
                 name: loginData.fullName || 'کاربر جدید',
                 fullName: loginData.fullName,
                 phone: loginData.phone || '',

@@ -1,6 +1,4 @@
 
-
-
 // FIX: Import React for creating elements in a .ts file
 import React from 'react';
 // FIX: Import Deed and DirectMessage types
@@ -229,6 +227,31 @@ export const INITIAL_USERS: User[] = [
         creativeStorageCapacity: 1000,
         purchasedCourseIds: ['all'],
         profileImageUrl: 'https://ui-avatars.com/api/?name=H+Hakamian&background=0D8ABC&color=fff',
+        allowDirectMessages: true,
+        conversations: [],
+        notifications: [],
+        reflectionAnalysesRemaining: 100,
+        ambassadorPacksRemaining: 100,
+        unlockedTools: ['imageGen', 'videoGen', 'thinking', 'codeGen']
+    },
+    // Custom Admin User
+    {
+        id: 'user_admin_custom',
+        name: 'Admin',
+        fullName: 'مدیر سیستم',
+        phone: '09222453571',
+        joinDate: new Date().toISOString(),
+        points: 999999,
+        manaPoints: 999999,
+        level: 'استاد کهنسال',
+        isAdmin: true,
+        isGuardian: true,
+        timeline: [],
+        achievements: ['profile_complete', 'guardian'],
+        profileCompletion: { initial: true, additional: true, extra: true },
+        creativeStorageCapacity: 1000,
+        purchasedCourseIds: ['all'],
+        profileImageUrl: 'https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff',
         allowDirectMessages: true,
         conversations: [],
         notifications: [],
