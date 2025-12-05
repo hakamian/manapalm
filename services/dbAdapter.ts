@@ -3,226 +3,212 @@ import { supabase } from './supabaseClient';
 import { User, Order, CommunityPost, AgentActionLog } from '../types';
 import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS } from '../utils/dummyData';
 
-const STORAGE_KEYS = {
-    USERS: 'nakhlestan_users',
-    ORDERS: 'nakhlestan_orders',
-    POSTS: 'nakhlestan_posts',
-    CURRENT_USER_ID: 'nakhlestan_current_user_id',
-    AGENT_LOGS: 'nakhlestan_agent_logs',
+// Helper to map Supabase profile to App User type
+const mapProfileToUser = (profile: any): User => {
+  return {
+    id: profile.id,
+    name: profile.full_name || 'کاربر ناشناس',
+    fullName: profile.full_name,
+    email: profile.email,
+    phone: profile.phone || '',
+    avatar: profile.avatar_url,
+    points: profile.points || 0,
+    manaPoints: profile.mana_points || 0,
+    level: profile.level || 'جوانه',
+    isAdmin: profile.is_admin,
+    isGuardian: profile.is_guardian,
+    isGroveKeeper: profile.is_grove_keeper,
+    joinDate: profile.created_at,
+    // Load extra data from metadata JSON column
+    profileCompletion: profile.metadata?.profileCompletion || { initial: false, additional: false, extra: false },
+    timeline: profile.metadata?.timeline || [],
+    unlockedTools: profile.metadata?.unlockedTools || [],
+    purchasedCourseIds: profile.metadata?.purchasedCourseIds || [],
+    // Defaults for fields not in DB yet
+    conversations: [],
+    notifications: [],
+    reflectionAnalysesRemaining: profile.metadata?.reflectionAnalysesRemaining || 0,
+    ambassadorPacksRemaining: profile.metadata?.ambassadorPacksRemaining || 0,
+  };
 };
-
-// --- Helper for Local Storage (Simulating Database) ---
-const loadLocal = <T>(key: string, fallback: T): T => {
-    try {
-        const stored = localStorage.getItem(key);
-        return stored ? JSON.parse(stored) : fallback;
-    } catch (e) {
-        console.error(`Error loading ${key} from local storage`, e);
-        return fallback;
-    }
-};
-
-const saveLocal = (key: string, data: any) => {
-    try {
-        localStorage.setItem(key, JSON.stringify(data));
-    } catch (e) {
-        console.error(`Error saving ${key} to local storage`, e);
-    }
-};
-
-// Simulate network delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 export const dbAdapter = {
-    // --- SYSTEM HEALTH CHECK (ENGINEERING AUDIT) ---
+    // --- SYSTEM HEALTH CHECK ---
     async getSystemHealth(): Promise<{ status: string; scalabilityScore: number; issues: string[] }> {
-        const issues: string[] = [];
-        let score = 100;
-
-        // Check Database Connection
         if (!supabase) {
-            score -= 40;
-            issues.push("CRITICAL: دیتابیس ابری (Supabase) متصل نیست. سیستم روی حافظه موقت مرورگر اجرا می‌شود.");
-            issues.push("RISK: پاک شدن کوکی‌های مرورگر منجر به از دست رفتن تمام اطلاعات کاربران می‌شود.");
-        } else {
-             // Mock checking connection
-             try {
-                 const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
-                 if (error) throw error;
-             } catch (e) {
-                 score -= 20;
-                 issues.push("WARNING: اتصال به دیتابیس ابری ناپایدار است.");
-             }
+            return { status: 'Critical', scalabilityScore: 0, issues: ['Supabase client not initialized'] };
         }
-
-        // Check Local Storage Limits
-        const storageUsage = JSON.stringify(localStorage).length;
-        if (storageUsage > 4 * 1024 * 1024) { // > 4MB
-            score -= 30;
-            issues.push("CRITICAL: حافظه لوکال در حال پر شدن است. اپلیکیشن به زودی کرش می‌کند.");
+        try {
+            const { error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
+            if (error) throw error;
+            return { status: 'Healthy', scalabilityScore: 95, issues: [] };
+        } catch (e: any) {
+            return { status: 'At Risk', scalabilityScore: 50, issues: ['Database connection failed: ' + e.message] };
         }
-
-        // Architecture Check
-        issues.push("INFO: معماری فعلی (Client-Side Rendering) برای SEO و سرعت در مقیاس میلیونی بهینه نیست.");
-
-        return {
-            status: score > 80 ? 'Healthy' : score > 50 ? 'At Risk' : 'Critical',
-            scalabilityScore: score,
-            issues
-        };
     },
 
     // --- USERS ---
     async getUsers(page: number = 1, limit: number = 20, search: string = ''): Promise<{ data: User[], total: number }> {
-        if (supabase) {
-            let query = supabase.from('users').select('*', { count: 'exact' });
-            if (search) query = query.ilike('fullName', `%${search}%`);
-            
-            const from = (page - 1) * limit;
-            const to = from + limit - 1;
-            
-            const { data, error, count } = await query.range(from, to);
-            if (!error && data) return { data: data as User[], total: count || 0 };
+        if (!supabase) return { data: [], total: 0 };
+
+        let query = supabase.from('profiles').select('*', { count: 'exact' });
+        if (search) query = query.ilike('full_name', `%${search}%`);
+        
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+        
+        const { data, error, count } = await query.range(from, to);
+        if (error) {
+            console.error('Error fetching users:', error);
+            return { data: [], total: 0 };
         }
-        
-        // Local Mock with Pagination
-        await delay(100); // Simulate latency
-        let users = loadLocal<User[]>(STORAGE_KEYS.USERS, INITIAL_USERS);
-        
-        if (search) {
-            const lowerSearch = search.toLowerCase();
-            users = users.filter(u => 
-                (u.fullName?.toLowerCase().includes(lowerSearch)) || 
-                (u.phone?.includes(lowerSearch))
-            );
-        }
-        
-        const total = users.length;
-        const start = (page - 1) * limit;
-        const paginatedUsers = users.slice(start, start + limit);
-        
-        return { data: paginatedUsers, total };
+
+        const users = data.map(mapProfileToUser);
+        return { data: users, total: count || 0 };
     },
 
-    // Keep for backward compatibility but warn
     async getAllUsers(): Promise<User[]> {
-        // console.warn("Performance Warning: getAllUsers called. Use getUsers with pagination.");
-        return this.getUsers(1, 1000).then(r => r.data);
+        const { data } = await this.getUsers(1, 1000);
+        // Merge with dummy data if DB is empty (for demo purposes)
+        if (data.length === 0) return INITIAL_USERS;
+        return data;
     },
 
     async getUserById(id: string): Promise<User | null> {
-        if (supabase) {
-            const { data, error } = await supabase.from('users').select('*').eq('id', id).single();
-            if (!error) return data as User;
-        }
-        const users = loadLocal<User[]>(STORAGE_KEYS.USERS, INITIAL_USERS);
-        return users.find(u => u.id === id) || null;
+        if (!supabase) return null;
+        const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
+        if (error || !data) return null;
+        return mapProfileToUser(data);
     },
 
     async saveUser(user: User): Promise<void> {
-        if (supabase) {
-             await supabase.from('users').upsert(user);
-        }
-        const users = loadLocal<User[]>(STORAGE_KEYS.USERS, INITIAL_USERS);
-        const index = users.findIndex(u => u.id === user.id);
-        if (index >= 0) {
-            users[index] = user;
-        } else {
-            users.push(user);
-        }
-        saveLocal(STORAGE_KEYS.USERS, users);
+        if (!supabase) return;
         
-        const currentUserId = localStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID);
-        // Assuming session sync might happen here
+        const profileData = {
+            id: user.id,
+            email: user.email,
+            full_name: user.fullName || user.name,
+            phone: user.phone,
+            avatar_url: user.avatar,
+            points: user.points,
+            mana_points: user.manaPoints,
+            level: user.level,
+            is_admin: user.isAdmin,
+            is_guardian: user.isGuardian,
+            is_grove_keeper: user.isGroveKeeper,
+            // Store complex objects in metadata JSONB column
+            metadata: {
+                profileCompletion: user.profileCompletion,
+                timeline: user.timeline,
+                unlockedTools: user.unlockedTools,
+                purchasedCourseIds: user.purchasedCourseIds,
+                reflectionAnalysesRemaining: user.reflectionAnalysesRemaining,
+                ambassadorPacksRemaining: user.ambassadorPacksRemaining,
+                // Add other non-column fields here as needed
+            }
+        };
+
+        const { error } = await supabase.from('profiles').upsert(profileData);
+        if (error) console.error('Error saving user:', error);
     },
 
     // --- ORDERS ---
     async getOrders(userId?: string): Promise<Order[]> {
-         if (supabase) {
-            let query = supabase.from('orders').select('*');
-            if (userId) query = query.eq('userId', userId);
-            const { data, error } = await query;
-            if (!error && data) return data as Order[];
-        }
-        
-        const orders = loadLocal<Order[]>(STORAGE_KEYS.ORDERS, INITIAL_ORDERS);
-        if (userId) {
-            return orders.filter(o => o.userId === userId);
-        }
-        return orders;
+         if (!supabase) return INITIAL_ORDERS;
+         
+         let query = supabase.from('orders').select('*');
+         if (userId) query = query.eq('user_id', userId);
+         
+         const { data, error } = await query;
+         if (error) return [];
+         
+         return data.map((o: any) => ({
+             id: o.id,
+             userId: o.user_id,
+             total: o.total_amount,
+             status: o.status,
+             items: o.items || [],
+             date: o.created_at,
+             statusHistory: [{ status: o.status, date: o.created_at }] // Simplified for MVP
+         }));
     },
 
-    // Compatibility alias
     async getAllOrders(): Promise<Order[]> {
         return this.getOrders();
     },
 
     async saveOrder(order: Order): Promise<void> {
-        if (supabase) {
-            await supabase.from('orders').insert(order);
-        }
-        const orders = loadLocal<Order[]>(STORAGE_KEYS.ORDERS, INITIAL_ORDERS);
-        orders.push(order);
-        saveLocal(STORAGE_KEYS.ORDERS, orders);
+        if (!supabase) return;
+        const orderData = {
+            id: order.id,
+            user_id: order.userId,
+            total_amount: order.total,
+            status: order.status,
+            items: order.items,
+            created_at: order.date
+        };
+        const { error } = await supabase.from('orders').insert(orderData);
+        if (error) console.error('Error saving order:', error);
     },
 
     // --- POSTS ---
-    async getPosts(page: number = 1, limit: number = 10): Promise<CommunityPost[]> {
-        if (supabase) {
-            const from = (page - 1) * limit;
-            const to = from + limit - 1;
-            const { data, error } = await supabase.from('posts').select('*').order('timestamp', { ascending: false }).range(from, to);
-            if (!error && data) return data as CommunityPost[];
-        }
-        
-        const posts = loadLocal<CommunityPost[]>(STORAGE_KEYS.POSTS, INITIAL_POSTS);
-        const start = (page - 1) * limit;
-        return posts.slice(start, start + limit);
-    },
-
-    // Compatibility
     async getAllPosts(): Promise<CommunityPost[]> {
-        return this.getPosts(1, 50);
+        if (!supabase) return INITIAL_POSTS;
+        
+        const { data, error } = await supabase
+            .from('posts')
+            .select(`*, profiles(full_name, avatar_url)`)
+            .order('created_at', { ascending: false });
+            
+        if (error) return INITIAL_POSTS;
+
+        return data.map((p: any) => ({
+            id: p.id,
+            authorId: p.author_id,
+            authorName: p.profiles?.full_name || 'Unknown',
+            authorAvatar: p.profiles?.avatar_url || '',
+            content: p.content, // Note: Type definition uses 'text', adjusting below
+            text: p.content,
+            likes: p.likes_count,
+            timestamp: p.created_at
+        }));
     },
 
     async savePost(post: CommunityPost): Promise<void> {
-        if (supabase) {
-             await supabase.from('posts').insert(post);
-        }
-        const posts = loadLocal<CommunityPost[]>(STORAGE_KEYS.POSTS, INITIAL_POSTS);
-        posts.unshift(post); 
-        saveLocal(STORAGE_KEYS.POSTS, posts);
+        if (!supabase) return;
+        const postData = {
+            id: post.id,
+            author_id: post.authorId,
+            content: post.text,
+            likes_count: post.likes,
+            created_at: post.timestamp
+        };
+        await supabase.from('posts').insert(postData);
     },
 
-    // --- AGENT LOGS ---
+    // --- AGENT LOGS (Local for now, or could use a table) ---
     async getAgentLogs(): Promise<AgentActionLog[]> {
-        if (supabase) {
-            const { data, error } = await supabase.from('agent_logs').select('*').order('timestamp', { ascending: false }).limit(50);
-            if (!error && data) return data as AgentActionLog[];
-        }
-        return loadLocal<AgentActionLog[]>(STORAGE_KEYS.AGENT_LOGS, []);
+        // Mocking logs from local storage for simplicity in MVP, 
+        // or you can create an 'agent_logs' table in SQL if needed.
+        try {
+            const stored = localStorage.getItem('nakhlestan_agent_logs');
+            return stored ? JSON.parse(stored) : [];
+        } catch { return []; }
     },
 
     async saveAgentLog(log: AgentActionLog): Promise<void> {
-        if (supabase) {
-             await supabase.from('agent_logs').insert(log);
-        }
-        const logs = loadLocal<AgentActionLog[]>(STORAGE_KEYS.AGENT_LOGS, []);
+        const logs = await this.getAgentLogs();
         logs.unshift(log);
-        if (logs.length > 50) logs.pop();
-        saveLocal(STORAGE_KEYS.AGENT_LOGS, logs);
+        localStorage.setItem('nakhlestan_agent_logs', JSON.stringify(logs.slice(0, 50)));
     },
 
     // --- SESSION ---
     getCurrentUserId(): string | null {
-        return localStorage.getItem(STORAGE_KEYS.CURRENT_USER_ID);
+        return localStorage.getItem('nakhlestan_current_user_id');
     },
 
     setCurrentUserId(id: string | null) {
-        if (id) {
-            localStorage.setItem(STORAGE_KEYS.CURRENT_USER_ID, id);
-        } else {
-            localStorage.removeItem(STORAGE_KEYS.CURRENT_USER_ID);
-        }
+        if (id) localStorage.setItem('nakhlestan_current_user_id', id);
+        else localStorage.removeItem('nakhlestan_current_user_id');
     }
 };
