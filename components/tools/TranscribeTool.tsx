@@ -1,14 +1,26 @@
 
 import React, { useState, useRef } from 'react';
-import { GoogleGenAI } from '@google/genai';
 import { User } from '../../types.ts';
 import { ArrowUpTrayIcon, PencilSquareIcon, SparklesIcon, ArrowDownTrayIcon, BanknotesIcon } from '../icons.tsx';
-import { getFallbackMessage } from '../../services/geminiService.ts';
-import { useAppDispatch, useAppState } from '../../AppContext.tsx';
+import { callProxy } from '../../services/ai/core.ts';
+import { useAppDispatch } from '../../AppContext.tsx';
 
-const LARGE_FILE_THRESHOLD = 50 * 1024 * 1024; // 50MB
-const MAX_FILE_SIZE = 200 * 1024 * 1024; // 200MB
+const LARGE_FILE_THRESHOLD = 5 * 1024 * 1024; // 5MB threshold for "premium" check in this demo
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB max for base64 transfer to proxy safely
 const PREMIUM_COST = 500;
+
+const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            const result = reader.result as string;
+            const base64 = result.split(',')[1];
+            resolve(base64);
+        };
+        reader.onerror = error => reject(error);
+    });
+};
 
 const TranscribeTool: React.FC<{ user: User }> = ({ user }) => {
     const dispatch = useAppDispatch();
@@ -24,9 +36,9 @@ const TranscribeTool: React.FC<{ user: User }> = ({ user }) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
             
-            // Client-side size validation
+            // Client-side size validation for proxy safety
             if (file.size > MAX_FILE_SIZE) {
-                setError(`حجم فایل نباید بیشتر از ۲۰۰ مگابایت باشد.`);
+                setError(`حجم فایل برای پردازش ابری نباید بیشتر از ۱۰ مگابایت باشد.`);
                 setAudioFile(null);
                 setIsLargeFile(false);
                 return;
@@ -50,54 +62,27 @@ const TranscribeTool: React.FC<{ user: User }> = ({ user }) => {
         // Premium Check
         if (isLargeFile) {
             if (user.manaPoints < PREMIUM_COST) {
-                setError(`برای پردازش فایل‌های حجیم (بیش از ۵۰ مگابایت) به ${PREMIUM_COST} امتیاز معنا نیاز دارید.`);
+                setError(`برای پردازش فایل‌های حجیم به ${PREMIUM_COST} امتیاز معنا نیاز دارید.`);
                 return;
             }
             // Deduct points
-            dispatch({ type: 'SPEND_MANA_POINTS', payload: { points: PREMIUM_COST, action: 'رونویسی فایل صوتی حجیم' } });
+            dispatch({ type: 'SPEND_MANA_POINTS', payload: { points: PREMIUM_COST, action: 'رونویسی فایل صوتی' } });
         }
 
         setIsLoading(true);
         setError(null);
         setTranscription(null);
+        setLoadingMessage('در حال ارسال و پردازش فایل صوتی...');
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const base64Audio = await fileToBase64(audioFile);
 
-            // 1. Upload the file using Files API
-            setLoadingMessage('در حال آپلود فایل به سرور امن...');
-            const uploadResult = await ai.files.upload({
-                file: audioFile,
-                config: { 
-                    displayName: audioFile.name,
-                    mimeType: audioFile.type 
-                }
-            });
-
-            let file = uploadResult.file;
-            
-            // 2. Wait for processing
-            setLoadingMessage('در حال پردازش فایل صوتی...');
-            let attempts = 0;
-            while (file.state === 'PROCESSING' && attempts < 60) { // Increased attempts for larger files
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                file = await ai.files.get({ name: file.name });
-                attempts++;
-            }
-
-            if (file.state === 'FAILED') {
-                throw new Error("پردازش فایل توسط سرور با خطا مواجه شد.");
-            }
-
-            // 3. Generate content using the file URI
-            setLoadingMessage('در حال رونویسی متن (ممکن است کمی طول بکشد)...');
-            const response = await ai.models.generateContent({
-                model: 'gemini-2.5-flash',
+            const response = await callProxy('generateContent', 'gemini-2.5-flash', {
                 contents: [{ 
                     role: 'user', 
                     parts: [
-                        { fileData: { fileUri: file.uri, mimeType: file.mimeType } },
-                        { text: "Please transcribe this audio to Persian text accurately. Provide ONLY the transcribed text without any introduction or explanation." }
+                        { inlineData: { mimeType: audioFile.type, data: base64Audio } },
+                        { text: "Transcribe this audio to Persian text accurately. Provide ONLY the transcribed text without any introduction or explanation." }
                     ] 
                 }],
             });
@@ -106,19 +91,7 @@ const TranscribeTool: React.FC<{ user: User }> = ({ user }) => {
 
         } catch (err: any) {
             console.error("Transcription failed:", err);
-            let errorMessage = getFallbackMessage('generic');
-            if (err instanceof Error) {
-                if (err.message.includes("quota") || err.message.includes("RESOURCE_EXHAUSTED")) {
-                    errorMessage = "سهمیه شما برای استفاده از این قابلیت به پایان رسیده است.";
-                } else if (err.message.includes("Rpc failed")) {
-                    errorMessage = "خطا در ارسال فایل. لطفاً از فایل کوچک‌تری استفاده کنید یا دوباره تلاش کنید.";
-                } else {
-                    errorMessage = `خطا در رونویسی: ${err.message}`;
-                }
-            }
-            setError(errorMessage);
-            
-            // Optional: Refund points if failed immediately (logic omitted for simplicity)
+            setError(`خطا در رونویسی: ${err.message}`);
         } finally {
             setIsLoading(false);
             setLoadingMessage('');
@@ -129,7 +102,7 @@ const TranscribeTool: React.FC<{ user: User }> = ({ user }) => {
         <div className="w-full h-full bg-white dark:bg-stone-800/50 rounded-2xl shadow-lg flex flex-col border border-stone-200/80 dark:border-stone-700">
             <div className="p-4 border-b border-stone-200 dark:border-stone-700">
                 <h3 className="font-bold text-xl text-stone-800 dark:text-stone-100">رونویسی صدا (Flash)</h3>
-                <p className="text-sm text-stone-500 dark:text-stone-400">تبدیل فایل‌های صوتی به متن. (زیر ۵۰ مگابایت رایگان)</p>
+                <p className="text-sm text-stone-500 dark:text-stone-400">تبدیل فایل‌های صوتی به متن. (زیر ۵ مگابایت رایگان)</p>
             </div>
             
             <div className="flex-1 p-4 md:p-6 flex flex-col gap-6">
@@ -145,7 +118,7 @@ const TranscribeTool: React.FC<{ user: User }> = ({ user }) => {
                                     {audioFile ? <span className="font-semibold">{audioFile.name}</span> : "برای آپلود فایل صوتی کلیک کنید"}
                                 </p>
                                 <div className="text-xs text-stone-400 mt-1 flex flex-col gap-1">
-                                    <span>MP3, WAV, OGG (تا ۲۰۰ مگابایت)</span>
+                                    <span>MP3, WAV (تا ۱۰ مگابایت)</span>
                                     {isLargeFile && <span className="text-amber-600 dark:text-amber-400 font-bold">فایل حجیم شناسایی شد (هزینه: ۵۰۰ امتیاز)</span>}
                                 </div>
                             </div>

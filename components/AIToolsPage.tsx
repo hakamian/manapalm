@@ -1,6 +1,4 @@
 
-
-
 import React, { useState, useMemo } from 'react';
 import { AITool, User, CREATIVE_ACT_STORAGE_LIMIT, Page, View } from '../types.ts';
 import Chatbot from './tools/Chatbot.tsx';
@@ -18,8 +16,11 @@ import PurchaseStorageModal from './PurchaseStorageModal.tsx';
 import { useAppDispatch } from '../AppContext.tsx';
 
 const DummyTool: React.FC<{ title: string }> = ({ title }) => (
-    <div className="w-full h-full min-h-96 bg-stone-100 dark:bg-stone-800/50 rounded-2xl flex items-center justify-center border border-stone-200 dark:border-stone-700">
-        <h2 className="text-2xl text-stone-400 dark:text-stone-500 font-bold">{title}</h2>
+    <div className="w-full h-full min-h-96 bg-stone-100 dark:bg-stone-800/50 rounded-2xl flex items-center justify-center border border-stone-200 dark:border-stone-700 text-center p-8">
+        <div>
+            <h2 className="text-2xl text-stone-400 dark:text-stone-500 font-bold mb-2">{title}</h2>
+            <p className="text-sm text-stone-500">این ابزار در حال توسعه است و به زودی فعال می‌شود.</p>
+        </div>
     </div>
 );
 
@@ -109,11 +110,10 @@ const AIToolsPage: React.FC<AIToolsPageProps> = ({ user, onUpdateProfile, onPurc
         { id: 'chatbot', name: 'چت‌بات (Flash)', icon: '💬', description: 'دستیار هوشمند برای پاسخ به سوالات شما.', loginRequired: false },
         { id: 'videoGen', name: 'تولید ویدیو (Veo)', icon: '🎬', description: 'از متن یا تصویر، ویدیوهای کوتاه بسازید.', loginRequired: true },
         { id: 'imageEdit', name: 'ویرایش تصویر (Flash Image)', icon: '✂️', description: 'تصاویر خود را با هوش مصنوعی ویرایش کنید.', loginRequired: true },
-        { id: 'videoAnalyze', name: 'تحلیل ویدیو (Pro)', icon: '📊', description: 'محتوای ویدیوهای خود را تحلیل کنید.', loginRequired: true },
         { id: 'liveChat', name: 'گفتگوی زنده (Live API)', icon: '🎤', description: 'مکالمه صوتی بی‌درنگ با هوش مصنوعی.', loginRequired: true },
-        { id: 'search', name: 'جستجوی وب', icon: '🌐', description: 'دریافت پاسخ‌های به‌روز از سطح وب.', loginRequired: false },
-        { id: 'maps', name: 'جستجوی نقشه', icon: '🗺️', description: 'اطلاعات مکانی را جستجو کنید.', loginRequired: false },
         { id: 'transcribe', name: 'رونویسی صدا (Flash)', icon: '✍️', description: 'فایل‌های صوتی را به متن تبدیل کنید.', loginRequired: true },
+        { id: 'tts', name: 'متن به گفتار', icon: '🔊', description: 'تبدیل نوشته به صدای طبیعی.', loginRequired: true },
+        { id: 'codeGen', name: 'معمار کد', icon: '💻', description: 'تولید کد و پروتوتایپ وب.', loginRequired: true },
         { id: 'thinking', name: 'تفکر عمیق (Pro)', icon: '🧠', description: 'برای مسائل پیچیده، از مدل کمک بگیرید.', loginRequired: true },
     ];
 
@@ -147,23 +147,25 @@ const AIToolsPage: React.FC<AIToolsPageProps> = ({ user, onUpdateProfile, onPurc
 
     if (activeTool) {
         return (
-            <div className="animate-fade-in">
+            <div className="animate-fade-in pb-20 px-4 md:px-8">
                  <button 
                     onClick={() => setActiveTool(null)}
-                    className="mb-6 font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2 hover:underline"
+                    className="mb-6 mt-4 font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-2 hover:underline"
                 >
                     <ArrowRightIcon className="w-5 h-5" />
                     بازگشت به همه ابزارها
                 </button>
-                {renderActiveTool()}
+                <div className="h-[80vh] w-full">
+                     {renderActiveTool()}
+                </div>
             </div>
         );
     }
 
     return (
         <>
-            <div className="space-y-8 animate-fade-in-up">
-                 <div className="text-center">
+            <div className="space-y-8 animate-fade-in-up px-4 md:px-8 pb-20">
+                 <div className="text-center pt-10">
                     <h1 className="text-4xl md:text-5xl font-extrabold text-amber-900 dark:text-amber-200 mb-3">آزمایشگاه معنا</h1>
                     <p className="text-lg text-stone-600 dark:text-stone-300 max-w-3xl mx-auto">
                         اینجا فضای خلاقیت شماست. با کمک هوش مصنوعی، ایده‌های خود را بپرورانید، محتوای منحصر به فرد خلق کنید و کسب‌وکار خود را رشد دهید.
@@ -227,4 +229,3 @@ const AIToolsPage: React.FC<AIToolsPageProps> = ({ user, onUpdateProfile, onPurc
 };
 
 export default AIToolsPage;
-

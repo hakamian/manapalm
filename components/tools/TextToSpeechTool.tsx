@@ -4,7 +4,7 @@ import { MegaphoneIcon } from '../icons';
 
 const TextToSpeechTool: React.FC = () => {
     return (
-        <div className="w-full h-full flex flex-col items-center justify-center text-center p-10 bg-stone-900/50 text-teal-200">
+        <div className="w-full h-full flex flex-col items-center justify-center text-center p-10 bg-stone-900/50 text-teal-200 rounded-2xl border border-stone-800">
             <div className="bg-teal-900/20 p-6 rounded-full mb-6 border border-teal-500/30">
                 <MegaphoneIcon className="w-20 h-20 animate-pulse" />
             </div>

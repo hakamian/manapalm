@@ -1,12 +1,11 @@
 
-
-
 import React, { useState, useMemo } from 'react';
 import { GoogleGenAI } from '@google/genai';
 import { User, TimelineEvent } from '../../types.ts';
 import { SparklesIcon, PlusIcon } from '../icons.tsx';
 import { getUserLevel } from '../../utils/gamification.ts';
 import Modal from '../Modal.tsx';
+import { callProxy } from '../../services/ai/core.ts';
 
 interface ContentGeneratorProps {
     user: User;
@@ -69,18 +68,15 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfi
         `;
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-            const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
-                contents: fullPrompt,
+            // Use secure proxy
+            const response = await callProxy('generateContent', 'gemini-2.5-flash', {
+                contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
+                config: { temperature: 0.7 }
             });
             setGeneratedText(response.text);
         } catch (err) {
             console.error("Content generation failed:", err);
             let errorMessage = "متاسفانه در تولید محتوا خطایی رخ داد. لطفا دوباره تلاش کنید.";
-            if (err instanceof Error && (err.message.includes("quota") || err.message.includes("RESOURCE_EXHAUSTED"))) {
-                errorMessage = "سهمیه شما برای استفاده از این قابلیت به پایان رسیده است.";
-            }
             setError(errorMessage);
         } finally {
             setIsLoading(false);
