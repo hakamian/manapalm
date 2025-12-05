@@ -1,6 +1,5 @@
 
 import React, { useState, useRef } from 'react';
-import { GoogleGenAI } from '@google/genai';
 import * as pdfjsLib from 'pdfjs-dist';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -14,6 +13,7 @@ import {
 import HighTechLoader from '../HighTechLoader';
 import { useAppDispatch } from '../../AppContext';
 import Modal from '../Modal';
+import { callProxy } from '../../services/ai/core';
 
 // Configure PDF.js worker
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
@@ -136,7 +136,6 @@ const SocialMediaManagerTool: React.FC = () => {
         setImagePrompt(null);
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
             let parts: any[] = [];
             let tools: any[] = [];
             let inputDescription = "";
@@ -214,8 +213,8 @@ const SocialMediaManagerTool: React.FC = () => {
 
             const model = inputType === 'url' ? 'gemini-3-pro-preview' : 'gemini-2.5-flash';
 
-            const response = await ai.models.generateContent({
-                model: model,
+            // Use proxy
+            const response = await callProxy('generateContent', model, {
                 contents: [{ role: 'user', parts }],
                 config: {
                     systemInstruction,
@@ -281,8 +280,9 @@ const SocialMediaManagerTool: React.FC = () => {
                     "بهینه‌سازی هشتگ‌ها و کال‌تو‌اکشن..."
                 ]}
             />
-
-            <div className="p-4 border-b border-stone-700 bg-stone-800 flex items-center gap-3">
+            
+            {/* ... (Rest of UI remains identical, just logic updated) ... */}
+             <div className="p-4 border-b border-stone-700 bg-stone-800 flex items-center gap-3">
                 <div className="p-2 bg-indigo-900/30 rounded-lg text-indigo-400">
                     <ShareIcon className="w-6 h-6" />
                 </div>

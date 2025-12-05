@@ -1,6 +1,6 @@
 
 import React, { useState, useRef } from 'react';
-import { GoogleGenAI } from '@google/genai';
+import { callProxy } from '../../services/ai/core';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { 
@@ -78,8 +78,6 @@ const ConsultantCourseTool: React.FC = () => {
         ]);
         
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-            
             const analysisPrompt = `
             You are a Senior Strategic Consultant.
             User Problem: "${problemStatement}"
@@ -99,8 +97,7 @@ const ConsultantCourseTool: React.FC = () => {
             }
             `;
 
-            const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
+            const response = await callProxy('generateContent', 'gemini-3-pro-preview', {
                 contents: [{ role: 'user', parts: [{ text: analysisPrompt }] }],
                 config: { responseMimeType: "application/json", temperature: 0.4 }
             });
@@ -148,8 +145,6 @@ const ConsultantCourseTool: React.FC = () => {
         ]);
 
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-            
             const megaPrompt = `
             # ROLE: THE SUPREME ARCHITECT (V2.0)
             
@@ -213,12 +208,8 @@ const ConsultantCourseTool: React.FC = () => {
 
             const tools = inputType === 'topic' || inputType === 'url' ? [{ googleSearch: {} }] : [];
 
-            const response = await ai.models.generateContent({
-                model: 'gemini-3-pro-preview',
-                contents: [{ 
-                    role: 'user', 
-                    parts: [{ text: megaPrompt }] 
-                }],
+            const response = await callProxy('generateContent', 'gemini-3-pro-preview', {
+                contents: [{ role: 'user', parts: [{ text: megaPrompt }] }],
                 config: {
                     temperature: 0.4,
                     tools: tools,
