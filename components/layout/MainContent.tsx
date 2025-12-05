@@ -1,5 +1,5 @@
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect } from 'react';
 import { View } from '../../types';
 import { useAppState, useAppDispatch } from '../../AppContext';
 import LoadingSpinner from '../LoadingSpinner'; // Ensure this component exists
@@ -50,6 +50,7 @@ const CommunityProjectsPage = React.lazy(() => import('../CommunityProjectsPage'
 const MicrofinanceView = React.lazy(() => import('../MicrofinanceView'));
 const SmartConsultantView = React.lazy(() => import('../SmartConsultantView'));
 const BusinessMentorView = React.lazy(() => import('../BusinessMentorView'));
+const PaymentCallbackView = React.lazy(() => import('../PaymentCallbackView'));
 
 const MainContent: React.FC = () => {
     const { 
@@ -64,6 +65,15 @@ const MainContent: React.FC = () => {
     } = useAppState();
     
     const dispatch = useAppDispatch();
+
+    // Check for payment callback in URL
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const viewParam = urlParams.get('view');
+        if (viewParam === 'PAYMENT_CALLBACK') {
+            dispatch({ type: 'SET_VIEW', payload: View.PAYMENT_CALLBACK });
+        }
+    }, [dispatch]);
 
     const onAddProjectUpdate = (projectId: string, update: { title: string, description: string }) => {
          console.log('Project Update:', projectId, update);
@@ -123,6 +133,7 @@ const MainContent: React.FC = () => {
             case View.Microfinance: return <MicrofinanceView />; 
             case View.SMART_CONSULTANT: return <SmartConsultantView />;
             case View.BUSINESS_MENTOR: return <BusinessMentorView />;
+            case View.PAYMENT_CALLBACK: return <PaymentCallbackView />;
             case View['living-heritage']: return <div>Living Heritage View (Data Needed)</div>; 
             case View['digital-heritage-architect']: return <DigitalHeritageArchitectPage />;
             case View['garden-of-heroes']: 
