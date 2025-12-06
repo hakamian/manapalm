@@ -414,7 +414,7 @@ const AcademiesDashboard: React.FC = () => {
                             {filteredCourses.map((course) => (
                                 <tr key={course.id} className="hover:bg-gray-700/30 transition-colors group">
                                     <td className="px-6 py-4 font-medium text-white flex items-center gap-2">
-                                        {course.source === 'generated' && <SparklesIcon className="w-3 h-3 text-purple-400" title="AI Generated"/>}
+                                        {course.source === 'generated' && <span title="AI Generated"><SparklesIcon className="w-3 h-3 text-purple-400" /></span>}
                                         {course.title}
                                     </td>
                                     <td className="px-6 py-4">

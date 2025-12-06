@@ -34,6 +34,11 @@ export interface Deed {
     groveKeeperId?: string;
     isPlanted?: boolean;
     plantedPhotoUrl?: string;
+    gpsCoordinates?: {
+        lat: number;
+        lng: number;
+    };
+    plantedDate?: string;
     updates?: DeedUpdate[];
 }
 

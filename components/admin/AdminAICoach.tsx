@@ -1,14 +1,23 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { AdvisorType, ChatMessage } from '../../types';
+import { AdvisorType, ChatMessage, User, TimelineEvent, CommunityProject, MentorshipRequest, ProjectUpdate } from '../../types';
 import { getAdvisorChatResponse } from '../../services/geminiService';
 import { SunIcon, ChartBarIcon, PaperAirplaneIcon, TargetIcon, HeartIcon, LightBulbIcon, CogIcon, PencilSquareIcon, RadarIcon, CpuChipIcon, BanknotesIcon, SproutIcon, UsersIcon, MagnifyingGlassIcon, AcademicCapIcon, ShareIcon, BrainCircuitIcon, ArrowLeftIcon } from '../icons';
 import { advisorConfig } from '../../utils/adminAdvisorConfig';
 import AIContentRenderer from '../AIContentRenderer';
 
-// NOTE: BoardMeetingView and other complex components are imported in the main dashboard, this is the simplified component for the 'personal_journey' tab.
+interface AdminAICoachProps {
+    allUsers?: User[];
+    allInsights?: TimelineEvent[];
+    allProjects?: CommunityProject[];
+    mentorshipRequests?: MentorshipRequest[];
+    onAddProjectUpdate?: (projectId: string, update: Omit<ProjectUpdate, 'date'>) => void;
+    onUpdateInsightStatus?: (insightId: string, status: 'approved' | 'rejected') => void;
+    onRespondToRequest?: (requestId: string, response: 'accepted' | 'rejected') => void;
+    onGrantPoints?: (userId: string, points: number, reason: string) => void;
+}
 
-const AdminAICoach: React.FC = () => {
+const AdminAICoach: React.FC<AdminAICoachProps> = (props) => {
     const [personalJourneyAdvisor, setPersonalJourneyAdvisor] = useState<AdvisorType>('spiritual_guide');
     const [personalJourneyHistory, setPersonalJourneyHistory] = useState<ChatMessage[]>([]);
     const [personalJourneyQuery, setPersonalJourneyQuery] = useState('');
@@ -126,7 +135,7 @@ const AdminAICoach: React.FC = () => {
                             value={personalJourneyQuery}
                             onChange={e => setPersonalJourneyQuery(e.target.value)}
                             onKeyPress={e => e.key === 'Enter' && handleSendPersonalJourneyMessage()}
-                            placeholder={`پیام به ${advisorConfig[personalJourneyAdvisor]?.name || 'مشاور'}...`}
+                            placeholder={`پیام به ${advisorConfig[personalJourneyAdvisor].name}...`}
                             className="flex-grow bg-transparent p-3 border-none focus:ring-0 text-white placeholder-gray-400 text-sm"
                         />
                         <button onClick={() => handleSendPersonalJourneyMessage()} disabled={isPersonalJourneyLoading || !personalJourneyQuery.trim()} className="p-3 text-white disabled:text-gray-500 hover:text-green-400 transition-colors">

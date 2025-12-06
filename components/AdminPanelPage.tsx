@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { User, TimelineEvent, CommunityProject, MentorshipRequest, ProjectUpdate } from '../types.ts';
 // FIX: Corrected import paths for admin components.
@@ -5,7 +6,7 @@ import UserManagement from './UserManagement.tsx';
 import ExecutiveDashboard from './ExecutiveDashboard.tsx';
 import MentorshipDashboard from './MentorshipDashboard.tsx';
 import AIInsightsDashboard from './AIInsightsDashboard.tsx';
-import AdminAICoach from './AdminAICoach.tsx';
+import AdminAICoach from './admin/AdminAICoach.tsx';
 // import GrowthAnalyticsDashboard from './GrowthAnalyticsDashboard.tsx';
 import WebProjectsDashboard from './WebProjectsDashboard.tsx';
 import { ChartPieIcon, UsersIcon, ShieldCheckIcon, SparklesIcon, BrainCircuitIcon, SitemapIcon } from './icons.tsx';

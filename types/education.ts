@@ -5,6 +5,7 @@ import { View } from './ui';
 export interface Course {
     id: string;
     title: string;
+    subtitle?: string;
     shortDescription: string;
     longDescription: string;
     instructor: string;
