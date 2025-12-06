@@ -2,6 +2,8 @@
   "name": "manapalm",
   "description": "A social enterprise web application centered around planting palm trees as a symbol of life's meaning, featuring e-commerce, courses, and community features.",
   "requestFramePermissions": [
-    "microphone"
+    "microphone",
+    "camera",
+    "geolocation"
   ]
 }

@@ -2,7 +2,7 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { User, Order, Deed, DeedUpdate } from '../types';
 import { SproutIcon, CameraIcon, CheckCircleIcon, MapPinIcon, ArrowPathIcon } from './icons';
-import { useAppDispatch } from '../AppContext';
+import { useAppDispatch, useAppState } from '../AppContext';
 import { supabase } from '../services/supabaseClient';
 
 // --- Helper to process image (Watermark) ---
@@ -108,10 +108,28 @@ const PlantingRequestCard: React.FC<{ deed: Deed; onConfirm: (deedId: string, ph
                 },
                 (error) => {
                     console.error("GPS Error:", error);
-                    alert("خطا در دریافت موقعیت. لطفاً GPS را روشن کنید.");
+                    let errorMessage = "خطا در دریافت موقعیت.";
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            errorMessage = "دسترسی به موقعیت مکانی رد شد. لطفاً مجوز GPS را در تنظیمات مرورگر فعال کنید.";
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            errorMessage = "اطلاعات موقعیت مکانی در دسترس نیست. لطفاً مطمئن شوید GPS روشن است.";
+                            break;
+                        case error.TIMEOUT:
+                            errorMessage = "زمان درخواست موقعیت به پایان رسید. لطفاً دوباره تلاش کنید.";
+                            break;
+                        default:
+                            errorMessage = `خطای ناشناخته GPS: ${error.message}`;
+                    }
+                    alert(errorMessage);
                     setIsLocating(false);
                 },
-                { enableHighAccuracy: true }
+                { 
+                    enableHighAccuracy: true,
+                    timeout: 20000,
+                    maximumAge: 0
+                }
             );
         } else {
             alert("دستگاه شما از GPS پشتیبانی نمی‌کند.");
@@ -289,10 +307,16 @@ const PlantedDeedCard: React.FC<{ deed: Deed; onAddUpdate: (deedId: string, upda
 
 const GroveKeeperDashboard: React.FC<GroveKeeperDashboardProps> = ({ currentUser, allOrders, onConfirmPlanting }) => {
     const dispatch = useAppDispatch();
+    const { allDeeds } = useAppState();
     
     const assignedDeeds = useMemo(() => {
+        // If using Supabase, allDeeds should be populated in AppContext from DB
+        // Fallback to allOrders iteration if allDeeds empty (legacy mode)
+        if (allDeeds && allDeeds.length > 0) {
+             return allDeeds.filter(deed => deed.groveKeeperId === currentUser.id);
+        }
         return allOrders.flatMap(order => order.deeds || []).filter(deed => deed.groveKeeperId === currentUser.id);
-    }, [allOrders, currentUser.id]);
+    }, [allOrders, allDeeds, currentUser.id]);
 
     const pendingDeeds = assignedDeeds.filter(deed => !deed.isPlanted);
     const plantedDeeds = assignedDeeds.filter(deed => deed.isPlanted);
