@@ -20,6 +20,15 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+      /* Font Optimization for SEO (LCP) */
+      @font-face {
+        font-family: 'Vazirmatn';
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap; /* Vital for SEO: Shows fallback text until font loads */
+        src: local('Vazirmatn'), url(https://fonts.gstatic.com/s/vazirmatn/v13/Dxxp8v6PP2em_5mKxA.woff2) format('woff2');
+      }
+
       body {
         font-family: 'Vazirmatn', sans-serif;
         overflow-x: hidden; /* Prevent horizontal scroll caused by animations */

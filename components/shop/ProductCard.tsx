@@ -1,10 +1,4 @@
 
-
-
-
-
-
-
 import React, { useMemo, useState } from 'react';
 import { Product, User } from '../../types';
 import { HeartIcon, EyeIcon, FireIcon, SparklesIcon, ArrowDownTrayIcon, BanknotesIcon, UsersIcon } from '../icons';
@@ -64,8 +58,15 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isWishlisted, onView
                     </div>
                 )}
 
-                <div className="relative overflow-hidden">
-                    <img src={product.image} alt={product.name} className={`w-full h-56 object-cover transition-transform duration-300 group-hover:scale-105 ${isOutOfStock && !isDigital ? 'filter grayscale' : ''}`} />
+                <div className="relative overflow-hidden aspect-[4/3]">
+                    <img 
+                        src={product.image} 
+                        alt={`تصویر محصول ${product.name} - ${product.category}`} 
+                        className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${isOutOfStock && !isDigital ? 'filter grayscale' : ''}`} 
+                        loading="lazy"
+                        width="400"
+                        height="300"
+                    />
                     {isOutOfStock && !isDigital && (
                         <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                             <span className="text-white text-lg font-bold bg-red-600 px-4 py-2 rounded-md transform -rotate-12 shadow-lg">فروخته شد</span>
@@ -75,7 +76,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isWishlisted, onView
                 <button 
                     onClick={() => onToggleWishlist(product.id)}
                     className={`absolute top-3 right-3 p-2 bg-black bg-opacity-50 rounded-full transition-all z-10 ${isWishlisted ? 'text-red-500' : 'text-white hover:text-red-400'} opacity-0 group-hover:opacity-100 duration-300`}
-                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                    aria-label={isWishlisted ? 'حذف از علاقه‌مندی‌ها' : 'افزودن به علاقه‌مندی‌ها'}
                 >
                     <HeartIcon filled={isWishlisted} className="w-6 h-6" />
                 </button>
