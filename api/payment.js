@@ -1,5 +1,6 @@
 
-// api/payment.js
+import { GoogleGenAI } from '@google/genai';
+
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -22,9 +23,12 @@ export default async function handler(req, res) {
   const { action, amount, description, email, mobile, authority } = req.body;
   
   // CONFIGURATION
-  // Use a real MerchantID for production, or a sandbox ID for testing
-  const MERCHANT_ID = process.env.ZARINPAL_MERCHANT_ID || '00000000-0000-0000-0000-000000000000'; 
-  const IS_SANDBOX = true; // Set to false for production
+  // 1. Get Merchant ID from Environment Variables (Add ZARINPAL_MERCHANT_ID to Vercel)
+  const MERCHANT_ID = process.env.ZARINPAL_MERCHANT_ID; 
+  
+  // 2. Determine Mode: If ZARINPAL_SANDBOX is 'true', use sandbox. Otherwise production.
+  // Default to true if not set, for safety.
+  const IS_SANDBOX = process.env.ZARINPAL_SANDBOX !== 'false'; 
   
   const BASE_URL = IS_SANDBOX 
     ? 'https://sandbox.zarinpal.com/pg/v4/payment' 
@@ -34,23 +38,28 @@ export default async function handler(req, res) {
     ? 'https://sandbox.zarinpal.com/pg/StartPay/'
     : 'https://www.zarinpal.com/pg/StartPay/';
 
+  if (!MERCHANT_ID && !IS_SANDBOX) {
+      console.error("CRITICAL: Missing ZARINPAL_MERCHANT_ID in production mode.");
+      return res.status(500).json({ error: 'Server Payment Configuration Error' });
+  }
+
   // --- REQUEST PAYMENT ---
   if (action === 'request') {
     try {
-      // Callback URL: Where ZarinPal sends the user back (Assuming Vercel deployment or localhost)
-      // In production, ensure this matches your domain.
       const callbackUrl = `${req.headers.origin}/?view=PAYMENT_CALLBACK`;
+
+      const payload = {
+        merchant_id: MERCHANT_ID || '00000000-0000-0000-0000-000000000000', // Fallback only for sandbox
+        amount: amount * 10, // Convert Toman to Rial
+        callback_url: callbackUrl,
+        description: description,
+        metadata: { email, mobile }
+      };
 
       const response = await fetch(`${BASE_URL}/request.json`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          merchant_id: MERCHANT_ID,
-          amount: amount * 10, // ZarinPal uses Rials (Toman * 10)
-          callback_url: callbackUrl,
-          description: description,
-          metadata: { email, mobile }
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
@@ -62,26 +71,29 @@ export default async function handler(req, res) {
           url: `${PAYMENT_GATEWAY_URL}${data.data.authority}`
         });
       } else {
+        console.error('ZarinPal Request Error Data:', data);
         return res.status(400).json({ success: false, error: data.errors });
       }
 
     } catch (error) {
-      console.error('ZarinPal Request Error:', error);
-      return res.status(500).json({ error: 'Internal Server Error' });
+      console.error('ZarinPal Request Network Error:', error);
+      return res.status(500).json({ error: 'Payment Gateway Connection Failed' });
     }
   }
 
   // --- VERIFY PAYMENT ---
   else if (action === 'verify') {
     try {
+      const payload = {
+        merchant_id: MERCHANT_ID || '00000000-0000-0000-0000-000000000000',
+        amount: amount * 10, // Convert Toman to Rial
+        authority: authority
+      };
+
       const response = await fetch(`${BASE_URL}/verify.json`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          merchant_id: MERCHANT_ID,
-          amount: amount * 10, // Convert Toman to Rial
-          authority: authority
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await response.json();
@@ -103,7 +115,7 @@ export default async function handler(req, res) {
 
     } catch (error) {
       console.error('ZarinPal Verify Error:', error);
-      return res.status(500).json({ error: 'Internal Server Error' });
+      return res.status(500).json({ error: 'Internal Server Error during Verification' });
     }
   }
 

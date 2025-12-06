@@ -5,9 +5,12 @@ import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS } from '../utils/dummyData
 
 // Helper to map Supabase profile to App User type
 const mapProfileToUser = (profile: any): User => {
+  // Safely parse metadata if it's a string (sometimes happens with JSONB in certain clients)
+  const metadata = typeof profile.metadata === 'string' ? JSON.parse(profile.metadata) : (profile.metadata || {});
+
   return {
     id: profile.id,
-    name: profile.full_name || 'کاربر ناشناس',
+    name: profile.full_name || 'کاربر',
     fullName: profile.full_name,
     email: profile.email,
     phone: profile.phone || '',
@@ -19,16 +22,17 @@ const mapProfileToUser = (profile: any): User => {
     isGuardian: profile.is_guardian,
     isGroveKeeper: profile.is_grove_keeper,
     joinDate: profile.created_at,
-    // Load extra data from metadata JSON column
-    profileCompletion: profile.metadata?.profileCompletion || { initial: false, additional: false, extra: false },
-    timeline: profile.metadata?.timeline || [],
-    unlockedTools: profile.metadata?.unlockedTools || [],
-    purchasedCourseIds: profile.metadata?.purchasedCourseIds || [],
-    // Defaults for fields not in DB yet
-    conversations: [],
-    notifications: [],
-    reflectionAnalysesRemaining: profile.metadata?.reflectionAnalysesRemaining || 0,
-    ambassadorPacksRemaining: profile.metadata?.ambassadorPacksRemaining || 0,
+    // Load extra data from metadata JSONB column with defaults
+    profileCompletion: metadata.profileCompletion || { initial: false, additional: false, extra: false },
+    timeline: metadata.timeline || [],
+    unlockedTools: metadata.unlockedTools || [],
+    purchasedCourseIds: metadata.purchasedCourseIds || [],
+    conversations: [], // Not persisted in profile yet
+    notifications: [], // Not persisted in profile yet
+    reflectionAnalysesRemaining: metadata.reflectionAnalysesRemaining || 0,
+    ambassadorPacksRemaining: metadata.ambassadorPacksRemaining || 0,
+    impactPortfolio: metadata.impactPortfolio || [],
+    referralPointsEarned: metadata.referralPointsEarned || 0,
   };
 };
 
@@ -36,20 +40,20 @@ export const dbAdapter = {
     // --- SYSTEM HEALTH CHECK ---
     async getSystemHealth(): Promise<{ status: string; scalabilityScore: number; issues: string[] }> {
         if (!supabase) {
-            return { status: 'Critical', scalabilityScore: 0, issues: ['Supabase client not initialized'] };
+            return { status: 'Local Mode', scalabilityScore: 0, issues: ['Supabase keys missing. Using local data.'] };
         }
         try {
-            const { error } = await supabase.from('profiles').select('count', { count: 'exact', head: true });
+            const { count, error } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
             if (error) throw error;
             return { status: 'Healthy', scalabilityScore: 95, issues: [] };
         } catch (e: any) {
-            return { status: 'At Risk', scalabilityScore: 50, issues: ['Database connection failed: ' + e.message] };
+            return { status: 'Connection Error', scalabilityScore: 50, issues: ['Database connection failed: ' + e.message] };
         }
     },
 
     // --- USERS ---
     async getUsers(page: number = 1, limit: number = 20, search: string = ''): Promise<{ data: User[], total: number }> {
-        if (!supabase) return { data: [], total: 0 };
+        if (!supabase) return { data: INITIAL_USERS, total: INITIAL_USERS.length };
 
         let query = supabase.from('profiles').select('*', { count: 'exact' });
         if (search) query = query.ilike('full_name', `%${search}%`);
@@ -60,7 +64,7 @@ export const dbAdapter = {
         const { data, error, count } = await query.range(from, to);
         if (error) {
             console.error('Error fetching users:', error);
-            return { data: [], total: 0 };
+            return { data: INITIAL_USERS, total: INITIAL_USERS.length }; // Fallback
         }
 
         const users = data.map(mapProfileToUser);
@@ -69,7 +73,6 @@ export const dbAdapter = {
 
     async getAllUsers(): Promise<User[]> {
         const { data } = await this.getUsers(1, 1000);
-        // Merge with dummy data if DB is empty (for demo purposes)
         if (data.length === 0) return INITIAL_USERS;
         return data;
     },
@@ -84,6 +87,7 @@ export const dbAdapter = {
     async saveUser(user: User): Promise<void> {
         if (!supabase) return;
         
+        // Separate top-level columns from JSON metadata
         const profileData = {
             id: user.id,
             email: user.email,
@@ -96,7 +100,6 @@ export const dbAdapter = {
             is_admin: user.isAdmin,
             is_guardian: user.isGuardian,
             is_grove_keeper: user.isGroveKeeper,
-            // Store complex objects in metadata JSONB column
             metadata: {
                 profileCompletion: user.profileCompletion,
                 timeline: user.timeline,
@@ -104,12 +107,14 @@ export const dbAdapter = {
                 purchasedCourseIds: user.purchasedCourseIds,
                 reflectionAnalysesRemaining: user.reflectionAnalysesRemaining,
                 ambassadorPacksRemaining: user.ambassadorPacksRemaining,
-                // Add other non-column fields here as needed
+                impactPortfolio: user.impactPortfolio,
+                referralPointsEarned: user.referralPointsEarned,
+                // Add other non-column fields here
             }
         };
 
         const { error } = await supabase.from('profiles').upsert(profileData);
-        if (error) console.error('Error saving user:', error);
+        if (error) console.error('Error saving user to DB:', error);
     },
 
     // --- ORDERS ---
@@ -119,17 +124,18 @@ export const dbAdapter = {
          let query = supabase.from('orders').select('*');
          if (userId) query = query.eq('user_id', userId);
          
-         const { data, error } = await query;
-         if (error) return [];
+         const { data, error } = await query.order('created_at', { ascending: false });
+         if (error) return INITIAL_ORDERS;
          
          return data.map((o: any) => ({
              id: o.id,
              userId: o.user_id,
              total: o.total_amount,
              status: o.status,
-             items: o.items || [],
+             items: typeof o.items === 'string' ? JSON.parse(o.items) : o.items || [],
              date: o.created_at,
-             statusHistory: [{ status: o.status, date: o.created_at }] // Simplified for MVP
+             statusHistory: [{ status: o.status, date: o.created_at }],
+             deeds: [] // We could load deeds separately if needed
          }));
     },
 
@@ -144,7 +150,7 @@ export const dbAdapter = {
             user_id: order.userId,
             total_amount: order.total,
             status: order.status,
-            items: order.items,
+            items: order.items, // Supabase handles JSON array automatically
             created_at: order.date
         };
         const { error } = await supabase.from('orders').insert(orderData);
@@ -165,11 +171,10 @@ export const dbAdapter = {
         return data.map((p: any) => ({
             id: p.id,
             authorId: p.author_id,
-            authorName: p.profiles?.full_name || 'Unknown',
+            authorName: p.profiles?.full_name || 'کاربر نخلستان',
             authorAvatar: p.profiles?.avatar_url || '',
-            content: p.content, // Note: Type definition uses 'text', adjusting below
             text: p.content,
-            likes: p.likes_count,
+            likes: p.likes_count || 0,
             timestamp: p.created_at
         }));
     },
@@ -188,8 +193,6 @@ export const dbAdapter = {
 
     // --- AGENT LOGS (Local for now, or could use a table) ---
     async getAgentLogs(): Promise<AgentActionLog[]> {
-        // Mocking logs from local storage for simplicity in MVP, 
-        // or you can create an 'agent_logs' table in SQL if needed.
         try {
             const stored = localStorage.getItem('nakhlestan_agent_logs');
             return stored ? JSON.parse(stored) : [];

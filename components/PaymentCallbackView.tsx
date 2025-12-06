@@ -2,15 +2,16 @@
 import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppState } from '../AppContext';
 import { verifyPayment } from '../services/payment';
-import { CheckCircleIcon, XMarkIcon, ArrowLeftIcon, ArrowPathIcon } from './icons'; 
+import { CheckCircleIcon, XMarkIcon, ArrowLeftIcon, ArrowPathIcon, BanknotesIcon } from './icons'; 
 import { View, Order, Deed } from '../types';
 
 const PaymentCallbackView: React.FC = () => {
     const dispatch = useAppDispatch();
     const { user } = useAppState();
     const [status, setStatus] = useState<'loading' | 'success' | 'failed'>('loading');
-    const [message, setMessage] = useState('در حال تایید تراکنش...');
+    const [message, setMessage] = useState('در حال ارتباط با بانک...');
     const [refId, setRefId] = useState('');
+    const [paidAmount, setPaidAmount] = useState(0);
 
     useEffect(() => {
         const verify = async () => {
@@ -22,11 +23,12 @@ const PaymentCallbackView: React.FC = () => {
             const pendingOrderStr = localStorage.getItem('pending_order');
             if (!pendingOrderStr) {
                 setStatus('failed');
-                setMessage('اطلاعات سفارش یافت نشد. لطفا مجددا تلاش کنید.');
+                setMessage('اطلاعات سفارش در حافظه مرورگر یافت نشد. اگر پرداخت کرده‌اید، با پشتیبانی تماس بگیرید.');
                 return;
             }
             
             const pendingOrder = JSON.parse(pendingOrderStr);
+            setPaidAmount(pendingOrder.total);
 
             if (paymentStatus !== 'OK') {
                 setStatus('failed');
@@ -76,7 +78,7 @@ const PaymentCallbackView: React.FC = () => {
 
                 } else {
                     setStatus('failed');
-                    setMessage(result.message || 'تایید تراکنش ناموفق بود.');
+                    setMessage(result.message || 'تایید تراکنش از سمت بانک ناموفق بود.');
                 }
             } catch (error) {
                 console.error(error);
@@ -85,8 +87,11 @@ const PaymentCallbackView: React.FC = () => {
             }
         };
 
-        verify();
-    }, [dispatch, user?.id]);
+        // Run verify only once
+        if(status === 'loading') {
+             verify();
+        }
+    }, [dispatch, user?.id, status]);
 
     return (
         <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
@@ -95,28 +100,35 @@ const PaymentCallbackView: React.FC = () => {
                 {status === 'loading' && (
                     <div className="py-10">
                         <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                        <p className="text-lg animate-pulse">{message}</p>
+                        <p className="text-lg animate-pulse font-bold">{message}</p>
+                        <p className="text-sm text-gray-400 mt-2">لطفاً صفحه را نبندید...</p>
                     </div>
                 )}
 
                 {status === 'success' && (
                     <div className="animate-fade-in-up">
-                        <div className="w-20 h-20 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(22,163,74,0.5)]">
-                            <CheckCircleIcon className="w-12 h-12 text-white" />
+                        <div className="w-24 h-24 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-[0_0_30px_rgba(22,163,74,0.5)] border-4 border-green-400">
+                            <CheckCircleIcon className="w-14 h-14 text-white" />
                         </div>
-                        <h2 className="text-2xl font-bold text-green-400 mb-2">پرداخت موفقیت‌آمیز بود</h2>
+                        <h2 className="text-2xl font-bold text-green-400 mb-2">پرداخت موفق!</h2>
                         <p className="text-gray-300 mb-6">{message}</p>
                         
-                        <div className="bg-gray-700/50 p-4 rounded-xl mb-6 border border-gray-600">
-                            <p className="text-sm text-gray-400 mb-1">کد پیگیری تراکنش</p>
-                            <p className="text-xl font-mono font-bold text-white tracking-wider">{refId}</p>
+                        <div className="bg-gray-700/50 p-4 rounded-xl mb-6 border border-gray-600 space-y-2">
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-400">مبلغ:</span>
+                                <span className="text-white font-bold">{paidAmount.toLocaleString('fa-IR')} تومان</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                                <span className="text-gray-400">کد پیگیری:</span>
+                                <span className="text-white font-mono">{refId}</span>
+                            </div>
                         </div>
 
                         <button 
                             onClick={() => dispatch({ type: 'SET_VIEW', payload: View.UserProfile })}
-                            className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
+                            className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg"
                         >
-                            مشاهده سفارش در پروفایل
+                            مشاهده سفارش و اسناد
                             <ArrowLeftIcon className="w-5 h-5" />
                         </button>
                     </div>
@@ -128,23 +140,20 @@ const PaymentCallbackView: React.FC = () => {
                             <XMarkIcon className="w-12 h-12 text-white" />
                         </div>
                         <h2 className="text-2xl font-bold text-red-400 mb-2">پرداخت ناموفق</h2>
-                        <p className="text-gray-300 mb-8">{message}</p>
+                        <p className="text-gray-300 mb-8 px-4">{message}</p>
                         
                         <div className="flex gap-3">
                             <button 
                                 onClick={() => dispatch({ type: 'SET_VIEW', payload: View.Shop })}
                                 className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 rounded-xl transition-colors"
                             >
-                                بازگشت به فروشگاه
+                                بازگشت
                             </button>
                             <button 
                                 onClick={() => {
-                                    // Clean URL parameters safely
                                     try {
                                         window.history.replaceState({}, document.title, "/");
-                                    } catch (e) {
-                                        console.debug('URL cleanup blocked:', e);
-                                    }
+                                    } catch (e) {}
                                     dispatch({ type: 'TOGGLE_CART', payload: true });
                                 }}
                                 className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
