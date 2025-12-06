@@ -1,5 +1,7 @@
+
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { HelmetProvider } from 'react-helmet-async';
 import App from './App';
 import { AppProvider } from './AppContext'; // Import the new provider
 
@@ -11,8 +13,10 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <AppProvider>
-      <App />
-    </AppProvider>
+    <HelmetProvider>
+      <AppProvider>
+        <App />
+      </AppProvider>
+    </HelmetProvider>
   </React.StrictMode>
 );

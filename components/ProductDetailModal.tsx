@@ -3,6 +3,7 @@ import React, { useMemo } from 'react';
 import { Product, User } from '../types';
 import { XMarkIcon, SparklesIcon, ArrowDownTrayIcon, LeafIcon, QuoteIcon, HandshakeIcon, BanknotesIcon } from './icons';
 import InstallmentInfo from './InstallmentInfo';
+import { ProductSchema } from './seo/SchemaMarkup';
 
 interface ProductDetailModalProps {
     product: Product;
@@ -34,6 +35,13 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, user, 
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm z-[60] flex items-center justify-center p-4 transition-opacity" onClick={onClose}>
+            <ProductSchema 
+                name={product.name} 
+                description={product.description} 
+                image={product.image} 
+                price={product.price}
+                availability={product.stock > 0 ? 'InStock' : 'OutOfStock'}
+            />
             <div className="bg-stone-900 text-white rounded-2xl shadow-2xl w-full max-w-4xl relative transform transition-all duration-300 scale-95 opacity-0 animate-fade-in-scale overflow-hidden flex flex-col max-h-[90vh] border border-stone-700" onClick={e => e.stopPropagation()}>
                 <button onClick={onClose} className="absolute top-4 left-4 text-gray-400 hover:text-white z-20" aria-label="Close modal">
                     <XMarkIcon />

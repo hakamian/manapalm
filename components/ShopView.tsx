@@ -1,8 +1,4 @@
 
-
-
-
-
 import React, { useState, useEffect, useMemo } from 'react';
 import { HeartIcon, ShareIcon, EyeIcon, XMarkIcon, SparklesIcon, FireIcon, Squares2x2Icon, Bars3Icon, CloudIcon, LockClosedIcon, CheckCircleIcon, MagnifyingGlassIcon, GiftIcon, ArrowLeftIcon } from './icons';
 import { Product, User, View } from '../types';
@@ -13,6 +9,7 @@ import InstallmentInfo from './InstallmentInfo';
 import ProductDetailModal from './ProductDetailModal';
 import ProductCard from './shop/ProductCard';
 import CountdownTimer from './CountdownTimer';
+import SEOHead from './seo/SEOHead';
 
 const categories = ['همه', 'نخل میراث', 'محصولات دیجیتال', 'محصولات خرما', 'صنایع دستی', 'ارتقا'];
 const MAX_PRICE = 40000000;
@@ -131,6 +128,11 @@ const ShopView: React.FC = () => {
 
   return (
     <div className="pt-22 pb-24 min-h-screen bg-gray-900 text-white">
+      <SEOHead 
+        title="فروشگاه" 
+        description="خرید نخل، محصولات ارگانیک خرما، صنایع دستی و محصولات دیجیتال با تاثیر اجتماعی." 
+        keywords={['فروشگاه آنلاین', 'خرید نخل', 'صنایع دستی', 'محصولات خرما']}
+      />
       <div className="container mx-auto px-6 py-12">
         
         {/* Special Offer Banner with Timer */}

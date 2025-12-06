@@ -12,6 +12,8 @@ import NextStepCard from './home/NextStepCard';
 import LastHeritageCard from './home/LastHeritageCard';
 import ManaGuideCard from './ManaGuideCard';
 import WelcomeMat from './WelcomeMat';
+import SEOHead from './seo/SEOHead';
+import { OrganizationSchema } from './seo/SchemaMarkup';
 
 // --- Helper Hooks ---
 const useScrollAnimate = (threshold = 0.2) => {
@@ -172,7 +174,7 @@ const TestimonialsSection: React.FC = () => (
             <h2 className="text-4xl font-bold text-white mb-8">صدای خانواده نخلستان</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                 <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 hover:border-green-500 transition-colors">
-                    <p className="text-gray-300 italic mb-4">"کاشت نخل به یاد مادرم، بهترین تصمیمی بود که گرفتم. حالا هر بار که به آن فکر می‌کنم، حس می‌کنم عشق او هنوز زنده است و رشد می‌کند."</p>
+                    <p className="text-gray-300 italic mb-4">"کاشت نخل به یاد مادرم، بهترین تصمیمی بود که گرفتم. حالا هر بار که به آن فکر می‌کنم، حس می‌کنم ریشه‌هایش در قلب من هم رشد می‌کنند."</p>
                     <div className="flex items-center justify-center gap-3">
                          <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">م</div>
                          <div className="text-right">
@@ -424,6 +426,8 @@ const HomeView: React.FC = () => {
 
     return (
         <main>
+            <SEOHead title="خانه" description="نخلستان معنا: کاشت نخل، ایجاد معنا، و اشتغال‌زایی اجتماعی." />
+            <OrganizationSchema />
             {showWelcomeMat && (
                 <WelcomeMat onEnter={handleCloseWelcome} onSelectIntent={handleWelcomeIntent} />
             )}
