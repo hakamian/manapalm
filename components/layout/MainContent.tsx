@@ -32,7 +32,7 @@ const EnglishPlacementTestView = React.lazy(() => import('../EnglishPlacementTes
 const AIConversationPartnerView = React.lazy(() => import('../AIConversationPartnerView'));
 const VocabularyBuilderView = React.lazy(() => import('../VocabularyBuilderView'));
 const BusinessAcademyView = React.lazy(() => import('../BusinessAcademyView'));
-const LifeMasteryAcademyView = React.lazy(() => import('../LifeMasteryAcademyView')); // New Import
+const LifeMasteryAcademyView = React.lazy(() => import('../LifeMasteryAcademyView')); 
 const BusinessProcessModelerView = React.lazy(() => import('../BusinessProcessModelerView'));
 const DISCTestView = React.lazy(() => import('../DISCTestView'));
 const EnneagramTestView = React.lazy(() => import('../EnneagramTestView'));
@@ -51,6 +51,7 @@ const MicrofinanceView = React.lazy(() => import('../MicrofinanceView'));
 const SmartConsultantView = React.lazy(() => import('../SmartConsultantView'));
 const BusinessMentorView = React.lazy(() => import('../BusinessMentorView'));
 const PaymentCallbackView = React.lazy(() => import('../PaymentCallbackView'));
+const PublicStoryView = React.lazy(() => import('../seo/PublicStoryView')); // New Import
 
 const MainContent: React.FC = () => {
     const { 
@@ -73,11 +74,14 @@ const MainContent: React.FC = () => {
         if (viewParam === 'PAYMENT_CALLBACK') {
             dispatch({ type: 'SET_VIEW', payload: View.PAYMENT_CALLBACK });
         }
+        // Handle direct link to story (Programmatic SEO)
+        if (viewParam === 'STORY') {
+             dispatch({ type: 'SET_VIEW', payload: View.PublicStory });
+        }
     }, [dispatch]);
 
     const onAddProjectUpdate = (projectId: string, update: { title: string, description: string }) => {
          console.log('Project Update:', projectId, update);
-         // In a real app, dispatch an action here
     };
 
     // Render logic based on view
@@ -120,7 +124,7 @@ const MainContent: React.FC = () => {
             case View.AI_CONVERSATION_PARTNER: return <AIConversationPartnerView />;
             case View.VOCABULARY_BUILDER: return <VocabularyBuilderView />;
             case View.BUSINESS_ACADEMY: return <BusinessAcademyView />;
-            case View.LIFE_MASTERY_ACADEMY: return <LifeMasteryAcademyView user={user} />; // New Route
+            case View.LIFE_MASTERY_ACADEMY: return <LifeMasteryAcademyView user={user} />; 
             case View.BUSINESS_PROCESS_MODELER: return <BusinessProcessModelerView />;
             case View.DISC_TEST: return <DISCTestView />;
             case View.ENNEAGRAM_TEST: return <EnneagramTestView />;
@@ -134,6 +138,7 @@ const MainContent: React.FC = () => {
             case View.SMART_CONSULTANT: return <SmartConsultantView />;
             case View.BUSINESS_MENTOR: return <BusinessMentorView />;
             case View.PAYMENT_CALLBACK: return <PaymentCallbackView />;
+            case View.PublicStory: return <PublicStoryView />; // New route
             case View['living-heritage']: return <div>Living Heritage View (Data Needed)</div>; 
             case View['digital-heritage-architect']: return <DigitalHeritageArchitectPage />;
             case View['garden-of-heroes']: 

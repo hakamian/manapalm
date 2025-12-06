@@ -10,6 +10,7 @@ import ProductDetailModal from './ProductDetailModal';
 import ProductCard from './shop/ProductCard';
 import CountdownTimer from './CountdownTimer';
 import SEOHead from './seo/SEOHead';
+import { BreadcrumbSchema } from './seo/RichSnippets';
 
 const categories = ['همه', 'نخل میراث', 'محصولات دیجیتال', 'محصولات خرما', 'صنایع دستی', 'ارتقا'];
 const MAX_PRICE = 40000000;
@@ -48,6 +49,34 @@ const ShopView: React.FC = () => {
   tomorrow.setDate(tomorrow.getDate() + 1);
   tomorrow.setHours(23, 59, 59, 0);
   const specialOfferDate = tomorrow.toISOString();
+
+  // --- Deep Linking Logic ---
+  useEffect(() => {
+      // Check if protocol is blob to avoid security error on URLSearchParams if needed
+      // Though URLSearchParams usually works fine, history access is the issue.
+      const params = new URLSearchParams(window.location.search);
+      const productId = params.get('product_id');
+      if (productId && products.length > 0) {
+          const product = products.find(p => p.id === productId);
+          if (product) {
+              setSelectedProduct(product);
+          }
+      }
+  }, [products]);
+
+  const handleCloseModal = () => {
+      setSelectedProduct(null);
+      // Clean URL without refresh
+      try {
+          const params = new URLSearchParams(window.location.search);
+          params.delete('product_id');
+          const newUrl = `${window.location.pathname}?${params.toString()}`;
+          window.history.replaceState({ path: newUrl }, '', newUrl);
+      } catch (e) {
+          console.debug('History replaceState blocked:', e);
+      }
+  };
+  // --------------------------
 
   useEffect(() => {
     const fetchRecommendations = async () => {
@@ -133,6 +162,11 @@ const ShopView: React.FC = () => {
         description="خرید نخل، محصولات ارگانیک خرما، صنایع دستی و محصولات دیجیتال با تاثیر اجتماعی." 
         keywords={['فروشگاه آنلاین', 'خرید نخل', 'صنایع دستی', 'محصولات خرما']}
       />
+      <BreadcrumbSchema items={[
+          { name: 'خانه', item: '' },
+          { name: 'فروشگاه', item: 'shop' }
+      ]} />
+      
       <div className="container mx-auto px-6 py-12">
         
         {/* Special Offer Banner with Timer */}
@@ -315,7 +349,7 @@ const ShopView: React.FC = () => {
                 product={selectedProduct} 
                 user={user}
                 allProducts={products}
-                onClose={() => setSelectedProduct(null)} 
+                onClose={handleCloseModal} 
                 onAddToCart={handleAddToCart}
                 onGenerateDescription={handleGenerateDescription}
                 isGenerating={generatingDescriptionId === selectedProduct.id}

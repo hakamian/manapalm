@@ -1,8 +1,10 @@
+
 import React, { useMemo } from 'react';
 import { CommunityProject, User, ProvinceData } from '../types.ts';
 import { PROVINCE_DATA as provinceNames } from '../utils/dummyData.ts';
 import IranMap from './IranMap.tsx';
 import { MapIcon, LeafIcon, BuildingOfficeIcon } from './icons.tsx';
+import LazyLoadWrapper from './ui/LazyLoadWrapper';
 
 interface ImpactMapPageProps {
     allProjects: CommunityProject[];
@@ -77,7 +79,9 @@ const ImpactMapPage: React.FC<ImpactMapPageProps> = ({ allProjects, currentUser 
 
             <section className="container mx-auto px-4 max-w-5xl">
                 <div className="bg-white dark:bg-stone-800/50 p-4 sm:p-6 rounded-2xl shadow-xl border border-stone-200/50 dark:border-stone-700">
-                    <IranMap provinceData={provinceData} />
+                    <LazyLoadWrapper height="600px">
+                        <IranMap provinceData={provinceData} />
+                    </LazyLoadWrapper>
                 </div>
                  <p className="text-center text-xs text-stone-500 dark:text-stone-400 mt-4">
                     ماوس را روی استان‌های هایلایت شده نگه دارید تا آمار را ببینید.

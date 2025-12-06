@@ -2,6 +2,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { View, NavCategory } from '../types';
 import { useAppState, useAppDispatch } from '../AppContext';
+import SmartLink from './ui/SmartLink';
 import { 
     ChevronDownIcon, ShoppingCartIcon, UserCircleIcon, HeartIcon, BellIcon, XMarkIcon, EnvelopeIcon,
     SproutIcon, TreeIcon, UsersIcon, CompassIcon, FlagIcon, BookOpenIcon, UserGroupIcon, PencilSquareIcon, SparklesIcon,
@@ -12,7 +13,7 @@ import {
     MagnifyingGlassIcon,
     SitemapIcon,
     HandCoinIcon,
-    LightBulbIcon // Imported LightBulbIcon
+    LightBulbIcon 
 } from './icons';
 import { timeAgo } from '../utils/time';
 
@@ -36,7 +37,7 @@ const ICON_MAP: { [key: string]: React.FC<any> } = {
     'UserGroupIcon': UserGroupIcon,
     'PencilSquareIcon': PencilSquareIcon,
     'HandCoinIcon': HandCoinIcon,
-    'LightBulbIcon': LightBulbIcon // Added to map
+    'LightBulbIcon': LightBulbIcon
 };
 
 const UserMenu: React.FC = () => {
@@ -75,15 +76,15 @@ const UserMenu: React.FC = () => {
             {isOpen && (
                  <ul id="user-menu-dropdown" onMouseEnter={handleEnter} className="absolute top-full left-0 mt-2 w-48 bg-black bg-opacity-80 backdrop-blur-sm text-white rounded-md shadow-lg py-2 transition-all duration-300 ease-in-out z-50">
                     <li>
-                        <a href="#" onClick={(e) => { e.preventDefault(); dispatch({ type: 'SET_VIEW', payload: View.UserProfile }); setIsOpen(false); }} className="block px-4 py-2 hover:bg-green-800 transition-colors duration-200">
+                        <SmartLink view={View.UserProfile} className="block px-4 py-2 hover:bg-green-800 transition-colors duration-200" onClick={() => setIsOpen(false)}>
                             پروفایل کاربری
-                        </a>
+                        </SmartLink>
                     </li>
                     {user?.isAdmin && (
                         <li>
-                            <a href="#" onClick={(e) => { e.preventDefault(); dispatch({ type: 'SET_VIEW', payload: View.AdminDashboard }); setIsOpen(false); }} className="block px-4 py-2 hover:bg-green-800 transition-colors duration-200">
+                            <SmartLink view={View.AdminDashboard} className="block px-4 py-2 hover:bg-green-800 transition-colors duration-200" onClick={() => setIsOpen(false)}>
                                 داشبورد ادمین
-                            </a>
+                            </SmartLink>
                         </li>
                     )}
                     <li>
@@ -158,7 +159,6 @@ const Header: React.FC = () => {
 
   // Use dynamic navigation from siteConfig
   const megaNavItems: NavCategory[] = useMemo(() => {
-      // Inject user name into titles if needed (dynamic resolution)
       return siteConfig.navigation.map(cat => ({
           ...cat,
           children: cat.children.map(item => ({
@@ -205,8 +205,6 @@ const Header: React.FC = () => {
   const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && searchQuery.trim()) {
         console.log(`Performing search for: "${searchQuery.trim()}"`);
-        // In a real app, you would navigate to a search results page
-        // dispatch({ type: 'SET_VIEW', payload: View.Search, data: { query: searchQuery } });
         if (isMobileSearchOpen) {
             setIsMobileSearchOpen(false);
         }
@@ -224,7 +222,7 @@ const Header: React.FC = () => {
           <div className="flex items-center justify-between w-full">
             <div className="flex items-center">
               <img src="https://picsum.photos/seed/nakhlestan-logo/40/40" alt="Logo" className="rounded-full" />
-              <h1 className="text-xl font-bold text-white mr-4 cursor-pointer" onClick={() => dispatch({ type: 'SET_VIEW', payload: View.Home })}>نخلستان معنا</h1>
+              <SmartLink view={View.Home} className="text-xl font-bold text-white mr-4 cursor-pointer">نخلستان معنا</SmartLink>
             </div>
 
             {/* Desktop Mega Menu */}
@@ -240,25 +238,21 @@ const Header: React.FC = () => {
                       {categoryItem.children.map(child => {
                         const IconComponent = ICON_MAP[child.icon] || SparklesIcon;
                         return (
-                            <a
-                            key={child.title}
-                            href="#"
-                            onClick={(e) => { 
-                                e.preventDefault(); 
-                                if (child.view) {
-                                    dispatch({ type: 'SET_VIEW', payload: child.view }); 
-                                }
-                            }}
-                            className="flex items-start p-3 rounded-lg hover:bg-green-800/50 transition-colors duration-200 w-72"
-                            >
-                            <div className="flex-shrink-0 text-green-400 mt-1">
-                                <IconComponent className="w-6 h-6" />
-                            </div>
-                            <div className="mr-4">
-                                <p className="font-semibold text-white">{child.title}</p>
-                                <p className="text-sm text-gray-400">{child.description}</p>
-                            </div>
-                            </a>
+                            child.view ? (
+                                <SmartLink
+                                    key={child.title}
+                                    view={child.view}
+                                    className="flex items-start p-3 rounded-lg hover:bg-green-800/50 transition-colors duration-200 w-72"
+                                >
+                                    <div className="flex-shrink-0 text-green-400 mt-1">
+                                        <IconComponent className="w-6 h-6" />
+                                    </div>
+                                    <div className="mr-4">
+                                        <p className="font-semibold text-white">{child.title}</p>
+                                        <p className="text-sm text-gray-400">{child.description}</p>
+                                    </div>
+                                </SmartLink>
+                            ) : null
                         )
                       })}
                     </div>
@@ -292,14 +286,14 @@ const Header: React.FC = () => {
               </button>
 
               {user && (
-                 <button onClick={() => dispatch({ type: 'SET_VIEW', payload: View.DIRECT_MESSAGES })} className="relative text-white hover:text-green-300 transition-colors duration-200" aria-label={`Direct messages with ${unreadMessagesCount} unread items`}>
+                 <SmartLink view={View.DIRECT_MESSAGES} className="relative text-white hover:text-green-300 transition-colors duration-200" ariaLabel={`Direct messages with ${unreadMessagesCount} unread items`}>
                       <EnvelopeIcon className="h-6 w-6" />
                       {unreadMessagesCount > 0 && (
                           <span className="absolute -top-2 -right-2 flex items-center justify-center h-5 w-5 rounded-full bg-red-600 text-xs font-bold text-white">
                               {unreadMessagesCount}
                           </span>
                       )}
-                  </button>
+                  </SmartLink>
               )}
               <div ref={notificationsContainerRef} className="relative hidden md:block">
                   <button onClick={() => setIsNotificationsOpen(prev => !prev)} className="relative text-white hover:text-green-300 transition-colors duration-200" aria-label={`Notifications with ${unreadNotificationsCount} unread items`}>
@@ -384,14 +378,14 @@ const Header: React.FC = () => {
                     <ul className="space-y-2">
                         {categoryItem.children.map(child => {
                              const IconComponent = ICON_MAP[child.icon] || SparklesIcon;
-                             return (
+                             return child.view ? (
                                 <li key={child.title}>
-                                    <a href="#" onClick={(e) => { e.preventDefault(); if (child.view) { dispatch({ type: 'SET_VIEW', payload: child.view }); setIsMenuOpen(false); } }} className="flex items-center p-2 rounded-md hover:bg-gray-800 transition-colors">
+                                    <SmartLink view={child.view} className="flex items-center p-2 rounded-md hover:bg-gray-800 transition-colors" onClick={() => setIsMenuOpen(false)}>
                                         <IconComponent className="w-6 h-6 text-gray-400" />
                                         <span className="mr-3 text-white">{child.title}</span>
-                                    </a>
+                                    </SmartLink>
                                 </li>
-                            )
+                            ) : null
                         })}
                     </ul>
                 </div>

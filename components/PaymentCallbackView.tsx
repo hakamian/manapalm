@@ -139,8 +139,12 @@ const PaymentCallbackView: React.FC = () => {
                             </button>
                             <button 
                                 onClick={() => {
-                                    // Clean URL parameters
-                                    window.history.replaceState({}, document.title, "/");
+                                    // Clean URL parameters safely
+                                    try {
+                                        window.history.replaceState({}, document.title, "/");
+                                    } catch (e) {
+                                        console.debug('URL cleanup blocked:', e);
+                                    }
                                     dispatch({ type: 'TOGGLE_CART', payload: true });
                                 }}
                                 className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"

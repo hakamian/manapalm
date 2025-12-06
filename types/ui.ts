@@ -51,7 +51,8 @@ export enum View {
   SMART_CONSULTANT = 'SMART_CONSULTANT',
   BUSINESS_MENTOR = 'BUSINESS_MENTOR',
   'ai-tools' = 'AI_TOOLS',
-  PAYMENT_CALLBACK = 'PAYMENT_CALLBACK' // NEW
+  PAYMENT_CALLBACK = 'PAYMENT_CALLBACK',
+  PublicStory = 'PUBLIC_STORY' // New View
 }
 
 export type Page = View;

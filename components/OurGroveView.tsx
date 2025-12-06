@@ -6,6 +6,7 @@ import { askTheGrove } from '../services/geminiService';
 import { SproutIcon, BriefcaseIcon, CloudIcon, UserGroupIcon, SparklesIcon, PaperAirplaneIcon, XMarkIcon, UserCircleIcon, TrophyIcon, MapIcon, GlobeIcon } from './icons';
 import DeedDisplay from './DeedDisplay';
 import ThreeDGarden from './ThreeDGarden';
+import LazyLoadWrapper from './ui/LazyLoadWrapper'; // Imported Lazy Wrapper
 
 const useAnimatedCounter = (endValue: number, duration = 2000) => {
     const [count, setCount] = useState(0);
@@ -132,11 +133,15 @@ const OurGroveView: React.FC = () => {
                     </button>
                 </div>
 
-                {viewMode === 'map' ? (
-                    <GroveMap allDeeds={allDeeds} userDeedIds={userDeedIds} onDeedClick={setSelectedDeed} />
-                ) : (
-                    <ThreeDGarden />
-                )}
+                <div className="min-h-[400px]">
+                    <LazyLoadWrapper height="400px">
+                        {viewMode === 'map' ? (
+                            <GroveMap allDeeds={allDeeds} userDeedIds={userDeedIds} onDeedClick={setSelectedDeed} />
+                        ) : (
+                            <ThreeDGarden />
+                        )}
+                    </LazyLoadWrapper>
+                </div>
 
                 <p className="text-center text-yellow-400 text-sm mt-4">{userPlantedDeeds.length > 0 ? `نخل‌های شما با درخشش زرد مشخص شده‌اند.` : 'با کاشت اولین نخل، تاثیر خود را روی نقشه ببینید.'}</p>
                 

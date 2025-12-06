@@ -14,12 +14,18 @@ import AIChatWidget from './components/AIChatWidget';
 import MeaningCompanionWidget from './components/MeaningCompanionWidget';
 import BottomNavBar from './components/BottomNavBar';
 import { supabase } from './services/supabaseClient';
+import { useRouteSync } from './hooks/useRouteSync'; // Virtual Router
+import SmartLanding from './components/SmartLanding'; // Smart Landing
+import SEOIndex from './components/seo/SEOIndex'; // Live Sitemap
 
 const App: React.FC = () => {
     const state = useAppState();
     const dispatch = useAppDispatch();
+    
+    // Activate Virtual Router
+    useRouteSync();
 
-    const { user, allUsers } = state;
+    const { user, allUsers, products } = state; // products needed for Sitemap
 
     // --- Daily Chest Logic ---
     const canClaimChest = useMemo(() => {
@@ -35,7 +41,6 @@ const App: React.FC = () => {
         const newPoints = user.points + (reward.type === 'barkat' || reward.type === 'epic' ? reward.amount : 0);
         const newMana = user.manaPoints + (reward.type === 'mana' ? reward.amount : 0);
         
-        // Update streak
         let newStreak = user.dailyStreak || 0;
         const lastClaimDate = user.lastDailyChestClaimed ? new Date(user.lastDailyChestClaimed) : null;
         const yesterday = new Date();
@@ -44,7 +49,7 @@ const App: React.FC = () => {
         if (lastClaimDate && lastClaimDate.toISOString().split('T')[0] === yesterday.toISOString().split('T')[0]) {
             newStreak += 1;
         } else {
-            newStreak = 1; // Reset or start new
+            newStreak = 1; 
         }
 
         const newPointLog: PointLog = {
@@ -71,30 +76,26 @@ const App: React.FC = () => {
         });
     };
 
-    // Helper to convert Google user to App User
     const mapSupabaseUserToAppUser = (supabaseUser: any, existingAppUser?: User): User => {
         const isAdmin = supabaseUser.email === 'hhakamian@gmail.com' || 
                         supabaseUser.email === 'admin@nakhlestanmana.com' ||
-                        (supabaseUser.phone && supabaseUser.phone === '09222453571'); // Added phone check for admin
+                        (supabaseUser.phone && supabaseUser.phone === '09222453571');
         
-        // If user already exists in our local "DB" (mock or real), preserve their data
         if (existingAppUser) {
              return {
                  ...existingAppUser,
-                 // Update fields that might have changed from Google
                  email: supabaseUser.email,
                  profileImageUrl: supabaseUser.user_metadata?.avatar_url || existingAppUser.profileImageUrl,
-                 isAdmin: isAdmin, // Force admin check based on email/phone
-                 id: supabaseUser.id // Use Supabase ID as authentic ID
+                 isAdmin: isAdmin,
+                 id: supabaseUser.id
              };
         }
 
-        // Create new user
         return {
             id: supabaseUser.id,
             name: supabaseUser.user_metadata?.full_name || 'کاربر جدید',
             fullName: supabaseUser.user_metadata?.full_name,
-            phone: '', // Google doesn't always provide phone
+            phone: '',
             email: supabaseUser.email,
             points: 100,
             manaPoints: 50, 
@@ -111,16 +112,14 @@ const App: React.FC = () => {
     };
 
     const handleLoginSuccess = useCallback((loginData: { phone?: string; email?: string; fullName?: string }) => {
-        // This handles phone login manual triggers from AuthModal (mock)
         const existingUser = allUsers.find(u => 
             (loginData.phone && u.phone === loginData.phone) || 
             (loginData.email && u.email === loginData.email)
         );
         
-        // Admin check logic for manual login (dev fallback)
         const isAdminLogin = loginData.email === 'hhakamian@gmail.com' || 
                              loginData.email === 'admin@nakhlestanmana.com' ||
-                             loginData.phone === '09222453571'; // Specific admin phone
+                             loginData.phone === '09222453571';
 
         if (existingUser) {
             const updatedUser = isAdminLogin ? { ...existingUser, isAdmin: true } : existingUser;
@@ -147,11 +146,8 @@ const App: React.FC = () => {
         }
     }, [allUsers, dispatch]);
 
-    // --- SUPABASE SESSION LISTENER ---
     useEffect(() => {
         if (!supabase) return;
-
-        // Check initial session
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) {
                 const existingUser = allUsers.find(u => u.email === session.user.email);
@@ -160,20 +156,15 @@ const App: React.FC = () => {
             }
         });
 
-        // Listen for auth changes (e.g., redirect back from Google)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             if (session?.user) {
-                 // User just logged in or session refreshed
                  const existingUser = allUsers.find(u => u.email === session.user.email);
                  const appUser = mapSupabaseUserToAppUser(session.user, existingUser);
-                 
-                 // Only dispatch if user is different to avoid loops
                  if (!user || user.id !== appUser.id) {
                      dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
                      dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: false });
                  }
             } else {
-                // User logged out
                 if (user) {
                     dispatch({ type: 'LOGOUT' });
                 }
@@ -181,18 +172,26 @@ const App: React.FC = () => {
         });
 
         return () => subscription.unsubscribe();
-    }, [dispatch, allUsers]); // Dependency on allUsers to find existing data
+    }, [dispatch, allUsers]);
 
     return (
         <div className="bg-gray-900 text-white min-h-screen overflow-x-hidden">
+            <SEOIndex products={products} />
             <WelcomeTour />
             <LiveActivityBanner />
             <Header />
             
+            {/* Conditional Rendering for Smart Landing */}
+            {state.currentView === 'HOME' && (
+                <SmartLanding 
+                    user={user} 
+                    onStartJourneyClick={() => dispatch({ type: 'START_PLANTING_FLOW' })} 
+                />
+            )}
+            
             {/* Main Content Router */}
             <MainContent />
 
-            {/* Floating Elements */}
             {user && canClaimChest && (
                 <DailyMysteryChest 
                     streak={user.dailyStreak || 0} 
@@ -205,7 +204,6 @@ const App: React.FC = () => {
             {user && <MeaningCompanionWidget />}
             <BottomNavBar />
             
-            {/* All Modals */}
             <GlobalModals onLoginSuccess={handleLoginSuccess} />
             
         </div>

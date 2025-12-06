@@ -1,17 +1,14 @@
+
 import React, { useState } from 'react';
 import { View } from '../types';
 import { useAppDispatch } from '../AppContext';
 import { XIcon, InstagramIcon, LinkedInIcon, TelegramIcon, YouTubeIcon, WhatsAppIcon, BaleIcon, EitaaIcon } from './icons';
+import SmartLink from './ui/SmartLink';
 
 const Footer: React.FC = () => {
     const dispatch = useAppDispatch();
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
-
-    const handleNav = (e: React.MouseEvent<HTMLAnchorElement>, view: View) => {
-        e.preventDefault();
-        dispatch({ type: 'SET_VIEW', payload: view });
-    }
 
     const handleSubscribe = (e: React.FormEvent) => {
         e.preventDefault();
@@ -72,10 +69,10 @@ const Footer: React.FC = () => {
                     <div>
                         <h3 className="text-lg font-semibold text-white mb-4">دسترسی سریع</h3>
                         <ul className="space-y-2">
-                            <li><a href="#" onClick={(e) => handleNav(e, View.About)} className="hover:text-green-400 transition-colors">درباره ما</a></li>
-                            <li><a href="#" onClick={(e) => handleNav(e, View.HallOfHeritage)} className="hover:text-green-400 transition-colors">میراث نخل</a></li>
-                            <li><a href="#" onClick={(e) => handleNav(e, View.Shop)} className="hover:text-green-400 transition-colors">فروشگاه</a></li>
-                            <li><a href="#" onClick={(e) => handleNav(e, View.Articles)} className="hover:text-green-400 transition-colors">مقالات</a></li>
+                            <li><SmartLink view={View.About} className="hover:text-green-400 transition-colors">درباره ما</SmartLink></li>
+                            <li><SmartLink view={View.HallOfHeritage} className="hover:text-green-400 transition-colors">میراث نخل</SmartLink></li>
+                            <li><SmartLink view={View.Shop} className="hover:text-green-400 transition-colors">فروشگاه</SmartLink></li>
+                            <li><SmartLink view={View.Articles} className="hover:text-green-400 transition-colors">مقالات</SmartLink></li>
                         </ul>
                     </div>
 

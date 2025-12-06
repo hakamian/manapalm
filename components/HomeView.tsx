@@ -14,6 +14,7 @@ import ManaGuideCard from './ManaGuideCard';
 import WelcomeMat from './WelcomeMat';
 import SEOHead from './seo/SEOHead';
 import { OrganizationSchema } from './seo/SchemaMarkup';
+import { LocalBusinessSchema, FAQSchema } from './seo/RichSnippets';
 
 // --- Helper Hooks ---
 const useScrollAnimate = (threshold = 0.2) => {
@@ -424,10 +425,20 @@ const HomeView: React.FC = () => {
         { icon: UsersIcon, title: 'به باغ عمومی بپیوندید', description: 'با آخرین فعالیت‌های اعضای خانواده نخلستان معنا همراه شوید و در گفتگوها مشارکت نمایید.', cta: { text: 'ورود به باغ عمومی', page: View.OurGrove }, color: 'teal' }
     ];
 
+    // --- Dynamic FAQ injection ---
+    const FAQ_DATA = [
+        { question: 'نخلستان معنا چیست؟', answer: 'یک کسب و کار اجتماعی که با کاشت نخل، ایجاد معنا و اشتغال‌زایی می‌کند.' },
+        { question: 'چگونه می‌توانم مشارکت کنم؟', answer: 'با خرید نخل، شرکت در دوره‌ها یا انتشار محتوا در کانون.' },
+        { question: 'پول من کجا می‌رود؟', answer: '۹۰٪ برای کاشت و نگهداری نخل‌ها و ۱۰٪ برای توسعه پلتفرم.' }
+    ];
+
     return (
         <main>
             <SEOHead title="خانه" description="نخلستان معنا: کاشت نخل، ایجاد معنا، و اشتغال‌زایی اجتماعی." />
             <OrganizationSchema />
+            <LocalBusinessSchema />
+            <FAQSchema items={FAQ_DATA} />
+            
             {showWelcomeMat && (
                 <WelcomeMat onEnter={handleCloseWelcome} onSelectIntent={handleWelcomeIntent} />
             )}
