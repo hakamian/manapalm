@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppState, useAppDispatch } from '../AppContext';
 import { User, ChatMessage, View, COMPASS_TRIAL_SECONDS } from '../types';
 import { GoogleGenAI, LiveServerMessage, Modality, Blob as GenAIBlob, Session, Chat } from "@google/genai";
 import { PaperAirplaneIcon, ArrowLeftIcon, BrainCircuitIcon, ClockIcon, MicrophoneIcon, ChatBubbleOvalLeftEllipsisIcon, XMarkIcon, StopIcon, SparklesIcon, DoubleCheckIcon, KeyboardIcon } from './icons';
-import { getFallbackMessage } from '../services/geminiService';
+import { getFallbackMessage, getGeminiApiKey } from '../services/ai/core'; // Updated import
 import LiveSessionAccessModal from './LiveSessionAccessModal';
 import AIContentRenderer from './AIContentRenderer';
 
@@ -224,6 +225,12 @@ const CompassUnlockChatView: React.FC = () => {
     `;
 
     const startVoiceSession = async () => {
+        const apiKey = getGeminiApiKey();
+        if (!apiKey) {
+            setError('خطا: کلید API یافت نشد.');
+            return;
+        }
+
         if (!user || isLoading) return;
         if (timeLeft <= 0) { setIsAccessModalOpen(true); return; }
         setChatMode('voice'); setIsLoading(true); setConnectionStatus('connecting'); setError(''); setLoadingMessage("در حال راه‌اندازی..."); setTranscriptHistory([]); setIsTimeUp(false); isUserScrolledUp.current = false;
@@ -239,7 +246,7 @@ const CompassUnlockChatView: React.FC = () => {
             await inputAudioContextRef.current.resume(); await outputAudioContextRef.current.resume();
             analyserRef.current = inputAudioContextRef.current.createAnalyser(); analyserRef.current.fftSize = 128; 
             
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const ai = new GoogleGenAI({ apiKey });
             const newSessionPromise = ai.live.connect({
                 model: 'gemini-2.5-flash-native-audio-preview-09-2025',
                 config: { responseModalities: [Modality.AUDIO], systemInstruction, inputAudioTranscription: {}, outputAudioTranscription: {} },
@@ -294,12 +301,18 @@ const CompassUnlockChatView: React.FC = () => {
     };
     
     const startTextSession = async () => {
+        const apiKey = getGeminiApiKey();
+        if (!apiKey) {
+            setError('خطا: کلید API یافت نشد.');
+            return;
+        }
+
         if (!user || isLoading) return;
         if (timeLeft <= 0) { setIsAccessModalOpen(true); return; }
         setChatMode('text'); setIsLoading(true); setError(''); setIsTimeUp(false);
         if (!user.hasUnlockedCompass) { dispatch({ type: 'UPDATE_USER', payload: { ...user, hasUnlockedCompass: true } }); }
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const ai = new GoogleGenAI({ apiKey });
             textChatRef.current = ai.chats.create({ model: 'gemini-3-pro-preview', config: { systemInstruction }, history: history });
             if (history.length === 0) {
                  const response = await textChatRef.current.sendMessage({ message: "شروع کن" });
@@ -401,7 +414,9 @@ const CompassUnlockChatView: React.FC = () => {
                         <h2 className="text-2xl font-bold mb-8 text-white">چطور می‌خواهید شروع کنید؟</h2>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-md">
                             <button onClick={startVoiceSession} className="p-8 bg-[#242F3D] hover:bg-[#2b5278] rounded-2xl transition-all flex flex-col items-center gap-4 group border border-gray-700 hover:border-green-500">
-                                <div className="bg-[#2b5278] p-4 rounded-full group-hover:scale-110 transition-transform"><MicrophoneIcon className="w-8 h-8 text-white" /></div>
+                                <div className="bg-[#2b5278] p-4 rounded-full group-hover:scale-110 transition-transform shadow-lg">
+                                    <MicrophoneIcon className="w-8 h-8 text-white" />
+                                </div>
                                 <span className="text-lg font-semibold text-white">گفتگو با صدا</span>
                             </button>
                             <button onClick={startTextSession} className="p-8 bg-[#242F3D] hover:bg-[#2b5278] rounded-2xl transition-all flex flex-col items-center gap-4 group border border-gray-700 hover:border-blue-500">

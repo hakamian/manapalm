@@ -1,6 +1,32 @@
 
 import { GoogleGenAI } from "@google/genai";
 
+export const getGeminiApiKey = (): string => {
+    let key = '';
+    
+    // 1. Try import.meta.env (Vite Standard)
+    try {
+        // @ts-ignore
+        if (import.meta && import.meta.env && import.meta.env.VITE_GEMINI_API_KEY) {
+            // @ts-ignore
+            key = import.meta.env.VITE_GEMINI_API_KEY;
+        }
+    } catch(e) {}
+
+    // 2. Try process.env (Node/Webpack/Vercel)
+    if (!key) {
+        try {
+            // @ts-ignore
+            if (typeof process !== 'undefined' && process.env) {
+                // @ts-ignore
+                key = process.env.GEMINI_API_KEY || process.env.API_KEY;
+            }
+        } catch(e) {}
+    }
+    
+    return key || '';
+};
+
 export const getFallbackMessage = (type: string): string => {
     switch (type) {
         case 'chat': return "متاسفانه در حال حاضر قادر به پاسخگویی نیستم. لطفاً بعداً تلاش کنید.";
@@ -37,24 +63,11 @@ export async function callProxy(action: 'generateContent' | 'generateImages' | '
         console.warn("Backend Proxy failed/unavailable, switching to Client-Side Fallback (Dev Only).", proxyError.name === 'AbortError' ? 'Request Timed Out' : proxyError.message);
 
         // 2. Fallback to Direct Client-Side Call (Only for Local Development / Demo)
-        let apiKey = '';
-        try {
-             // @ts-ignore
-             if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
-                 // @ts-ignore
-                 apiKey = process.env.API_KEY;
-             }
-        } catch(e) { /* ignore */ }
-
-        if (!apiKey) {
-            try {
-                apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY;
-            } catch(e) { /* ignore */ }
-        }
+        const apiKey = getGeminiApiKey();
         
         if (!apiKey) {
-            console.error("API Key missing. Ensure process.env.API_KEY or VITE_GEMINI_API_KEY is set.");
-            throw new Error("خطا: کلید API یافت نشد.");
+            console.error("API Key missing. Ensure VITE_GEMINI_API_KEY is set in .env file.");
+            throw new Error("خطا: کلید API یافت نشد. لطفا تنظیمات برنامه را بررسی کنید.");
         }
 
         const ai = new GoogleGenAI({ apiKey });

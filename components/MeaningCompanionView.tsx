@@ -4,7 +4,7 @@ import { GoogleGenAI, LiveServerMessage, Modality, Blob as GenAIBlob, Session, C
 import { useAppDispatch, useAppState } from '../AppContext';
 import { View, COMPANION_TRIAL_SECONDS, ChatMessage } from '../types';
 import { ArrowLeftIcon, MicrophoneIcon, SparklesIcon, ClockIcon, PaperAirplaneIcon, ChatBubbleOvalLeftEllipsisIcon, DoubleCheckIcon, StopIcon, BrainCircuitIcon, CheckCircleIcon, PaperClipIcon, XMarkIcon, SpeakerWaveIcon } from './icons';
-import { getFallbackMessage } from '../services/geminiService';
+import { getFallbackMessage, getGeminiApiKey } from '../services/ai/core'; // Updated import
 import LiveSessionAccessModal from './LiveSessionAccessModal';
 import AIContentRenderer from './AIContentRenderer';
 
@@ -136,6 +136,7 @@ const MeaningCompanionView: React.FC = () => {
     
     // Helper ref to track user scroll
     const isUserScrolledUp = useRef(false);
+    const voiceContainerRef = useRef<HTMLDivElement>(null);
 
     // Text Chat State
     const [textMessages, setTextMessages] = useState<ChatMessage[]>([]);
@@ -202,36 +203,53 @@ const MeaningCompanionView: React.FC = () => {
         return () => { if (volumeIntervalRef.current) clearInterval(volumeIntervalRef.current); };
     }, [isSessionActive, chatMode]);
 
+    // Calculate background style based on volume
     const getBackgroundStyle = () => {
         if (chatMode !== 'voice' || !isSessionActive) return {};
-        // Subtle dynamic background shift based on volume
-        const baseColor = [15, 23, 42]; // slate-900
-        const activeColor = [20, 83, 45]; // green-900 (subtle)
         
-        const intensity = Math.min(volumeLevel / 100, 1);
+        // Base dark gray
+        const baseR = 17;
+        const baseG = 24;
+        const baseB = 39;
         
-        const r = Math.round(baseColor[0] + (activeColor[0] - baseColor[0]) * intensity);
-        const g = Math.round(baseColor[1] + (activeColor[1] - baseColor[1]) * intensity);
-        const b = Math.round(baseColor[2] + (activeColor[2] - baseColor[2]) * intensity);
-
+        const intensity = Math.min(volumeLevel * 2, 80); 
+        
+        // Shift towards green/amber based on speaker? Let's just lighten it.
+        const r = Math.min(255, baseR + intensity);
+        const g = Math.min(255, baseG + intensity);
+        const b = Math.min(255, baseB + intensity);
+        
         return {
             backgroundColor: `rgb(${r}, ${g}, ${b})`,
             transition: 'background-color 0.1s ease-out'
         };
     };
 
-    const systemInstruction = `
-    ROLE: You are 'Rahnavard' (رهنورد), a warm, curious, and knowledgeable fellow traveler (همسفر) on the journey of meaning. 
-    
-    **STYLE GUIDE (CRITICAL):**
-    1.  **Multi-Colored Formatting:** Use **Bold** for key phrases (renders Amber). Use > Blockquotes for deep insights (renders Purple). Use Lists for steps. 
-    2.  **Tone:** Friendly, informal (Mahavare), and deep.
-    3.  **Structure:** Keep paragraphs short.
-    
-    **SUGGESTION PROTOCOL:**
-    At the very end of EVERY response, you MUST provide 2-3 short, relevant options for the user to reply with.
-    Format: [OPTIONS: Option 1 | Option 2 | Option 3]
-    `;
+    // Cycling loading messages
+    useEffect(() => {
+        if (isLoading && connectionStatus === 'connecting') {
+            const messages = [
+                "در حال آماده‌سازی دستیار صوتی...",
+                "برقراری ارتباط امن...",
+                "بررسی میکروفون...",
+                "اتصال به سرور هوشمانا...",
+                "تقریباً آماده است..."
+            ];
+            let index = 0;
+            const interval = setInterval(() => {
+                index++;
+                if (index < messages.length) {
+                    setLoadingMessage(messages[index]);
+                } else {
+                    clearInterval(interval);
+                }
+            }, 2500);
+            return () => clearInterval(interval);
+        }
+    }, [isLoading, connectionStatus]);
+
+    const systemInstruction = `You are 'Rahnavard' (رهنورد), a warm, curious, and knowledgeable fellow traveler (همسفر) on the journey of meaning. Your personality is friendly and informal, not like a formal coach. Your purpose is to help users explore their own sense of meaning, purpose, self-discovery, and personal development through reflective, Socratic dialogue. Speak in a simple, friendly, and non-formal tone. Pay close attention to the user's words to guide them with deep, open-ended questions. If the user asks questions outside of these topics (e.g., general knowledge, technical support), you must gently guide them back by saying: 'رسالت من در اینجا، همراهی شما در سفر معناست. برای سوالات دیگر، می‌توانی از دستیار هوشمند در صفحات اصلی سایت استفاده کنی.'. If the conversation revolves around self-understanding, suggest one of the platform's self-discovery tools. For behavioral styles, suggest the 'آینه رفتارشناسی' (DISC test). For deeper motivations, suggest 'نقشه روان انیاگرام' (Enneagram test). If they talk about skills or what they're good at, suggest 'چشمه استعدادها' (Strengths test). If they talk about purpose or what to do with their life, suggest the 'قطب‌نمای ایکیگای' (Ikigai compass). Always respond in warm, thoughtful, and casual Persian.`;
+
 
     useEffect(() => {
         const newAccessInfo = getAccessInfo();
@@ -323,6 +341,12 @@ const MeaningCompanionView: React.FC = () => {
 
     // --- Voice Chat Logic ---
     const startVoiceSession = async () => {
+        const apiKey = getGeminiApiKey();
+        if (!apiKey) {
+            setError('کلید API یافت نشد.');
+            return;
+        }
+
         if (timeLeft <= 0) { setIsAccessModalOpen(true); return; }
         setChatMode('voice');
         setSessionState('loading'); 
@@ -366,7 +390,7 @@ const MeaningCompanionView: React.FC = () => {
         try {
             streamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true });
             
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const ai = new GoogleGenAI({ apiKey });
             const newSessionPromise = ai.live.connect({
                 model: 'gemini-2.5-flash-native-audio-preview-09-2025',
                 callbacks: {
@@ -408,12 +432,7 @@ const MeaningCompanionView: React.FC = () => {
                             if (outputContext.state === 'suspended') await outputContext.resume();
                             if ((outputContext.state as string) === 'closed') return;
 
-                            // Update status to Speaking (AI is talking)
                             setConnectionStatus('speaking');
-                            
-                            // But... if AI is speaking, we want the orb to ripple (State: Speaking)
-                            // If user is speaking, we want the orb to bounce (State: Listening)
-                            // If AI is processing, we want the orb to spin (State: Thinking)
 
                             nextStartTimeRef.current = Math.max(nextStartTimeRef.current, outputContext.currentTime);
                             try {
@@ -424,9 +443,7 @@ const MeaningCompanionView: React.FC = () => {
                                 source.connect(outputContext.destination);
                                 source.addEventListener('ended', () => {
                                     audioSourcesRef.current.delete(source);
-                                    if(audioSourcesRef.current.size === 0) {
-                                         setConnectionStatus('connected'); // Idle/Connected
-                                    }
+                                    if(audioSourcesRef.current.size === 0) setConnectionStatus('connected');
                                 });
                                 source.start(nextStartTimeRef.current);
                                 nextStartTimeRef.current += audioBuffer.duration;
@@ -440,7 +457,7 @@ const MeaningCompanionView: React.FC = () => {
                         }
 
                         if (message.serverContent?.inputTranscription) {
-                            setConnectionStatus('listening'); // User is speaking
+                            setConnectionStatus('listening');
                             currentUserTranscriptRef.current += message.serverContent.inputTranscription.text;
                             setCurrentUserTranscript(currentUserTranscriptRef.current);
                         }
@@ -449,8 +466,7 @@ const MeaningCompanionView: React.FC = () => {
                             setCurrentAiTranscript(currentAiTranscriptRef.current);
                         }
                         if(message.serverContent?.turnComplete) {
-                            // If turn complete, usually AI is about to think or has finished listening
-                            // We set to 'thinking' momentarily or handle via audio buffering
+                            setConnectionStatus('connected');
                             if (currentUserTranscriptRef.current.trim() || currentAiTranscriptRef.current.trim()) {
                                 setTranscriptHistory(prev => [
                                      ...prev, 
@@ -498,7 +514,14 @@ const MeaningCompanionView: React.FC = () => {
         setError(null);
         
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+            const apiKey = getGeminiApiKey();
+            if (!apiKey) {
+                 setError('کلید API یافت نشد.');
+                 setIsLoading(false);
+                 return;
+            }
+
+            const ai = new GoogleGenAI({ apiKey });
             textChatRef.current = ai.chats.create({
                 model: 'gemini-3-pro-preview',
                 config: { systemInstruction },
@@ -577,238 +600,259 @@ const MeaningCompanionView: React.FC = () => {
         }
     };
 
+    useEffect(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [transcriptHistory, currentUserTranscript, currentAiTranscript, isTextLoading, transcriptHistory]);
+    
     if (!user) return null;
 
     // --- Render ---
-    if (isLoading) {
-        return (
-            <div className="flex flex-col h-screen bg-[#0f172a] items-center justify-center text-white">
-                <SparklesIcon className="w-16 h-16 text-yellow-300 animate-pulse mb-4" />
-                <p className="text-xl font-bold animate-pulse">{loadingMessage}</p>
-            </div>
-        );
-    }
-
-    if (chatMode === 'choice') {
-        return (
-            <div className="flex flex-col h-screen bg-[#0f172a] items-center justify-center text-white p-6">
-                <h2 className="text-3xl font-bold mb-8">انتخاب شیوه گفتگو</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-2xl">
-                    <button onClick={startVoiceSession} className="p-10 bg-[#1e293b] hover:bg-[#334155] rounded-3xl border border-gray-700 hover:border-green-500 transition-all flex flex-col items-center gap-6 shadow-xl hover:shadow-2xl group">
-                        <div className="bg-green-600 p-6 rounded-full group-hover:scale-110 transition-transform shadow-lg">
-                            <MicrophoneIcon className="w-12 h-12 text-white" />
-                        </div>
-                        <div className="text-center">
-                            <h3 className="text-2xl font-bold">گفتگوی زنده (صوتی)</h3>
-                            <p className="text-gray-400 mt-2">مکالمه طبیعی، بدون نیاز به تایپ</p>
-                        </div>
-                    </button>
-                    <button onClick={startTextSession} className="p-10 bg-[#1e293b] hover:bg-[#334155] rounded-3xl border border-gray-700 hover:border-blue-500 transition-all flex flex-col items-center gap-6 shadow-xl hover:shadow-2xl group">
-                        <div className="bg-blue-600 p-6 rounded-full group-hover:scale-110 transition-transform shadow-lg">
-                            <ChatBubbleOvalLeftEllipsisIcon className="w-12 h-12 text-white" />
-                        </div>
-                        <div className="text-center">
-                            <h3 className="text-2xl font-bold">گفتگوی متنی</h3>
-                            <p className="text-gray-400 mt-2">چت هوشمند با قابلیت‌های پیشرفته</p>
-                        </div>
-                    </button>
+    const renderContent = () => {
+        if (isLoading) {
+            return (
+                <div className="flex-grow flex flex-col items-center justify-center text-center p-6">
+                     <SparklesIcon className="w-16 h-16 text-yellow-300 animate-pulse mb-4" />
+                     <p className="text-gray-300 text-lg font-medium animate-pulse">{loadingMessage}</p>
                 </div>
-                <button onClick={() => dispatch({ type: 'SET_VIEW', payload: View.UserProfile })} className="mt-12 text-gray-500 hover:text-white flex items-center gap-2">
-                    <ArrowLeftIcon className="w-4 h-4"/> بازگشت
-                </button>
-            </div>
-        );
-    }
+            );
+        }
 
-    if (timeLeft <= 0 && !isSessionActive) {
-        return (
-            <div className="flex-grow flex flex-col items-center justify-center text-center p-6">
-                <ClockIcon className="w-24 h-24 text-yellow-400 mb-6" />
-                <h1 className="text-3xl font-bold mb-4 text-white">زمان شما به پایان رسید</h1>
-                <p className="max-w-md text-gray-300 leading-relaxed">گفتگوی شما ذخیره شد. امیدواریم این جلسه برایتان مفید بوده باشد.</p>
-                <button onClick={() => dispatch({ type: 'SET_VIEW', payload: View.UserProfile })} className="mt-8 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-8 rounded-full">
-                    بازگشت به پروفایل
-                </button>
-            </div>
-        );
-    }
-    
-    // --- Voice Mode UI (Immersive Liquid Soul) ---
-    if (chatMode === 'voice') {
-        // Determine orb state based on connection status
-        // 'listening' = user speaking -> orb expands/reacts to volume
-        // 'speaking' = AI speaking -> orb ripples
-        // 'connected' = idle -> orb breathes
-        // 'connecting' = loading
-        
-        let orbState: 'idle' | 'listening' | 'thinking' | 'speaking' = 'idle';
-        if (connectionStatus === 'listening') orbState = 'listening';
-        else if (connectionStatus === 'speaking') orbState = 'speaking';
-        else if (connectionStatus === 'connected') orbState = 'idle'; // or thinking if waiting for response?
-        
-        // If we want a "thinking" state, we can try to infer it. 
-        // Usually after 'listening' stops (turnComplete), AI thinks before 'speaking'.
-        // We can set a transient state, but for simplicity, let's map:
-        // connected -> idle
-        
-        return (
-            <div className="flex flex-col h-screen bg-[#0f172a] text-white overflow-hidden relative font-sans transition-colors duration-1000" style={getBackgroundStyle()}>
-                {/* Background Ambient */}
-                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 pointer-events-none"></div>
-
-                {/* Header */}
-                <header className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-20">
-                    <div className="flex items-center gap-3 bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
-                        <BrainCircuitIcon className="w-5 h-5 text-green-400" />
-                        <span className="text-sm font-bold">همراه معنا</span>
-                        {timeLeft > 0 && (
-                            <span className={`text-xs font-mono ml-2 ${timeLeft < 60 ? 'text-red-400 animate-pulse' : 'text-gray-400'}`}>
-                                {formatTime(timeLeft)}
-                            </span>
-                        )}
+        if (chatMode === 'choice') {
+            return (
+                <div className="flex-grow flex flex-col items-center justify-center text-center p-6">
+                    <h2 className="text-2xl font-bold mb-6 text-white">چطور می‌خواهید گفتگو کنید؟</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-2xl">
+                        <button onClick={startVoiceSession} className="p-10 bg-[#242F3D] hover:bg-[#2b5278] rounded-2xl transition-colors flex flex-col items-center gap-4 group border border-gray-700">
+                            <div className="bg-green-600 p-6 rounded-full group-hover:scale-110 transition-transform shadow-lg">
+                                <MicrophoneIcon className="w-12 h-12 text-white" />
+                            </div>
+                            <span className="text-lg font-semibold text-white">گفتگو با صدا (زنده)</span>
+                        </button>
+                        <button onClick={startTextSession} className="p-10 bg-[#242F3D] hover:bg-[#2b5278] rounded-2xl transition-colors flex flex-col items-center gap-4 group border border-gray-700">
+                            <div className="bg-blue-600 p-6 rounded-full group-hover:scale-110 transition-transform shadow-lg">
+                                <ChatBubbleOvalLeftEllipsisIcon className="w-12 h-12 text-white" />
+                            </div>
+                            <div className="text-center">
+                                <h3 className="text-2xl font-bold">گفتگوی متنی</h3>
+                                <p className="text-gray-400 mt-2">چت هوشمند با قابلیت‌های پیشرفته</p>
+                            </div>
+                        </button>
                     </div>
-                    <button onClick={() => { handleStopSession(); dispatch({ type: 'SET_VIEW', payload: View.UserProfile }); }} className="p-3 bg-black/20 hover:bg-white/10 rounded-full backdrop-blur-md transition-colors">
-                        <XMarkIcon className="w-6 h-6 text-white"/>
-                    </button>
-                </header>
+                </div>
+            );
+        }
 
-                {/* Main Visualizer Area */}
-                <main className="flex-grow flex flex-col items-center justify-center relative z-10">
-                    
-                    <LiquidOrbVisualizer volume={volumeLevel} state={orbState} />
+        if (timeLeft <= 0 && !isSessionActive) {
+            return (
+                <div className="flex-grow flex flex-col items-center justify-center text-center p-6">
+                    <ClockIcon className="w-20 h-20 text-yellow-400 mb-6" />
+                    <h1 className="text-3xl font-bold mb-4 text-white">زمان شما به پایان رسید</h1>
+                    <p className="max-w-md text-gray-300 leading-relaxed">گفتگوی شما ذخیره شد. امیدواریم این جلسه برایتان مفید بوده باشد.</p>
+                </div>
+            );
+        }
+        
+        // Chat Interface (Shared style for Voice/Text)
+        return (
+            <>
+                <main className="flex-grow bg-[#0E1621] p-2 md:p-4 overflow-y-auto relative custom-scrollbar">
+                     <div className="absolute inset-0 opacity-5 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                     <div className="max-w-3xl mx-auto space-y-2 pb-4 relative z-10">
+                        {chatMode === 'voice' && transcriptHistory.map((item, index) => (
+                            <React.Fragment key={index}>
+                                {item.text.trim() && (
+                                    <div className={`flex w-full ${item.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                                        <div 
+                                            className={`max-w-[85%] px-4 py-2 text-sm leading-relaxed shadow-sm relative break-words
+                                            ${item.role === 'user' 
+                                                ? 'bg-[#2b5278] text-white rounded-2xl rounded-br-sm' 
+                                                : 'bg-[#182533] text-white rounded-2xl rounded-bl-sm'
+                                            }`}
+                                        >
+                                            {item.text}
+                                        </div>
+                                    </div>
+                                )}
+                            </React.Fragment>
+                        ))}
 
-                    {/* Live Captions (Floating) */}
-                    <div className="absolute bottom-32 left-0 right-0 px-6 text-center pointer-events-none">
-                        <div className="max-w-2xl mx-auto">
-                            {currentUserTranscript && (
-                                <p className="text-lg md:text-xl text-white/90 font-medium animate-fade-in-up drop-shadow-md mb-2">
-                                    {currentUserTranscript}
-                                </p>
-                            )}
-                            {currentAiTranscript && (
-                                <p className="text-lg md:text-xl text-amber-300/90 font-medium animate-fade-in-up drop-shadow-md">
-                                    {currentAiTranscript}
-                                </p>
-                            )}
-                        </div>
+                        {chatMode === 'text' && textMessages.map((msg, index) => {
+                            const isMe = msg.role === 'user';
+                            return (
+                                <div key={index} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'}`}>
+                                    <div 
+                                        className={`max-w-[85%] px-4 py-2 text-sm leading-relaxed shadow-sm relative break-words
+                                        ${isMe 
+                                            ? 'bg-[#2b5278] text-white rounded-2xl rounded-br-sm' 
+                                            : 'bg-[#182533] text-white rounded-2xl rounded-bl-sm'
+                                        }`}
+                                    >
+                                        {msg.text}
+                                        {isMe && (
+                                            <div className="flex justify-end mt-1">
+                                                 <DoubleCheckIcon className="w-3 h-3 text-blue-300" />
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            );
+                        })}
+
+                        {/* Live Transcripts for Voice Mode */}
+                        {chatMode === 'voice' && (
+                            <>
+                                {currentUserTranscript && (
+                                    <div className="flex justify-end">
+                                        <div className="max-w-[85%] px-4 py-2 text-sm leading-relaxed bg-[#2b5278]/70 text-white rounded-2xl rounded-br-sm italic animate-pulse">
+                                            {currentUserTranscript}
+                                        </div>
+                                    </div>
+                                )}
+                                {currentAiTranscript && (
+                                    <div className="flex justify-start">
+                                        <div className="max-w-[85%] px-4 py-2 text-sm leading-relaxed bg-[#182533]/70 text-white rounded-2xl rounded-bl-sm italic animate-pulse">
+                                            {currentAiTranscript}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                         
+                        {isTextLoading && (
+                             <div className="flex justify-start">
+                                <div className="px-4 py-3 bg-[#182533] rounded-2xl rounded-bl-sm">
+                                    <div className="flex items-center gap-1">
+                                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                                        <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        <div ref={messagesEndRef} />
                     </div>
                 </main>
 
-                {/* Footer Controls */}
-                <footer className="absolute bottom-0 left-0 right-0 p-8 flex justify-center items-center gap-8 z-20 bg-gradient-to-t from-[#0f172a] to-transparent pb-12">
-                    <button className="p-4 rounded-full bg-gray-800/50 hover:bg-gray-700/50 text-gray-400 hover:text-white transition-all backdrop-blur-md border border-white/5">
-                         <PaperClipIcon className="w-6 h-6" />
-                    </button>
-
-                    <button 
-                        onClick={handleStopSession}
-                        className="w-20 h-20 rounded-full bg-red-500/90 hover:bg-red-600 text-white flex items-center justify-center shadow-2xl shadow-red-500/40 transition-transform hover:scale-105 active:scale-95 border-4 border-[#0f172a]"
-                    >
-                        <StopIcon className="w-8 h-8" />
-                    </button>
-
-                    <button 
-                        onClick={() => { stopAudioPlayback(); setChatMode('text'); }} 
-                        className="p-4 rounded-full bg-gray-800/50 hover:bg-gray-700/50 text-gray-400 hover:text-white transition-all backdrop-blur-md border border-white/5"
-                    >
-                        <PaperAirplaneIcon className="w-6 h-6" />
-                    </button>
+                <footer className="p-3 bg-[#17212B] border-t border-black/20 flex-shrink-0 z-20">
+                    {chatMode === 'text' ? (
+                         <div className="max-w-3xl mx-auto flex items-end gap-2">
+                            <textarea
+                                value={textInput}
+                                onChange={e => setTextInput(e.target.value)}
+                                onKeyPress={e => e.key === 'Enter' && !e.shiftKey && handleSendTextMessage()}
+                                placeholder="پیام خود را بنویسید..."
+                                rows={1}
+                                className="flex-grow bg-[#0E1621] text-white rounded-2xl py-3 px-4 focus:outline-none placeholder-gray-500 resize-none text-sm custom-scrollbar max-h-24 border border-transparent focus:border-[#2b5278]"
+                                disabled={isTextLoading}
+                            />
+                            <button 
+                                onClick={handleSendTextMessage} 
+                                disabled={isTextLoading || !textInput.trim()} 
+                                className={`p-3 rounded-full transition-all transform ${textInput.trim() ? 'bg-[#2b5278] text-white scale-100' : 'text-gray-500 bg-transparent scale-90'}`}
+                            >
+                                <PaperAirplaneIcon className="w-5 h-5 dir-ltr" />
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-2">
+                             {/* Advanced Visualizer */}
+                            <div className="relative w-32 h-32 flex items-center justify-center mb-4">
+                                <LiquidOrbVisualizer 
+                                    volume={volumeLevel} 
+                                    state={
+                                        isLoading || connectionStatus === 'connecting' ? 'thinking' :
+                                        connectionStatus === 'listening' ? 'listening' :
+                                        connectionStatus === 'speaking' ? 'speaking' :
+                                        'idle'
+                                    }
+                                />
+                                 <div className={`absolute w-16 h-16 rounded-full flex items-center justify-center transition-all duration-500 z-10 bg-[#2b5278]`}>
+                                    <MicrophoneIcon className="w-8 h-8 text-white" />
+                                </div>
+                            </div>
+                            <button onClick={handleStopSession} className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-6 rounded-full text-sm shadow-lg transition-transform active:scale-95 flex items-center gap-2">
+                                <StopIcon className="w-5 h-5" />
+                                پایان گفتگو
+                            </button>
+                        </div>
+                    )}
                 </footer>
-
-                <LiveSessionAccessModal
-                    isOpen={isAccessModalOpen}
-                    onClose={handleStopSession}
-                    onExtendWithPoints={handleExtendSession}
-                    featureName="همراه معنا"
-                />
-            </div>
+            </>
         );
-    }
+    };
 
-    // --- Text Mode (Retained for completeness, slightly updated style) ---
+    const scenarioTitle = "همراه معنا";
+
     return (
-        <div className="flex flex-col h-screen bg-[#0f172a] text-white relative font-sans">
-             {/* Header */}
-             <header className="flex-shrink-0 bg-[#1e293b] border-b border-gray-800 p-4 flex justify-between items-center z-20">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center shadow-lg">
-                        <BrainCircuitIcon className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                        <h1 className="font-bold">همراه معنا (متنی)</h1>
-                        <p className="text-xs text-gray-400">{formatTime(timeLeft)}</p>
-                    </div>
-                </div>
-                <button onClick={() => { handleStopSession(); dispatch({ type: 'SET_VIEW', payload: View.UserProfile }); }} className="p-2 hover:bg-white/10 rounded-full transition-colors"><XMarkIcon className="w-6 h-6"/></button>
-            </header>
-
-            {/* Chat Area */}
-            <main className="flex-grow overflow-y-auto p-4 space-y-4 custom-scrollbar bg-[#0E1621]">
-                {textMessages.map((msg, i) => {
-                    const isMe = msg.role === 'user';
-                    return (
-                        <div key={i} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fade-in-up`}>
-                            <div className={`max-w-[85%] p-4 rounded-2xl text-sm leading-relaxed shadow-sm ${isMe ? 'bg-[#3b82f6] text-white rounded-br-sm' : 'bg-[#1e293b] text-gray-200 rounded-bl-sm border border-gray-700'}`}>
-                                {!isMe ? <AIContentRenderer content={msg.text} /> : msg.text}
+        <div className="flex flex-col h-screen bg-[#0E1621] text-white pt-20 md:pt-0 transition-colors duration-500" style={getBackgroundStyle()}>
+             <style>{`
+                .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+                .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+                .custom-scrollbar::-webkit-scrollbar-thumb { background: #2b2b2b; border-radius: 10px; }
+                 @keyframes fade-in-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+                .fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
+                .animate-fade-in { animation: fade-in 0.5s ease-in-out; }
+            `}</style>
+            
+            {/* Centered Outer Container Frame for Desktop */}
+            <div className="flex-grow flex items-center justify-center w-full md:p-6">
+                 <div className="w-full md:max-w-4xl h-full md:h-[90vh] bg-[#17212B]/80 md:backdrop-blur-xl rounded-none md:rounded-3xl shadow-2xl border-0 md:border border-white/10 flex flex-col overflow-hidden relative">
+                    
+                    {/* Header */}
+                    <header className="flex-shrink-0 bg-[#17212B] border-b border-black/20 shadow-md z-30">
+                        <div className="px-4 py-3 flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="relative">
+                                    <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center shadow-lg">
+                                        <BrainCircuitIcon className="w-6 h-6 text-white" />
+                                    </div>
+                                    <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-[#17212B] rounded-full"></span>
+                                </div>
+                                <div>
+                                    <h1 className="text-base font-bold text-white">{scenarioTitle}</h1>
+                                    <p className="text-xs text-blue-300">AI Life Coach</p>
+                                </div>
+                            </div>
+                            
+                            <div className="flex items-center gap-4">
+                                {(isSessionActive || (timeLeft > 0 && timeLeft < accessInfo.timeLeft)) && (
+                                    <div className={`px-3 py-1 rounded-full bg-[#0E1621] border border-gray-700 flex items-center gap-2 font-mono font-bold text-sm ${timeLeft < 60 && timeLeft > 0 ? 'text-red-400 animate-pulse border-red-900' : 'text-blue-300'}`}>
+                                        <ClockIcon className="w-4 h-4" />
+                                        <span>{formatTime(timeLeft)}</span>
+                                    </div>
+                                )}
+                                <button onClick={() => { handleStopSession(); dispatch({ type: 'SET_VIEW', payload: View.UserProfile }); }} className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-full transition-colors">
+                                    <ArrowLeftIcon className="w-6 h-6"/>
+                                </button>
                             </div>
                         </div>
-                    );
-                })}
-                {isTextLoading && (
-                     <div className="flex justify-start">
-                        <div className="bg-[#1e293b] p-4 rounded-2xl rounded-bl-sm border border-gray-700 flex gap-1">
-                            <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></span>
-                            <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                            <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-                        </div>
+                    </header>
+                    
+                    <div className="relative flex-grow flex flex-col overflow-hidden w-full">
+                        {/* Ambient Background for Voice Mode */}
+                        {chatMode === 'voice' && isSessionActive && (
+                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden">
+                                 <div className="w-[500px] h-[500px] bg-blue-500/10 rounded-full blur-[100px] animate-pulse"></div>
+                            </div>
+                        )}
+                         {/* Error Banner */}
+                        {error && (
+                            <div className="absolute top-4 left-4 right-4 z-50 bg-red-900/90 text-white px-4 py-3 rounded-lg text-center shadow-lg border border-red-700 animate-fade-in">
+                                <p>{error}</p>
+                                <button onClick={() => setError('')} className="text-xs text-red-200 hover:text-white mt-1 underline">بستن</button>
+                            </div>
+                        )}
+                        {renderContent()}
                     </div>
-                )}
-                <div ref={messagesEndRef} />
-            </main>
-
-            {/* Footer */}
-            <footer className="p-4 bg-[#1e293b] border-t border-gray-800 z-20">
-                {/* Line-by-line Suggestions */}
-                {suggestions.length > 0 && !isTextLoading && (
-                    <div className="flex flex-col gap-2 mb-3">
-                        {suggestions.map((s, idx) => (
-                            <button 
-                                key={idx} 
-                                onClick={() => handleSendTextMessage(s)}
-                                className="w-full text-right px-4 py-3 bg-[#2b5278]/20 hover:bg-[#2b5278]/40 border border-[#2b5278]/40 text-blue-200 text-sm rounded-xl transition-all active:scale-[0.99]"
-                            >
-                                {s}
-                            </button>
-                        ))}
-                    </div>
-                )}
-                
-                <div className="flex items-end gap-2 bg-[#0f172a] rounded-2xl border border-gray-700 p-2">
-                    <textarea 
-                        value={textInput}
-                        onChange={(e) => setTextInput(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendTextMessage()}
-                        placeholder="پیام خود را بنویسید..."
-                        className="flex-grow bg-transparent text-white max-h-32 min-h-[44px] py-3 px-2 focus:outline-none resize-none text-sm custom-scrollbar"
-                        rows={1}
-                        disabled={isTextLoading}
+                    
+                     <LiveSessionAccessModal
+                        isOpen={isAccessModalOpen}
+                        onClose={handleStopSession}
+                        onExtendWithPoints={handleExtendSession}
+                        featureName="همراه معنا"
                     />
-                    <button 
-                        onClick={() => handleSendTextMessage()}
-                        disabled={!textInput.trim() || isTextLoading}
-                        className={`p-3 rounded-full transition-all ${textInput.trim() ? 'bg-blue-600 text-white hover:scale-105' : 'bg-gray-800 text-gray-500'}`}
-                    >
-                        <PaperAirplaneIcon className="w-5 h-5 dir-ltr" />
-                    </button>
-                </div>
-            </footer>
-            
-            <LiveSessionAccessModal
-                isOpen={isAccessModalOpen}
-                onClose={handleStopSession}
-                onExtendWithPoints={handleExtendSession}
-                featureName="همراه معنا"
-            />
+                 </div>
+            </div>
         </div>
     );
 };

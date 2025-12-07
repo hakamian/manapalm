@@ -26,8 +26,7 @@ const CoachingSessionView: React.FC = () => {
         suggestions 
     } = useCoachingSession(
         coachingSession?.role || 'coachee', 
-        coachingSession?.topic || 'General',
-        process.env.API_KEY!
+        coachingSession?.topic || 'General'
     );
 
     useEffect(() => {

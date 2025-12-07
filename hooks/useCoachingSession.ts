@@ -2,9 +2,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { ChatMessage, CoachingRole } from '../types';
 import { GoogleGenAI, Chat } from '@google/genai';
-import { getFallbackMessage } from '../services/geminiService';
+import { getFallbackMessage, getGeminiApiKey } from '../services/ai/core'; // Updated import
 
-export const useCoachingSession = (role: CoachingRole, topic: string, apiKey: string) => {
+export const useCoachingSession = (role: CoachingRole, topic: string) => { // Removed apiKey prop
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [isThinking, setIsThinking] = useState(false);
@@ -40,6 +40,12 @@ export const useCoachingSession = (role: CoachingRole, topic: string, apiKey: st
     `;
 
     const initChat = async (initialHistory: ChatMessage[] = []) => {
+        const apiKey = getGeminiApiKey();
+        if (!apiKey) {
+            setError('خطا: کلید API یافت نشد. لطفا تنظیمات را بررسی کنید.');
+            return;
+        }
+
         setIsThinking(true);
         setMessages(initialHistory);
         try {
