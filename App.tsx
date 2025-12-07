@@ -156,10 +156,14 @@ const App: React.FC = () => {
     // Dedicated function to clean URL parameters
     const cleanAuthUrl = () => {
         const params = new URLSearchParams(window.location.search);
-        if (params.has('code') || params.has('error') || params.has('error_description')) {
+        if (params.has('code') || params.has('error') || params.has('error_description') || params.has('access_token') || params.has('refresh_token')) {
             params.delete('code');
             params.delete('error');
             params.delete('error_description');
+            params.delete('access_token');
+            params.delete('refresh_token');
+            params.delete('expires_in');
+            params.delete('token_type');
             
             const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
             window.history.replaceState({}, document.title, newUrl);
@@ -193,7 +197,7 @@ const App: React.FC = () => {
                  }
                  
                  // Clean URL immediately after sign in
-                 cleanAuthUrl();
+                 setTimeout(cleanAuthUrl, 500); // Small delay to ensure Supabase internal processing is done
             } else if (_event === 'SIGNED_OUT') {
                 if (user) {
                     dispatch({ type: 'LOGOUT' });
@@ -201,14 +205,14 @@ const App: React.FC = () => {
             }
         });
 
-        // Fallback cleanup timer to ensure URL is clean even if session logic is slow
-        const cleanupTimer = setTimeout(cleanAuthUrl, 1000);
+        // Fallback cleanup timer to ensure URL is clean even if session logic is slow or already processed
+        const cleanupTimer = setTimeout(cleanAuthUrl, 2000);
 
         return () => {
             subscription.unsubscribe();
             clearTimeout(cleanupTimer);
         };
-    }, [dispatch, allUsers]); // removed 'user' to prevent loops
+    }, [dispatch, allUsers]); 
 
     return (
         <div className="bg-gray-900 text-white min-h-screen overflow-x-hidden">
