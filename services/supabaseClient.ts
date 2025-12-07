@@ -1,17 +1,14 @@
-
 import { createClient } from '@supabase/supabase-js';
 import { User } from '../types';
 
 // Safely access environment variables
-const getEnv = (key: string) => {
-  if (typeof import.meta !== 'undefined' && (import.meta as any).env) {
-    return (import.meta as any).env[key];
-  }
-  return undefined;
-};
+const env = (import.meta as any).env || {};
+const supabaseUrl = env.VITE_SUPABASE_URL;
+const supabaseAnonKey = env.VITE_SUPABASE_ANON_KEY;
 
-const supabaseUrl = getEnv('VITE_SUPABASE_URL');
-const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
+// Debugging helper
+if (!supabaseUrl) console.warn('VITE_SUPABASE_URL is missing in environment variables.');
+if (!supabaseAnonKey) console.warn('VITE_SUPABASE_ANON_KEY is missing in environment variables.');
 
 // Initialize Supabase only if keys are present
 export const supabase = (supabaseUrl && supabaseAnonKey) 
@@ -19,8 +16,8 @@ export const supabase = (supabaseUrl && supabaseAnonKey)
   : null;
 
 if (!supabase) {
-  console.warn(
-    'Supabase Client not initialized. Please check your environment variables (VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY).'
+  console.error(
+    'Supabase Client not initialized. Please ensure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set in your .env file.'
   );
 }
 

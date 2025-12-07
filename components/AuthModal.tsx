@@ -113,7 +113,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     } catch (err: any) {
         console.error("Login Error:", err);
         setError(err.message || 'خطا در برقراری ارتباط. لطفا دوباره تلاش کنید.');
-        if (err.message.includes("Invalid login credentials")) {
+        if (err.message && err.message.includes("Invalid login credentials")) {
             setError("شماره موبایل یا رمز عبور اشتباه است.");
         }
     } finally {
