@@ -3,9 +3,17 @@ import { supabase } from './supabaseClient';
 import { User, Order, CommunityPost, AgentActionLog } from '../types';
 import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS } from '../utils/dummyData';
 
+// Helper to check if string is a valid UUID
+const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+
 // Helper to map Supabase profile to App User type
 const mapProfileToUser = (profile: any): User => {
-  const metadata = typeof profile.metadata === 'string' ? JSON.parse(profile.metadata) : (profile.metadata || {});
+  let metadata: any = {};
+  try {
+      metadata = typeof profile.metadata === 'string' ? JSON.parse(profile.metadata) : (profile.metadata || {});
+  } catch (e) {
+      console.warn("Failed to parse user metadata", e);
+  }
 
   return {
     id: profile.id,
@@ -59,7 +67,7 @@ export const dbAdapter = {
         
         const { data, error, count } = await query.range(from, to);
         if (error) {
-            console.error('Error fetching users:', error);
+            console.error('Error fetching users:', error.message || error);
             // Fallback for safety
             return { data: INITIAL_USERS.slice(0, 10), total: INITIAL_USERS.length }; 
         }
@@ -78,6 +86,8 @@ export const dbAdapter = {
 
     async getUserById(id: string): Promise<User | null> {
         if (!supabase) return null;
+        if (!isUUID(id)) return null; // Don't query DB for dummy IDs
+        
         const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
         if (error || !data) return null;
         return mapProfileToUser(data);
@@ -86,6 +96,9 @@ export const dbAdapter = {
     async saveUser(user: User): Promise<void> {
         if (!supabase) return;
         
+        // Skip dummy users (non-UUID ids)
+        if (!isUUID(user.id)) return;
+
         // Security: Remove sensitive fields or large JSONs if necessary
         const profileData = {
             id: user.id,
@@ -107,14 +120,14 @@ export const dbAdapter = {
         };
 
         const { error } = await supabase.from('profiles').upsert(profileData);
-        if (error) console.error('Error saving user to DB:', error);
+        if (error) console.error('Error saving user to DB:', error.message || error);
     },
 
     async spendBarkatPoints(amount: number): Promise<boolean> {
         if (!supabase) return true;
         const { error } = await supabase.rpc('spend_points', { amount });
         if (error) {
-            console.error("Point transaction failed:", error);
+            console.error("Point transaction failed:", error.message || error);
             return false;
         }
         return true;
@@ -124,7 +137,7 @@ export const dbAdapter = {
         if (!supabase) return true;
         const { error } = await supabase.rpc('spend_mana', { amount });
         if (error) {
-            console.error("Mana transaction failed:", error);
+            console.error("Mana transaction failed:", error.message || error);
             return false;
         }
         return true;
@@ -134,7 +147,10 @@ export const dbAdapter = {
          if (!supabase) return INITIAL_ORDERS;
          
          let query = supabase.from('orders').select('*');
-         if (userId) query = query.eq('user_id', userId);
+         if (userId) {
+             if (!isUUID(userId)) return []; // Return empty for dummy users
+             query = query.eq('user_id', userId);
+         }
          
          // Limit orders fetch to prevent overload
          const { data, error } = await query.order('created_at', { ascending: false }).limit(50);
@@ -158,6 +174,10 @@ export const dbAdapter = {
 
     async saveOrder(order: Order): Promise<void> {
         if (!supabase) return;
+        
+        // Skip dummy users
+        if (!isUUID(order.userId)) return;
+
         const orderData = {
             id: order.id,
             user_id: order.userId,
@@ -167,7 +187,7 @@ export const dbAdapter = {
             created_at: order.date
         };
         const { error } = await supabase.from('orders').insert(orderData);
-        if (error) console.error('Error saving order:', error);
+        if (error) console.error('Error saving order:', error.message || error);
     },
 
     async getAllPosts(): Promise<CommunityPost[]> {
@@ -194,6 +214,10 @@ export const dbAdapter = {
 
     async savePost(post: CommunityPost): Promise<void> {
         if (!supabase) return;
+        
+        // Skip dummy users
+        if (!isUUID(post.authorId)) return;
+
         const postData = {
             id: post.id,
             author_id: post.authorId,
