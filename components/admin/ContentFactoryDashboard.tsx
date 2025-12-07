@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { CommunityPost, ArticleDraft } from '../../types';
 import { analyzeCommunitySentimentAndTopics, generateArticleDraft } from '../../services/geminiService';
-import { SparklesIcon, MegaphoneIcon, PencilSquareIcon, PhotoIcon, CloudIcon, BoltIcon, CogIcon } from '../icons';
+import { SparklesIcon, MegaphoneIcon, PencilSquareIcon, PhotoIcon, CloudIcon, BoltIcon, CogIcon, ArrowPathIcon, CheckCircleIcon } from '../icons';
 import CloudinaryUploadWidget from '../ui/CloudinaryUploadWidget';
 import SmartImage from '../ui/SmartImage';
 import { supabase } from '../../services/supabaseClient';
@@ -23,11 +22,12 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
     const [error, setError] = useState<string | null>(null);
     
     // Make.com Integration State
-    const [webhookUrl, setWebhookUrl] = useState(localStorage.getItem('MAKE_WEBHOOK_URL') || '');
+    // We use the provided webhook URL as default
+    const [webhookUrl, setWebhookUrl] = useState(localStorage.getItem('MAKE_WEBHOOK_URL') || 'https://hook.us2.make.com/74b1csebve245wmmhopb6559gk1q52lg');
     const [showConfig, setShowConfig] = useState(false);
     const [currentRecordId, setCurrentRecordId] = useState<string | null>(null);
     const [isWaitingForMake, setIsWaitingForMake] = useState(false);
-    const [makeStatus, setMakeStatus] = useState<string>(''); // 'sent', 'processing', 'received'
+    const [makeStatus, setMakeStatus] = useState<string>(''); // 'sending', 'processing', 'received'
     
     // Image State
     const [articleImage, setArticleImage] = useState<string | null>(null);
@@ -52,14 +52,15 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                     console.log('⚡ Realtime Update Received from Make.com:', payload);
                     const newData = payload.new;
                     
-                    // Assuming Make.com updates the 'image_url' or 'details->imageUrl' field
-                    // Adjust based on your actual DB schema. Here we assume 'image' column or metadata.
-                    const newImage = newData.image || newData.image_url || (newData.details && newData.details.imageUrl);
+                    // Check various potential column names for the image URL
+                    // Make.com should update one of these columns
+                    const newImage = newData.image || newData.image_url || newData.imageUrl || (newData.details && newData.details.imageUrl);
 
                     if (newImage) {
                         setArticleImage(newImage);
                         setIsWaitingForMake(false);
                         setMakeStatus('received');
+                        // Optional: Show a success toast or sound
                     }
                 }
             )
@@ -100,13 +101,14 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
         setArticleImage(null); 
         setIsWaitingForMake(false);
         setMakeStatus('');
+        setCurrentRecordId(null);
         
         try {
             // 1. Generate Text Draft (Client-side AI for speed)
             const result = await generateArticleDraft(topic);
             setArticleDraft(result);
             
-            // 2. Initiate Zero-Click Image Flow
+            // 2. Initiate Zero-Click Image Flow (Trigger Make.com)
             handleTriggerMakeAutomation(result.title, result.summary);
             
         } catch (e) {
@@ -119,7 +121,7 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
 
     const handleTriggerMakeAutomation = async (title: string, summary: string) => {
         if (!webhookUrl) {
-            setError("لطفاً ابتدا آدرس Webhook را در تنظیمات (چرخ‌دنده) وارد کنید.");
+            setError("آدرس Webhook تنظیم نشده است.");
             return;
         }
 
@@ -128,19 +130,24 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
 
         try {
             // A. Create Placeholder Record in Supabase
-            // We need a record ID to send to Make.com so it knows where to write back.
+            // We create the DB record FIRST so we have an ID to send to Make.com
             let recordId = '';
             
             if (supabase) {
+                // Get current user ID if possible, else null
+                const { data: { user } } = await supabase.auth.getUser();
+                
                 const { data, error: dbError } = await supabase
                     .from('posts')
                     .insert([
                         { 
                             title: title,
-                            content: summary, // Storing summary temporarily
-                            author_id: (await supabase.auth.getUser()).data.user?.id, // Current User
+                            content: summary, // Initial content is just summary
+                            author_id: user?.id, 
                             status: 'draft',
-                            created_at: new Date().toISOString()
+                            created_at: new Date().toISOString(),
+                            // Initialize image as null
+                            image: null 
                         }
                     ])
                     .select()
@@ -150,22 +157,30 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                 recordId = data.id;
                 setCurrentRecordId(recordId);
             } else {
-                // Fallback for demo without DB connection
-                console.warn("Supabase not connected. Simulating ID.");
+                // Fallback for demo mode (if Supabase not connected)
+                console.warn("Supabase not connected. Simulating Automation...");
                 recordId = `demo-${Date.now()}`;
                 setCurrentRecordId(recordId);
+                // Simulate delay for demo
+                setTimeout(() => {
+                    setArticleImage("https://picsum.photos/seed/ai-generated/800/600");
+                    setIsWaitingForMake(false);
+                    setMakeStatus('received');
+                }, 4000);
+                return; 
             }
 
             // B. Trigger Make.com Webhook
+            // Payload structure designed for Make.com to parse easily
             const payload = {
-                action: "generate_image",
-                prompt: `Editorial illustration for: ${title}. High quality, minimal.`,
-                recordId: recordId, // CRITICAL: The ID Make.com needs to update
-                title: title
+                action: "generate_image_and_update",
+                prompt: `Editorial illustration for blog post: ${title}. Professional, minimal, high quality.`,
+                recordId: recordId, // CRITICAL: Make.com uses this ID to update the row later
+                title: title,
+                summary: summary
             };
 
-            // Using fetch with 'no-cors' might be needed if Make doesn't return CORS headers, 
-            // but standard Webhooks usually respond with 200 OK text/plain.
+            // Fire and forget (or await response if Make returns status)
             await fetch(webhookUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -173,7 +188,7 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
             });
 
             setMakeStatus('processing');
-            // Now we wait for the useEffect hook to catch the Realtime update...
+            // Now we rely on the useEffect hook to catch the Realtime update...
 
         } catch (e: any) {
             console.error("Automation Trigger Failed:", e);
@@ -199,17 +214,18 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
             
             {/* Config Modal for Webhook */}
             {showConfig && (
-                <div className="absolute top-0 right-0 z-50 bg-gray-900 border border-gray-600 p-4 rounded-lg shadow-xl w-96">
+                <div className="absolute top-0 right-0 z-50 bg-gray-900 border border-gray-600 p-4 rounded-lg shadow-xl w-96 animate-fade-in-down">
                     <h4 className="text-sm font-bold text-white mb-2">تنظیمات اتوماسیون (Make.com)</h4>
+                    <p className="text-xs text-gray-400 mb-2">آدرس Webhook سناریوی خود را وارد کنید:</p>
                     <input 
                         type="text" 
                         value={webhookUrl}
                         onChange={(e) => setWebhookUrl(e.target.value)}
-                        placeholder="https://hook.eu1.make.com/..."
-                        className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-xs text-white mb-2"
+                        placeholder="https://hook.us2.make.com/..."
+                        className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-xs text-white mb-2 dir-ltr"
                     />
                     <div className="flex justify-end gap-2">
-                        <button onClick={() => setShowConfig(false)} className="text-xs text-gray-400">انصراف</button>
+                        <button onClick={() => setShowConfig(false)} className="text-xs text-gray-400 hover:text-white">بستن</button>
                         <button onClick={handleSaveWebhook} className="text-xs bg-blue-600 text-white px-3 py-1 rounded">ذخیره</button>
                     </div>
                 </div>
@@ -234,17 +250,17 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                     <div className="mt-4 space-y-2">
                         <h4 className="font-semibold text-sm text-gray-300 mb-2">موضوعات یافت شده:</h4>
                         {trendingTopics.map((topic, i) => (
-                            <div key={i} className="bg-gray-700/50 p-3 rounded-md flex justify-between items-center border border-gray-600">
+                            <div key={i} className="bg-gray-700/50 p-3 rounded-md flex justify-between items-center border border-gray-600 group hover:border-gray-500 transition-colors">
                                 <span className="text-gray-200 font-medium">{topic}</span>
                                 <button 
                                     onClick={() => handleGenerateDraft(topic)} 
                                     disabled={isLoadingDraft} 
-                                    className="text-xs bg-green-600 hover:bg-green-500 text-white py-1.5 px-3 rounded-md disabled:opacity-50 transition-colors flex items-center gap-1"
+                                    className="text-xs bg-green-600 hover:bg-green-500 text-white py-1.5 px-3 rounded-md disabled:opacity-50 transition-colors flex items-center gap-1 shadow-lg"
                                 >
                                     {isLoadingDraft && selectedTopic === topic ? (
                                         <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                                     ) : <PencilSquareIcon className="w-3 h-3" />}
-                                    تولید محتوا + تصویر
+                                    تولید محتوا
                                 </button>
                             </div>
                         ))}
@@ -263,7 +279,7 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
 
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                     <MegaphoneIcon className="w-6 h-6 text-yellow-400"/>
-                    ۲. کارخانه محتوا (Unified OS)
+                    ۲. کارخانه محتوا (Make.com OS)
                 </h3>
                 
                 {isLoadingDraft ? (
@@ -274,8 +290,8 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                             <PencilSquareIcon className="absolute inset-0 m-auto w-6 h-6 text-blue-400" />
                          </div>
                          <p className="font-bold text-white mb-1">ایجنت‌ها مشغول کارند...</p>
-                         <p className="text-xs">۱. نگارش متن (Gemini)</p>
-                         <p className="text-xs">۲. ارسال دستور به Make.com</p>
+                         <p className="text-xs text-gray-500">۱. نگارش متن (Gemini)</p>
+                         <p className="text-xs text-gray-500">۲. ارسال دستور به Make.com</p>
                     </div>
                 ) : error && selectedTopic ? (
                      <div className="flex-grow flex items-center justify-center text-red-400 p-8 text-center bg-red-900/10 rounded-lg border border-red-900/30">
@@ -286,24 +302,32 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                         
                         {/* Image Asset Section - REALTIME */}
                         <div className={`p-4 rounded-lg border relative overflow-hidden transition-all duration-500 ${isWaitingForMake ? 'bg-amber-900/10 border-amber-500/50' : 'bg-gray-900/50 border-gray-600'}`}>
-                            <h4 className="text-sm font-bold text-gray-300 mb-3 flex items-center gap-2 z-10 relative">
-                                <PhotoIcon className="w-4 h-4 text-purple-400"/> 
-                                {isWaitingForMake ? 'در انتظار تصویر (Make.com)...' : 'تصویر شاخص (Auto-Generated)'}
-                            </h4>
+                            <div className="flex justify-between items-center mb-3 relative z-10">
+                                <h4 className="text-sm font-bold text-gray-300 flex items-center gap-2">
+                                    <PhotoIcon className="w-4 h-4 text-purple-400"/> 
+                                    {isWaitingForMake ? 'در انتظار تصویر (Make.com)...' : 'تصویر شاخص (خودکار)'}
+                                </h4>
+                                {isWaitingForMake && (
+                                     <div className="flex items-center gap-1 text-[10px] text-amber-400 animate-pulse">
+                                         <ArrowPathIcon className="w-3 h-3 animate-spin" />
+                                         <span>اتصال به سناریو</span>
+                                     </div>
+                                )}
+                            </div>
                             
                             {isWaitingForMake ? (
                                 <div className="h-40 flex flex-col items-center justify-center bg-gray-800 rounded-lg border border-gray-700 border-dashed relative overflow-hidden">
                                      <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent skew-x-12 animate-shimmer"></div>
                                      <BoltIcon className="w-8 h-8 text-amber-500 animate-pulse mb-2"/>
-                                     <span className="text-xs text-amber-200 font-bold">دستور ارسال شد... منتظر آپدیت دیتابیس</span>
-                                     <span className="text-[10px] text-gray-500 mt-1">Webhook -> Image Gen -> Supabase Realtime</span>
+                                     <span className="text-xs text-amber-200 font-bold">دستور به Make ارسال شد</span>
+                                     <span className="text-[10px] text-gray-500 mt-1">منتظر بازگشت Webhook...</span>
                                 </div>
                             ) : articleImage ? (
                                 <div className="relative group animate-scale-in">
                                     <SmartImage 
                                         src={articleImage} 
                                         alt="AI Generated Article Cover" 
-                                        className="w-full h-48 object-cover rounded-lg shadow-lg"
+                                        className="w-full h-48 object-cover rounded-lg shadow-lg transition-transform group-hover:scale-[1.02]"
                                         width={600}
                                     />
                                     <div className="absolute top-2 right-2 bg-green-600 text-white text-[10px] px-2 py-1 rounded-full flex items-center gap-1 shadow-lg animate-bounce">
@@ -311,9 +335,9 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                                         دریافت شد (Realtime)
                                     </div>
                                     
-                                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg gap-2">
-                                        <p className="text-xs text-gray-300 px-4 text-center break-all">{articleImage}</p>
-                                        <button onClick={() => navigator.clipboard.writeText(articleImage!)} className="text-xs bg-white text-black px-3 py-1 rounded hover:bg-gray-200">کپی لینک</button>
+                                    <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg gap-2 backdrop-blur-sm">
+                                        <p className="text-xs text-gray-300 px-4 text-center break-all line-clamp-1">{articleImage}</p>
+                                        <button onClick={() => navigator.clipboard.writeText(articleImage!)} className="text-xs bg-white text-black px-3 py-1 rounded hover:bg-gray-200 font-bold">کپی لینک</button>
                                         <CloudinaryUploadWidget 
                                             onUploadSuccess={(url) => setArticleImage(url)} 
                                             buttonText="تغییر عکس (دستی)"
@@ -341,7 +365,8 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                              <label className="text-xs text-gray-500 uppercase font-bold mb-1 block">محتوا (Markdown)</label>
                             <textarea value={articleDraft.content} className="w-full flex-grow bg-gray-900 border border-gray-600 p-3 rounded-lg text-sm text-gray-300 leading-relaxed resize-none font-mono min-h-[150px]" readOnly/>
                         </div>
-                        <button onClick={handleCopy} className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg">
+                        <button onClick={handleCopy} className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg flex items-center justify-center gap-2">
+                            <CheckCircleIcon className="w-5 h-5" />
                             کپی کامل (متن + لینک عکس)
                         </button>
                     </div>
