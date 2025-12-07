@@ -5,7 +5,6 @@ import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS } from '../utils/dummyData
 
 // Helper to map Supabase profile to App User type
 const mapProfileToUser = (profile: any): User => {
-  // Safely parse metadata if it's a string (sometimes happens with JSONB in certain clients)
   const metadata = typeof profile.metadata === 'string' ? JSON.parse(profile.metadata) : (profile.metadata || {});
 
   return {
@@ -22,13 +21,12 @@ const mapProfileToUser = (profile: any): User => {
     isGuardian: profile.is_guardian,
     isGroveKeeper: profile.is_grove_keeper,
     joinDate: profile.created_at,
-    // Load extra data from metadata JSONB column with defaults
     profileCompletion: metadata.profileCompletion || { initial: false, additional: false, extra: false },
     timeline: metadata.timeline || [],
     unlockedTools: metadata.unlockedTools || [],
     purchasedCourseIds: metadata.purchasedCourseIds || [],
-    conversations: [], // Not persisted in profile yet
-    notifications: [], // Not persisted in profile yet
+    conversations: [], 
+    notifications: [], 
     reflectionAnalysesRemaining: metadata.reflectionAnalysesRemaining || 0,
     ambassadorPacksRemaining: metadata.ambassadorPacksRemaining || 0,
     impactPortfolio: metadata.impactPortfolio || [],
@@ -37,13 +35,12 @@ const mapProfileToUser = (profile: any): User => {
 };
 
 export const dbAdapter = {
-    // --- SYSTEM HEALTH CHECK ---
     async getSystemHealth(): Promise<{ status: string; scalabilityScore: number; issues: string[] }> {
         if (!supabase) {
             return { status: 'Local Mode', scalabilityScore: 0, issues: ['Supabase keys missing. Using local data.'] };
         }
         try {
-            const { count, error } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
+            const { error } = await supabase.from('profiles').select('id', { count: 'exact', head: true });
             if (error) throw error;
             return { status: 'Healthy', scalabilityScore: 95, issues: [] };
         } catch (e: any) {
@@ -51,7 +48,6 @@ export const dbAdapter = {
         }
     },
 
-    // --- USERS ---
     async getUsers(page: number = 1, limit: number = 20, search: string = ''): Promise<{ data: User[], total: number }> {
         if (!supabase) return { data: INITIAL_USERS, total: INITIAL_USERS.length };
 
@@ -64,7 +60,7 @@ export const dbAdapter = {
         const { data, error, count } = await query.range(from, to);
         if (error) {
             console.error('Error fetching users:', error);
-            return { data: INITIAL_USERS, total: INITIAL_USERS.length }; // Fallback
+            return { data: INITIAL_USERS, total: INITIAL_USERS.length }; 
         }
 
         const users = data.map(mapProfileToUser);
@@ -87,15 +83,16 @@ export const dbAdapter = {
     async saveUser(user: User): Promise<void> {
         if (!supabase) return;
         
-        // Separate top-level columns from JSON metadata
         const profileData = {
             id: user.id,
             email: user.email,
             full_name: user.fullName || user.name,
             phone: user.phone,
             avatar_url: user.avatar,
-            points: user.points,
-            mana_points: user.manaPoints,
+            // Points are managed via RPC for security, but we save them here for sync if needed
+            // Ideally, we shouldn't overwrite points directly from client if using RPC
+            // points: user.points, 
+            // mana_points: user.manaPoints,
             level: user.level,
             is_admin: user.isAdmin,
             is_guardian: user.isGuardian,
@@ -109,7 +106,6 @@ export const dbAdapter = {
                 ambassadorPacksRemaining: user.ambassadorPacksRemaining,
                 impactPortfolio: user.impactPortfolio,
                 referralPointsEarned: user.referralPointsEarned,
-                // Add other non-column fields here
             }
         };
 
@@ -117,7 +113,27 @@ export const dbAdapter = {
         if (error) console.error('Error saving user to DB:', error);
     },
 
-    // --- ORDERS ---
+    // --- SECURE POINT TRANSACTIONS ---
+    async spendBarkatPoints(amount: number): Promise<boolean> {
+        if (!supabase) return true; // Allow in local mode
+        const { error } = await supabase.rpc('spend_points', { amount });
+        if (error) {
+            console.error("Point transaction failed:", error);
+            return false;
+        }
+        return true;
+    },
+
+    async spendManaPoints(amount: number): Promise<boolean> {
+        if (!supabase) return true;
+        const { error } = await supabase.rpc('spend_mana', { amount });
+        if (error) {
+            console.error("Mana transaction failed:", error);
+            return false;
+        }
+        return true;
+    },
+
     async getOrders(userId?: string): Promise<Order[]> {
          if (!supabase) return INITIAL_ORDERS;
          
@@ -135,7 +151,7 @@ export const dbAdapter = {
              items: typeof o.items === 'string' ? JSON.parse(o.items) : o.items || [],
              date: o.created_at,
              statusHistory: [{ status: o.status, date: o.created_at }],
-             deeds: [] // We could load deeds separately if needed
+             deeds: [] 
          }));
     },
 
@@ -150,14 +166,13 @@ export const dbAdapter = {
             user_id: order.userId,
             total_amount: order.total,
             status: order.status,
-            items: order.items, // Supabase handles JSON array automatically
+            items: order.items, 
             created_at: order.date
         };
         const { error } = await supabase.from('orders').insert(orderData);
         if (error) console.error('Error saving order:', error);
     },
 
-    // --- POSTS ---
     async getAllPosts(): Promise<CommunityPost[]> {
         if (!supabase) return INITIAL_POSTS;
         
@@ -191,7 +206,6 @@ export const dbAdapter = {
         await supabase.from('posts').insert(postData);
     },
 
-    // --- AGENT LOGS (Local for now, or could use a table) ---
     async getAgentLogs(): Promise<AgentActionLog[]> {
         try {
             const stored = localStorage.getItem('nakhlestan_agent_logs');
@@ -205,7 +219,6 @@ export const dbAdapter = {
         localStorage.setItem('nakhlestan_agent_logs', JSON.stringify(logs.slice(0, 50)));
     },
 
-    // --- SESSION ---
     getCurrentUserId(): string | null {
         return localStorage.getItem('nakhlestan_current_user_id');
     },

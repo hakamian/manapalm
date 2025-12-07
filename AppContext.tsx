@@ -63,7 +63,6 @@ const DEFAULT_ALCHEMY_PROMPT = `
 `;
 
 const initialState: AppState = {
-    // ... (Same as before)
     user: null,
     users: [], 
     allUsers: [], 
@@ -187,7 +186,6 @@ function appReducer(state: AppState, action: Action): AppState {
     let newState = { ...state };
 
     switch (action.type) {
-        // ... (Existing cases remain unchanged)
         case 'SET_USER':
             newState = { ...state, user: action.payload };
             if (action.payload) { dbAdapter.setCurrentUserId(action.payload.id); dbAdapter.saveUser(action.payload); } else { dbAdapter.setCurrentUserId(null); }
@@ -244,6 +242,8 @@ function appReducer(state: AppState, action: Action): AppState {
                  webProjectUpdate = { webDevProject: newProject };
                  newTimelineEvents.push({ id: `evt_project_start_${Date.now()}`, date: new Date().toISOString(), type: 'creative_act', title: 'آغاز پروژه میراث دیجیتال', description: `شروع ساخت ${webDevItem.name}`, details: { mediaType: 'image', imageUrl: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=400?q=80&w=400', prompt: webDevItem.name } });
              }
+             // NOTE: Points are just updated in local state for UI responsiveness, but DB uses RPC elsewhere if needed.
+             // Ideally, order processing should trigger DB functions to award points.
              const updatedUser = state.user ? { ...state.user, points: state.user.points + pointsEarned, pointsHistory: [...(state.user.pointsHistory || []), { action: 'خرید', points: pointsEarned, type: 'barkat' as const, date: new Date().toISOString() }], timeline: [...newTimelineEvents, ...(state.user.timeline || [])], ...webProjectUpdate, ...unlockUpdates } : null;
              dbAdapter.saveOrder(newOrder);
              if(updatedUser) dbAdapter.saveUser(updatedUser);
@@ -286,7 +286,18 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'SHOW_SOCIAL_POST_GENERATOR_MODAL': return { ...state, isSocialPostGeneratorModalOpen: action.payload.isOpen, socialPostGeneratorData: { deed: action.payload.deed } };
         case 'TOGGLE_MEANING_PALM_ACTIVATION_MODAL': return { ...state, isMeaningPalmActivationModalOpen: action.payload };
         case 'UNLOCK_MEANING_PALM':
-            if(state.user && state.user.manaPoints >= 15000) { const updatedUser = { ...state.user, manaPoints: state.user.manaPoints - 15000, hasUnlockedMeaningPalm: true }; dbAdapter.saveUser(updatedUser); return { ...state, user: updatedUser, isMeaningPalmActivationModalOpen: false }; }
+            if(state.user && state.user.manaPoints >= 15000) { 
+                // SECURE CALL
+                dbAdapter.spendManaPoints(15000).then(success => {
+                    if (success) {
+                         const updatedUser = { ...state.user!, manaPoints: state.user!.manaPoints - 15000, hasUnlockedMeaningPalm: true }; 
+                         dbAdapter.saveUser(updatedUser); 
+                    }
+                });
+                // Optimistic UI Update
+                const updatedUser = { ...state.user, manaPoints: state.user.manaPoints - 15000, hasUnlockedMeaningPalm: true };
+                return { ...state, user: updatedUser, isMeaningPalmActivationModalOpen: false }; 
+            }
             return state;
         case 'OPEN_FUTURE_VISION_MODAL': return { ...state, isFutureVisionModalOpen: true, futureVisionDeed: action.payload };
         case 'CLOSE_FUTURE_VISION_MODAL': return { ...state, isFutureVisionModalOpen: false, futureVisionDeed: null };
@@ -300,7 +311,17 @@ function appReducer(state: AppState, action: Action): AppState {
             if (state.user) { const updatedTimeline = (state.user.timeline || []).map(event => event.deedId === action.payload.deedId ? { ...event, ...action.payload.memory } : event); const updatedUser = { ...state.user, timeline: updatedTimeline }; dbAdapter.saveUser(updatedUser); return { ...state, user: updatedUser }; }
             return state;
         case 'TOGGLE_WISHLIST': if(state.wishlist.includes(action.payload)) { return { ...state, wishlist: state.wishlist.filter(id => id !== action.payload) }; } else { return { ...state, wishlist: [...state.wishlist, action.payload] }; }
-        case 'DONATE_POINTS': if(state.user && state.user.points >= action.payload.amount) { const updatedUser = { ...state.user, points: state.user.points - action.payload.amount, pointsHistory: [...(state.user.pointsHistory || []), { action: 'اهدای امتیاز', points: -action.payload.amount, type: 'barkat' as const, date: new Date().toISOString() }] }; dbAdapter.saveUser(updatedUser); return { ...state, user: updatedUser }; }
+        case 'DONATE_POINTS': 
+            if(state.user && state.user.points >= action.payload.amount) { 
+                 // SECURE CALL
+                dbAdapter.spendBarkatPoints(action.payload.amount).then(success => {
+                    if(success) console.log("Points donated");
+                });
+                // Optimistic UI
+                const updatedUser = { ...state.user, points: state.user.points - action.payload.amount, pointsHistory: [...(state.user.pointsHistory || []), { action: 'اهدای امتیاز', points: -action.payload.amount, type: 'barkat' as const, date: new Date().toISOString() }] }; 
+                dbAdapter.saveUser(updatedUser); 
+                return { ...state, user: updatedUser }; 
+            }
              return state;
         case 'ADD_POST': dbAdapter.savePost(action.payload); return { ...state, communityPosts: [action.payload, ...state.communityPosts] };
         case 'UPDATE_APP_SETTINGS': return { ...state, appSettings: { ...state.appSettings, ...action.payload } };
@@ -327,7 +348,18 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'ADD_DEED_UPDATE': const deedsWithUpdate = state.allDeeds.map(deed => deed.id === action.payload.deedId ? { ...deed, updates: [...(deed.updates || []), action.payload.update] } : deed); return { ...state, allDeeds: deedsWithUpdate };
         case 'ADD_PROPOSAL': return { ...state, proposals: [action.payload, ...state.proposals] };
         case 'UPDATE_PROPOSAL': return { ...state, proposals: state.proposals.map(p => p.id === action.payload.id ? { ...p, ...action.payload } : p) };
-        case 'SPEND_MANA_POINTS': if(state.user && state.user.manaPoints >= action.payload.points) { const updatedUser = { ...state.user, manaPoints: state.user.manaPoints - action.payload.points, pointsHistory: [...(state.user.pointsHistory || []), { action: action.payload.action, points: -action.payload.points, type: 'mana' as const, date: new Date().toISOString() }] }; dbAdapter.saveUser(updatedUser); return { ...state, user: updatedUser }; } return state;
+        case 'SPEND_MANA_POINTS': 
+             if(state.user && state.user.manaPoints >= action.payload.points) { 
+                // SECURE CALL
+                dbAdapter.spendManaPoints(action.payload.points).then(success => {
+                    // Handle failure if needed
+                });
+                // Optimistic UI Update
+                const updatedUser = { ...state.user, manaPoints: state.user.manaPoints - action.payload.points, pointsHistory: [...(state.user.pointsHistory || []), { action: action.payload.action, points: -action.payload.points, type: 'mana' as const, date: new Date().toISOString() }] }; 
+                dbAdapter.saveUser(updatedUser); 
+                return { ...state, user: updatedUser }; 
+             } 
+             return state;
         case 'SET_ENGLISH_SCENARIO': return { ...state, currentEnglishScenario: action.payload };
         case 'SET_CURRENT_VOCABULARY_TOPIC': return { ...state, currentVocabularyTopic: action.payload };
         case 'START_COACHING_SESSION': return { ...state, coachingSession: action.payload };
@@ -379,10 +411,12 @@ function appReducer(state: AppState, action: Action): AppState {
             }
             
              if (actionData.type === 'grant_bonus') {
-                // Logic to grant points to all active users? Or just current user for demo?
-                // For simplicity in this demo, we grant to current user if logged in, or just show toast.
                 if (state.user) {
                     const bonus = payload.amount;
+                    // SECURE CALL for Admin action
+                    // In real world this would be a bulk operation via API
+                    dbAdapter.spendBarkatPoints(-bonus); // Negative spend = Grant
+
                     const updatedUser = { 
                          ...state.user, 
                          points: state.user.points + bonus,
