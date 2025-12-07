@@ -2,7 +2,9 @@
 import React, { useState } from 'react';
 import { CommunityPost, ArticleDraft } from '../../types';
 import { analyzeCommunitySentimentAndTopics, generateArticleDraft } from '../../services/geminiService';
-import { SparklesIcon, MegaphoneIcon, PencilSquareIcon } from '../icons';
+import { SparklesIcon, MegaphoneIcon, PencilSquareIcon, PhotoIcon } from '../icons';
+import CloudinaryUploadWidget from '../ui/CloudinaryUploadWidget';
+import SmartImage from '../ui/SmartImage';
 
 interface ContentFactoryDashboardProps {
     posts: CommunityPost[];
@@ -15,6 +17,9 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
     const [isLoadingDraft, setIsLoadingDraft] = useState(false);
     const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
     const [error, setError] = useState<string | null>(null);
+    
+    // Image State
+    const [articleImage, setArticleImage] = useState<string | null>(null);
 
     const handleFetchTopics = async () => {
         setIsLoadingTopics(true);
@@ -36,6 +41,7 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
         setIsLoadingDraft(true);
         setError(null);
         setArticleDraft(null);
+        setArticleImage(null); // Reset image for new article
         try {
             const result = await generateArticleDraft(topic);
             setArticleDraft(result);
@@ -49,9 +55,13 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
 
     const handleCopy = () => {
         if (articleDraft) {
-            const fullText = `# ${articleDraft.title}\n\n${articleDraft.summary}\n\n${articleDraft.content}`;
+            let fullText = `# ${articleDraft.title}\n\n`;
+            if (articleImage) {
+                fullText += `![Featured Image](${articleImage})\n\n`;
+            }
+            fullText += `${articleDraft.summary}\n\n${articleDraft.content}`;
             navigator.clipboard.writeText(fullText);
-            alert('متن مقاله کپی شد!');
+            alert('متن مقاله (به همراه لینک تصویر) کپی شد!');
         }
     };
 
@@ -114,6 +124,38 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                     </div>
                 ) : articleDraft ? (
                     <div className="flex-grow flex flex-col space-y-4 h-full">
+                        
+                        {/* Image Management Section */}
+                        <div className="bg-gray-900/50 p-4 rounded-lg border border-gray-600">
+                            <h4 className="text-sm font-bold text-gray-300 mb-3 flex items-center gap-2">
+                                <PhotoIcon className="w-4 h-4 text-purple-400"/> مدیریت تصویر شاخص (Cloudinary)
+                            </h4>
+                            
+                            {articleImage ? (
+                                <div className="relative group">
+                                    <SmartImage 
+                                        src={articleImage} 
+                                        alt="Selected Article Image" 
+                                        className="w-full h-40 object-cover rounded-lg"
+                                        width={600}
+                                    />
+                                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg">
+                                        <button onClick={() => setArticleImage(null)} className="text-red-400 text-sm font-bold">حذف و تغییر</button>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1 truncate">{articleImage}</p>
+                                </div>
+                            ) : (
+                                <div className="text-center p-4 border-2 border-dashed border-gray-600 rounded-lg">
+                                    <p className="text-xs text-gray-400 mb-3">هنوز تصویری انتخاب نشده است.</p>
+                                    <CloudinaryUploadWidget 
+                                        onUploadSuccess={(url) => setArticleImage(url)} 
+                                        buttonText="انتخاب یا آپلود تصویر"
+                                        className="text-xs py-1.5 px-3 mx-auto"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
                         <div>
                             <label className="text-xs text-gray-500 uppercase font-bold mb-1 block">عنوان پیشنهادی</label>
                             <input type="text" value={articleDraft.title} className="w-full bg-gray-900 border border-gray-600 p-3 rounded-lg font-bold text-lg text-white" readOnly/>
@@ -127,7 +169,7 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                             <textarea value={articleDraft.content} className="w-full flex-grow bg-gray-900 border border-gray-600 p-3 rounded-lg text-sm text-gray-300 leading-relaxed resize-none font-mono" readOnly/>
                         </div>
                         <button onClick={handleCopy} className="w-full bg-gray-700 hover:bg-gray-600 text-white font-semibold py-2 rounded-lg transition-colors">
-                            کپی کل متن (Markdown)
+                            کپی کل متن (همراه با لینک تصویر)
                         </button>
                     </div>
                 ) : (
