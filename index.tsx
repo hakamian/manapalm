@@ -2,8 +2,31 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { HelmetProvider } from 'react-helmet-async';
+import * as Sentry from "@sentry/react";
 import App from './App';
-import { AppProvider } from './AppContext'; // Import the new provider
+import { AppProvider } from './AppContext';
+import CrashFallback from './components/CrashFallback';
+
+// Initialize Sentry
+// NOTE: Ensure VITE_SENTRY_DSN is set in your .env file
+const sentryDsn = (import.meta as any).env?.VITE_SENTRY_DSN;
+
+if (sentryDsn) {
+    Sentry.init({
+        dsn: sentryDsn,
+        integrations: [
+            Sentry.browserTracingIntegration(),
+            Sentry.replayIntegration(),
+        ],
+        // Performance Monitoring
+        tracesSampleRate: 1.0, 
+        // Session Replay
+        replaysSessionSampleRate: 0.1, 
+        replaysOnErrorSampleRate: 1.0, 
+    });
+} else {
+    console.warn("Sentry DSN not found. Error monitoring is disabled.");
+}
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -13,10 +36,12 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <HelmetProvider>
-      <AppProvider>
-        <App />
-      </AppProvider>
-    </HelmetProvider>
+    <Sentry.ErrorBoundary fallback={({ error, resetErrorBoundary }) => <CrashFallback error={error} resetErrorBoundary={resetErrorBoundary} />}>
+        <HelmetProvider>
+          <AppProvider>
+            <App />
+          </AppProvider>
+        </HelmetProvider>
+    </Sentry.ErrorBoundary>
   </React.StrictMode>
 );

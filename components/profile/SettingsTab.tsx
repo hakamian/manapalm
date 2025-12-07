@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { User } from '../../types';
 import ToggleSwitch from '../ToggleSwitch';
-import { GoogleIcon, CloudIcon } from '../icons';
+import { GoogleIcon, CloudIcon, ExclamationTriangleIcon } from '../icons';
 
 interface SettingsTabProps {
     user: User;
@@ -27,7 +27,7 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ user, onUpdate }) => {
         // Simulate a backup process
         setTimeout(() => {
             const newBackupDate = new Date().toISOString();
-            onUpdate({ ...user, googleDriveLastBackup: newBackupDate });
+            onUpdate({ ...user, googleDriveEmail: user.email || 'connected@google.com', googleDriveLastBackup: newBackupDate });
             setIsBackingUp(false);
             setBackupSuccessMessage('پشتیبان‌گیری با موفقیت انجام شد!');
             setTimeout(() => setBackupSuccessMessage(''), 4000);
@@ -110,6 +110,26 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ user, onUpdate }) => {
                         )}
                     </div>
                 </div>
+
+                {/* Sentry Test Section */}
+                <div>
+                    <h3 className="text-lg font-semibold mb-3 text-red-400 flex items-center gap-2">
+                        <ExclamationTriangleIcon className="w-5 h-5"/>
+                        عیب‌یابی سیستم (Sentry)
+                    </h3>
+                    <div className="bg-red-900/10 border border-red-500/20 p-4 rounded-md">
+                        <p className="text-sm text-gray-400 mb-3">
+                            این دکمه برای تست اتصال به سیستم مانیتورینگ خطا است. با کلیک بر روی آن، یک خطای آزمایشی ایجاد می‌شود.
+                        </p>
+                        <button
+                            onClick={() => { throw new Error("این یک خطای آزمایشی برای تست Sentry است!"); }}
+                            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-md transition-colors"
+                        >
+                            تست ثبت خطا (Break the World)
+                        </button>
+                    </div>
+                </div>
+
              </div>
              <div className="mt-8 pt-6 border-t border-gray-700 text-left">
                 <button onClick={handleSettingsSave} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md transition-colors">ذخیره تنظیمات</button>
