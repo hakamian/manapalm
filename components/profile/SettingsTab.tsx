@@ -2,7 +2,8 @@
 import React, { useState } from 'react';
 import { User } from '../../types';
 import ToggleSwitch from '../ToggleSwitch';
-import { GoogleIcon, CloudIcon, ExclamationTriangleIcon } from '../icons';
+import { GoogleIcon, CloudIcon, ExclamationTriangleIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, CheckCircleIcon } from '../icons';
+import { supabase } from '../../services/supabaseClient';
 
 interface SettingsTabProps {
     user: User;
@@ -14,11 +15,52 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ user, onUpdate }) => {
     const [isBackingUp, setIsBackingUp] = useState(false);
     const [backupSuccessMessage, setBackupSuccessMessage] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    
+    // Password Update State
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [passwordLoading, setPasswordLoading] = useState(false);
+    const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     const handleSettingsSave = () => {
          onUpdate({ ...user, notificationPreferences: prefs });
          setSuccessMessage('تنظیمات با موفقیت ذخیره شد.');
          setTimeout(() => setSuccessMessage(''), 3000);
+    };
+
+    const handleUpdatePassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setPasswordMessage(null);
+
+        if (newPassword.length < 6) {
+            setPasswordMessage({ type: 'error', text: 'رمز عبور باید حداقل ۶ کاراکتر باشد.' });
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            setPasswordMessage({ type: 'error', text: 'تکرار رمز عبور مطابقت ندارد.' });
+            return;
+        }
+
+        setPasswordLoading(true);
+
+        try {
+            if (!supabase) throw new Error("سرویس در دسترس نیست");
+            
+            const { error } = await supabase.auth.updateUser({ password: newPassword });
+            
+            if (error) throw error;
+            
+            setPasswordMessage({ type: 'success', text: 'رمز عبور با موفقیت به‌روزرسانی شد.' });
+            setNewPassword('');
+            setConfirmPassword('');
+        } catch (err: any) {
+            console.error("Password Update Error:", err);
+            setPasswordMessage({ type: 'error', text: err.message || 'خطا در تغییر رمز عبور.' });
+        } finally {
+            setPasswordLoading(false);
+        }
     };
 
     const handleBackup = () => {
@@ -39,6 +81,73 @@ const SettingsTab: React.FC<SettingsTabProps> = ({ user, onUpdate }) => {
              <h2 className="text-2xl font-bold mb-6">تنظیمات</h2>
              {successMessage && <div className="mb-4 p-3 bg-green-900/50 text-green-300 rounded-md">{successMessage}</div>}
              <div className="space-y-6">
+                 
+                 {/* Password Settings */}
+                 <div>
+                    <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <LockClosedIcon className="w-5 h-5 text-amber-400"/>
+                        امنیت و رمز عبور
+                    </h3>
+                    <form onSubmit={handleUpdatePassword} className="bg-gray-700/50 p-5 rounded-md border border-gray-600">
+                        <p className="text-sm text-gray-300 mb-4">
+                            با تنظیم رمز عبور، می‌توانید بدون نیاز به دریافت پیامک و کد تایید، با شماره موبایل و رمز خود وارد شوید.
+                        </p>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div className="relative">
+                                <label className="block text-xs text-gray-400 mb-1">رمز عبور جدید</label>
+                                <input 
+                                    type={showPassword ? "text" : "password"} 
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    className="w-full bg-gray-600 border border-gray-500 rounded-md p-2 text-white focus:border-amber-500 focus:outline-none"
+                                    placeholder="حداقل ۶ کاراکتر"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs text-gray-400 mb-1">تکرار رمز عبور</label>
+                                <input 
+                                    type={showPassword ? "text" : "password"}
+                                    value={confirmPassword}
+                                    onChange={(e) => setConfirmPassword(e.target.value)}
+                                    className="w-full bg-gray-600 border border-gray-500 rounded-md p-2 text-white focus:border-amber-500 focus:outline-none"
+                                    placeholder="تکرار رمز عبور"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                             <button 
+                                type="button" 
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="text-xs text-gray-400 hover:text-white flex items-center gap-1"
+                            >
+                                {showPassword ? <EyeSlashIcon className="w-4 h-4"/> : <EyeIcon className="w-4 h-4"/>}
+                                {showPassword ? 'مخفی کردن رمز' : 'نمایش رمز'}
+                            </button>
+                            
+                            <button 
+                                type="submit" 
+                                disabled={passwordLoading || !newPassword || !confirmPassword}
+                                className="bg-amber-600 hover:bg-amber-700 disabled:bg-gray-500 disabled:cursor-not-allowed text-white text-sm font-bold py-2 px-6 rounded-md transition-colors flex items-center gap-2"
+                            >
+                                {passwordLoading ? (
+                                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                                ) : (
+                                    <CheckCircleIcon className="w-4 h-4" />
+                                )}
+                                ذخیره رمز عبور
+                            </button>
+                        </div>
+                        
+                        {passwordMessage && (
+                            <div className={`mt-3 p-2 rounded text-sm text-center ${passwordMessage.type === 'success' ? 'bg-green-900/30 text-green-300 border border-green-600/30' : 'bg-red-900/30 text-red-300 border border-red-600/30'}`}>
+                                {passwordMessage.text}
+                            </div>
+                        )}
+                    </form>
+                 </div>
+
                 <div>
                     <h3 className="text-lg font-semibold mb-3">تنظیمات اعلان‌ها</h3>
                     <div className="space-y-4 bg-gray-700/50 p-4 rounded-md">

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { XMarkIcon, GoogleIcon, CheckCircleIcon } from './icons';
+import { XMarkIcon, GoogleIcon, CheckCircleIcon, LockClosedIcon, ChatBubbleBottomCenterTextIcon, EyeIcon, EyeSlashIcon } from './icons';
 import { useAppDispatch, useAppState } from '../AppContext';
 import { supabase } from '../services/supabaseClient';
 
@@ -13,39 +13,39 @@ interface AuthModalProps {
 const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }) => {
   const { allUsers } = useAppState();
   const dispatch = useAppDispatch();
+  
+  // 1: Phone Input, 2: OTP Input, 3: Register Name (if new), 4: Success
   const [step, setStep] = useState(1);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('register');
+  
+  // Login Method: 'otp' (SMS) or 'password'
+  const [loginMethod, setLoginMethod] = useState<'otp' | 'password'>('otp');
+  
   const [phoneNumber, setPhoneNumber] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isValid, setIsValid] = useState(true);
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   
-  // Smart Login state
-  const [isKnownUser, setIsKnownUser] = useState(false);
-
   const otpInputsRef = useRef<Array<HTMLInputElement | null>>([]);
-
-  const CORRECT_OTP = '123456'; // For simulation purposes
 
   useEffect(() => {
     if (isOpen) {
-      // Reset all state on open
+      // Reset state on open
       const timer = setTimeout(() => {
         setStep(1); 
         setPhoneNumber(''); 
         setOtp(''); 
+        setPassword('');
         setIsValid(true); 
         setError(''); 
         setIsLoading(false); 
-        setAuthMode('register'); 
-        setRememberMe(false); 
+        setLoginMethod('otp');
         setFirstName(''); 
         setLastName('');
-        setIsKnownUser(false);
       }, 300);
       return () => clearTimeout(timer);
     }
@@ -68,37 +68,95 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     }
   };
 
+  // --- SUBMIT PHONE (Start Login) ---
   const handleSubmitPhone = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (isValid && phoneNumber.length === 11) {
-      setIsLoading(true);
-      setError('');
-      
-      // Smart Login Check (Mock DB)
-      const existingUser = allUsers.find(u => u.phone === phoneNumber);
-      setIsKnownUser(!!existingUser);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setIsLoading(false);
-      setStep(2);
-    } else {
-      setIsValid(false);
+    if (!isValid || phoneNumber.length !== 11) {
+        setIsValid(false);
+        return;
+    }
+    
+    setIsLoading(true);
+    setError('');
+
+    try {
+        if (loginMethod === 'otp') {
+            // A) Send OTP via Supabase
+            if (!supabase) throw new Error("سرویس در دسترس نیست");
+            
+            const { error } = await supabase.auth.signInWithOtp({
+                phone: '+98' + phoneNumber.substring(1), // Convert 0912... to +98912...
+            });
+
+            if (error) throw error;
+            
+            // Move to OTP step
+            setStep(2);
+            
+        } else {
+            // B) Login with Password directly
+            if (!supabase) throw new Error("سرویس در دسترس نیست");
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                phone: '+98' + phoneNumber.substring(1),
+                password: password
+            });
+
+            if (error) throw error;
+
+            // Success
+            if (data.user) {
+                onLoginSuccess({ phone: phoneNumber });
+                onClose();
+            }
+        }
+    } catch (err: any) {
+        console.error("Login Error:", err);
+        setError(err.message || 'خطا در برقراری ارتباط. لطفا دوباره تلاش کنید.');
+        if (err.message.includes("Invalid login credentials")) {
+            setError("شماره موبایل یا رمز عبور اشتباه است.");
+        }
+    } finally {
+        setIsLoading(false);
     }
   };
 
-  const handleOtpSubmit = (e: React.FormEvent) => {
+  // --- SUBMIT OTP (Verify Code) ---
+  const handleOtpSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (otp.length !== 6) return;
+
+    setIsLoading(true);
     setError('');
-    if (otp === CORRECT_OTP) {
-        if (isKnownUser) {
+
+    try {
+        if (!supabase) throw new Error("سرویس در دسترس نیست");
+
+        const { data, error } = await supabase.auth.verifyOtp({
+            phone: '+98' + phoneNumber.substring(1),
+            token: otp,
+            type: 'sms'
+        });
+
+        if (error) throw error;
+
+        // Check if user is new or existing based on local state mock or metadata
+        // In real app, we check if profile exists
+        const existingUser = allUsers.find(u => u.phone === phoneNumber);
+        
+        if (existingUser) {
              onLoginSuccess({ phone: phoneNumber });
              onClose();
         } else {
+             // New user, ask for name
              setStep(3);
         }
-    } else {
-        setError('کد وارد شده صحیح نمی‌باشد.');
+
+    } catch (err: any) {
+        console.error("OTP Verify Error:", err);
+        setError('کد وارد شده صحیح نمی‌باشد یا منقضی شده است.');
+    } finally {
+        setIsLoading(false);
     }
   };
   
@@ -146,21 +204,19 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     e.preventDefault();
     if (firstName.trim() && lastName.trim()) {
         const fullName = `${firstName.trim()} ${lastName.trim()}`;
+        // Update profile in DB (Mocked here, but would be an update call)
         onLoginSuccess({ phone: phoneNumber, fullName: fullName });
         setStep(4);
     }
   };
 
-  // --- REAL GOOGLE LOGIN IMPLEMENTATION ---
   const handleGoogleLogin = async () => {
     if (!supabase) {
-        setError('خطا: اتصال به سرویس گوگل (Supabase) برقرار نیست.');
+        setError('خطا: سرویس احراز هویت گوگل (Supabase) پیکربندی نشده است.');
         return;
     }
-
     setIsLoading(true);
     setError('');
-    
     try {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
@@ -172,18 +228,36 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                 },
             }
         });
-        
         if (error) throw error;
-        // User will be redirected to Google
     } catch (e: any) {
         console.error("Google Login Error:", e);
-        setError(e.message || 'خطا در برقراری ارتباط با گوگل. لطفا دوباره تلاش کنید.');
+        setError(e.message || 'خطا در برقراری ارتباط با گوگل.');
         setIsLoading(false);
     }
   };
 
   const renderStepOne = () => (
      <form onSubmit={handleSubmitPhone} className="space-y-6">
+        {/* Method Toggles */}
+        <div className="flex bg-gray-700 p-1 rounded-lg mb-6">
+            <button
+                type="button"
+                onClick={() => { setLoginMethod('otp'); setError(''); }}
+                className={`flex-1 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2 ${loginMethod === 'otp' ? 'bg-amber-600 text-white shadow' : 'text-gray-400 hover:text-white'}`}
+            >
+                <ChatBubbleBottomCenterTextIcon className="w-4 h-4" />
+                پیامک (OTP)
+            </button>
+            <button
+                type="button"
+                onClick={() => { setLoginMethod('password'); setError(''); }}
+                className={`flex-1 py-2 rounded-md text-sm font-medium transition-all flex items-center justify-center gap-2 ${loginMethod === 'password' ? 'bg-amber-600 text-white shadow' : 'text-gray-400 hover:text-white'}`}
+            >
+                <LockClosedIcon className="w-4 h-4" />
+                رمز عبور
+            </button>
+        </div>
+
         <div>
           <label htmlFor="phone" className="block text-sm font-medium text-gray-300 mb-2 text-right">شماره موبایل</label>
           <input
@@ -197,22 +271,45 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
           />
           {!isValid && phoneNumber.length > 0 && <p className="text-red-400 text-sm mt-2 text-right">لطفاً یک شماره موبایل معتبر وارد کنید.</p>}
         </div>
-        <div>
-            <label className="flex items-center text-gray-400 cursor-pointer text-sm mb-4">
-                <input 
-                    type="checkbox" 
-                    checked={rememberMe} 
-                    onChange={(e) => setRememberMe(e.target.checked)} 
-                    className="ml-2 bg-gray-900 border-gray-600 text-amber-500 focus:ring-amber-500 focus:ring-offset-gray-800 rounded" 
+
+        {loginMethod === 'password' && (
+            <div className="relative">
+                <label htmlFor="pass" className="block text-sm font-medium text-gray-300 mb-2 text-right">رمز عبور</label>
+                <input
+                    type={showPassword ? "text" : "password"}
+                    id="pass"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="رمز عبور خود را وارد کنید"
+                    className="w-full bg-gray-900 border border-gray-600 rounded-md p-3 text-left focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
                 />
-                <span>مرا به خاطر بسپار</span>
-            </label>
+                <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute top-[38px] left-3 text-gray-500 hover:text-white"
+                >
+                    {showPassword ? <EyeSlashIcon className="w-5 h-5"/> : <EyeIcon className="w-5 h-5"/>}
+                </button>
+                <div className="text-right mt-2">
+                     <button type="button" onClick={() => setLoginMethod('otp')} className="text-xs text-amber-500 hover:underline">رمز عبور را فراموش کرده‌اید؟ (ورود با پیامک)</button>
+                </div>
+            </div>
+        )}
+        
+        <div>
             <button
               type="submit"
-              disabled={!isValid || phoneNumber.length !== 11 || isLoading}
-              className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-gray-900 font-bold py-3 px-4 rounded-md transition-all duration-300 text-lg"
+              disabled={!isValid || phoneNumber.length !== 11 || isLoading || (loginMethod === 'password' && !password)}
+              className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-gray-900 font-bold py-3 px-4 rounded-md transition-all duration-300 text-lg flex items-center justify-center gap-2"
             >
-              {isLoading ? 'در حال بررسی...' : 'ارسال کد تایید'}
+              {isLoading ? (
+                  <>
+                    <span className="w-5 h-5 border-2 border-gray-800 border-t-transparent rounded-full animate-spin"></span>
+                    درحال بررسی...
+                  </>
+              ) : (
+                  loginMethod === 'otp' ? 'ارسال کد تایید' : 'ورود به حساب'
+              )}
             </button>
         </div>
       </form>
@@ -221,6 +318,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   const renderStepTwo = () => (
       <form onSubmit={handleOtpSubmit} className="space-y-6">
         <div>
+          <p className="text-center text-gray-300 mb-4 text-sm">
+              کد ارسال شده به <span className="font-bold text-white dir-ltr">{phoneNumber}</span> را وارد کنید.
+          </p>
           <label htmlFor="otp-0" className="sr-only">کد تایید</label>
           <div className="flex justify-center gap-1 sm:gap-2" dir="ltr">
             {[...Array(6)].map((_, index) => (
@@ -244,17 +344,20 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         <div className="flex justify-end items-center text-sm">
             <div>
                 <button type="button" onClick={() => setStep(1)} className="text-gray-400 hover:text-white transition-colors">ویرایش شماره</button>
-                 <span className="mx-2 text-gray-500">|</span>
-                <button type="button" className="text-gray-400 hover:text-white transition-colors">ارسال مجدد کد</button>
             </div>
         </div>
 
         <button
           type="submit"
-          disabled={otp.length !== 6}
-          className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-gray-900 font-bold py-3 px-4 rounded-md transition-all duration-300 text-lg"
+          disabled={otp.length !== 6 || isLoading}
+          className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-gray-900 font-bold py-3 px-4 rounded-md transition-all duration-300 text-lg flex items-center justify-center gap-2"
         >
-          {isKnownUser ? 'ورود به حساب' : 'تایید و ادامه'}
+          {isLoading ? (
+               <>
+                <span className="w-5 h-5 border-2 border-gray-800 border-t-transparent rounded-full animate-spin"></span>
+                بررسی کد...
+              </>
+          ) : 'تایید و ادامه'}
         </button>
       </form>
   );
@@ -300,16 +403,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   );
 
   const renderStepFour = () => (
-    <div className="text-center space-y-6">
+    <div className="text-center space-y-6 animate-fade-in-up">
         <CheckCircleIcon className="w-16 h-16 text-green-400 mx-auto" />
         <div>
             <h3 className="text-xl font-bold">عالی بود، {firstName || 'کاربر عزیز'}!</h3>
             <p className="text-gray-300 mt-2">خوشحالیم که به خانواده نخلستان معنا پیوستید.</p>
         </div>
         <div className="p-4 bg-gray-700/50 rounded-lg border border-gray-600">
-            <h4 className="font-semibold text-green-300">قدم بعدی: پروفایل خود را کامل کنید</h4>
+            <h4 className="font-semibold text-green-300">پیشنهاد: رمز عبور بگذارید</h4>
             <p className="text-sm text-gray-300 mt-2">
-                با تکمیل اطلاعات بیشتر در پروفایل خود، تا <strong>۱۵۰ امتیاز برکت</strong> دیگر هدیه بگیرید و سفر خود را شخصی‌سازی کنید.
+                برای ورود راحت‌تر در دفعات بعدی (بدون نیاز به انتظار پیامک)، می‌توانید در بخش "تنظیمات پروفایل" رمز عبور تعیین کنید.
             </p>
         </div>
         <div className="flex flex-col gap-3">
@@ -363,40 +466,13 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                  step === 4 ? 'خوش آمدید!' : 
                  'به نخلستان معنا خوش آمدید'}
             </h2>
-            <p className="text-gray-400">
-                {step === 1 ? "برای ادامه، وارد شوید." : 
-                 step === 2 ? `کد تایید ارسال شده به ${phoneNumber} را وارد کنید.` : 
+            <p className="text-gray-400 text-sm">
+                {step === 1 ? "برای ادامه، شماره خود را وارد کنید." : 
+                 step === 2 ? `کد تایید پیامک شده را وارد کنید.` : 
                  step === 3 ? 'برای شخصی‌سازی تجربه شما، لطفا نام خود را وارد کنید.' :
                  'سفر شما آغاز شد.'}
             </p>
         </div>
-        
-        {step === 1 && (
-            <div className="mb-6">
-                <div className="relative w-full bg-gray-700 rounded-full p-1 flex">
-                    <button
-                        onClick={() => setAuthMode('login')}
-                        className={`w-1/2 rounded-full py-2 text-center font-semibold transition-colors z-10 ${authMode === 'login' ? 'text-white' : 'text-gray-400'}`}
-                    >
-                        ورود
-                    </button>
-                    <button
-                        onClick={() => setAuthMode('register')}
-                        className={`w-1/2 rounded-full py-2 text-center font-semibold transition-colors z-10 ${authMode === 'register' ? 'text-white' : 'text-gray-400'}`}
-                    >
-                        ثبت‌نام
-                    </button>
-                    <span
-                        className={`absolute top-1 bottom-1 bg-gray-900 rounded-full shadow-md transition-transform duration-300 ease-in-out z-0`}
-                        style={{
-                            right: '2px',
-                            width: 'calc(50% - 2px)',
-                            transform: authMode === 'login' ? 'translateX(0)' : 'translateX(-100%)',
-                        }}
-                    />
-                </div>
-            </div>
-        )}
         
         {step === 1 ? renderStepOne() : step === 2 ? renderStepTwo() : step === 3 ? renderStepThree() : renderStepFour()}
         
@@ -420,7 +496,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                     className="w-full flex items-center justify-center bg-white hover:bg-gray-200 text-gray-800 font-semibold py-3 px-4 rounded-md transition-all duration-200 text-base mt-4 border border-gray-300 shadow-sm"
                 >
                     <GoogleIcon className="w-5 h-5 ml-3" />
-                    {isLoading ? 'در حال اتصال به گوگل...' : 'ورود با حساب گوگل'}
+                    {isLoading ? 'در حال اتصال...' : 'ورود سریع با گوگل'}
                 </button>
             </>
         )}
