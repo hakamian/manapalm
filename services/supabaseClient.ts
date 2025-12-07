@@ -20,6 +20,7 @@ const getEnv = (key: string) => {
 // Instead of connecting directly to Supabase (which might be blocked),
 // we connect to our own domain's "/supaproxy" path.
 // The Vite/Vercel server then forwards the request to Supabase.
+// IMPORTANT: For Auth Redirects (OAuth), we must use the window origin to construct the redirect URL.
 const PROXY_URL = typeof window !== 'undefined' ? `${window.location.origin}/supaproxy` : "https://sbjrayzghjfsmmuugwbw.supabase.co";
 
 const HARDCODED_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNianJheXpnaGpmc21tdXlnd2J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3MTY1NDQsImV4cCI6MjA4MDI5MjU0NH0.W7B-Dr1hiUNl9ok4_PUTPdJG8pJsBXtoOwWciItoF3Q";
@@ -47,8 +48,10 @@ export const supabase: SupabaseClient | null = supabaseAnonKey
 // Helper to manually set keys from UI
 export const setupSupabaseKeys = (url: string, key: string) => {
     if (!key) return;
-    // We ignore the URL passed by user and enforce the Proxy URL for stability
+    // We ignore the URL passed by user for the client init and enforce the Proxy URL for stability
+    // But we store it just in case we want to use direct connection later
     localStorage.setItem('VITE_SUPABASE_ANON_KEY', key);
+    localStorage.setItem('VITE_SUPABASE_URL', url);
     window.location.reload(); 
 };
 

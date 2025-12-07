@@ -37,7 +37,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   // Developer Mode / Config State
   const [showConfig, setShowConfig] = useState(false);
   const [showDevHelp, setShowDevHelp] = useState(false);
-  const [configUrl, setConfigUrl] = useState(localStorage.getItem('VITE_SUPABASE_URL') || '');
+  const [configUrl, setConfigUrl] = useState(localStorage.getItem('VITE_SUPABASE_URL') || 'https://sbjrayzghjfsmmuugwbw.supabase.co');
   const [configKey, setConfigKey] = useState(localStorage.getItem('VITE_SUPABASE_ANON_KEY') || '');
   
   const otpInputsRef = useRef<Array<HTMLInputElement | null>>([]);
@@ -146,7 +146,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         } else {
             // Handle network errors specifically
             if (err.message === "Failed to fetch" || err.message.includes("network")) {
-                setError('خطا در اتصال به سرور (VPN را بررسی کنید). یا آدرس سرور اشتباه است.');
+                setError('خطا در اتصال به سرور (ممکن است نیاز به VPN باشد).');
                 // Optional: Automatically show config on network error to allow URL fix
                 // setShowConfig(true); 
             } else {
@@ -298,7 +298,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin, // This is key: redirects back to localhost or domain
+                redirectTo: window.location.origin, 
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',
@@ -311,7 +311,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         if (e.message?.includes("configuration")) {
              setError("تنظیمات گوگل در Supabase انجام نشده است. (دکمه چرخ‌دنده را بزنید)");
         } else {
-             setError(e.message || 'خطا در برقراری ارتباط با گوگل.');
+             setError(e.message || 'خطا در برقراری ارتباط با گوگل. اتصال اینترنت را بررسی کنید.');
         }
         setIsLoading(false);
     }
@@ -325,9 +325,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   };
 
   const renderConfig = () => {
-      // Extract project ID from URL if possible for guidance
-      const projectId = configUrl.match(/https?:\/\/([^.]+)/)?.[1] || "YOUR_PROJECT_ID";
-      const redirectUrl = `https://${projectId}.supabase.co/auth/v1/callback`;
+      // Determine the project ID and URL
+      // If user hasn't changed it, use the hardcoded one we know is correct
+      const displayUrl = configUrl || 'https://sbjrayzghjfsmmuugwbw.supabase.co';
+      const redirectUrl = `${displayUrl}/auth/v1/callback`;
 
       return (
       <div className="space-y-4 animate-fade-in p-4 bg-gray-900/50 rounded-lg border border-gray-600 mb-4 max-h-[60vh] overflow-y-auto">
@@ -363,21 +364,22 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
              className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 mt-2"
           >
              <QuestionMarkCircleIcon className="w-4 h-4"/>
-             {showDevHelp ? 'مخفی کردن راهنما' : 'راهنمای تنظیم گوگل (Developers)'}
+             {showDevHelp ? 'مخفی کردن راهنما' : 'راهنمای تنظیم گوگل (مشکل ERR_NAME)'}
           </button>
 
           {showDevHelp && (
               <div className="bg-blue-900/20 border border-blue-500/30 p-3 rounded-md mt-2 text-[10px] space-y-2 text-blue-100">
-                  <p className="font-bold">برای فعال‌سازی ورود با گوگل:</p>
+                  <p className="font-bold text-yellow-300">مهم: رفع خطای اتصال گوگل</p>
+                  <p>اگر خطای <code>ERR_NAME_NOT_RESOLVED</code> یا خطای اتصال دارید، باید این آدرس را در کنسول گوگل وارد کنید:</p>
                   <ol className="list-decimal list-inside space-y-1">
-                      <li>در <strong>Google Cloud Console</strong> یک پروژه بسازید.</li>
-                      <li>در بخش <strong>Credentials</strong> یک <strong>OAuth Client ID</strong> بسازید.</li>
-                      <li>در فیلد <strong>Authorized redirect URIs</strong> آدرس زیر را وارد کنید:</li>
+                      <li>به <strong>Google Cloud Console</strong> بروید.</li>
+                      <li>روی آیکون مداد (Edit) جلوی <strong>manapalm</strong> کلیک کنید.</li>
+                      <li>در بخش <strong>Authorized redirect URIs</strong>، دکمه ADD URI را بزنید و این آدرس را وارد کنید:</li>
                   </ol>
-                  <div className="bg-black/50 p-2 rounded text-green-300 font-mono select-all cursor-pointer" onClick={(e) => navigator.clipboard.writeText(e.currentTarget.innerText)}>
+                  <div className="bg-black/50 p-2 rounded text-green-300 font-mono select-all cursor-pointer break-all" onClick={(e) => navigator.clipboard.writeText(e.currentTarget.innerText)}>
                       {redirectUrl}
                   </div>
-                  <p>سپس Client ID و Secret را در پنل Supabase (بخش Auth Providers) وارد کنید.</p>
+                  <p className="text-gray-400 mt-1">سپس Save را بزنید. (ممکن است ۵ دقیقه طول بکشد).</p>
               </div>
           )}
 
