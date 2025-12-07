@@ -16,22 +16,26 @@ const getEnv = (key: string) => {
   return undefined;
 };
 
+// User provided credentials
+const HARDCODED_URL = "https://sbjrayzghjfsmmuugwbw.supabase.co";
+const HARDCODED_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNianJheXpnaGpmc21tdXlnd2J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3MTY1NDQsImV4cCI6MjA4MDI5MjU0NH0.W7B-Dr1hiUNl9ok4_PUTPdJG8pJsBXtoOwWciItoF3Q";
+
 let supabaseUrl = getEnv('VITE_SUPABASE_URL');
 let supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
 
-// Fallback: Check localStorage if env vars are missing (Useful for deployments without .env access)
+// Fallback: Check localStorage or use Hardcoded values
 if (!supabaseUrl || supabaseUrl === 'undefined') {
     const localUrl = typeof window !== 'undefined' ? localStorage.getItem('VITE_SUPABASE_URL') : null;
-    if (localUrl) supabaseUrl = localUrl;
+    supabaseUrl = localUrl || HARDCODED_URL;
 }
 if (!supabaseAnonKey || supabaseAnonKey === 'undefined') {
     const localKey = typeof window !== 'undefined' ? localStorage.getItem('VITE_SUPABASE_ANON_KEY') : null;
-    if (localKey) supabaseAnonKey = localKey;
+    supabaseAnonKey = localKey || HARDCODED_KEY;
 }
 
 // Debugging helper
-if (!supabaseUrl) console.warn('VITE_SUPABASE_URL is missing. Please configure it in .env or via the UI.');
-if (!supabaseAnonKey) console.warn('VITE_SUPABASE_ANON_KEY is missing. Please configure it in .env or via the UI.');
+if (!supabaseUrl) console.warn('VITE_SUPABASE_URL is missing.');
+if (!supabaseAnonKey) console.warn('VITE_SUPABASE_ANON_KEY is missing.');
 
 // Initialize Supabase only if keys are present
 export const supabase: SupabaseClient | null = (supabaseUrl && supabaseAnonKey) 
