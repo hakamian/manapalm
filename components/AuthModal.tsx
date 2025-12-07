@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { XMarkIcon, GoogleIcon, CheckCircleIcon, LockClosedIcon, ChatBubbleBottomCenterTextIcon, EyeIcon, EyeSlashIcon, CogIcon } from './icons';
+import { XMarkIcon, GoogleIcon, CheckCircleIcon, LockClosedIcon, ChatBubbleBottomCenterTextIcon, EyeIcon, EyeSlashIcon, CogIcon, UserCircleIcon } from './icons';
 import { useAppDispatch, useAppState } from '../AppContext';
 import { supabase, setupSupabaseKeys } from '../services/supabaseClient';
 
@@ -79,6 +79,20 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     } else {
       setIsValid(true);
     }
+  };
+
+  // --- MOCK LOGIN (BYPASS SERVER) ---
+  const handleMockLogin = () => {
+      setIsLoading(true);
+      setTimeout(() => {
+          onLoginSuccess({
+              phone: '09120000000',
+              fullName: 'کاربر آزمایشی',
+              email: 'test@manapalm.com'
+          });
+          onClose();
+          setIsLoading(false);
+      }, 800);
   };
 
   // --- SUBMIT PHONE (Start Login) ---
@@ -653,6 +667,18 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
                 {step === 1 && (
                     <>
+                        {/* Mock Login Button for Quick Testing */}
+                        <div className="mt-4">
+                            <button
+                                type="button"
+                                onClick={handleMockLogin}
+                                className="w-full bg-stone-700 hover:bg-stone-600 text-white font-bold py-2 px-4 rounded-md text-sm border border-stone-600 flex items-center justify-center gap-2 transition-colors"
+                            >
+                                <UserCircleIcon className="w-5 h-5 text-gray-400" />
+                                ورود آزمایشی (بدون سرور)
+                            </button>
+                        </div>
+                    
                         <div className="relative flex pt-6 items-center">
                             <div className="flex-grow border-t border-gray-600"></div>
                             <span className="flex-shrink mx-4 text-gray-500 text-sm">یا</span>
