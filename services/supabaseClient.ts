@@ -19,7 +19,6 @@ const getEnv = (key: string) => {
 // --- DIRECT CONNECTION CONFIGURATION ---
 // We use the direct Supabase URL to ensure OAuth links are generated exactly as required:
 // https://sbjrayzghjfsmmuygwbw.supabase.co/auth/v1/authorize...
-// CORRECTED URL: 'muyg' instead of 'muug'
 const SUPABASE_PROJECT_URL = "https://sbjrayzghjfsmmuygwbw.supabase.co";
 
 const HARDCODED_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNianJheXpnaGpmc21tdXlnd2J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3MTY1NDQsImV4cCI6MjA4MDI5MjU0NH0.W7B-Dr1hiUNl9ok4_PUTPdJG8pJsBXtoOwWciItoF3Q";

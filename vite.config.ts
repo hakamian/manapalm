@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
         proxy: {
           // Tunneling Supabase requests to bypass client-side restrictions
           '/supaproxy': {
-            target: 'https://sbjrayzghjfsmmuugwbw.supabase.co',
+            target: 'https://sbjrayzghjfsmmuygwbw.supabase.co',
             changeOrigin: true,
             secure: false,
             rewrite: (path) => path.replace(/^\/supaproxy/, ''),

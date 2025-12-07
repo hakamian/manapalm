@@ -37,7 +37,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   // Developer Mode / Config State
   const [showConfig, setShowConfig] = useState(false);
   const [showDevHelp, setShowDevHelp] = useState(false);
-  // CORRECTED URL: sbjrayzghjfsmmuygwbw
+  // Default to the correct project URL
   const [configUrl, setConfigUrl] = useState(localStorage.getItem('VITE_SUPABASE_URL') || 'https://sbjrayzghjfsmmuygwbw.supabase.co');
   const [configKey, setConfigKey] = useState(localStorage.getItem('VITE_SUPABASE_ANON_KEY') || '');
   
@@ -327,7 +327,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
   const renderConfig = () => {
       const displayUrl = configUrl || 'https://sbjrayzghjfsmmuygwbw.supabase.co';
-      const redirectUrl = `https://www.manapalm.com`; // Show the redirect URL user needs to whitelist
+      const redirectUrl = `https://www.manapalm.com`;
 
       return (
       <div className="space-y-4 animate-fade-in p-4 bg-gray-900/50 rounded-lg border border-gray-600 mb-4 max-h-[60vh] overflow-y-auto">
