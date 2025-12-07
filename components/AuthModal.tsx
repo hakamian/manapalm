@@ -298,7 +298,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin, 
+                redirectTo: 'https://www.manapalm.com', // Explicitly set to manapalm.com
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',
@@ -325,10 +325,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   };
 
   const renderConfig = () => {
-      // Determine the project ID and URL
-      // If user hasn't changed it, use the hardcoded one we know is correct
       const displayUrl = configUrl || 'https://sbjrayzghjfsmmuugwbw.supabase.co';
-      const redirectUrl = `${displayUrl}/auth/v1/callback`;
+      const redirectUrl = `https://www.manapalm.com`; // Show the redirect URL user needs to whitelist
 
       return (
       <div className="space-y-4 animate-fade-in p-4 bg-gray-900/50 rounded-lg border border-gray-600 mb-4 max-h-[60vh] overflow-y-auto">
@@ -364,22 +362,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
              className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 mt-2"
           >
              <QuestionMarkCircleIcon className="w-4 h-4"/>
-             {showDevHelp ? 'مخفی کردن راهنما' : 'راهنمای تنظیم گوگل (مشکل ERR_NAME)'}
+             {showDevHelp ? 'مخفی کردن راهنما' : 'راهنمای تنظیم گوگل'}
           </button>
 
           {showDevHelp && (
               <div className="bg-blue-900/20 border border-blue-500/30 p-3 rounded-md mt-2 text-[10px] space-y-2 text-blue-100">
-                  <p className="font-bold text-yellow-300">مهم: رفع خطای اتصال گوگل</p>
-                  <p>اگر خطای <code>ERR_NAME_NOT_RESOLVED</code> یا خطای اتصال دارید، باید این آدرس را در کنسول گوگل وارد کنید:</p>
-                  <ol className="list-decimal list-inside space-y-1">
-                      <li>به <strong>Google Cloud Console</strong> بروید.</li>
-                      <li>روی آیکون مداد (Edit) جلوی <strong>manapalm</strong> کلیک کنید.</li>
-                      <li>در بخش <strong>Authorized redirect URIs</strong>، دکمه ADD URI را بزنید و این آدرس را وارد کنید:</li>
-                  </ol>
+                  <p className="font-bold text-yellow-300">مهم: تنظیمات Redirect URL</p>
+                  <p>در پنل Supabase بخش Authentication -> URL Configuration، این آدرس را به لیست <strong>Redirect URLs</strong> اضافه کنید:</p>
                   <div className="bg-black/50 p-2 rounded text-green-300 font-mono select-all cursor-pointer break-all" onClick={(e) => navigator.clipboard.writeText(e.currentTarget.innerText)}>
                       {redirectUrl}
                   </div>
-                  <p className="text-gray-400 mt-1">سپس Save را بزنید. (ممکن است ۵ دقیقه طول بکشد).</p>
+                  <p className="text-gray-400 mt-1">این کار برای تایید بازگشت از گوگل به سایت شما ضروری است.</p>
               </div>
           )}
 
