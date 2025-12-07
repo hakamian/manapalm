@@ -1,10 +1,129 @@
+
 import React, { useState, useRef } from 'react';
-import { BuildingOfficeIcon, UserGroupIcon, PresentationChartLineIcon, TrophyIcon, GlobeAltIcon, GiftIcon } from './icons';
+import { BuildingOfficeIcon, UserGroupIcon, PresentationChartLineIcon, TrophyIcon, GlobeAltIcon, GiftIcon, ArrowDownTrayIcon, CloudIcon, CheckCircleIcon, SparklesIcon } from './icons';
 import { View } from '../types';
 import { useAppDispatch } from '../AppContext';
 
+const CorporateDashboard: React.FC = () => {
+    // Mock Data for Dashboard
+    const stats = {
+        totalPalms: 150,
+        co2Offset: 3750, // kg
+        jobsCreated: 450, // hours
+        impactRank: 'Top 10%',
+        nextBadge: 'حامی طلایی محیط زیست'
+    };
+
+    const employees = [
+        { id: 1, name: 'سارا احمدی', palm: 'نخل تولد', date: '1403/02/10', status: 'Giffed' },
+        { id: 2, name: 'علی رضایی', palm: 'نخل سپاس', date: '1403/02/12', status: 'Pending' },
+        { id: 3, name: 'محمد محمدی', palm: 'نخل موفقیت', date: '1403/02/15', status: 'Giffed' },
+    ];
+
+    return (
+        <div className="container mx-auto px-6 py-12 animate-fade-in">
+            <div className="flex justify-between items-end mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+                        <BuildingOfficeIcon className="w-10 h-10 text-amber-500" />
+                        پنل مدیریت مسئولیت اجتماعی (CSR)
+                    </h1>
+                    <p className="text-stone-400 mt-2">شرکت پیشگامان تکنولوژی</p>
+                </div>
+                <button className="bg-stone-800 hover:bg-stone-700 text-white px-4 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors border border-stone-600">
+                    <ArrowDownTrayIcon className="w-4 h-4" /> دانلود گزارش سالانه
+                </button>
+            </div>
+
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+                <div className="bg-gradient-to-br from-green-900/50 to-stone-800 p-6 rounded-2xl border border-green-500/30 relative overflow-hidden">
+                     <div className="absolute top-0 right-0 p-4 opacity-10"><GlobeAltIcon className="w-16 h-16 text-white"/></div>
+                    <p className="text-stone-400 text-sm mb-1">کاهش کربن</p>
+                    <p className="text-3xl font-bold text-white">{stats.co2Offset.toLocaleString('fa-IR')} <span className="text-sm font-normal text-green-400">کیلوگرم</span></p>
+                </div>
+                <div className="bg-stone-800 p-6 rounded-2xl border border-stone-700">
+                    <p className="text-stone-400 text-sm mb-1">نخل‌های کاشته شده</p>
+                    <p className="text-3xl font-bold text-white">{stats.totalPalms.toLocaleString('fa-IR')}</p>
+                </div>
+                <div className="bg-stone-800 p-6 rounded-2xl border border-stone-700">
+                    <p className="text-stone-400 text-sm mb-1">اشتغال‌زایی</p>
+                    <p className="text-3xl font-bold text-white">{stats.jobsCreated.toLocaleString('fa-IR')} <span className="text-sm font-normal text-stone-500">ساعت</span></p>
+                </div>
+                <div className="bg-gradient-to-br from-amber-900/50 to-stone-800 p-6 rounded-2xl border border-amber-500/30">
+                    <p className="text-stone-400 text-sm mb-1">رتبه تاثیرگذاری</p>
+                    <p className="text-2xl font-bold text-amber-400">{stats.impactRank}</p>
+                    <div className="text-xs text-stone-500 mt-1 flex items-center gap-1">
+                        <TrophyIcon className="w-3 h-3"/> بعدی: {stats.nextBadge}
+                    </div>
+                </div>
+            </div>
+
+            <div className="grid lg:grid-cols-3 gap-8">
+                {/* Employee Gifts */}
+                <div className="lg:col-span-2 bg-stone-800 rounded-2xl border border-stone-700 p-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-xl font-bold text-white">هدایای کارمندان</h3>
+                        <button className="text-xs bg-green-600 hover:bg-green-500 text-white px-3 py-1.5 rounded-md transition-colors flex items-center gap-1">
+                            <GiftIcon className="w-4 h-4" /> ارسال هدیه گروهی
+                        </button>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-right text-stone-300">
+                            <thead className="text-xs text-stone-500 uppercase bg-stone-900/50">
+                                <tr>
+                                    <th className="px-4 py-3 rounded-r-lg">نام کارمند</th>
+                                    <th className="px-4 py-3">نوع هدیه</th>
+                                    <th className="px-4 py-3">تاریخ</th>
+                                    <th className="px-4 py-3 rounded-l-lg">وضعیت</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {employees.map(emp => (
+                                    <tr key={emp.id} className="border-b border-stone-700 last:border-0 hover:bg-stone-700/30">
+                                        <td className="px-4 py-3 font-medium">{emp.name}</td>
+                                        <td className="px-4 py-3">{emp.palm}</td>
+                                        <td className="px-4 py-3">{emp.date}</td>
+                                        <td className="px-4 py-3">
+                                            <span className={`px-2 py-1 rounded text-xs ${emp.status === 'Giffed' ? 'bg-green-900/30 text-green-400' : 'bg-yellow-900/30 text-yellow-400'}`}>
+                                                {emp.status === 'Giffed' ? 'اهدا شده' : 'در حال پردازش'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* Campaign Progress */}
+                <div className="bg-stone-800 rounded-2xl border border-stone-700 p-6 flex flex-col">
+                    <h3 className="text-xl font-bold text-white mb-4">کمپین فعال: نخلستان امید</h3>
+                    <div className="flex-grow flex flex-col items-center justify-center text-center p-4">
+                        <div className="relative w-32 h-32 mb-4">
+                            <svg className="w-full h-full" viewBox="0 0 36 36">
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#44403c" strokeWidth="3" />
+                                <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="#22c55e" strokeWidth="3" strokeDasharray="75, 100" />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center text-2xl font-bold text-white">75%</div>
+                        </div>
+                        <p className="text-stone-300 mb-1">۷۵ از ۱۰۰ نخل تعهد شده</p>
+                        <p className="text-xs text-stone-500">پایان کمپین: ۲۵ روز دیگر</p>
+                    </div>
+                    <button className="w-full mt-4 bg-stone-700 hover:bg-stone-600 text-white py-2 rounded-lg text-sm transition-colors">
+                        مدیریت کمپین
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const CorporateView: React.FC = () => {
     const dispatch = useAppDispatch();
+    const [viewMode, setViewMode] = useState<'landing' | 'dashboard'>('landing');
+    
+    // --- Existing Form Logic ---
     const [formData, setFormData] = useState({ companyName: '', contactPerson: '', email: '', phone: '', message: '' });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState('');
@@ -66,6 +185,19 @@ const CorporateView: React.FC = () => {
         }
     ];
 
+    if (viewMode === 'dashboard') {
+        return (
+            <div className="bg-gray-900 text-white min-h-screen pt-20">
+                <div className="container mx-auto px-6">
+                    <button onClick={() => setViewMode('landing')} className="text-sm text-stone-400 hover:text-white mb-4">
+                        ← بازگشت به صفحه معرفی
+                    </button>
+                </div>
+                <CorporateDashboard />
+            </div>
+        );
+    }
+
     return (
         <div className="bg-gray-900 text-white pt-22 pb-24">
             <div className="relative pb-24 bg-cover bg-center" style={{ backgroundImage: "url('https://picsum.photos/seed/corporate-hero/1920/1080')" }}>
@@ -73,6 +205,15 @@ const CorporateView: React.FC = () => {
                 <div className="relative container mx-auto px-6 text-center z-10">
                     <h1 className="text-5xl font-bold mb-4">شریک میراث ما شوید</h1>
                     <p className="text-xl max-w-3xl mx-auto">با «نخلستان معنا» در ساختن آینده‌ای پایدار و معنادار برای جامعه و کسب‌وکارتان همراه شوید.</p>
+                    
+                    {/* Demo Toggle for Dashboard */}
+                    <button 
+                        onClick={() => setViewMode('dashboard')}
+                        className="mt-8 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/30 text-white px-6 py-2 rounded-full text-sm font-semibold transition-all flex items-center gap-2 mx-auto"
+                    >
+                        <SparklesIcon className="w-4 h-4 text-yellow-300" />
+                        مشاهده دموی پنل سازمانی
+                    </button>
                 </div>
             </div>
             <section className="container mx-auto px-6 py-20">
