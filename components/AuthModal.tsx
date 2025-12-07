@@ -1,8 +1,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { XMarkIcon, GoogleIcon, CheckCircleIcon, LockClosedIcon, ChatBubbleBottomCenterTextIcon, EyeIcon, EyeSlashIcon } from './icons';
+import { XMarkIcon, GoogleIcon, CheckCircleIcon, LockClosedIcon, ChatBubbleBottomCenterTextIcon, EyeIcon, EyeSlashIcon, CogIcon } from './icons';
 import { useAppDispatch, useAppState } from '../AppContext';
-import { supabase } from '../services/supabaseClient';
+import { supabase, setupSupabaseKeys } from '../services/supabaseClient';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -27,8 +27,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   const [otp, setOtp] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  
+  // Registration States
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regConfirmPassword, setRegConfirmPassword] = useState('');
+
+  // Developer Mode / Config State
+  const [showConfig, setShowConfig] = useState(false);
+  const [configUrl, setConfigUrl] = useState('');
+  const [configKey, setConfigKey] = useState('');
   
   const otpInputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
@@ -46,6 +55,9 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         setLoginMethod('otp');
         setFirstName(''); 
         setLastName('');
+        setRegPassword('');
+        setRegConfirmPassword('');
+        setShowConfig(false);
       }, 300);
       return () => clearTimeout(timer);
     }
@@ -82,7 +94,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     try {
         if (loginMethod === 'otp') {
             // A) Send OTP via Supabase
-            if (!supabase) throw new Error("سرویس در دسترس نیست");
+            if (!supabase) throw new Error("SupabaseNotConfigured");
             
             const { error } = await supabase.auth.signInWithOtp({
                 phone: '+98' + phoneNumber.substring(1), // Convert 0912... to +98912...
@@ -95,7 +107,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
             
         } else {
             // B) Login with Password directly
-            if (!supabase) throw new Error("سرویس در دسترس نیست");
+            if (!supabase) throw new Error("SupabaseNotConfigured");
 
             const { data, error } = await supabase.auth.signInWithPassword({
                 phone: '+98' + phoneNumber.substring(1),
@@ -112,9 +124,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         }
     } catch (err: any) {
         console.error("Login Error:", err);
-        setError(err.message || 'خطا در برقراری ارتباط. لطفا دوباره تلاش کنید.');
-        if (err.message && err.message.includes("Invalid login credentials")) {
-            setError("شماره موبایل یا رمز عبور اشتباه است.");
+        if (err.message === "SupabaseNotConfigured") {
+            setError('اتصال به سرور برقرار نیست. لطفا تنظیمات را بررسی کنید.');
+            setShowConfig(true);
+        } else {
+            setError(err.message || 'خطا در برقراری ارتباط. لطفا دوباره تلاش کنید.');
+            if (err.message && err.message.includes("Invalid login credentials")) {
+                setError("شماره موبایل یا رمز عبور اشتباه است.");
+            }
         }
     } finally {
         setIsLoading(false);
@@ -141,14 +158,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         if (error) throw error;
 
         // Check if user is new or existing based on local state mock or metadata
-        // In real app, we check if profile exists
-        const existingUser = allUsers.find(u => u.phone === phoneNumber);
+        // In real app, we check if profile exists via Supabase or user metadata
+        const userMetaData = data.user?.user_metadata;
+        const hasName = userMetaData?.full_name || userMetaData?.name;
         
-        if (existingUser) {
+        if (hasName) {
              onLoginSuccess({ phone: phoneNumber });
              onClose();
         } else {
-             // New user, ask for name
+             // New user (or user without name), ask for name and password
              setStep(3);
         }
 
@@ -200,19 +218,55 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
       }
   };
 
-  const handleNameSubmit = (e: React.FormEvent) => {
+  const handleNameSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (firstName.trim() && lastName.trim()) {
+    setError('');
+
+    if (!firstName.trim() || !lastName.trim()) return;
+
+    if (regPassword) {
+        if (regPassword.length < 6) {
+            setError('رمز عبور باید حداقل ۶ کاراکتر باشد.');
+            return;
+        }
+        if (regPassword !== regConfirmPassword) {
+            setError('رمز عبور و تکرار آن مطابقت ندارند.');
+            return;
+        }
+    }
+
+    setIsLoading(true);
+
+    try {
         const fullName = `${firstName.trim()} ${lastName.trim()}`;
-        // Update profile in DB (Mocked here, but would be an update call)
+        
+        // Update user in Supabase
+        if (supabase) {
+            const updates: any = {
+                data: { full_name: fullName, name: fullName }
+            };
+            if (regPassword) {
+                updates.password = regPassword;
+            }
+            
+            const { error } = await supabase.auth.updateUser(updates);
+            if (error) throw error;
+        }
+
         onLoginSuccess({ phone: phoneNumber, fullName: fullName });
         setStep(4);
+    } catch (err: any) {
+        console.error("Registration Error:", err);
+        setError(err.message || 'خطا در ثبت اطلاعات.');
+    } finally {
+        setIsLoading(false);
     }
   };
 
   const handleGoogleLogin = async () => {
     if (!supabase) {
-        setError('خطا: سرویس احراز هویت گوگل (Supabase) پیکربندی نشده است.');
+        setError('تنظیمات Supabase یافت نشد. لطفاً کلیدها را وارد کنید.');
+        setShowConfig(true);
         return;
     }
     setIsLoading(true);
@@ -235,6 +289,49 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         setIsLoading(false);
     }
   };
+
+  const handleSaveConfig = () => {
+      if (configUrl && configKey) {
+          setupSupabaseKeys(configUrl, configKey);
+      }
+  };
+
+  const renderConfig = () => (
+      <div className="space-y-4 animate-fade-in p-4 bg-gray-900/50 rounded-lg border border-gray-600">
+          <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">
+              <CogIcon className="w-4 h-4"/> تنظیمات اتصال
+          </h3>
+          <p className="text-xs text-gray-400">
+              اگر فایل .env کار نمی‌کند، می‌توانید کلیدهای پروژه Supabase خود را اینجا وارد کنید.
+          </p>
+          <div>
+              <label className="block text-xs text-gray-400 mb-1">Project URL</label>
+              <input 
+                  type="text" 
+                  value={configUrl} 
+                  onChange={e => setConfigUrl(e.target.value)} 
+                  className="w-full bg-gray-800 border border-gray-600 rounded p-2 text-xs text-white dir-ltr"
+                  placeholder="https://xyz.supabase.co"
+              />
+          </div>
+          <div>
+              <label className="block text-xs text-gray-400 mb-1">Anon Key</label>
+              <input 
+                  type="text" 
+                  value={configKey} 
+                  onChange={e => setConfigKey(e.target.value)} 
+                  className="w-full bg-gray-800 border border-gray-600 rounded p-2 text-xs text-white dir-ltr"
+                  placeholder="eyJhbGciOiJIUzI1NiIsInR5..."
+              />
+          </div>
+          <button 
+            onClick={handleSaveConfig}
+            className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 rounded transition-colors"
+          >
+              ذخیره و بارگذاری مجدد
+          </button>
+      </div>
+  );
 
   const renderStepOne = () => (
      <form onSubmit={handleSubmitPhone} className="space-y-6">
@@ -392,12 +489,38 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                 />
             </div>
         </div>
+
+        <div className="bg-gray-700/30 p-4 rounded-lg border border-gray-600/50">
+             <h4 className="text-sm font-bold text-amber-400 mb-3 flex items-center gap-2">
+                 <LockClosedIcon className="w-4 h-4"/> تنظیم رمز عبور (اختیاری)
+             </h4>
+             <p className="text-xs text-gray-400 mb-3">با تنظیم رمز، می‌توانید در آینده بدون نیاز به پیامک وارد شوید.</p>
+             <div className="space-y-3">
+                 <input 
+                    type="password"
+                    placeholder="رمز عبور (حداقل ۶ کاراکتر)"
+                    value={regPassword}
+                    onChange={e => setRegPassword(e.target.value)}
+                    className="w-full bg-gray-900 border border-gray-600 rounded-md p-2 text-white focus:border-amber-500 focus:outline-none text-sm"
+                 />
+                 <input 
+                    type="password"
+                    placeholder="تکرار رمز عبور"
+                    value={regConfirmPassword}
+                    onChange={e => setRegConfirmPassword(e.target.value)}
+                    className="w-full bg-gray-900 border border-gray-600 rounded-md p-2 text-white focus:border-amber-500 focus:outline-none text-sm"
+                 />
+             </div>
+        </div>
+        
+        {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+
         <button
             type="submit"
-            disabled={!firstName.trim() || !lastName.trim()}
+            disabled={!firstName.trim() || !lastName.trim() || isLoading}
             className="w-full bg-amber-500 hover:bg-amber-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-gray-900 font-bold py-3 px-4 rounded-md transition-all duration-300 text-lg"
         >
-            ثبت‌نام و ورود
+            {isLoading ? 'در حال ثبت...' : 'ثبت‌نام و ورود'}
         </button>
     </form>
   );
@@ -409,12 +532,18 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
             <h3 className="text-xl font-bold">عالی بود، {firstName || 'کاربر عزیز'}!</h3>
             <p className="text-gray-300 mt-2">خوشحالیم که به خانواده نخلستان معنا پیوستید.</p>
         </div>
-        <div className="p-4 bg-gray-700/50 rounded-lg border border-gray-600">
-            <h4 className="font-semibold text-green-300">پیشنهاد: رمز عبور بگذارید</h4>
-            <p className="text-sm text-gray-300 mt-2">
-                برای ورود راحت‌تر در دفعات بعدی (بدون نیاز به انتظار پیامک)، می‌توانید در بخش "تنظیمات پروفایل" رمز عبور تعیین کنید.
-            </p>
-        </div>
+        {regPassword ? (
+             <div className="p-3 bg-green-900/30 rounded-lg border border-green-600/30 text-sm text-green-200">
+                رمز عبور شما با موفقیت تنظیم شد. در ورود بعدی می‌توانید از آن استفاده کنید.
+             </div>
+        ) : (
+             <div className="p-4 bg-gray-700/50 rounded-lg border border-gray-600">
+                <h4 className="font-semibold text-green-300 text-sm">پیشنهاد:</h4>
+                <p className="text-xs text-gray-300 mt-1">
+                    شما رمز عبور تنظیم نکردید. می‌توانید بعداً در بخش «تنظیمات پروفایل» این کار را انجام دهید.
+                </p>
+            </div>
+        )}
         <div className="flex flex-col gap-3">
             <button
               onClick={() => {
@@ -429,7 +558,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
               onClick={onClose}
               className="w-full text-gray-300 hover:text-white font-semibold py-2 px-4 rounded-md transition-colors"
             >
-              فعلا نه، بعدا انجام می‌دهم
+              شروع گشت و گذار
             </button>
         </div>
     </div>
@@ -481,8 +610,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                 <p className="text-red-400 text-sm text-center">{error}</p>
             </div>
         )}
+        
+        {/* Render Config if requested */}
+        {showConfig && renderConfig()}
 
-        {step === 1 && (
+        {step === 1 && !showConfig && (
             <>
                 <div className="relative flex pt-6 items-center">
                     <div className="flex-grow border-t border-gray-600"></div>
