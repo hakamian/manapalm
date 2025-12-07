@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
-import { XMarkIcon, GoogleIcon, CheckCircleIcon, LockClosedIcon, ChatBubbleBottomCenterTextIcon, EyeIcon, EyeSlashIcon, CogIcon, UserCircleIcon } from './icons';
+import { XMarkIcon, GoogleIcon, CheckCircleIcon, LockClosedIcon, ChatBubbleBottomCenterTextIcon, EyeIcon, EyeSlashIcon, CogIcon, UserCircleIcon, QuestionMarkCircleIcon } from './icons';
 import { useAppDispatch, useAppState } from '../AppContext';
 import { supabase, setupSupabaseKeys } from '../services/supabaseClient';
 
@@ -36,6 +36,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
   // Developer Mode / Config State
   const [showConfig, setShowConfig] = useState(false);
+  const [showDevHelp, setShowDevHelp] = useState(false);
   const [configUrl, setConfigUrl] = useState(localStorage.getItem('VITE_SUPABASE_URL') || '');
   const [configKey, setConfigKey] = useState(localStorage.getItem('VITE_SUPABASE_ANON_KEY') || '');
   
@@ -297,7 +298,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: window.location.origin,
+                redirectTo: window.location.origin, // This is key: redirects back to localhost or domain
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',
@@ -307,7 +308,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         if (error) throw error;
     } catch (e: any) {
         console.error("Google Login Error:", e);
-        setError(e.message || 'خطا در برقراری ارتباط با گوگل.');
+        if (e.message?.includes("configuration")) {
+             setError("تنظیمات گوگل در Supabase انجام نشده است. (دکمه چرخ‌دنده را بزنید)");
+        } else {
+             setError(e.message || 'خطا در برقراری ارتباط با گوگل.');
+        }
         setIsLoading(false);
     }
   };
@@ -315,11 +320,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   const handleSaveConfig = () => {
       if (configUrl && configKey) {
           setupSupabaseKeys(configUrl, configKey);
+          setShowConfig(false);
       }
   };
 
-  const renderConfig = () => (
-      <div className="space-y-4 animate-fade-in p-4 bg-gray-900/50 rounded-lg border border-gray-600 mb-4">
+  const renderConfig = () => {
+      // Extract project ID from URL if possible for guidance
+      const projectId = configUrl.match(/https?:\/\/([^.]+)/)?.[1] || "YOUR_PROJECT_ID";
+      const redirectUrl = `https://${projectId}.supabase.co/auth/v1/callback`;
+
+      return (
+      <div className="space-y-4 animate-fade-in p-4 bg-gray-900/50 rounded-lg border border-gray-600 mb-4 max-h-[60vh] overflow-y-auto">
           <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">
               <CogIcon className="w-4 h-4"/> تنظیمات اتصال دستی
           </h3>
@@ -346,7 +357,31 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                   placeholder="eyJhbGciOiJIUzI1NiIsInR5..."
               />
           </div>
-          <div className="flex gap-2">
+
+          <button 
+             onClick={() => setShowDevHelp(!showDevHelp)}
+             className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 mt-2"
+          >
+             <QuestionMarkCircleIcon className="w-4 h-4"/>
+             {showDevHelp ? 'مخفی کردن راهنما' : 'راهنمای تنظیم گوگل (Developers)'}
+          </button>
+
+          {showDevHelp && (
+              <div className="bg-blue-900/20 border border-blue-500/30 p-3 rounded-md mt-2 text-[10px] space-y-2 text-blue-100">
+                  <p className="font-bold">برای فعال‌سازی ورود با گوگل:</p>
+                  <ol className="list-decimal list-inside space-y-1">
+                      <li>در <strong>Google Cloud Console</strong> یک پروژه بسازید.</li>
+                      <li>در بخش <strong>Credentials</strong> یک <strong>OAuth Client ID</strong> بسازید.</li>
+                      <li>در فیلد <strong>Authorized redirect URIs</strong> آدرس زیر را وارد کنید:</li>
+                  </ol>
+                  <div className="bg-black/50 p-2 rounded text-green-300 font-mono select-all cursor-pointer" onClick={(e) => navigator.clipboard.writeText(e.currentTarget.innerText)}>
+                      {redirectUrl}
+                  </div>
+                  <p>سپس Client ID و Secret را در پنل Supabase (بخش Auth Providers) وارد کنید.</p>
+              </div>
+          )}
+
+          <div className="flex gap-2 pt-2">
               <button 
                 onClick={handleSaveConfig}
                 className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 rounded transition-colors"
@@ -361,7 +396,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
               </button>
           </div>
       </div>
-  );
+  )};
 
   const renderStepOne = () => (
      <form onSubmit={handleSubmitPhone} className="space-y-6">
