@@ -11,6 +11,23 @@ export default defineConfig(({ mode }) => {
       server: {
         port: 3000,
         host: '0.0.0.0',
+        proxy: {
+          // Tunneling Supabase requests to bypass client-side restrictions
+          '/supaproxy': {
+            target: 'https://sbjrayzghjfsmmuugwbw.supabase.co',
+            changeOrigin: true,
+            secure: false,
+            rewrite: (path) => path.replace(/^\/supaproxy/, ''),
+            headers: {
+              'Connection': 'keep-alive'
+            }
+          },
+          // Existing API proxy
+          '/api': {
+            target: 'http://localhost:3000', // Fallback for self-referencing if needed
+            changeOrigin: true,
+          }
+        }
       },
       plugins: [react()],
       resolve: {
@@ -22,7 +39,7 @@ export default defineConfig(({ mode }) => {
         outDir: 'dist',
         assetsDir: 'assets',
         sourcemap: false,
-        chunkSizeWarningLimit: 500, // Reduced to catch large chunks
+        chunkSizeWarningLimit: 500,
         rollupOptions: {
           output: {
             manualChunks: (id) => {
