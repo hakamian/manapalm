@@ -29,7 +29,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
   const otpInputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
-  const CORRECT_OTP = '123456'; // For simulation purposes (Phone auth still mocked for now)
+  const CORRECT_OTP = '123456'; // For simulation purposes
 
   useEffect(() => {
     if (isOpen) {
@@ -151,28 +151,33 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     }
   };
 
-  // --- REAL GOOGLE LOGIN ---
+  // --- REAL GOOGLE LOGIN IMPLEMENTATION ---
   const handleGoogleLogin = async () => {
     if (!supabase) {
-        setError('سرویس گوگل در حال حاضر فعال نیست (تنظیمات سرور).');
+        setError('خطا: سرویس احراز هویت گوگل (Supabase) پیکربندی نشده است.');
         return;
     }
 
     setIsLoading(true);
+    setError('');
+    
     try {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                // Ensure this URL is whitelisted in Supabase Auth settings -> Redirect URLs
-                redirectTo: window.location.origin 
+                redirectTo: window.location.origin,
+                queryParams: {
+                    access_type: 'offline',
+                    prompt: 'consent',
+                },
             }
         });
+        
         if (error) throw error;
-        // Note: The actual login success happens in App.tsx via onAuthStateChange listener
-        // The user will be redirected to Google, then back to the app.
+        // User will be redirected to Google
     } catch (e: any) {
         console.error("Google Login Error:", e);
-        setError(e.message || 'خطا در ارتباط با گوگل');
+        setError(e.message || 'خطا در برقراری ارتباط با گوگل. لطفا دوباره تلاش کنید.');
         setIsLoading(false);
     }
   };
@@ -395,23 +400,24 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         
         {step === 1 ? renderStepOne() : step === 2 ? renderStepTwo() : step === 3 ? renderStepThree() : renderStepFour()}
         
-        {/* Display error if any (e.g., from Google Auth) */}
         {step === 1 && error && (
-            <p className="text-red-400 text-sm text-center mt-2">{error}</p>
+            <div className="mt-3 p-2 bg-red-900/30 border border-red-500/50 rounded-md">
+                <p className="text-red-400 text-sm text-center">{error}</p>
+            </div>
         )}
 
         {step === 1 && (
             <>
-                <div className="relative flex pt-5 items-center">
+                <div className="relative flex pt-6 items-center">
                     <div className="flex-grow border-t border-gray-600"></div>
-                    <span className="flex-shrink mx-4 text-gray-400 text-sm">یا</span>
+                    <span className="flex-shrink mx-4 text-gray-500 text-sm">یا</span>
                     <div className="flex-grow border-t border-gray-600"></div>
                 </div>
                 <button
                     type="button"
                     onClick={handleGoogleLogin}
-                    className="w-full flex items-center justify-center bg-white hover:bg-gray-200 text-gray-800 font-semibold py-3 px-4 rounded-md transition-all duration-200 text-base mt-4 border border-gray-300"
                     disabled={isLoading}
+                    className="w-full flex items-center justify-center bg-white hover:bg-gray-200 text-gray-800 font-semibold py-3 px-4 rounded-md transition-all duration-200 text-base mt-4 border border-gray-300 shadow-sm"
                 >
                     <GoogleIcon className="w-5 h-5 ml-3" />
                     {isLoading ? 'در حال اتصال به گوگل...' : 'ورود با حساب گوگل'}

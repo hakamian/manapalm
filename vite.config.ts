@@ -4,12 +4,9 @@ import react from '@vitejs/plugin-react';
 import { fileURLToPath, URL } from 'url';
 
 export default defineConfig(({ mode }) => {
-    // Load env file based on `mode` in the current working directory.
     const env = loadEnv(mode, fileURLToPath(new URL('.', import.meta.url)), '');
     
     return {
-      // Set base to '/' for Vercel deployment. 
-      // The previous config was specific to GitHub Pages subdirectory.
       base: '/',
       server: {
         port: 3000,
@@ -25,15 +22,25 @@ export default defineConfig(({ mode }) => {
         outDir: 'dist',
         assetsDir: 'assets',
         sourcemap: false,
-        chunkSizeWarningLimit: 1600, // Increased limit to suppress warnings for large AI libs
+        chunkSizeWarningLimit: 500, // Reduced to catch large chunks
         rollupOptions: {
           output: {
-            manualChunks: {
-              'react-vendor': ['react', 'react-dom'],
-              'ai-vendor': ['@google/genai'],
-              'pdf-vendor': ['pdfjs-dist', 'jspdf'],
-              'db-vendor': ['@supabase/supabase-js'],
-              'ui-vendor': ['react-markdown', 'remark-gfm']
+            manualChunks: (id) => {
+              if (id.includes('node_modules')) {
+                if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+                  return 'vendor-react';
+                }
+                if (id.includes('@google/genai')) {
+                  return 'vendor-ai';
+                }
+                if (id.includes('pdfjs-dist') || id.includes('jspdf')) {
+                  return 'vendor-pdf';
+                }
+                if (id.includes('@supabase')) {
+                  return 'vendor-db';
+                }
+                return 'vendor-utils';
+              }
             }
           }
         }

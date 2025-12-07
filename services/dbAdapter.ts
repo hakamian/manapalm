@@ -60,16 +60,19 @@ export const dbAdapter = {
         const { data, error, count } = await query.range(from, to);
         if (error) {
             console.error('Error fetching users:', error);
-            return { data: INITIAL_USERS, total: INITIAL_USERS.length }; 
+            // Fallback for safety
+            return { data: INITIAL_USERS.slice(0, 10), total: INITIAL_USERS.length }; 
         }
 
         const users = data.map(mapProfileToUser);
         return { data: users, total: count || 0 };
     },
 
+    // CRITICAL FIX: Deprecated "Get All" to prevent crash on large DBs
     async getAllUsers(): Promise<User[]> {
-        const { data } = await this.getUsers(1, 1000);
-        if (data.length === 0) return INITIAL_USERS;
+        // In a real app, we should NEVER fetch all users at once.
+        // For now, we limit to 50 for the context init, but pagination should be used in UI.
+        const { data } = await this.getUsers(1, 50); 
         return data;
     },
 
@@ -83,23 +86,17 @@ export const dbAdapter = {
     async saveUser(user: User): Promise<void> {
         if (!supabase) return;
         
+        // Security: Remove sensitive fields or large JSONs if necessary
         const profileData = {
             id: user.id,
             email: user.email,
             full_name: user.fullName || user.name,
             phone: user.phone,
             avatar_url: user.avatar,
-            // Points are managed via RPC for security, but we save them here for sync if needed
-            // Ideally, we shouldn't overwrite points directly from client if using RPC
-            // points: user.points, 
-            // mana_points: user.manaPoints,
-            level: user.level,
-            is_admin: user.isAdmin,
-            is_guardian: user.isGuardian,
-            is_grove_keeper: user.isGroveKeeper,
             metadata: {
                 profileCompletion: user.profileCompletion,
-                timeline: user.timeline,
+                // Limit timeline history to last 50 events to prevent JSON bloat in DB column
+                timeline: user.timeline ? user.timeline.slice(0, 50) : [],
                 unlockedTools: user.unlockedTools,
                 purchasedCourseIds: user.purchasedCourseIds,
                 reflectionAnalysesRemaining: user.reflectionAnalysesRemaining,
@@ -113,9 +110,8 @@ export const dbAdapter = {
         if (error) console.error('Error saving user to DB:', error);
     },
 
-    // --- SECURE POINT TRANSACTIONS ---
     async spendBarkatPoints(amount: number): Promise<boolean> {
-        if (!supabase) return true; // Allow in local mode
+        if (!supabase) return true;
         const { error } = await supabase.rpc('spend_points', { amount });
         if (error) {
             console.error("Point transaction failed:", error);
@@ -140,7 +136,8 @@ export const dbAdapter = {
          let query = supabase.from('orders').select('*');
          if (userId) query = query.eq('user_id', userId);
          
-         const { data, error } = await query.order('created_at', { ascending: false });
+         // Limit orders fetch to prevent overload
+         const { data, error } = await query.order('created_at', { ascending: false }).limit(50);
          if (error) return INITIAL_ORDERS;
          
          return data.map((o: any) => ({
@@ -179,7 +176,8 @@ export const dbAdapter = {
         const { data, error } = await supabase
             .from('posts')
             .select(`*, profiles(full_name, avatar_url)`)
-            .order('created_at', { ascending: false });
+            .order('created_at', { ascending: false })
+            .limit(20); // Limit posts
             
         if (error) return INITIAL_POSTS;
 

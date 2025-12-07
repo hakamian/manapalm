@@ -15,14 +15,17 @@ const ALLOWED_MODELS = [
 ];
 
 export default async function handler(req, res) {
-  // Enable CORS
+  // 1. CORS & Security Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
-  );
+  const allowedOrigins = ['https://manapalm.com', 'http://localhost:3000', 'https://nakhlestan-mana.com'];
+  const origin = req.headers.origin;
+  
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -33,15 +36,21 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // 2. Referer Check (Basic Protection)
+  const referer = req.headers.referer || req.headers.origin;
+  if (!referer || !allowedOrigins.some(url => referer.startsWith(url))) {
+      // In production, uncomment this line to block external requests
+      // return res.status(403).json({ error: 'Unauthorized request source' });
+  }
+
   try {
     const { action, model, data, provider } = req.body;
 
-    // Security Check: Validate Model (Skip for operations which might not send model)
+    // 3. Validation
     if (model && !ALLOWED_MODELS.includes(model)) {
       return res.status(403).json({ error: 'Model not authorized' });
     }
     
-    // Fallback to the provided key if env var is not set
     const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
     
     if (!apiKey) {
@@ -58,12 +67,14 @@ export default async function handler(req, res) {
       let contents = data.contents;
       let config = data.config;
 
-      // Simulation Logic for Demo Providers
-      if (provider === 'openai') {
-          config = { ...config, systemInstruction: (config?.systemInstruction || '') + "\n[SYSTEM NOTICE: You are simulating GPT-4o behavior. Be concise, analytical, and use structured reasoning.]" };
-      } else if (provider === 'anthropic') {
-          config = { ...config, systemInstruction: (config?.systemInstruction || '') + "\n[SYSTEM NOTICE: You are simulating Claude 3.5 Sonnet behavior. Be nuanced, articulate, and prioritize safety and ethics.]" };
-      }
+      // Force Safety Settings on Server Side
+      config = {
+          ...config,
+          safetySettings: [
+              { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+              { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
+          ]
+      };
 
       const actualModel = (model.startsWith('gpt') || model.startsWith('claude')) ? 'gemini-3-pro-preview' : model;
 
@@ -92,18 +103,15 @@ export default async function handler(req, res) {
            };
        }
     } else if (action === 'generateVideos') {
-        // Video generation returns an Operation object
         const operation = await ai.models.generateVideos({
             model: model,
             prompt: data.prompt,
             image: data.image,
             config: data.config
         });
-        // We return the operation metadata so client can poll
         result = { operation };
         
     } else if (action === 'getVideosOperation') {
-        // Polling for video status
         const operation = await ai.operations.getVideosOperation({
             name: data.operationName 
         });
