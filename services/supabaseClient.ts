@@ -16,13 +16,10 @@ const getEnv = (key: string) => {
   return undefined;
 };
 
-// --- SECURITY BYPASS CONFIGURATION ---
-// Instead of connecting directly to Supabase (which might be blocked),
-// we connect to our own domain's "/supaproxy" path.
-// The Vite/Vercel server then forwards the request to Supabase.
-// IMPORTANT: For Auth Redirects (OAuth), we must use the window origin to construct the redirect URL.
-// UPDATED PROJECT ID: sbjrayzghjfsmmuygwbw
-const PROXY_URL = typeof window !== 'undefined' ? `${window.location.origin}/supaproxy` : "https://sbjrayzghjfsmmuygwbw.supabase.co";
+// --- DIRECT CONNECTION CONFIGURATION ---
+// We use the direct Supabase URL to ensure OAuth links are generated exactly as required:
+// https://sbjrayzghjfsmmuygwbw.supabase.co/auth/v1/authorize...
+const SUPABASE_PROJECT_URL = "https://sbjrayzghjfsmmuygwbw.supabase.co";
 
 const HARDCODED_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNianJheXpnaGpmc21tdXlnd2J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3MTY1NDQsImV4cCI6MjA4MDI5MjU0NH0.W7B-Dr1hiUNl9ok4_PUTPdJG8pJsBXtoOwWciItoF3Q";
 
@@ -33,14 +30,13 @@ if (!supabaseAnonKey || supabaseAnonKey === 'undefined') {
     supabaseAnonKey = localKey || HARDCODED_KEY;
 }
 
-// Initialize Supabase with the PROXY URL
+// Initialize Supabase Client
 export const supabase: SupabaseClient | null = supabaseAnonKey 
-  ? createClient(PROXY_URL, supabaseAnonKey, {
+  ? createClient(SUPABASE_PROJECT_URL, supabaseAnonKey, {
       auth: {
           persistSession: true,
           autoRefreshToken: true,
           detectSessionInUrl: true,
-          // Important: Ensure redirects come back to the main domain
           flowType: 'pkce'
       }
   }) 
@@ -49,10 +45,12 @@ export const supabase: SupabaseClient | null = supabaseAnonKey
 // Helper to manually set keys from UI
 export const setupSupabaseKeys = (url: string, key: string) => {
     if (!key) return;
-    // We ignore the URL passed by user for the client init and enforce the Proxy URL for stability
-    // But we store it just in case we want to use direct connection later
     localStorage.setItem('VITE_SUPABASE_ANON_KEY', key);
-    localStorage.setItem('VITE_SUPABASE_URL', url);
+    // Even if user provides a custom URL, we default to the known working project URL for consistency in this version
+    // unless it's completely different
+    if (url && url !== SUPABASE_PROJECT_URL) {
+        localStorage.setItem('VITE_SUPABASE_URL', url);
+    }
     window.location.reload(); 
 };
 
