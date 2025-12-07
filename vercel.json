@@ -1,7 +1,7 @@
 
 {
   "rewrites": [
-    { "source": "/supaproxy/(.*)", "destination": "https://sbjrayzghjfsmmuugwbw.supabase.co/$1" },
+    { "source": "/supaproxy/(.*)", "destination": "https://sbjrayzghjfsmmuygwbw.supabase.co/$1" },
     { "source": "/api/(.*)", "destination": "/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

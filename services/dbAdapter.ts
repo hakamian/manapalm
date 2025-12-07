@@ -52,7 +52,7 @@ export const dbAdapter = {
             if (error) throw error;
             return { status: 'Healthy', scalabilityScore: 95, issues: [] };
         } catch (e: any) {
-            return { status: 'Connection Error', scalabilityScore: 50, issues: ['Database connection failed: ' + e.message] };
+            return { status: 'Connection Error', scalabilityScore: 50, issues: ['Database connection failed: ' + (e.message || e)] };
         }
     },
 
@@ -76,17 +76,14 @@ export const dbAdapter = {
         return { data: users, total: count || 0 };
     },
 
-    // CRITICAL FIX: Deprecated "Get All" to prevent crash on large DBs
     async getAllUsers(): Promise<User[]> {
-        // In a real app, we should NEVER fetch all users at once.
-        // For now, we limit to 50 for the context init, but pagination should be used in UI.
         const { data } = await this.getUsers(1, 50); 
         return data;
     },
 
     async getUserById(id: string): Promise<User | null> {
         if (!supabase) return null;
-        if (!isUUID(id)) return null; // Don't query DB for dummy IDs
+        if (!isUUID(id)) return null; 
         
         const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
         if (error || !data) return null;
@@ -96,10 +93,8 @@ export const dbAdapter = {
     async saveUser(user: User): Promise<void> {
         if (!supabase) return;
         
-        // Skip dummy users (non-UUID ids)
-        if (!isUUID(user.id)) return;
+        if (!isUUID(user.id)) return; // Skip dummy users
 
-        // Security: Remove sensitive fields or large JSONs if necessary
         const profileData = {
             id: user.id,
             email: user.email,
@@ -108,7 +103,6 @@ export const dbAdapter = {
             avatar_url: user.avatar,
             metadata: {
                 profileCompletion: user.profileCompletion,
-                // Limit timeline history to last 50 events to prevent JSON bloat in DB column
                 timeline: user.timeline ? user.timeline.slice(0, 50) : [],
                 unlockedTools: user.unlockedTools,
                 purchasedCourseIds: user.purchasedCourseIds,
@@ -148,11 +142,10 @@ export const dbAdapter = {
          
          let query = supabase.from('orders').select('*');
          if (userId) {
-             if (!isUUID(userId)) return []; // Return empty for dummy users
+             if (!isUUID(userId)) return [];
              query = query.eq('user_id', userId);
          }
          
-         // Limit orders fetch to prevent overload
          const { data, error } = await query.order('created_at', { ascending: false }).limit(50);
          if (error) return INITIAL_ORDERS;
          
@@ -174,8 +167,6 @@ export const dbAdapter = {
 
     async saveOrder(order: Order): Promise<void> {
         if (!supabase) return;
-        
-        // Skip dummy users
         if (!isUUID(order.userId)) return;
 
         const orderData = {
@@ -197,7 +188,7 @@ export const dbAdapter = {
             .from('posts')
             .select(`*, profiles(full_name, avatar_url)`)
             .order('created_at', { ascending: false })
-            .limit(20); // Limit posts
+            .limit(20);
             
         if (error) return INITIAL_POSTS;
 
@@ -214,8 +205,6 @@ export const dbAdapter = {
 
     async savePost(post: CommunityPost): Promise<void> {
         if (!supabase) return;
-        
-        // Skip dummy users
         if (!isUUID(post.authorId)) return;
 
         const postData = {

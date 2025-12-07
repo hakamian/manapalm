@@ -37,7 +37,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   // Developer Mode / Config State
   const [showConfig, setShowConfig] = useState(false);
   const [showDevHelp, setShowDevHelp] = useState(false);
-  const [configUrl, setConfigUrl] = useState(localStorage.getItem('VITE_SUPABASE_URL') || 'https://sbjrayzghjfsmmuugwbw.supabase.co');
+  // UPDATED: Default URL matches user request
+  const [configUrl, setConfigUrl] = useState(localStorage.getItem('VITE_SUPABASE_URL') || 'https://sbjrayzghjfsmmuygwbw.supabase.co');
   const [configKey, setConfigKey] = useState(localStorage.getItem('VITE_SUPABASE_ANON_KEY') || '');
   
   const otpInputsRef = useRef<Array<HTMLInputElement | null>>([]);
@@ -298,7 +299,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: 'https://www.manapalm.com', // Explicitly set to manapalm.com
+                redirectTo: 'https://www.manapalm.com', // Explicitly set to manapalm.com as requested
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',
@@ -325,7 +326,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   };
 
   const renderConfig = () => {
-      const displayUrl = configUrl || 'https://sbjrayzghjfsmmuugwbw.supabase.co';
+      const displayUrl = configUrl || 'https://sbjrayzghjfsmmuygwbw.supabase.co';
       const redirectUrl = `https://www.manapalm.com`; // Show the redirect URL user needs to whitelist
 
       return (

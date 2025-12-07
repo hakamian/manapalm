@@ -21,7 +21,8 @@ const getEnv = (key: string) => {
 // we connect to our own domain's "/supaproxy" path.
 // The Vite/Vercel server then forwards the request to Supabase.
 // IMPORTANT: For Auth Redirects (OAuth), we must use the window origin to construct the redirect URL.
-const PROXY_URL = typeof window !== 'undefined' ? `${window.location.origin}/supaproxy` : "https://sbjrayzghjfsmmuugwbw.supabase.co";
+// UPDATED PROJECT ID: sbjrayzghjfsmmuygwbw
+const PROXY_URL = typeof window !== 'undefined' ? `${window.location.origin}/supaproxy` : "https://sbjrayzghjfsmmuygwbw.supabase.co";
 
 const HARDCODED_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNianJheXpnaGpmc21tdXlnd2J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3MTY1NDQsImV4cCI6MjA4MDI5MjU0NH0.W7B-Dr1hiUNl9ok4_PUTPdJG8pJsBXtoOwWciItoF3Q";
 
