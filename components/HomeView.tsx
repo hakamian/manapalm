@@ -15,6 +15,7 @@ import WelcomeMat from './WelcomeMat';
 import SEOHead from './seo/SEOHead';
 import { OrganizationSchema } from './seo/SchemaMarkup';
 import { LocalBusinessSchema, FAQSchema } from './seo/RichSnippets';
+import SmartImage from './ui/SmartImage'; // New import
 
 // --- Helper Hooks ---
 const useScrollAnimate = (threshold = 0.2) => {
@@ -90,6 +91,7 @@ const HeroSection: React.FC<{ onStartJourneyClick: () => void, user: User | null
                 <div className="absolute bottom-0 left-0 w-full h-1/2" style={getLayerStyle(20)}><div className="absolute bottom-0 -left-1/4 w-[150%] h-[60%] bg-[#1c2741] rounded-t-[100%]"></div></div>
                 <div className="absolute bottom-0 left-0 w-full h-1/2" style={getLayerStyle(30)}><div className="absolute bottom-0 -right-1/4 w-[150%] h-[50%] bg-[#151d30] rounded-t-[100%]"></div></div>
                 <div className="absolute bottom-0 left-0 w-full h-full filter brightness-75" style={getLayerStyle(50)}>
+                    {/* Replaced standard img with SmartImage even though it's decorative, for consistency if CDN used later */}
                     <img src="https://purepng.com/public/uploads/large/purepng.com-palm-treepalm-treealms-tree-941524671653r6kcs.png" alt="Palm tree silhouette" className="absolute bottom-0 right-[-15%] w-[55%] max-w-lg palm-sway" style={{ animationDelay: '0s' }} />
                     <img src="https://purepng.com/public/uploads/large/purepng.com-palm-treepalm-treealms-tree-941524671653r6kcs.png" alt="Palm tree silhouette" className="absolute bottom-0 left-[-15%] w-[70%] max-w-xl palm-sway" style={{ animationDelay: '1.5s', transform: 'scaleX(-1)', filter: 'brightness(0.8)' }} />
                 </div>
