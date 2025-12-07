@@ -155,8 +155,14 @@ const App: React.FC = () => {
 
     // Dedicated function to clean URL parameters
     const cleanAuthUrl = () => {
+        // Only run in browser environment
+        if (typeof window === 'undefined') return;
+        
         const params = new URLSearchParams(window.location.search);
+        // Only clean if auth params exist to avoid unnecessary history state pushes
         if (params.has('code') || params.has('error') || params.has('error_description') || params.has('access_token') || params.has('refresh_token')) {
+            
+            // Remove sensitive or temporary auth params
             params.delete('code');
             params.delete('error');
             params.delete('error_description');
@@ -165,7 +171,10 @@ const App: React.FC = () => {
             params.delete('expires_in');
             params.delete('token_type');
             
-            const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            // Reconstruct URL. Keep other params (like ?view=...) if they exist
+            const newQuery = params.toString();
+            const newUrl = window.location.pathname + (newQuery ? '?' + newQuery : '');
+            
             window.history.replaceState({}, document.title, newUrl);
         }
     };
@@ -173,31 +182,34 @@ const App: React.FC = () => {
     useEffect(() => {
         if (!supabase) return;
         
-        // Initial Session Check
+        // 1. Initial Session Check (Happens on load/refresh)
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) {
                 const existingUser = allUsers.find(u => u.email === session.user.email);
                 const appUser = mapSupabaseUserToAppUser(session.user, existingUser);
                 dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
                 
-                // Clean URL after session is confirmed
+                // CRITICAL: Only clean URL if we have a valid session.
+                // This ensures Supabase has processed the 'code' before we remove it.
                 cleanAuthUrl();
             }
         });
 
-        // Listen for auth changes (e.g. Google Redirect)
+        // 2. Listen for auth changes (Happens when code is exchanged or user logs out)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (_event === 'SIGNED_IN' || session?.user) {
-                 const existingUser = allUsers.find(u => u.email === session?.user.email);
-                 const appUser = mapSupabaseUserToAppUser(session?.user, existingUser);
+            if (session?.user) {
+                 const existingUser = allUsers.find(u => u.email === session.user.email);
+                 const appUser = mapSupabaseUserToAppUser(session.user, existingUser);
                  
+                 // If user state is different, update it
                  if (!user || user.id !== appUser.id) {
                      dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
                      dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: false });
                  }
                  
-                 // Clean URL immediately after sign in
-                 setTimeout(cleanAuthUrl, 500); // Small delay to ensure Supabase internal processing is done
+                 // CRITICAL: Clean URL immediately upon successful sign-in event
+                 cleanAuthUrl();
+
             } else if (_event === 'SIGNED_OUT') {
                 if (user) {
                     dispatch({ type: 'LOGOUT' });
@@ -205,12 +217,8 @@ const App: React.FC = () => {
             }
         });
 
-        // Fallback cleanup timer to ensure URL is clean even if session logic is slow or already processed
-        const cleanupTimer = setTimeout(cleanAuthUrl, 2000);
-
         return () => {
             subscription.unsubscribe();
-            clearTimeout(cleanupTimer);
         };
     }, [dispatch, allUsers]); 
 
