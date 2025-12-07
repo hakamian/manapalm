@@ -17,6 +17,7 @@ export interface CreationToolConfig {
     relatedProduct?: string;
     isNew?: boolean;
     isPopular?: boolean;
+    guestAccess?: boolean; // New field for guest mode
 }
 
 export const CREATION_TOOLS: CreationToolConfig[] = [
@@ -172,7 +173,8 @@ export const CREATION_TOOLS: CreationToolConfig[] = [
         category: 'text',
         isPremium: false,
         baseCostUSD: 0.01,
-        isPopular: true
+        isPopular: true,
+        guestAccess: true // Enabled for guest
     },
     {
         id: 'liveChat',
@@ -249,5 +251,6 @@ export const CREATION_TOOLS: CreationToolConfig[] = [
         color: 'green',
         category: 'text',
         isPremium: false,
+        guestAccess: true // Enabled for guest
     },
 ];

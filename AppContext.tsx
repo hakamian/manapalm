@@ -111,7 +111,7 @@ const initialState: AppState = {
         goal: 100,
         current: 35,
         unit: 'نخل',
-        ctaText: 'مشارکت',
+        ctaText: 'مشارکت در کمپین',
         rewardPoints: 1000
     },
     palmTypes: PALM_TYPES_DATA,
@@ -227,6 +227,23 @@ function appReducer(state: AppState, action: Action): AppState {
              const rawPointsEarned = newOrder.items.reduce((sum, item) => sum + (item.points || 0) * item.quantity, 0);
              const pointsEarned = Math.min(rawPointsEarned, 20000); 
              const newTimelineEvents = (newOrder.deeds || []).map(createTimelineEventFromDeed);
+             
+             // Create Notifications for Deeds
+             const newNotifications = (newOrder.deeds || []).map((deed, i) => ({
+                 id: `notif-deed-${Date.now()}-${i}`,
+                 title: 'نخل جدید کاشته شد!',
+                 description: `نخل "${deed.intention}" با موفقیت ثبت شد.`,
+                 text: `برای مشاهده سند و جزئیات نخل "${deed.intention}" کلیک کنید.`,
+                 date: new Date().toISOString(),
+                 timestamp: new Date().toISOString(),
+                 read: false,
+                 isRead: false,
+                 type: 'success' as const,
+                 icon: 'SproutIcon',
+                 // Add direct link to heritage view or timeline
+                 link: { view: View.HallOfHeritage } 
+             }));
+
              let unlockUpdates: Partial<User> = {};
              let newUnlockedTools = state.user?.unlockedTools || [];
              if (newOrder.items.some(item => item.id === 'p_heritage_language' || item.productId === 'p_heritage_language')) { unlockUpdates = { ...unlockUpdates, hasUnlockedEnglishTest: true }; }
@@ -244,10 +261,10 @@ function appReducer(state: AppState, action: Action): AppState {
              }
              // NOTE: Points are just updated in local state for UI responsiveness, but DB uses RPC elsewhere if needed.
              // Ideally, order processing should trigger DB functions to award points.
-             const updatedUser = state.user ? { ...state.user, points: state.user.points + pointsEarned, pointsHistory: [...(state.user.pointsHistory || []), { action: 'خرید', points: pointsEarned, type: 'barkat' as const, date: new Date().toISOString() }], timeline: [...newTimelineEvents, ...(state.user.timeline || [])], ...webProjectUpdate, ...unlockUpdates } : null;
+             const updatedUser = state.user ? { ...state.user, points: state.user.points + pointsEarned, pointsHistory: [...(state.user.pointsHistory || []), { action: 'خرید', points: pointsEarned, type: 'barkat' as const, date: new Date().toISOString() }], timeline: [...newTimelineEvents, ...(state.user.timeline || [])], ...webProjectUpdate, ...unlockUpdates, notifications: [...newNotifications, ...(state.user.notifications || [])] } : null;
              dbAdapter.saveOrder(newOrder);
              if(updatedUser) dbAdapter.saveUser(updatedUser);
-             return { ...state, orders: [...state.orders, newOrder], cartItems: [], isCartOpen: false, isOrderSuccessModalOpen: true, lastOrderDeeds: newOrder.deeds || [], lastOrderPointsEarned: pointsEarned, user: updatedUser };
+             return { ...state, orders: [...state.orders, newOrder], cartItems: [], isCartOpen: false, isOrderSuccessModalOpen: true, lastOrderDeeds: newOrder.deeds || [], lastOrderPointsEarned: pointsEarned, user: updatedUser, notifications: [...newNotifications, ...state.notifications] };
         }
         case 'LOGIN_SUCCESS': const loggedInUser = action.payload.user; dbAdapter.setCurrentUserId(loggedInUser.id); dbAdapter.saveUser(loggedInUser); return { ...state, user: loggedInUser, orders: action.payload.orders, isAuthModalOpen: action.payload.keepOpen ? true : false };
         case 'LOGOUT': dbAdapter.setCurrentUserId(null); return { ...state, user: null, orders: [], cartItems: [], currentView: View.Home };

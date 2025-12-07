@@ -147,8 +147,8 @@ const WebsiteWizardModal: React.FC<WebsiteWizardModalProps> = ({ isOpen, onClose
 
     return (
         <Modal isOpen={isOpen} onClose={onClose}>
-            <div className="p-4 sm:p-6 w-full max-w-3xl bg-stone-900 text-white rounded-2xl border border-stone-700 relative overflow-hidden min-h-[500px] flex flex-col">
-                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 via-purple-500 to-blue-500"></div>
+            <div className="p-4 sm:p-6 w-full max-w-3xl bg-stone-900 text-white rounded-2xl border border-stone-700 relative overflow-hidden h-full max-h-[85vh] overflow-y-auto flex flex-col pb-20">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 via-purple-500 to-blue-500 sticky z-20"></div>
                 <button onClick={onClose} className="absolute top-4 left-4 text-stone-400 hover:text-white z-20"><XIcon className="w-6 h-6"/></button>
 
                 {step === 'input_idea' && (

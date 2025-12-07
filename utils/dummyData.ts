@@ -86,13 +86,15 @@ export const INITIAL_PRODUCTS: Product[] = [
   { id: 'p_ambassador_pack', name: 'بسته سفیر', price: 50000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'قابلیت «سفیر قصه‌گو» را فعال کنید تا داستان کاشت نخل خود را با یک تصویر و متن هنری خلق شده توسط AI در شبکه‌های اجتماعی به اشتراک بگذارید.', type: 'service', points: 100, tags: ['community', 'creativity'] },
   { id: 'p_coaching_lab_access', name: 'نخل دانش', price: 150000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?q=80&w=800&auto=format&fit=crop', popularity: 90, dateAdded: getPastDate(1), stock: 999, description: 'با کاشت این نخل ویژه، به مدت یک ماه دسترسی نامحدود به «آزمایشگاه کوچینگ معنا» دریافت کنید و در کنار کمک به اهداف اجتماعی، مهارت‌های کوچینگ خود را تقویت نمایید.', type: 'service', points: 300, tags: ['growth', 'coaching', 'self-discovery'] },
   { id: 'p_heritage_language', name: 'نخل زبان هوشمانا (آزمون تعیین سطح)', price: 75000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'با کاشت این نخل، قفل آزمون تعیین سطح آکادمی زبان هوشمانا را باز کرده و در مسیر رشد زبانی و اجتماعی قدم بگذارید.', type: 'service', points: 150, tags: ['growth', 'self-discovery'] },
-  { id: 'p_mana_pack', name: 'بسته معنا', price: 10000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'با خرید این بسته، ۱۰۰۰ امتیاز معنا به حساب خود اضافه کنید تا به ابزارهای هوشمند دسترسی پیدا کنید.', type: 'service', points: 0 },
+  // UPDATED PRICE TO COVER AI COSTS (Previous: 10,000)
+  { id: 'p_mana_pack', name: 'بسته معنا (۱۰۰۰ امتیاز)', price: 49000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1555597673-b21d5c935865?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'با خرید این بسته، ۱۰۰۰ امتیاز معنا به حساب خود اضافه کنید تا به ابزارهای هوشمند دسترسی پیدا کنید.', type: 'service', points: 0 },
   { id: 'p_hoshmana_live_weekly', name: 'بسته هفتگی هوشمانا لایو', price: 150000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'دسترسی هفتگی (۶۰ دقیقه) به تمام ابزارهای گفتگوی زنده: همراه معنا، مربی معنا و هم‌صحبت انگلیسی.', type: 'service', points: 300, tags: ['growth', 'coaching', 'self-discovery'] },
   // New AI Creation Studio Unlock Products
   { id: 'p_unlock_video_gen', name: 'نخل رویا (فعال‌سازی ویدیو)', price: 350000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(0), stock: 999, description: 'با کاشت این نخل، موتور «رویاساز متحرک» را فعال کنید تا ایده‌هایتان را به ویدیوهای سینمایی تبدیل نمایید.', type: 'service', points: 700, tags: ['creativity', 'ai'], unlocksFeatureId: 'videoGen' },
   { id: 'p_unlock_deep_chat', name: 'نخل خرد (فعال‌سازی حکیم دانا)', price: 200000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(0), stock: 999, description: 'دسترسی به «حکیم دانا» برای گفتگوهای عمیق فلسفی و تحلیل‌های پیچیده.', type: 'service', points: 400, tags: ['growth', 'ai'], unlocksFeatureId: 'thinking' },
   { id: 'p_unlock_image_edit', name: 'نخل نقش (فعال‌سازی ویرایشگر)', price: 150000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(0), stock: 999, description: 'ابزار ویرایش جادویی تصاویر را فعال کنید.', type: 'service', points: 300, tags: ['creativity', 'ai'], unlocksFeatureId: 'imageEdit' },
   
+  // ... (Rest of products remain unchanged)
   // NEW DIGITAL PRODUCTS FOR PASSIVE INCOME
   { 
     id: 'd_prompt_pack_1', 
@@ -144,6 +146,7 @@ export const INITIAL_PRODUCTS: Product[] = [
   }
 ];
 
+// ... (Rest of file unchanged)
 const firstNames = ["علی", "سارا", "رضا", "مریم", "حسین", "فاطمه", "مهدی", "زهرا", "محمد", "نیلوفر", "امیر", "هستی", "کیان", "یکتا", "آریا", "باران"];
 const lastNames = ["احمدی", "رضایی", "محمدی", "حسینی", "کریمی", "صادقی", "مرادی", "جعفری", "قاسمی", "عبداللهی", "نوری", "هاشمی", "اکبری", "سلیمانی"];
 

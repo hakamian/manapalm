@@ -25,14 +25,13 @@ export const useStudioLogic = (user: User | null, searchQuery: string) => {
     }, [filteredTools]);
 
     const handleToolSelect = (tool: CreationToolConfig) => {
-        // NOTE: ToolCard calculates the dynamic cost and passes it back in the tool object.
-        // However, if we select from elsewhere, we rely on the passed object having the updated cost,
-        // or we need to recalculate it here. Since ToolCard does it, 'tool' usually has the right unlockCost if clicked there.
-        // If clicked from search or sidebar, we might need context.
-        // For now, assuming ToolCard flow is primary.
-
         if (!user) {
-            setDemoTool(tool);
+            // Allow guest access if tool is configured for it
+            if (tool.guestAccess) {
+                setActiveToolId(tool.id);
+            } else {
+                setDemoTool(tool);
+            }
             return;
         }
         setActiveToolId(tool.id);

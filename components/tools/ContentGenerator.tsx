@@ -6,9 +6,10 @@ import { SparklesIcon, PlusIcon } from '../icons.tsx';
 import { getUserLevel } from '../../utils/gamification.ts';
 import Modal from '../Modal.tsx';
 import { callProxy } from '../../services/ai/core.ts';
+import { useAppDispatch } from '../../AppContext.tsx';
 
 interface ContentGeneratorProps {
-    user: User;
+    user: User | null; // Allow null user for guest mode
     onUpdateProfile: (updatedUser: Partial<User>) => void;
 }
 
@@ -22,6 +23,7 @@ const contentTypes: { id: ContentType; label: string; prompt: string }[] = [
 ];
 
 const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfile }) => {
+    const dispatch = useAppDispatch();
     const [contentType, setContentType] = useState<ContentType>('bio');
     const [isLoading, setIsLoading] = useState(false);
     const [generatedText, setGeneratedText] = useState<string | null>(null);
@@ -29,6 +31,8 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfi
     const [isSaveModalOpen, setIsSaveModalOpen] = useState(false);
 
     const userSummary = useMemo(() => {
+        if (!user) return "A new guest user exploring the platform.";
+
         const userLevel = getUserLevel(user.points);
         const recentActivities = (user.timeline || [])
             .slice(0, 3)
@@ -48,13 +52,22 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfi
     }, [user]);
 
     const handleGenerate = async () => {
+        // Guest Usage Check
+        if (!user) {
+            const guestUsage = parseInt(localStorage.getItem('guest_usage_text') || '0');
+            if (guestUsage >= 1) {
+                dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true });
+                return;
+            }
+        }
+
         setIsLoading(true);
         setGeneratedText(null);
         setError(null);
 
         const selectedPrompt = contentTypes.find(c => c.id === contentType)?.prompt;
         if (!selectedPrompt) {
-            setError('لطفا یک نوع محتوا انتخاب کنید.');
+            setError('لطفاً یک نوع محتوا انتخاب کنید.');
             setIsLoading(false);
             return;
         }
@@ -74,6 +87,13 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfi
                 config: { temperature: 0.7 }
             });
             setGeneratedText(response.text);
+            
+            // Increment guest usage
+            if (!user) {
+                const currentUsage = parseInt(localStorage.getItem('guest_usage_text') || '0');
+                localStorage.setItem('guest_usage_text', (currentUsage + 1).toString());
+            }
+
         } catch (err) {
             console.error("Content generation failed:", err);
             let errorMessage = "متاسفانه در تولید محتوا خطایی رخ داد. لطفا دوباره تلاش کنید.";
@@ -91,6 +111,10 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfi
     };
 
     const handleSaveToJournal = () => {
+        if (!user) {
+            dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true });
+            return;
+        }
         if (!generatedText) return;
 
         const newEvent: TimelineEvent = {
@@ -122,6 +146,11 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfi
             <div className="p-4 border-b border-stone-200 dark:border-stone-700">
                 <h3 className="font-bold text-xl text-stone-800 dark:text-stone-100">دستیار نویسنده معنا</h3>
                 <p className="text-sm text-stone-500 dark:text-stone-400">بر اساس سفر و دستاوردهای شما، محتوای الهام‌بخش خلق کنید.</p>
+                {!user && (
+                     <div className="bg-blue-900/20 text-blue-300 text-xs px-2 py-1 rounded mt-2 inline-block">
+                        حالت مهمان: ۱ بار استفاده رایگان
+                    </div>
+                )}
             </div>
             
             <div className="flex-1 p-4 md:p-6 flex flex-col gap-6">
