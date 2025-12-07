@@ -37,7 +37,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   // Developer Mode / Config State
   const [showConfig, setShowConfig] = useState(false);
   const [showDevHelp, setShowDevHelp] = useState(false);
-  // Default to the correct project URL
+  // CORRECTED URL: sbjrayzghjfsmmuygwbw
   const [configUrl, setConfigUrl] = useState(localStorage.getItem('VITE_SUPABASE_URL') || 'https://sbjrayzghjfsmmuygwbw.supabase.co');
   const [configKey, setConfigKey] = useState(localStorage.getItem('VITE_SUPABASE_ANON_KEY') || '');
   
@@ -299,7 +299,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: 'https://www.manapalm.com', // Explicitly set as requested
+                redirectTo: 'https://www.manapalm.com', // Explicitly set to manapalm.com
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',
@@ -327,7 +327,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
   const renderConfig = () => {
       const displayUrl = configUrl || 'https://sbjrayzghjfsmmuygwbw.supabase.co';
-      const redirectUrl = `https://www.manapalm.com`;
+      const redirectUrl = `https://www.manapalm.com`; // Show the redirect URL user needs to whitelist
 
       return (
       <div className="space-y-4 animate-fade-in p-4 bg-gray-900/50 rounded-lg border border-gray-600 mb-4 max-h-[60vh] overflow-y-auto">
