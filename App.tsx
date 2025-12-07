@@ -162,6 +162,15 @@ const App: React.FC = () => {
                 const existingUser = allUsers.find(u => u.email === session.user.email);
                 const appUser = mapSupabaseUserToAppUser(session.user, existingUser);
                 dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
+                
+                // Clean up URL if code is present
+                const params = new URLSearchParams(window.location.search);
+                if (params.has('code')) {
+                     params.delete('code');
+                     // Reconstruct URL without code
+                     const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+                     window.history.replaceState({}, document.title, newUrl);
+                }
             }
         });
 
@@ -175,6 +184,14 @@ const App: React.FC = () => {
                  if (!user || user.id !== appUser.id) {
                      dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
                      dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: false });
+                 }
+                 
+                 // Cosmetic: Remove ?code=... from URL after successful auth
+                 const params = new URLSearchParams(window.location.search);
+                 if (params.has('code')) {
+                     params.delete('code');
+                     const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+                     window.history.replaceState({}, document.title, newUrl);
                  }
             } else {
                 if (user) {

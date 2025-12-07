@@ -299,7 +299,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: 'https://www.manapalm.com', 
+                // Use dynamic origin to support localhost and production
+                redirectTo: window.location.origin, 
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',
@@ -327,7 +328,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
   const renderConfig = () => {
       const displayUrl = configUrl || 'https://sbjrayzghjfsmmuygwbw.supabase.co';
-      const redirectUrl = `https://www.manapalm.com`;
+      const redirectUrl = window.location.origin;
 
       return (
       <div className="space-y-4 animate-fade-in p-4 bg-gray-900/50 rounded-lg border border-gray-600 mb-4 max-h-[60vh] overflow-y-auto">
