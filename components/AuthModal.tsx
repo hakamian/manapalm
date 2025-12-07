@@ -154,7 +154,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   // --- REAL GOOGLE LOGIN IMPLEMENTATION ---
   const handleGoogleLogin = async () => {
     if (!supabase) {
-        setError('خطا: سرویس احراز هویت گوگل (Supabase) پیکربندی نشده است.');
+        setError('خطا: اتصال به سرویس گوگل (Supabase) برقرار نیست.');
         return;
     }
 

@@ -81,20 +81,27 @@ const App: React.FC = () => {
                         supabaseUser.email === 'admin@nakhlestanmana.com' ||
                         (supabaseUser.phone && supabaseUser.phone === '09222453571');
         
+        // Handle Google Metadata variations
+        const meta = supabaseUser.user_metadata || {};
+        const fullName = meta.full_name || meta.name || meta.user_name;
+        const avatarUrl = meta.avatar_url || meta.picture || existingAppUser?.profileImageUrl;
+
         if (existingAppUser) {
              return {
                  ...existingAppUser,
                  email: supabaseUser.email,
-                 profileImageUrl: supabaseUser.user_metadata?.avatar_url || existingAppUser.profileImageUrl,
-                 isAdmin: isAdmin,
+                 profileImageUrl: avatarUrl,
+                 fullName: fullName || existingAppUser.fullName,
+                 name: fullName || existingAppUser.name,
+                 isAdmin: isAdmin || existingAppUser.isAdmin,
                  id: supabaseUser.id
              };
         }
 
         return {
             id: supabaseUser.id,
-            name: supabaseUser.user_metadata?.full_name || 'کاربر جدید',
-            fullName: supabaseUser.user_metadata?.full_name,
+            name: fullName || 'کاربر جدید',
+            fullName: fullName,
             phone: '',
             email: supabaseUser.email,
             points: 100,
@@ -107,7 +114,7 @@ const App: React.FC = () => {
             notifications: [],
             reflectionAnalysesRemaining: 0,
             ambassadorPacksRemaining: 0,
-            profileImageUrl: supabaseUser.user_metadata?.avatar_url
+            profileImageUrl: avatarUrl
         };
     };
 
@@ -148,6 +155,8 @@ const App: React.FC = () => {
 
     useEffect(() => {
         if (!supabase) return;
+        
+        // Check active session
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) {
                 const existingUser = allUsers.find(u => u.email === session.user.email);
@@ -156,10 +165,13 @@ const App: React.FC = () => {
             }
         });
 
+        // Listen for auth changes (e.g. Google Redirect)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             if (session?.user) {
                  const existingUser = allUsers.find(u => u.email === session.user.email);
                  const appUser = mapSupabaseUserToAppUser(session.user, existingUser);
+                 
+                 // Update state if user changed or was null
                  if (!user || user.id !== appUser.id) {
                      dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
                      dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: false });
@@ -172,7 +184,7 @@ const App: React.FC = () => {
         });
 
         return () => subscription.unsubscribe();
-    }, [dispatch, allUsers]);
+    }, [dispatch, allUsers]); // 'user' removed from dep array to avoid stale closure issues during initial load
 
     return (
         <div className="bg-gray-900 text-white min-h-screen overflow-x-hidden">
