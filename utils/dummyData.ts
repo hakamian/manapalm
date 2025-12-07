@@ -21,7 +21,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       name: 'سهم در نهال‌کاری (نهال امید)',
       price: 200000,
       category: 'نخل میراث',
-      image: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=800&auto=format&fit=crop',
+      // CHANGE: Updated image to a planting/sapling image
+      image: 'https://images.unsplash.com/photo-1530968464165-7a1861cbaf9f?auto=format&fit=crop&w=800&q=80',
       popularity: 98,
       dateAdded: getPastDate(1),
       stock: 9999,
@@ -35,7 +36,8 @@ export const INITIAL_PRODUCTS: Product[] = [
       name: 'مجموعه هنری "روح نخلستان"',
       price: 50000,
       category: 'محصولات دیجیتال',
-      image: 'https://images.unsplash.com/photo-1579546929518-9e396f3cc809?q=80&w=800&auto=format&fit=crop',
+      // CHANGE: Updated image to digital abstract art
+      image: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=800&q=80',
       popularity: 85,
       dateAdded: getPastDate(3),
       stock: 9999,
@@ -48,7 +50,10 @@ export const INITIAL_PRODUCTS: Product[] = [
   },
   // --- HIGH TICKET ---
   { 
-    id: 'p_heritage_meaning', name: 'نخل معنا', price: 30000000, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1000&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(10), stock: 10, 
+    id: 'p_heritage_meaning', name: 'نخل معنا', price: 30000000, category: 'نخل میراث', 
+    // CHANGE: Updated image to a majestic palm tree
+    image: 'https://images.unsplash.com/photo-1512428559087-560fa5ce7d87?auto=format&fit=crop&w=1000&q=80', 
+    popularity: 100, dateAdded: getPastDate(10), stock: 10, 
     description: 'کاشت نخلی برای یافتن و بزرگداشت معنای شخصی زندگی. این نخل در قلب نخلستان کاشته می‌شود و نماد تعهد شما به یک زندگی هدفمند است.', 
     type: 'physical', points: 150000, tags: ['growth', 'self-discovery'], // 30m * 0.005 = 150k points
     culturalSignificance: 'نخل در فرهنگ ایرانی نماد جاودانگی، مقاومت و بخشندگی است. کاشت «نخل معنا» یک پیمان شخصی با این ارزش‌های کهن و تعهدی برای به ثمر نشاندن معنای منحصر به فرد زندگی خویش است.',
@@ -76,10 +81,66 @@ export const INITIAL_PRODUCTS: Product[] = [
   { id: 'p_heritage_memory', name: 'نخل خاطره', price: 8500000, points: 42500, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1469122312224-c5846569feb1?q=80&w=800&auto=format&fit=crop', popularity: 91, dateAdded: getPastDate(18), stock: 25, description: 'ثبت یک خاطره خوش و ماندگار در دل طبیعت.', type: 'physical', tags: ['memory'] },
   { id: 'p_heritage_gift', name: 'نخل هدیه', price: 8500000, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=800&auto=format&fit=crop', popularity: 89, dateAdded: getPastDate(40), stock: 4, description: 'یک هدیه متفاوت و ماندگار برای کسانی که دوستشان دارید.', type: 'physical', points: 42500, tags: ['family', 'gratitude'] },
   // Products
-  { id: 'p3', name: 'خرمای شکلاتی لوکس', price: 150000, category: 'محصولات خرما', image: 'https://images.unsplash.com/photo-1632925224873-d6242d840593?q=80&w=800&auto=format&fit=crop', popularity: 85, dateAdded: getPastDate(5), stock: 3, description: 'ترکیبی بی‌نظیر از خرمای شیرین و شکلات تلخ بلژیکی. یک هدیه لوکس و مقوی برای عزیزانتان یا یک پذیرایی خاص برای مهمانان ویژه. تهیه شده از بهترین مواد اولیه.', type: 'physical', tags: ['gratitude'], points: 300 },
-  { id: 'p4', name: 'حصیر دست‌بافت جنوبی', price: 220000, category: 'صنایع دستی', image: 'https://images.unsplash.com/photo-1616605221338-0432c89027d2?q=80&w=800&auto=format&fit=crop', popularity: 70, dateAdded: getPastDate(60), stock: 0, description: 'هنر دست زنان جنوبی در قالب یک حصیر زیبا و کاربردی. بافته شده از برگ درخت نخل، این محصول کاملاً طبیعی و سازگار با محیط زیست بوده و گرما و اصالت را به خانه شما می‌آورد.', type: 'physical', tags: ['community', 'sustainability'], points: 440 },
-  { id: 'p6', name: 'شیره خرما خالص', price: 85000, category: 'محصولات خرما', image: 'https://images.unsplash.com/photo-1600189489105-2c568299a933?q=80&w=800&auto=format&fit=crop', popularity: 88, dateAdded: getPastDate(12), stock: 2, description: 'شیره خرمای ۱۰۰٪ طبیعی و خالص، بدون هیچ‌گونه مواد افزودنی. یک منبع انرژی فوق‌العاده برای شروع روز و یک شیرین‌کننده سالم برای انواع غذاها و دسرها.', type: 'physical', tags: ['sustainability'], points: 170 },
-  { id: 'p7', name: 'سبد حصیری پیک‌نیک', price: 350000, category: 'صنایع دستی', image: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?q=80&w=800&auto=format&fit=crop', popularity: 78, dateAdded: getPastDate(80), stock: 10, description: 'یک سبد جادار و زیبا برای پیک‌نیک‌ها و خریدهای روزانه. این محصول دست‌بافت، علاوه بر زیبایی، دوام بالایی دارد و یک انتخاب پایدار به جای کیسه‌های پلاستیکی است.', type: 'physical', tags: ['community', 'sustainability'], points: 700 },
+  { 
+      id: 'p3', 
+      name: 'خرمای شکلاتی لوکس', 
+      price: 150000, 
+      category: 'محصولات خرما', 
+      // CHANGE: Updated image to chocolate dates
+      image: 'https://images.unsplash.com/photo-1607361869848-6a56e2978370?auto=format&fit=crop&w=800&q=80', 
+      popularity: 85, 
+      dateAdded: getPastDate(5), 
+      stock: 3, 
+      description: 'ترکیبی بی‌نظیر از خرمای شیرین و شکلات تلخ بلژیکی. یک هدیه لوکس و مقوی برای عزیزانتان یا یک پذیرایی خاص برای مهمانان ویژه. تهیه شده از بهترین مواد اولیه.', 
+      type: 'physical', 
+      tags: ['gratitude'], 
+      points: 300 
+  },
+  { 
+      id: 'p4', 
+      name: 'حصیر دست‌بافت جنوبی', 
+      price: 220000, 
+      category: 'صنایع دستی', 
+      // CHANGE: Updated image to wicker texture
+      image: 'https://images.unsplash.com/photo-1616627561839-074385245cf6?auto=format&fit=crop&w=800&q=80', 
+      popularity: 70, 
+      dateAdded: getPastDate(60), 
+      stock: 0, 
+      description: 'هنر دست زنان جنوبی در قالب یک حصیر زیبا و کاربردی. بافته شده از برگ درخت نخل، این محصول کاملاً طبیعی و سازگار با محیط زیست بوده و گرما و اصالت را به خانه شما می‌آورد.', 
+      type: 'physical', 
+      tags: ['community', 'sustainability'], 
+      points: 440 
+  },
+  { 
+      id: 'p6', 
+      name: 'شیره خرما خالص', 
+      price: 85000, 
+      category: 'محصولات خرما', 
+      // CHANGE: Updated image to syrup/honey vibe
+      image: 'https://images.unsplash.com/photo-1587049359681-3676a82a35d6?auto=format&fit=crop&w=800&q=80', 
+      popularity: 88, 
+      dateAdded: getPastDate(12), 
+      stock: 2, 
+      description: 'شیره خرمای ۱۰۰٪ طبیعی و خالص، بدون هیچ‌گونه مواد افزودنی. یک منبع انرژی فوق‌العاده برای شروع روز و یک شیرین‌کننده سالم برای انواع غذاها و دسرها.', 
+      type: 'physical', 
+      tags: ['sustainability'], 
+      points: 170 
+  },
+  { 
+      id: 'p7', 
+      name: 'سبد حصیری پیک‌نیک', 
+      price: 350000, 
+      category: 'صنایع دستی', 
+      // CHANGE: Updated image to basket
+      image: 'https://images.unsplash.com/photo-1615486511484-92e172cc416d?auto=format&fit=crop&w=800&q=80', 
+      popularity: 78, 
+      dateAdded: getPastDate(80), 
+      stock: 10, 
+      description: 'یک سبد جادار و زیبا برای پیک‌نیک‌ها و خریدهای روزانه. این محصول دست‌بافت، علاوه بر زیبایی، دوام بالایی دارد و یک انتخاب پایدار به جای کیسه‌های پلاستیکی است.', 
+      type: 'physical', 
+      tags: ['community', 'sustainability'], 
+      points: 700 
+  },
   // Services
   { id: 'upgrade_storage_100', name: 'بسته فضای ذخیره‌سازی +۱۰۰ مگابایت', price: 25000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1544396821-4dd40b938ad3?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'فضای ذخیره‌سازی خود را برای ثبت خاطرات و تصاویر بیشتر افزایش دهید. این بسته ۱۰۰ مگابایت به ظرفیت حساب شما اضافه می‌کند.', type: 'upgrade', points: 50, tags: ['growth'] },
   { id: 'p_reflection_unlock', name: 'نخل تامل', price: 100000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1499209971185-a6188b871be9?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'با کاشت این نخل، یک بار استفاده از قابلیت «آینه هوشمند تاملات» را برای تحلیل عمیق یادداشت‌های روزانه‌تان دریافت کنید.', type: 'service', points: 200, tags: ['growth', 'self-discovery'] },
