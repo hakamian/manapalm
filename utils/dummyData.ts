@@ -65,7 +65,10 @@ export const INITIAL_PRODUCTS: Product[] = [
   },
   { id: 'p_heritage_group', name: 'نخل گروهی', price: 15000000, points: 75000, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1545235617-9465d2a55698?q=80&w=800&auto=format&fit=crop', popularity: 80, dateAdded: getPastDate(1), stock: 100, description: 'برای یک هدف یا پروژه گروهی، با هم یک نخل بکارید و تاثیر جمعی خود را ثبت کنید.', type: 'physical', tags: ['community'] },
   { 
-    id: 'p_heritage_iran', name: 'نخل ایران', price: 9000000, points: 45000, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1599940824399-b87987ce0799?q=80&w=800&auto=format&fit=crop', popularity: 95, dateAdded: getPastDate(5), stock: 50, 
+    id: 'p_heritage_iran', name: 'نخل ایران', price: 9000000, points: 45000, category: 'نخل میراث', 
+    // CHANGE: Updated image per user request
+    image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1765110314/aerial-view_vwdbw2.png', 
+    popularity: 95, dateAdded: getPastDate(5), stock: 50, 
     description: 'برای سربلندی و آبادانی ایران، یک نخل در خاک وطن بکارید و ریشه‌های خود را در این سرزمین محکم‌تر کنید.', 
     type: 'physical', tags: ['community', 'patriotism'],
     culturalSignificance: 'درخت نخل از دیرباز با تاریخ و تمدن ایران گره خورده و در ادبیات و هنر ما به عنوان نماد پایداری و سربلندی ستایش شده است. این نخل، ادای دینی به این میراث غنی است.',
