@@ -78,6 +78,26 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
         setShowConfig(false);
     };
 
+    const handleTestWebhook = async () => {
+        if (!webhookUrl) return;
+        try {
+            await fetch(webhookUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    action: 'test_connection',
+                    prompt: 'This is a test prompt from Nakhlestan Mana (Handshake).',
+                    recordId: 'test-record-id-123',
+                    title: 'Test Article Title',
+                    summary: 'This is a test summary to verify data flow.'
+                })
+            });
+            alert('سیگنال تست ارسال شد! لطفاً در Make.com بررسی کنید که دیتای "Handshake" دریافت شده باشد.');
+        } catch (e) {
+            alert('خطا در ارسال تست. لطفاً آدرس Webhook را بررسی کنید.');
+        }
+    };
+
     const handleFetchTopics = async () => {
         setIsLoadingTopics(true);
         setError(null);
@@ -224,9 +244,18 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                         placeholder="https://hook.us2.make.com/..."
                         className="w-full bg-gray-800 border border-gray-700 rounded p-2 text-xs text-white mb-2 dir-ltr"
                     />
-                    <div className="flex justify-end gap-2">
-                        <button onClick={() => setShowConfig(false)} className="text-xs text-gray-400 hover:text-white">بستن</button>
-                        <button onClick={handleSaveWebhook} className="text-xs bg-blue-600 text-white px-3 py-1 rounded">ذخیره</button>
+                    <div className="flex justify-between gap-2 mt-4">
+                        <button 
+                            onClick={handleTestWebhook} 
+                            className="text-xs bg-gray-700 hover:bg-gray-600 text-yellow-400 px-3 py-1.5 rounded border border-gray-600 flex items-center gap-1"
+                        >
+                            <BoltIcon className="w-3 h-3" />
+                            ارسال تست (Handshake)
+                        </button>
+                        <div className="flex gap-2">
+                            <button onClick={() => setShowConfig(false)} className="text-xs text-gray-400 hover:text-white px-2">بستن</button>
+                            <button onClick={handleSaveWebhook} className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-500">ذخیره</button>
+                        </div>
                     </div>
                 </div>
             )}
