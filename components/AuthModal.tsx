@@ -335,7 +335,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
               <CogIcon className="w-4 h-4"/> تنظیمات اتصال دستی
           </h3>
           <p className="text-xs text-gray-400">
-              آدرس صحیح (Project URL) و کلید (Anon Key) را از بخش Settings -> API در پنل Supabase کپی و اینجا وارد کنید.
+              آدرس صحیح (Project URL) و کلید (Anon Key) را از بخش Settings &rarr; API در پنل Supabase کپی و اینجا وارد کنید.
           </p>
           <div>
               <label className="block text-xs text-gray-400 mb-1">Project URL</label>
@@ -369,7 +369,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
           {showDevHelp && (
               <div className="bg-blue-900/20 border border-blue-500/30 p-3 rounded-md mt-2 text-[10px] space-y-2 text-blue-100">
                   <p className="font-bold text-yellow-300">مهم: تنظیمات Redirect URL</p>
-                  <p>در پنل Supabase بخش Authentication -> URL Configuration، این آدرس را به لیست <strong>Redirect URLs</strong> اضافه کنید:</p>
+                  <p>در پنل Supabase بخش Authentication &rarr; URL Configuration، این آدرس را به لیست <strong>Redirect URLs</strong> اضافه کنید:</p>
                   <div className="bg-black/50 p-2 rounded text-green-300 font-mono select-all cursor-pointer break-all" onClick={(e) => navigator.clipboard.writeText(e.currentTarget.innerText)}>
                       {redirectUrl}
                   </div>
