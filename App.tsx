@@ -153,55 +153,62 @@ const App: React.FC = () => {
         }
     }, [allUsers, dispatch]);
 
+    // Dedicated function to clean URL parameters
+    const cleanAuthUrl = () => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('code') || params.has('error') || params.has('error_description')) {
+            params.delete('code');
+            params.delete('error');
+            params.delete('error_description');
+            
+            const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
+            window.history.replaceState({}, document.title, newUrl);
+        }
+    };
+
     useEffect(() => {
         if (!supabase) return;
         
-        // Check active session
+        // Initial Session Check
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) {
                 const existingUser = allUsers.find(u => u.email === session.user.email);
                 const appUser = mapSupabaseUserToAppUser(session.user, existingUser);
                 dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
                 
-                // Clean up URL if code is present
-                const params = new URLSearchParams(window.location.search);
-                if (params.has('code')) {
-                     params.delete('code');
-                     // Reconstruct URL without code
-                     const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-                     window.history.replaceState({}, document.title, newUrl);
-                }
+                // Clean URL after session is confirmed
+                cleanAuthUrl();
             }
         });
 
         // Listen for auth changes (e.g. Google Redirect)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (session?.user) {
-                 const existingUser = allUsers.find(u => u.email === session.user.email);
-                 const appUser = mapSupabaseUserToAppUser(session.user, existingUser);
+            if (_event === 'SIGNED_IN' || session?.user) {
+                 const existingUser = allUsers.find(u => u.email === session?.user.email);
+                 const appUser = mapSupabaseUserToAppUser(session?.user, existingUser);
                  
-                 // Update state if user changed or was null
                  if (!user || user.id !== appUser.id) {
                      dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
                      dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: false });
                  }
                  
-                 // Cosmetic: Remove ?code=... from URL after successful auth
-                 const params = new URLSearchParams(window.location.search);
-                 if (params.has('code')) {
-                     params.delete('code');
-                     const newUrl = window.location.pathname + (params.toString() ? '?' + params.toString() : '');
-                     window.history.replaceState({}, document.title, newUrl);
-                 }
-            } else {
+                 // Clean URL immediately after sign in
+                 cleanAuthUrl();
+            } else if (_event === 'SIGNED_OUT') {
                 if (user) {
                     dispatch({ type: 'LOGOUT' });
                 }
             }
         });
 
-        return () => subscription.unsubscribe();
-    }, [dispatch, allUsers]); // 'user' removed from dep array to avoid stale closure issues during initial load
+        // Fallback cleanup timer to ensure URL is clean even if session logic is slow
+        const cleanupTimer = setTimeout(cleanAuthUrl, 1000);
+
+        return () => {
+            subscription.unsubscribe();
+            clearTimeout(cleanupTimer);
+        };
+    }, [dispatch, allUsers]); // removed 'user' to prevent loops
 
     return (
         <div className="bg-gray-900 text-white min-h-screen overflow-x-hidden">
