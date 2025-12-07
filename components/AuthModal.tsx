@@ -37,7 +37,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   // Developer Mode / Config State
   const [showConfig, setShowConfig] = useState(false);
   const [showDevHelp, setShowDevHelp] = useState(false);
-  // Default to the correct project URL
+  // Default to the correct project URL: sbjrayzghjfsmmuygwbw
   const [configUrl, setConfigUrl] = useState(localStorage.getItem('VITE_SUPABASE_URL') || 'https://sbjrayzghjfsmmuygwbw.supabase.co');
   const [configKey, setConfigKey] = useState(localStorage.getItem('VITE_SUPABASE_ANON_KEY') || '');
   
@@ -299,7 +299,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
-                redirectTo: 'https://www.manapalm.com', // Explicitly set to manapalm.com
+                redirectTo: 'https://www.manapalm.com', 
                 queryParams: {
                     access_type: 'offline',
                     prompt: 'consent',
