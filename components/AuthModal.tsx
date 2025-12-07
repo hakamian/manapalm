@@ -36,8 +36,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
   // Developer Mode / Config State
   const [showConfig, setShowConfig] = useState(false);
-  const [configUrl, setConfigUrl] = useState('');
-  const [configKey, setConfigKey] = useState('');
+  const [configUrl, setConfigUrl] = useState(localStorage.getItem('VITE_SUPABASE_URL') || '');
+  const [configKey, setConfigKey] = useState(localStorage.getItem('VITE_SUPABASE_ANON_KEY') || '');
   
   const otpInputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
@@ -57,7 +57,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         setLastName('');
         setRegPassword('');
         setRegConfirmPassword('');
-        setShowConfig(false);
+        // Do not reset showConfig automatically if keys are missing
+        if (!supabase) setShowConfig(true);
       }, 300);
       return () => clearTimeout(timer);
     }
@@ -128,7 +129,15 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
             setError('اتصال به سرور برقرار نیست. لطفا تنظیمات را بررسی کنید.');
             setShowConfig(true);
         } else {
-            setError(err.message || 'خطا در برقراری ارتباط. لطفا دوباره تلاش کنید.');
+            // Handle network errors specifically
+            if (err.message === "Failed to fetch" || err.message.includes("network")) {
+                setError('خطا در اتصال به سرور (VPN را بررسی کنید). یا آدرس سرور اشتباه است.');
+                // Optional: Automatically show config on network error to allow URL fix
+                // setShowConfig(true); 
+            } else {
+                setError(err.message || 'خطا در برقراری ارتباط. لطفا دوباره تلاش کنید.');
+            }
+
             if (err.message && err.message.includes("Invalid login credentials")) {
                 setError("شماره موبایل یا رمز عبور اشتباه است.");
             }
@@ -158,7 +167,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         if (error) throw error;
 
         // Check if user is new or existing based on local state mock or metadata
-        // In real app, we check if profile exists via Supabase or user metadata
         const userMetaData = data.user?.user_metadata;
         const hasName = userMetaData?.full_name || userMetaData?.name;
         
@@ -297,12 +305,12 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
   };
 
   const renderConfig = () => (
-      <div className="space-y-4 animate-fade-in p-4 bg-gray-900/50 rounded-lg border border-gray-600">
+      <div className="space-y-4 animate-fade-in p-4 bg-gray-900/50 rounded-lg border border-gray-600 mb-4">
           <h3 className="text-sm font-bold text-amber-400 flex items-center gap-2">
-              <CogIcon className="w-4 h-4"/> تنظیمات اتصال
+              <CogIcon className="w-4 h-4"/> تنظیمات اتصال دستی
           </h3>
           <p className="text-xs text-gray-400">
-              اگر فایل .env کار نمی‌کند، می‌توانید کلیدهای پروژه Supabase خود را اینجا وارد کنید.
+              آدرس صحیح (Project URL) و کلید (Anon Key) را از بخش Settings -> API در پنل Supabase کپی و اینجا وارد کنید.
           </p>
           <div>
               <label className="block text-xs text-gray-400 mb-1">Project URL</label>
@@ -324,12 +332,20 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                   placeholder="eyJhbGciOiJIUzI1NiIsInR5..."
               />
           </div>
-          <button 
-            onClick={handleSaveConfig}
-            className="w-full bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 rounded transition-colors"
-          >
-              ذخیره و بارگذاری مجدد
-          </button>
+          <div className="flex gap-2">
+              <button 
+                onClick={handleSaveConfig}
+                className="flex-1 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold py-2 rounded transition-colors"
+              >
+                  ذخیره و اتصال
+              </button>
+               <button 
+                onClick={() => setShowConfig(false)}
+                className="px-3 bg-gray-700 hover:bg-gray-600 text-white text-xs font-bold py-2 rounded transition-colors"
+              >
+                  بستن
+              </button>
+          </div>
       </div>
   );
 
@@ -581,6 +597,18 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         onClick={e => e.stopPropagation()}
       >
         <div className="absolute top-3 right-1/2 translate-x-1/2 w-12 h-1.5 bg-gray-600 rounded-full sm:hidden" aria-hidden="true"></div>
+        
+        {/* Settings Button */}
+        {!showConfig && (
+            <button
+              onClick={() => setShowConfig(true)}
+              className="absolute top-4 right-4 text-gray-500 hover:text-white transition-colors"
+              title="تنظیمات اتصال"
+            >
+              <CogIcon className="w-5 h-5"/>
+            </button>
+        )}
+
         <button
           onClick={onClose}
           className="absolute top-4 left-4 text-gray-400 hover:text-white"
@@ -589,47 +617,58 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
           <XMarkIcon />
         </button>
 
-        <div className="text-center mb-8">
+        <div className="text-center mb-6">
             <h2 id="auth-modal-title" className="text-2xl font-bold mb-2">
                 {step === 3 ? 'افتخار آشنایی با چه کسی را داریم؟' : 
                  step === 4 ? 'خوش آمدید!' : 
                  'به نخلستان معنا خوش آمدید'}
             </h2>
-            <p className="text-gray-400 text-sm">
-                {step === 1 ? "برای ادامه، شماره خود را وارد کنید." : 
-                 step === 2 ? `کد تایید پیامک شده را وارد کنید.` : 
-                 step === 3 ? 'برای شخصی‌سازی تجربه شما، لطفا نام خود را وارد کنید.' :
-                 'سفر شما آغاز شد.'}
-            </p>
+            {!showConfig && (
+                <p className="text-gray-400 text-sm">
+                    {step === 1 ? "برای ادامه، شماره خود را وارد کنید." : 
+                     step === 2 ? `کد تایید پیامک شده را وارد کنید.` : 
+                     step === 3 ? 'برای شخصی‌سازی تجربه شما، لطفا نام خود را وارد کنید.' :
+                     'سفر شما آغاز شد.'}
+                </p>
+            )}
         </div>
-        
-        {step === 1 ? renderStepOne() : step === 2 ? renderStepTwo() : step === 3 ? renderStepThree() : renderStepFour()}
-        
-        {step === 1 && error && (
-            <div className="mt-3 p-2 bg-red-900/30 border border-red-500/50 rounded-md">
-                <p className="text-red-400 text-sm text-center">{error}</p>
-            </div>
-        )}
         
         {/* Render Config if requested */}
         {showConfig && renderConfig()}
 
-        {step === 1 && !showConfig && (
+        {!showConfig && (
             <>
-                <div className="relative flex pt-6 items-center">
-                    <div className="flex-grow border-t border-gray-600"></div>
-                    <span className="flex-shrink mx-4 text-gray-500 text-sm">یا</span>
-                    <div className="flex-grow border-t border-gray-600"></div>
-                </div>
-                <button
-                    type="button"
-                    onClick={handleGoogleLogin}
-                    disabled={isLoading}
-                    className="w-full flex items-center justify-center bg-white hover:bg-gray-200 text-gray-800 font-semibold py-3 px-4 rounded-md transition-all duration-200 text-base mt-4 border border-gray-300 shadow-sm"
-                >
-                    <GoogleIcon className="w-5 h-5 ml-3" />
-                    {isLoading ? 'در حال اتصال...' : 'ورود سریع با گوگل'}
-                </button>
+                {step === 1 ? renderStepOne() : step === 2 ? renderStepTwo() : step === 3 ? renderStepThree() : renderStepFour()}
+                
+                {step === 1 && error && (
+                    <div className="mt-3 p-2 bg-red-900/30 border border-red-500/50 rounded-md flex flex-col items-center gap-2">
+                        <p className="text-red-400 text-sm text-center">{error}</p>
+                        {error.includes('URL') || error.includes('اتصال') ? (
+                             <button onClick={() => setShowConfig(true)} className="text-xs text-blue-300 hover:text-white underline">
+                                 بررسی تنظیمات اتصال
+                             </button>
+                        ) : null}
+                    </div>
+                )}
+
+                {step === 1 && (
+                    <>
+                        <div className="relative flex pt-6 items-center">
+                            <div className="flex-grow border-t border-gray-600"></div>
+                            <span className="flex-shrink mx-4 text-gray-500 text-sm">یا</span>
+                            <div className="flex-grow border-t border-gray-600"></div>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={handleGoogleLogin}
+                            disabled={isLoading}
+                            className="w-full flex items-center justify-center bg-white hover:bg-gray-200 text-gray-800 font-semibold py-3 px-4 rounded-md transition-all duration-200 text-base mt-4 border border-gray-300 shadow-sm"
+                        >
+                            <GoogleIcon className="w-5 h-5 ml-3" />
+                            {isLoading ? 'در حال اتصال...' : 'ورود سریع با گوگل'}
+                        </button>
+                    </>
+                )}
             </>
         )}
       </div>
