@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { CommunityPost } from '../../types';
 import { analyzeCommunitySentimentAndTopics } from '../../services/geminiService';
@@ -235,7 +236,7 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                                 
                                 {task.result && (
                                     <div className="mt-3 text-xs text-gray-300 bg-black/20 p-2 rounded border border-gray-600/50 line-clamp-2">
-                                        > {task.result}
+                                        &gt; {task.result}
                                     </div>
                                 )}
                             </div>
