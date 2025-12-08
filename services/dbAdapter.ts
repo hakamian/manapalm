@@ -1,7 +1,7 @@
 
 import { supabase } from './supabaseClient';
-import { User, Order, CommunityPost, AgentActionLog } from '../types';
-import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS } from '../utils/dummyData';
+import { User, Order, CommunityPost, AgentActionLog, Product } from '../types';
+import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS, INITIAL_PRODUCTS } from '../utils/dummyData';
 
 // Helper to check if string is a valid UUID
 const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
@@ -217,6 +217,95 @@ export const dbAdapter = {
         await supabase.from('posts').insert(postData);
     },
 
+    // --- PRODUCT MANAGEMENT ---
+
+    async getAllProducts(): Promise<Product[]> {
+        if (!supabase) return INITIAL_PRODUCTS;
+
+        const { data, error } = await supabase
+            .from('products')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error || !data || data.length === 0) {
+            console.warn("Using dummy products as DB fetch failed or empty:", error);
+            return INITIAL_PRODUCTS;
+        }
+
+        return data.map((p: any) => ({
+            id: p.id,
+            name: p.name,
+            price: p.price,
+            category: p.category,
+            image: p.image_url,
+            description: p.description,
+            type: p.type || 'physical',
+            stock: p.stock,
+            points: p.points,
+            popularity: p.popularity || 0,
+            dateAdded: p.created_at,
+            tags: p.tags || [],
+            downloadUrl: p.download_url,
+            fileType: p.file_type
+        }));
+    },
+
+    async createProduct(product: Omit<Product, 'id' | 'dateAdded' | 'popularity'>): Promise<Product | null> {
+        if (!supabase) return null;
+
+        const { data, error } = await supabase.from('products').insert({
+            name: product.name,
+            price: product.price,
+            category: product.category,
+            image_url: product.image,
+            description: product.description,
+            type: product.type,
+            stock: product.stock,
+            points: product.points,
+            tags: product.tags,
+            download_url: product.downloadUrl,
+            file_type: product.fileType
+        }).select().single();
+
+        if (error) {
+            console.error("Error creating product:", error);
+            throw error;
+        }
+        
+        return {
+            ...product,
+            id: data.id,
+            dateAdded: data.created_at,
+            popularity: 0,
+            image: data.image_url
+        };
+    },
+
+    async updateProduct(id: string, updates: Partial<Product>): Promise<void> {
+        if (!supabase) return;
+
+        const dbUpdates: any = {};
+        if (updates.name) dbUpdates.name = updates.name;
+        if (updates.price !== undefined) dbUpdates.price = updates.price;
+        if (updates.category) dbUpdates.category = updates.category;
+        if (updates.image) dbUpdates.image_url = updates.image;
+        if (updates.description) dbUpdates.description = updates.description;
+        if (updates.stock !== undefined) dbUpdates.stock = updates.stock;
+        if (updates.points !== undefined) dbUpdates.points = updates.points;
+        if (updates.tags) dbUpdates.tags = updates.tags;
+        if (updates.downloadUrl) dbUpdates.download_url = updates.downloadUrl;
+        
+        const { error } = await supabase.from('products').update(dbUpdates).eq('id', id);
+        if (error) throw error;
+    },
+
+    async deleteProduct(id: string): Promise<void> {
+        if (!supabase) return;
+        const { error } = await supabase.from('products').delete().eq('id', id);
+        if (error) throw error;
+    },
+
+    // --- AGENT LOGS ---
     async getAgentLogs(): Promise<AgentActionLog[]> {
         try {
             const stored = localStorage.getItem('nakhlestan_agent_logs');

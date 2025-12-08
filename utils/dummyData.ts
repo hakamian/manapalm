@@ -80,7 +80,12 @@ export const INITIAL_PRODUCTS: Product[] = [
   },
   { id: 'p_heritage_memorial', name: 'نخل یادبود', price: 8900000, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1498940757830-82f7813bf178?q=80&w=800&auto=format&fit=crop', popularity: 92, dateAdded: getPastDate(15), stock: 50, description: 'زنده نگه داشتن یاد و خاطره عزیزان با هدیه کردن یک زندگی جدید به طبیعت.', type: 'physical', points: 44500, tags: ['legacy', 'family', 'memory'] },
   { id: 'p_heritage_occasion', name: 'نخل مناسبت', price: 8800000, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1513415277900-a62401e19be4?q=80&w=800&auto=format&fit=crop', popularity: 90, dateAdded: getPastDate(2), stock: 15, description: 'جشن گرفتن یک رویداد خاص مانند سالگرد ازدواج یا فارغ‌التحصیلی.', type: 'physical', points: 44000, tags: ['celebration', 'memory'] },
-  { id: 'p_heritage_birthday', name: 'نخل تولد', price: 8600000, points: 43000, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1542206395-9feb3edaa68d?q=80&w=800&auto=format&fit=crop', popularity: 93, dateAdded: getPastDate(7), stock: 30, description: 'کاشت یک درخت به مناسبت تولد، نمادی از رشد و زندگی.', type: 'physical', tags: ['celebration', 'family'] },
+  { 
+    id: 'p_heritage_birthday', name: 'نخل تولد', price: 8600000, points: 43000, category: 'نخل میراث', 
+    // CHANGE: Updated image per user request
+    image: 'https://res-console.cloudinary.com/dk2x11rvs/thumbnails/v1/image/upload/v1765131546/QV95b3VuZ19fdmlicmFudF9wYWxtX3RyZWVfc2FwbGluZ19fZnJlc2hseV9wbGFudGVkX2FuZF9yZWFjaGluZ190b3dhcmRzX3RoZV9za3lfX1RoZV9iYWNrZ3JvdW5kX2lzX191amJieTc=/preview', 
+    popularity: 93, dateAdded: getPastDate(7), stock: 30, description: 'کاشت یک درخت به مناسبت تولد، نمادی از رشد و زندگی.', type: 'physical', tags: ['celebration', 'family'] 
+  },
   { id: 'p_heritage_memory', name: 'نخل خاطره', price: 8500000, points: 42500, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1469122312224-c5846569feb1?q=80&w=800&auto=format&fit=crop', popularity: 91, dateAdded: getPastDate(18), stock: 25, description: 'ثبت یک خاطره خوش و ماندگار در دل طبیعت.', type: 'physical', tags: ['memory'] },
   { id: 'p_heritage_gift', name: 'نخل هدیه', price: 8500000, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=800&auto=format&fit=crop', popularity: 89, dateAdded: getPastDate(40), stock: 4, description: 'یک هدیه متفاوت و ماندگار برای کسانی که دوستشان دارید.', type: 'physical', points: 42500, tags: ['family', 'gratitude'] },
   // Products

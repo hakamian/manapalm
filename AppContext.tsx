@@ -458,10 +458,27 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     useEffect(() => {
         const loadData = async () => {
-            const [users, orders, posts] = await Promise.all([dbAdapter.getAllUsers(), dbAdapter.getAllOrders(), dbAdapter.getAllPosts()]);
+            const [users, orders, posts, products] = await Promise.all([
+                dbAdapter.getAllUsers(), 
+                dbAdapter.getAllOrders(), 
+                dbAdapter.getAllPosts(),
+                dbAdapter.getAllProducts()
+            ]);
+            
             const currentUserId = dbAdapter.getCurrentUserId();
             const currentUser = currentUserId ? await dbAdapter.getUserById(currentUserId) : null;
-            dispatch({ type: 'LOAD_INITIAL_DATA', payload: { users, allUsers: users, orders, communityPosts: posts, user: currentUser } });
+            
+            dispatch({ 
+                type: 'LOAD_INITIAL_DATA', 
+                payload: { 
+                    users, 
+                    allUsers: users, 
+                    orders, 
+                    communityPosts: posts, 
+                    products: products.length > 0 ? products : INITIAL_PRODUCTS,
+                    user: currentUser 
+                } 
+            });
         };
         loadData();
     }, []);

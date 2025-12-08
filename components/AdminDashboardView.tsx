@@ -23,14 +23,14 @@ import {
     SparklesIcon, LightBulbIcon, ChatBubbleLeftRightIcon, ChartBarIcon, UserGroupIcon, CpuChipIcon, TrophyIcon, HeartIcon,
     TrashIcon, PencilIcon, ArrowPathIcon, ArrowTrendingUpIcon, FunnelIcon, MegaphoneIcon, BullseyeIcon, UserFrownIcon,
     ChevronDownIcon, RadarIcon, CogIcon, SaplingIcon, TreeIcon, MatureTreeIcon, PencilSquareIcon, PaperAirplaneIcon,
-    SunIcon, CheckCircleIcon, XMarkIcon, CalculatorIcon, ShieldExclamationIcon, AcademicCapIcon
+    SunIcon, CheckCircleIcon, XMarkIcon, CalculatorIcon, ShieldExclamationIcon, PhotoIcon, ShoppingCartIcon, AcademicCapIcon
 } from './icons';
 import BarChartDisplay from './BarChartDisplay';
 import ActionableDraftCard from './ActionableDraftCard';
 import SimpleBarChart from './SimpleBarChart';
 import SentimentTrend from './SentimentTrend';
 import AIInsightsDashboard from './admin/AIInsightsDashboard';
-import BoardMeetingView from './admin/ai-coach/BoardMeetingView'; // Updated Import
+import AdminAICoach from './admin/AdminAICoach';
 import ExecutiveDashboard from './admin/ExecutiveDashboard';
 import CommunityDashboard from './admin/CommunityDashboard';
 import GrowthAnalyticsDashboard from './admin/GrowthAnalyticsDashboard';
@@ -44,6 +44,7 @@ import SettingsDashboard from './admin/SettingsDashboard';
 import UnitEconomicsDashboard from './admin/UnitEconomicsDashboard';
 import SecurityDashboard from './admin/SecurityDashboard';
 import AcademiesDashboard from './admin/AcademiesDashboard';
+import ShopManagement from './admin/ShopManagement'; // New Import
 import { timeAgo } from '../utils/time';
 
 interface AdminDashboardViewProps {
@@ -109,6 +110,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
     const tabs = [ 
         { id: 'pulse', label: 'داشبورد پالس', icon: <PresentationChartLineIcon className="w-5 h-5" /> }, 
         { id: 'economy', label: 'اقتصاد واحد', icon: <CalculatorIcon className="w-5 h-5" /> },
+        { id: 'shop_manager', label: 'مدیریت فروشگاه', icon: <ShoppingCartIcon className="w-5 h-5" /> }, // New Tab
         { id: 'academies', label: 'مدیریت آکادمی‌ها', icon: <AcademicCapIcon className="w-5 h-5" /> }, 
         { id: 'community', label: 'هاب جامعه و معنا', icon: <HeartIcon className="w-5 h-5" /> }, 
         { id: 'growth', label: 'موتور رشد', icon: <ChartBarIcon className="w-5 h-5" /> }, 
@@ -167,6 +169,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                             setActiveSubTab={(subTab: any) => setActiveSubTab(subTab)} 
                         />
                     )}
+                    {activeTab === 'shop_manager' && <ShopManagement />}
                     {activeTab === 'economy' && <UnitEconomicsDashboard />}
                     {activeTab === 'academies' && <AcademiesDashboard />}
                     {activeTab === 'community' && <CommunityDashboard posts={posts} />}
@@ -175,9 +178,15 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                     {activeTab === 'campaigns' && <CampaignsDashboard campaign={campaign} platformData={platformData} />}
                     {activeTab === 'content_factory' && <ContentFactoryDashboard posts={posts} />}
                     {activeTab === 'ai_think_tank' && (
-                        <BoardMeetingView 
-                            onClose={() => setActiveTab('pulse')} 
-                            contextData={JSON.stringify(platformData)}
+                        <AdminAICoach 
+                            allUsers={users} 
+                            allInsights={allInsights} 
+                            allProjects={allProjects} 
+                            mentorshipRequests={mentorshipRequests} 
+                            onAddProjectUpdate={handleAddProjectUpdateWrapper} 
+                            onUpdateInsightStatus={handleUpdateInsightStatus} 
+                            onRespondToRequest={handleRespondToRequest} 
+                            onGrantPoints={handleGrantPoints} 
                         />
                     )}
                     {activeTab === 'ai_reports' && (
