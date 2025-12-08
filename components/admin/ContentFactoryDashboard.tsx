@@ -1,97 +1,114 @@
 
-import React, { useState } from 'react';
-import { CommunityPost, ArticleDraft } from '../../types';
+import React, { useState, useEffect } from 'react';
+import { CommunityPost } from '../../types';
 import { analyzeCommunitySentimentAndTopics } from '../../services/geminiService';
-import { SparklesIcon, MegaphoneIcon, PencilSquareIcon, PhotoIcon, CloudIcon, ClockIcon, CheckCircleIcon } from '../icons';
-import SmartImage from '../ui/SmartImage';
+import { SparklesIcon, MegaphoneIcon, PencilSquareIcon, CloudIcon, ClockIcon, CheckCircleIcon, ArrowPathIcon, CpuChipIcon, BoltIcon } from '../icons';
 
 interface ContentFactoryDashboardProps {
     posts: CommunityPost[];
 }
 
+// Mock type for Agent Task
+interface AgentTask {
+    id: string;
+    type: 'analyze_trends' | 'generate_article' | 'create_visuals';
+    status: 'pending' | 'processing' | 'completed' | 'failed';
+    payload: any;
+    result?: string;
+    timestamp: string;
+}
+
 const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts }) => {
-    const [trendingTopics, setTrendingTopics] = useState<string[] | null>(null);
+    const [trendingTopics, setTrendingTopics] = useState<string[]>([]);
     const [isLoadingTopics, setIsLoadingTopics] = useState(false);
     
-    // Agent Request State
-    const [requestStatus, setRequestStatus] = useState<'idle' | 'submitting' | 'queued'>('idle');
-    const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
-    const [error, setError] = useState<string | null>(null);
+    // Agent Queue State
+    const [agentQueue, setAgentQueue] = useState<AgentTask[]>([]);
+    const [activeAgent, setActiveAgent] = useState<string | null>(null); // 'writer', 'analyst', 'artist'
+
+    // Simulation of polling for updates (In real app, use Supabase Realtime)
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setAgentQueue(prevQueue => {
+                return prevQueue.map(task => {
+                    if (task.status === 'pending') return { ...task, status: 'processing' };
+                    if (task.status === 'processing') return { ...task, status: 'completed', result: 'محتوا با موفقیت تولید و در پایگاه داده ذخیره شد.' };
+                    return task;
+                });
+            });
+        }, 5000); // Simulate agent working time
+
+        return () => clearInterval(interval);
+    }, []);
 
     const handleFetchTopics = async () => {
         setIsLoadingTopics(true);
-        setError(null);
+        setActiveAgent('analyst');
         try {
+            // In full architecture, this would also be an agent task
             const result = await analyzeCommunitySentimentAndTopics(posts.slice(0, 30).map(p => p.text));
             setTrendingTopics(result.trendingTopics);
         } catch (e) {
             console.error(e);
-            setError("خطا در استخراج موضوعات داغ.");
         } finally {
             setIsLoadingTopics(false);
+            setActiveAgent(null);
         }
     };
     
-    const handleRequestAgentJob = async (topic: string) => {
-        setSelectedTopic(topic);
-        setRequestStatus('submitting');
-        setError(null);
-        
-        try {
-            // In a real implementation connected to Supabase/Make:
-            // await supabase.from('agent_tasks').insert({ task: 'generate_article', topic: topic, status: 'pending' });
-            
-            // For Demo, simulate API call to Agent Orchestrator
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            
-            setRequestStatus('queued');
-            // Reset after 3 seconds
-            setTimeout(() => {
-                setRequestStatus('idle');
-                setSelectedTopic(null);
-            }, 4000);
-            
-        } catch (e) {
-            console.error(e);
-            setError(`خطا در ارسال دستور به ایجنت.`);
-            setRequestStatus('idle');
-        }
+    const dispatchAgentTask = (topic: string) => {
+        const newTask: AgentTask = {
+            id: `task-${Date.now()}`,
+            type: 'generate_article',
+            status: 'pending',
+            payload: { topic },
+            timestamp: new Date().toLocaleTimeString('fa-IR')
+        };
+        setAgentQueue(prev => [newTask, ...prev]);
     };
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 animate-fade-in">
-            {/* Left: Trend Analysis */}
-            <div className="bg-gray-800 p-6 rounded-lg border border-gray-700">
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
-                    <SparklesIcon className="w-6 h-6 text-blue-400"/>
-                    ۱. رادار موضوعات (Trend Radar)
-                </h3>
-                <p className="text-sm text-gray-400 mb-4">هوش مصنوعی گفتگوهای کانون را اسکن کرده و موضوعات داغ برای تولید محتوا را پیشنهاد می‌دهد.</p>
+            {/* Left: Command Center (Trigger) */}
+            <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-lg">
+                <div className="flex items-center gap-3 mb-6 border-b border-gray-700 pb-4">
+                    <div className={`p-3 rounded-full ${activeAgent === 'analyst' ? 'bg-blue-500/20 text-blue-400 animate-pulse' : 'bg-gray-700 text-gray-400'}`}>
+                        <CpuChipIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-bold text-white">رادار موضوعات (Trend Radar)</h3>
+                        <p className="text-sm text-gray-400">تحلیل هوشمند نیازهای جامعه برای خوراک‌دهی به ایجنت‌ها</p>
+                    </div>
+                </div>
                 
-                <button onClick={handleFetchTopics} disabled={isLoadingTopics} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-md disabled:bg-gray-600 transition-colors flex justify-center items-center gap-2">
+                <button 
+                    onClick={handleFetchTopics} 
+                    disabled={isLoadingTopics} 
+                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 rounded-xl disabled:opacity-50 transition-all shadow-lg flex justify-center items-center gap-2 mb-6"
+                >
                     {isLoadingTopics ? (
                          <>
-                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
-                            در حال اسکن جامعه...
+                            <ArrowPathIcon className="w-5 h-5 animate-spin"/>
+                            ایجنت تحلیلگر در حال اسکن...
                          </>
                     ) : 'شناسایی موضوعات داغ'}
                 </button>
                 
-                {error && !selectedTopic && <p className="text-red-400 text-sm mt-2">{error}</p>}
-                
-                {trendingTopics && (
-                    <div className="mt-4 space-y-2">
-                        <h4 className="font-semibold text-sm text-gray-300 mb-2">پیشنهادات هوش مصنوعی:</h4>
+                {trendingTopics.length > 0 && (
+                    <div className="space-y-3">
+                        <h4 className="font-semibold text-sm text-gray-300 mb-2 flex items-center gap-2">
+                            <SparklesIcon className="w-4 h-4 text-yellow-400"/>
+                            پیشنهادات هوش مصنوعی:
+                        </h4>
                         {trendingTopics.map((topic, i) => (
-                            <div key={i} className="bg-gray-700/50 p-3 rounded-md flex justify-between items-center border border-gray-600 group hover:border-green-500 transition-colors">
-                                <span className="text-gray-200 font-medium">{topic}</span>
+                            <div key={i} className="bg-gray-700/30 p-3 rounded-xl flex justify-between items-center border border-gray-600/50 hover:border-green-500/50 transition-colors group">
+                                <span className="text-gray-200 font-medium text-sm">{topic}</span>
                                 <button 
-                                    onClick={() => handleRequestAgentJob(topic)} 
-                                    disabled={requestStatus !== 'idle'} 
-                                    className="text-xs bg-stone-600 hover:bg-green-600 text-white py-1.5 px-3 rounded-md disabled:opacity-50 transition-colors flex items-center gap-1"
+                                    onClick={() => dispatchAgentTask(topic)}
+                                    className="text-xs bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 border border-green-500/30"
                                 >
-                                    <SparklesIcon className="w-3 h-3" />
-                                    سپردن به ایجنت
+                                    <BoltIcon className="w-3 h-3" />
+                                    تولید محتوا
                                 </button>
                             </div>
                         ))}
@@ -99,73 +116,82 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                 )}
             </div>
 
-            {/* Right: Agent Status */}
-            <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 flex flex-col h-full relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-green-500/10 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
+            {/* Right: Agent Queue (Monitor) */}
+            <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-lg flex flex-col h-full relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-40 h-40 bg-purple-500/5 rounded-full blur-3xl -mr-10 -mt-10 pointer-events-none"></div>
                 
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2 z-10">
-                    <MegaphoneIcon className="w-6 h-6 text-yellow-400"/>
-                    ۲. وضعیت خط تولید (Agent Pipeline)
-                </h3>
-                
-                <div className="flex-grow flex flex-col justify-center items-center text-center p-8 relative z-10">
-                    {requestStatus === 'idle' && (
-                        <div className="opacity-60">
-                            <div className="relative w-20 h-20 mx-auto mb-4">
-                                <div className="absolute inset-0 border-2 border-gray-600 rounded-full"></div>
-                                <div className="absolute inset-2 border-2 border-gray-700 rounded-full border-dashed animate-spin-slow"></div>
-                                <PencilSquareIcon className="absolute inset-0 m-auto w-8 h-8 text-gray-500" />
-                            </div>
-                            <p className="text-gray-400">ایجنت‌ها در حالت آماده‌باش هستند.</p>
-                            <p className="text-xs text-gray-500 mt-2">یک موضوع انتخاب کنید تا فرآیند تولید خودکار (متن + تصویر) آغاز شود.</p>
-                        </div>
-                    )}
-
-                    {requestStatus === 'submitting' && (
-                        <div>
-                             <div className="w-16 h-16 bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-500/50">
-                                <span className="w-8 h-8 border-2 border-blue-400 border-t-transparent rounded-full animate-spin"></span>
-                             </div>
-                             <p className="font-bold text-white mb-1">ارسال دستور به Make.com...</p>
-                             <p className="text-xs text-blue-300">موضوع: {selectedTopic}</p>
-                        </div>
-                    )}
-
-                    {requestStatus === 'queued' && (
-                        <div className="animate-fade-in-up">
-                             <div className="w-20 h-20 bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.3)]">
-                                <CheckCircleIcon className="w-10 h-10 text-green-400" />
-                             </div>
-                             <h4 className="text-xl font-bold text-green-400 mb-2">ماموریت ثبت شد!</h4>
-                             <p className="text-sm text-gray-300 mb-4">
-                                ایجنت نویسنده و ایجنت گرافیست کار را شروع کردند.
-                             </p>
-                             <div className="bg-gray-900/80 p-3 rounded-lg text-left text-xs font-mono text-green-300 border border-green-900">
-                                 > Order ID: #AG-{Date.now().toString().slice(-4)}<br/>
-                                 > Status: PROCESSING<br/>
-                                 > ETA: ~2 Minutes
-                             </div>
-                        </div>
-                    )}
+                <div className="flex items-center gap-3 mb-6 relative z-10">
+                    <div className="p-3 bg-purple-500/20 rounded-full text-purple-400">
+                        <MegaphoneIcon className="w-6 h-6" />
+                    </div>
+                    <div>
+                        <h3 className="text-xl font-bold text-white">خط تولید محتوا (Agent Pipeline)</h3>
+                        <p className="text-sm text-gray-400">وضعیت لحظه‌ای پردازش توسط Make.com</p>
+                    </div>
                 </div>
                 
-                <div className="mt-auto pt-4 border-t border-gray-700">
-                    <div className="flex items-center gap-2 text-xs text-gray-500">
-                        <ClockIcon className="w-3 h-3" />
-                        <span>تاریخچه عملیات اخیر:</span>
-                    </div>
-                    <div className="mt-2 space-y-1">
-                        <div className="flex justify-between text-xs bg-gray-700/30 p-2 rounded text-gray-400">
-                            <span>مقاله «آینده کشاورزی»</span>
-                            <span className="text-green-500">تکمیل شده</span>
+                <div className="flex-grow space-y-4 relative z-10 overflow-y-auto max-h-[400px] custom-scrollbar pr-2">
+                    {agentQueue.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-48 text-gray-500 border-2 border-dashed border-gray-700 rounded-xl">
+                            <PencilSquareIcon className="w-10 h-10 mb-2 opacity-50" />
+                            <p>صف پردازش خالی است.</p>
+                            <p className="text-xs">یک موضوع انتخاب کنید تا ایجنت‌ها شروع کنند.</p>
                         </div>
-                        <div className="flex justify-between text-xs bg-gray-700/30 p-2 rounded text-gray-400">
-                            <span>پست اینستاگرام «نخل ایران»</span>
-                            <span className="text-green-500">تکمیل شده</span>
-                        </div>
-                    </div>
+                    ) : (
+                        agentQueue.map((task) => (
+                            <div key={task.id} className="bg-gray-900/50 p-4 rounded-xl border border-gray-700 animate-slide-in-up">
+                                <div className="flex justify-between items-start mb-2">
+                                    <span className="text-sm font-bold text-white">تولید مقاله: {task.payload.topic}</span>
+                                    <span className="text-[10px] font-mono text-gray-500">{task.timestamp}</span>
+                                </div>
+                                
+                                <div className="flex items-center gap-3 mt-3">
+                                    {task.status === 'pending' && (
+                                        <div className="flex items-center gap-2 text-xs text-yellow-400 bg-yellow-900/20 px-2 py-1 rounded-full">
+                                            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-ping"></div>
+                                            در صف انتظار...
+                                        </div>
+                                    )}
+                                    {task.status === 'processing' && (
+                                        <div className="flex items-center gap-2 text-xs text-blue-400 bg-blue-900/20 px-2 py-1 rounded-full">
+                                            <ArrowPathIcon className="w-3 h-3 animate-spin"/>
+                                            ایجنت در حال نگارش...
+                                        </div>
+                                    )}
+                                    {task.status === 'completed' && (
+                                        <div className="flex items-center gap-2 text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded-full">
+                                            <CheckCircleIcon className="w-3 h-3"/>
+                                            تکمیل شد
+                                        </div>
+                                    )}
+                                </div>
+
+                                {task.status === 'processing' && (
+                                    <div className="mt-3 w-full bg-gray-700 rounded-full h-1.5 overflow-hidden">
+                                        <div className="bg-blue-500 h-full animate-progress-indeterminate"></div>
+                                    </div>
+                                )}
+                                
+                                {task.result && (
+                                    <div className="mt-3 text-xs text-gray-400 bg-gray-800 p-2 rounded border border-gray-700">
+                                        > {task.result}
+                                    </div>
+                                )}
+                            </div>
+                        ))
+                    )}
                 </div>
             </div>
+            <style>{`
+                @keyframes progress-indeterminate {
+                    0% { width: 0%; margin-left: 0%; }
+                    50% { width: 50%; margin-left: 25%; }
+                    100% { width: 100%; margin-left: 100%; }
+                }
+                .animate-progress-indeterminate {
+                    animation: progress-indeterminate 1.5s infinite ease-in-out;
+                }
+            `}</style>
         </div>
     );
 };
