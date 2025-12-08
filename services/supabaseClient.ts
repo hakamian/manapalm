@@ -16,23 +16,26 @@ const getEnv = (key: string) => {
   return undefined;
 };
 
-// --- DIRECT CONNECTION CONFIGURATION ---
-// We use the direct Supabase URL to ensure OAuth links are generated exactly as required:
-// https://sbjrayzghjfsmmuygwbw.supabase.co/auth/v1/authorize...
-const SUPABASE_PROJECT_URL = "https://sbjrayzghjfsmmuygwbw.supabase.co";
+// Default Project URL (Safe to expose as it requires a key to work)
+const DEFAULT_SUPABASE_URL = "https://sbjrayzghjfsmmuygwbw.supabase.co";
 
-const HARDCODED_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNianJheXpnaGpmc21tdXlnd2J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3MTY1NDQsImV4cCI6MjA4MDI5MjU0NH0.W7B-Dr1hiUNl9ok4_PUTPdJG8pJsBXtoOwWciItoF3Q";
-
+// Load configuration
+let supabaseUrl = getEnv('VITE_SUPABASE_URL');
 let supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
 
-if (!supabaseAnonKey || supabaseAnonKey === 'undefined') {
-    const localKey = typeof window !== 'undefined' ? localStorage.getItem('VITE_SUPABASE_ANON_KEY') : null;
-    supabaseAnonKey = localKey || HARDCODED_KEY;
+// Fallback to LocalStorage (Manual Setup via UI)
+if (typeof window !== 'undefined') {
+    if (!supabaseUrl || supabaseUrl === 'undefined') {
+        supabaseUrl = localStorage.getItem('VITE_SUPABASE_URL') || DEFAULT_SUPABASE_URL;
+    }
+    if (!supabaseAnonKey || supabaseAnonKey === 'undefined') {
+        supabaseAnonKey = localStorage.getItem('VITE_SUPABASE_ANON_KEY') || '';
+    }
 }
 
-// Initialize Supabase Client
-export const supabase: SupabaseClient | null = supabaseAnonKey 
-  ? createClient(SUPABASE_PROJECT_URL, supabaseAnonKey, {
+// Initialize Supabase Client ONLY if key is present
+export const supabase: SupabaseClient | null = (supabaseUrl && supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
           persistSession: true,
           autoRefreshToken: true,
@@ -42,13 +45,11 @@ export const supabase: SupabaseClient | null = supabaseAnonKey
   }) 
   : null;
 
-// Helper to manually set keys from UI
+// Helper to manually set keys from UI (AuthModal)
 export const setupSupabaseKeys = (url: string, key: string) => {
     if (!key) return;
     localStorage.setItem('VITE_SUPABASE_ANON_KEY', key);
-    // Even if user provides a custom URL, we default to the known working project URL for consistency in this version
-    // unless it's completely different
-    if (url && url !== SUPABASE_PROJECT_URL) {
+    if (url) {
         localStorage.setItem('VITE_SUPABASE_URL', url);
     }
     window.location.reload(); 

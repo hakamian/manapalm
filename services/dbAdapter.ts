@@ -3,22 +3,26 @@ import { supabase } from './supabaseClient';
 import { User, Order, CommunityPost, AgentActionLog, Product } from '../types';
 import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS, INITIAL_PRODUCTS } from '../utils/dummyData';
 
-// --- DB ADAPTER ---
-// This file acts as an abstraction layer. 
-// When you (the developer) work locally, you can replace the dummy data logic 
-// with your actual Firebase/Supabase calls without breaking the UI components.
+// --- DB ADAPTER & REPOSITORY LAYER ---
+// This layer isolates the UI from the Data Source.
+// It automatically switches between Supabase (Real) and Dummy Data (Mock) based on configuration.
 
 // Helper to check if string is a valid UUID
 const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
-// Helper to map Supabase profile to App User type
+// Safe JSON parser
+const safeParse = (data: any, fallback: any) => {
+    if (typeof data === 'object') return data;
+    try {
+        return JSON.parse(data);
+    } catch {
+        return fallback;
+    }
+};
+
+// Helper to map Supabase profile (snake_case) to App User (camelCase)
 const mapProfileToUser = (profile: any): User => {
-  let metadata: any = {};
-  try {
-      metadata = typeof profile.metadata === 'string' ? JSON.parse(profile.metadata) : (profile.metadata || {});
-  } catch (e) {
-      console.warn("Failed to parse user metadata", e);
-  }
+  const metadata = safeParse(profile.metadata, {});
 
   return {
     id: profile.id,
@@ -34,6 +38,7 @@ const mapProfileToUser = (profile: any): User => {
     isGuardian: profile.is_guardian,
     isGroveKeeper: profile.is_grove_keeper,
     joinDate: profile.created_at,
+    // Safely merge metadata with defaults to prevent UI crashes
     profileCompletion: metadata.profileCompletion || { initial: false, additional: false, extra: false },
     timeline: metadata.timeline || [],
     unlockedTools: metadata.unlockedTools || [],
@@ -44,63 +49,93 @@ const mapProfileToUser = (profile: any): User => {
     ambassadorPacksRemaining: metadata.ambassadorPacksRemaining || 0,
     impactPortfolio: metadata.impactPortfolio || [],
     referralPointsEarned: metadata.referralPointsEarned || 0,
+    // Add other fields mapping as needed
+    address: metadata.address,
+    maritalStatus: metadata.maritalStatus,
+    childrenCount: metadata.childrenCount,
+    birthYear: metadata.birthYear,
+    nationalId: metadata.nationalId,
+    fatherName: metadata.fatherName,
+    motherName: metadata.motherName,
+    occupation: metadata.occupation,
   };
 };
 
 export const dbAdapter = {
+    // Check if we are running on Supabase or Mock Data
+    isLive(): boolean {
+        return !!supabase;
+    },
+
     // System Health Check
     async getSystemHealth(): Promise<{ status: string; scalabilityScore: number; issues: string[] }> {
-        if (!supabase) {
-            return { status: 'Local Mode', scalabilityScore: 0, issues: ['Supabase keys missing. Using local data.'] };
+        if (!this.isLive()) {
+            return { status: 'Local Mock Mode', scalabilityScore: 0, issues: ['Running on local dummy data (No DB connection).'] };
         }
         try {
-            const { error } = await supabase.from('profiles').select('id', { count: 'exact', head: true });
+            // Lightweight check
+            const { error } = await supabase!.from('profiles').select('id', { count: 'exact', head: true });
             if (error) throw error;
-            return { status: 'Healthy', scalabilityScore: 95, issues: [] };
+            return { status: 'Healthy (Connected)', scalabilityScore: 95, issues: [] };
         } catch (e: any) {
-            return { status: 'Connection Error', scalabilityScore: 50, issues: ['Database connection failed: ' + (e.message || e)] };
+            console.error("DB Health Check Failed:", e);
+            return { status: 'Connection Error', scalabilityScore: 0, issues: ['Database connection failed', e.message] };
         }
     },
 
-    // User Methods
-    async getUsers(page: number = 1, limit: number = 20, search: string = ''): Promise<{ data: User[], total: number }> {
-        if (!supabase) return { data: INITIAL_USERS, total: INITIAL_USERS.length };
+    // --- USER METHODS ---
 
-        let query = supabase.from('profiles').select('*', { count: 'exact' });
+    async getUsers(page: number = 1, limit: number = 20, search: string = ''): Promise<{ data: User[], total: number }> {
+        if (!this.isLive()) {
+            // Mock filtering
+            const filtered = search 
+                ? INITIAL_USERS.filter(u => u.fullName?.includes(search) || u.name.includes(search))
+                : INITIAL_USERS;
+            return { data: filtered.slice(0, limit), total: filtered.length };
+        }
+
+        let query = supabase!.from('profiles').select('*', { count: 'exact' });
         if (search) query = query.ilike('full_name', `%${search}%`);
         
         const from = (page - 1) * limit;
         const to = from + limit - 1;
         
         const { data, error, count } = await query.range(from, to);
+        
         if (error) {
-            console.error('Error fetching users:', error.message || error);
-            // Fallback for safety
-            return { data: INITIAL_USERS.slice(0, 10), total: INITIAL_USERS.length }; 
+            console.error('DB Error (getUsers):', error.message);
+            return { data: [], total: 0 }; 
         }
 
-        const users = data.map(mapProfileToUser);
-        return { data: users, total: count || 0 };
+        return { data: (data || []).map(mapProfileToUser), total: count || 0 };
     },
 
     async getAllUsers(): Promise<User[]> {
-        const { data } = await this.getUsers(1, 50); 
+        // In a real app with 10k users, you should NEVER call this without pagination.
+        // For MVP/Admin dashboard, we limit it to 100 to prevent crashes.
+        const { data } = await this.getUsers(1, 100); 
         return data;
     },
 
     async getUserById(id: string): Promise<User | null> {
-        if (!supabase) return null;
-        if (!isUUID(id)) return null; 
+        if (!this.isLive()) {
+             return INITIAL_USERS.find(u => u.id === id) || null;
+        }
+        // If ID is not a UUID (e.g., mock IDs like 'user_1'), return mock data even if DB is connected
+        if (!isUUID(id)) return INITIAL_USERS.find(u => u.id === id) || null;
         
-        const { data, error } = await supabase.from('profiles').select('*').eq('id', id).single();
+        const { data, error } = await supabase!.from('profiles').select('*').eq('id', id).single();
         if (error || !data) return null;
         return mapProfileToUser(data);
     },
 
     async saveUser(user: User): Promise<void> {
-        if (!supabase) return;
+        if (!this.isLive()) {
+            console.log("[Mock DB] User saved:", user.id);
+            return;
+        }
         
-        if (!isUUID(user.id)) return; // Skip dummy users
+        if (!isUUID(user.id)) return; // Skip saving mock users to real DB
 
         const profileData = {
             id: user.id,
@@ -108,64 +143,85 @@ export const dbAdapter = {
             full_name: user.fullName || user.name,
             phone: user.phone,
             avatar_url: user.avatar,
+            points: user.points,
+            mana_points: user.manaPoints,
+            level: user.level,
+            // JSONB Metadata column for flexible schema
             metadata: {
                 profileCompletion: user.profileCompletion,
-                timeline: user.timeline ? user.timeline.slice(0, 50) : [],
+                timeline: user.timeline ? user.timeline.slice(0, 50) : [], // Limit history size
                 unlockedTools: user.unlockedTools,
                 purchasedCourseIds: user.purchasedCourseIds,
                 reflectionAnalysesRemaining: user.reflectionAnalysesRemaining,
                 ambassadorPacksRemaining: user.ambassadorPacksRemaining,
                 impactPortfolio: user.impactPortfolio,
                 referralPointsEarned: user.referralPointsEarned,
+                address: user.address,
+                maritalStatus: user.maritalStatus,
+                childrenCount: user.childrenCount,
+                birthYear: user.birthYear,
+                nationalId: user.nationalId,
+                fatherName: user.fatherName,
+                motherName: user.motherName,
+                occupation: user.occupation,
+                meaningCoachHistory: user.meaningCoachHistory,
+                languageConfig: user.languageConfig
             }
         };
 
-        const { error } = await supabase.from('profiles').upsert(profileData);
-        if (error) console.error('Error saving user to DB:', error.message || error);
+        const { error } = await supabase!.from('profiles').upsert(profileData);
+        if (error) console.error('Error saving user to DB:', error.message);
     },
 
+    // --- TRANSACTION METHODS ---
+
     async spendBarkatPoints(amount: number): Promise<boolean> {
-        if (!supabase) return true;
-        const { error } = await supabase.rpc('spend_points', { amount });
+        if (!this.isLive()) return true;
+        
+        // Use RPC (Remote Procedure Call) for atomic transactions
+        const { error } = await supabase!.rpc('spend_points', { amount });
         if (error) {
-            console.error("Point transaction failed:", error.message || error);
+            console.error("Point transaction failed:", error.message);
             return false;
         }
         return true;
     },
 
     async spendManaPoints(amount: number): Promise<boolean> {
-        if (!supabase) return true;
-        const { error } = await supabase.rpc('spend_mana', { amount });
+        if (!this.isLive()) return true;
+
+        const { error } = await supabase!.rpc('spend_mana', { amount });
         if (error) {
-            console.error("Mana transaction failed:", error.message || error);
+            console.error("Mana transaction failed:", error.message);
             return false;
         }
         return true;
     },
 
-    // Order Methods
+    // --- ORDER METHODS ---
+
     async getOrders(userId?: string): Promise<Order[]> {
-         if (!supabase) return INITIAL_ORDERS;
+         if (!this.isLive()) return INITIAL_ORDERS;
          
-         let query = supabase.from('orders').select('*');
+         let query = supabase!.from('orders').select('*');
+         
          if (userId) {
-             if (!isUUID(userId)) return [];
+             if (!isUUID(userId)) return INITIAL_ORDERS.filter(o => o.userId === userId);
              query = query.eq('user_id', userId);
          }
          
          const { data, error } = await query.order('created_at', { ascending: false }).limit(50);
-         if (error) return INITIAL_ORDERS;
+         if (error) return [];
          
          return data.map((o: any) => ({
              id: o.id,
              userId: o.user_id,
              total: o.total_amount,
              status: o.status,
-             items: typeof o.items === 'string' ? JSON.parse(o.items) : o.items || [],
+             items: safeParse(o.items, []),
              date: o.created_at,
-             statusHistory: [{ status: o.status, date: o.created_at }],
-             deeds: [] 
+             statusHistory: safeParse(o.status_history, [{ status: o.status, date: o.created_at }]),
+             deeds: [] // Deeds usually fetched separately or joined
          }));
     },
 
@@ -174,37 +230,42 @@ export const dbAdapter = {
     },
 
     async saveOrder(order: Order): Promise<void> {
-        if (!supabase) return;
+        if (!this.isLive()) return;
         if (!isUUID(order.userId)) return;
 
         const orderData = {
-            id: order.id,
+            id: isUUID(order.id) ? order.id : undefined, // Let DB generate ID if not UUID
             user_id: order.userId,
             total_amount: order.total,
             status: order.status,
             items: order.items, 
+            status_history: order.statusHistory,
             created_at: order.date
         };
-        const { error } = await supabase.from('orders').insert(orderData);
-        if (error) console.error('Error saving order:', error.message || error);
+        const { error } = await supabase!.from('orders').insert(orderData);
+        if (error) console.error('Error saving order:', error.message);
     },
 
-    // Post Methods
+    // --- CONTENT & COMMUNITY ---
+
     async getAllPosts(): Promise<CommunityPost[]> {
-        if (!supabase) return INITIAL_POSTS;
+        if (!this.isLive()) return INITIAL_POSTS;
         
-        const { data, error } = await supabase
+        const { data, error } = await supabase!
             .from('posts')
             .select(`*, profiles(full_name, avatar_url)`)
             .order('created_at', { ascending: false })
             .limit(20);
             
-        if (error) return INITIAL_POSTS;
+        if (error) {
+            console.error("Error fetching posts:", error.message);
+            return INITIAL_POSTS;
+        }
 
         return data.map((p: any) => ({
             id: p.id,
             authorId: p.author_id,
-            authorName: p.profiles?.full_name || 'کاربر نخلستان',
+            authorName: p.profiles?.full_name || 'کاربر ناشناس',
             authorAvatar: p.profiles?.avatar_url || '',
             text: p.content,
             likes: p.likes_count || 0,
@@ -213,32 +274,28 @@ export const dbAdapter = {
     },
 
     async savePost(post: CommunityPost): Promise<void> {
-        if (!supabase) return;
+        if (!this.isLive()) return;
         if (!isUUID(post.authorId)) return;
 
         const postData = {
-            id: post.id,
             author_id: post.authorId,
             content: post.text,
             likes_count: post.likes,
-            created_at: post.timestamp
         };
-        await supabase.from('posts').insert(postData);
+        await supabase!.from('posts').insert(postData);
     },
 
     // --- PRODUCT MANAGEMENT ---
-    // These methods allow the AI/Admin to manage the shop content dynamically.
 
     async getAllProducts(): Promise<Product[]> {
-        if (!supabase) return INITIAL_PRODUCTS;
+        if (!this.isLive()) return INITIAL_PRODUCTS;
 
-        const { data, error } = await supabase
+        const { data, error } = await supabase!
             .from('products')
             .select('*')
             .order('created_at', { ascending: false });
 
         if (error || !data || data.length === 0) {
-            // console.warn("Using dummy products as DB fetch failed or empty:", error);
             return INITIAL_PRODUCTS;
         }
 
@@ -261,9 +318,9 @@ export const dbAdapter = {
     },
 
     async createProduct(product: Omit<Product, 'id' | 'dateAdded' | 'popularity'>): Promise<Product | null> {
-        if (!supabase) return null;
+        if (!this.isLive()) return null;
 
-        const { data, error } = await supabase.from('products').insert({
+        const { data, error } = await supabase!.from('products').insert({
             name: product.name,
             price: product.price,
             category: product.category,
@@ -292,7 +349,7 @@ export const dbAdapter = {
     },
 
     async updateProduct(id: string, updates: Partial<Product>): Promise<void> {
-        if (!supabase) return;
+        if (!this.isLive()) return;
 
         const dbUpdates: any = {};
         if (updates.name) dbUpdates.name = updates.name;
@@ -305,17 +362,18 @@ export const dbAdapter = {
         if (updates.tags) dbUpdates.tags = updates.tags;
         if (updates.downloadUrl) dbUpdates.download_url = updates.downloadUrl;
         
-        const { error } = await supabase.from('products').update(dbUpdates).eq('id', id);
+        const { error } = await supabase!.from('products').update(dbUpdates).eq('id', id);
         if (error) throw error;
     },
 
     async deleteProduct(id: string): Promise<void> {
-        if (!supabase) return;
-        const { error } = await supabase.from('products').delete().eq('id', id);
+        if (!this.isLive()) return;
+        const { error } = await supabase!.from('products').delete().eq('id', id);
         if (error) throw error;
     },
 
     // --- AGENT LOGS ---
+    // Currently stored in LocalStorage for simplicity, can be moved to a 'logs' table
     async getAgentLogs(): Promise<AgentActionLog[]> {
         try {
             const stored = localStorage.getItem('nakhlestan_agent_logs');
@@ -327,9 +385,11 @@ export const dbAdapter = {
         const logs = await this.getAgentLogs();
         logs.unshift(log);
         localStorage.setItem('nakhlestan_agent_logs', JSON.stringify(logs.slice(0, 50)));
+        // Optional: Save to DB if table exists
+        // if (this.isLive()) await supabase.from('agent_logs').insert(log);
     },
 
-    // --- LOCAL STORAGE HELPERS (For managing session in absence of backend auth) ---
+    // --- LOCAL STORAGE HELPERS (Session Management) ---
     getCurrentUserId(): string | null {
         return localStorage.getItem('nakhlestan_current_user_id');
     },
