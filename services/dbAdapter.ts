@@ -3,6 +3,11 @@ import { supabase } from './supabaseClient';
 import { User, Order, CommunityPost, AgentActionLog, Product } from '../types';
 import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS, INITIAL_PRODUCTS } from '../utils/dummyData';
 
+// --- DB ADAPTER ---
+// This file acts as an abstraction layer. 
+// When you (the developer) work locally, you can replace the dummy data logic 
+// with your actual Firebase/Supabase calls without breaking the UI components.
+
 // Helper to check if string is a valid UUID
 const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
@@ -43,6 +48,7 @@ const mapProfileToUser = (profile: any): User => {
 };
 
 export const dbAdapter = {
+    // System Health Check
     async getSystemHealth(): Promise<{ status: string; scalabilityScore: number; issues: string[] }> {
         if (!supabase) {
             return { status: 'Local Mode', scalabilityScore: 0, issues: ['Supabase keys missing. Using local data.'] };
@@ -56,6 +62,7 @@ export const dbAdapter = {
         }
     },
 
+    // User Methods
     async getUsers(page: number = 1, limit: number = 20, search: string = ''): Promise<{ data: User[], total: number }> {
         if (!supabase) return { data: INITIAL_USERS, total: INITIAL_USERS.length };
 
@@ -137,6 +144,7 @@ export const dbAdapter = {
         return true;
     },
 
+    // Order Methods
     async getOrders(userId?: string): Promise<Order[]> {
          if (!supabase) return INITIAL_ORDERS;
          
@@ -181,6 +189,7 @@ export const dbAdapter = {
         if (error) console.error('Error saving order:', error.message || error);
     },
 
+    // Post Methods
     async getAllPosts(): Promise<CommunityPost[]> {
         if (!supabase) return INITIAL_POSTS;
         
@@ -218,6 +227,7 @@ export const dbAdapter = {
     },
 
     // --- PRODUCT MANAGEMENT ---
+    // These methods allow the AI/Admin to manage the shop content dynamically.
 
     async getAllProducts(): Promise<Product[]> {
         if (!supabase) return INITIAL_PRODUCTS;
@@ -228,7 +238,7 @@ export const dbAdapter = {
             .order('created_at', { ascending: false });
 
         if (error || !data || data.length === 0) {
-            console.warn("Using dummy products as DB fetch failed or empty:", error);
+            // console.warn("Using dummy products as DB fetch failed or empty:", error);
             return INITIAL_PRODUCTS;
         }
 
@@ -319,6 +329,7 @@ export const dbAdapter = {
         localStorage.setItem('nakhlestan_agent_logs', JSON.stringify(logs.slice(0, 50)));
     },
 
+    // --- LOCAL STORAGE HELPERS (For managing session in absence of backend auth) ---
     getCurrentUserId(): string | null {
         return localStorage.getItem('nakhlestan_current_user_id');
     },

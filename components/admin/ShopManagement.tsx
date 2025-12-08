@@ -7,8 +7,9 @@ import { PlusIcon, PencilIcon, TrashIcon, PhotoIcon, CheckCircleIcon, XMarkIcon 
 import Modal from '../Modal';
 import CloudinaryUploadWidget from '../ui/CloudinaryUploadWidget';
 
+// Shop Management Component - Retry Creation
 const ShopManagement: React.FC = () => {
-    const { products: initialProducts } = useAppState(); // Use as fallback or initial load
+    const { products: initialProducts } = useAppState(); 
     const [products, setProducts] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -16,7 +17,6 @@ const ShopManagement: React.FC = () => {
     const [isCreating, setIsCreating] = useState(false);
 
     const categories = ['نخل میراث', 'محصولات خرما', 'صنایع دستی', 'محصولات دیجیتال', 'ارتقا'];
-    const productTypes = ['physical', 'digital', 'service', 'heritage'];
 
     useEffect(() => {
         loadProducts();
@@ -57,7 +57,7 @@ const ShopManagement: React.FC = () => {
                 await dbAdapter.deleteProduct(id);
                 setProducts(products.filter(p => p.id !== id));
             } catch (error) {
-                alert('خطا در حذف محصول. (ممکن است محصول در سفارشات استفاده شده باشد)');
+                alert('خطا در حذف محصول.');
             }
         }
     };

@@ -9,9 +9,10 @@ interface SmartLinkProps {
     className?: string;
     ariaLabel?: string;
     params?: string; // Optional URL params like "product_id=123"
+    onClick?: () => void;
 }
 
-const SmartLink: React.FC<SmartLinkProps> = ({ view, children, className, ariaLabel, params }) => {
+const SmartLink: React.FC<SmartLinkProps> = ({ view, children, className, ariaLabel, params, onClick }) => {
     const dispatch = useAppDispatch();
 
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -31,6 +32,10 @@ const SmartLink: React.FC<SmartLinkProps> = ({ view, children, className, ariaLa
         }
         
         dispatch({ type: 'SET_VIEW', payload: view });
+        
+        if (onClick) {
+            onClick();
+        }
     };
 
     const href = `/?view=${view}${params ? `&${params}` : ''}`;

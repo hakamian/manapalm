@@ -462,7 +462,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 dbAdapter.getAllUsers(), 
                 dbAdapter.getAllOrders(), 
                 dbAdapter.getAllPosts(),
-                dbAdapter.getAllProducts()
+                dbAdapter.getAllProducts() // Load products
             ]);
             
             const currentUserId = dbAdapter.getCurrentUserId();
@@ -475,7 +475,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     allUsers: users, 
                     orders, 
                     communityPosts: posts, 
-                    products: products.length > 0 ? products : INITIAL_PRODUCTS,
+                    products: products.length > 0 ? products : INITIAL_PRODUCTS, // Use loaded or default
                     user: currentUser 
                 } 
             });

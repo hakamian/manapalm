@@ -746,7 +746,7 @@ const MeaningCompanionView: React.FC = () => {
                                 disabled={isTextLoading}
                             />
                             <button 
-                                onClick={handleSendTextMessage} 
+                                onClick={() => handleSendTextMessage(textInput)} 
                                 disabled={isTextLoading || !textInput.trim()} 
                                 className={`p-3 rounded-full transition-all transform ${textInput.trim() ? 'bg-[#2b5278] text-white scale-100' : 'text-gray-500 bg-transparent scale-90'}`}
                             >

@@ -44,7 +44,7 @@ import SettingsDashboard from './admin/SettingsDashboard';
 import UnitEconomicsDashboard from './admin/UnitEconomicsDashboard';
 import SecurityDashboard from './admin/SecurityDashboard';
 import AcademiesDashboard from './admin/AcademiesDashboard';
-import ShopManagement from './admin/ShopManagement'; // New Import
+import ShopManagement from './admin/ShopManagement'; 
 import { timeAgo } from '../utils/time';
 
 interface AdminDashboardViewProps {
@@ -88,7 +88,6 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
         recentUserGoals: users.slice(0, 5).map(u => u.meaningGoal || '').filter(Boolean),
     }), [users, orders, posts]);
 
-    // Helper functions (placeholders for potential dispatch actions)
     const handleGrantPoints = (userId: string, points: number, reason: string) => {
         console.log(`Granting ${points} to ${userId} for ${reason}`);
     };
@@ -110,7 +109,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
     const tabs = [ 
         { id: 'pulse', label: 'داشبورد پالس', icon: <PresentationChartLineIcon className="w-5 h-5" /> }, 
         { id: 'economy', label: 'اقتصاد واحد', icon: <CalculatorIcon className="w-5 h-5" /> },
-        { id: 'shop_manager', label: 'مدیریت فروشگاه', icon: <ShoppingCartIcon className="w-5 h-5" /> }, // New Tab
+        { id: 'shop_manager', label: 'مدیریت فروشگاه', icon: <ShoppingCartIcon className="w-5 h-5" /> }, 
         { id: 'academies', label: 'مدیریت آکادمی‌ها', icon: <AcademicCapIcon className="w-5 h-5" /> }, 
         { id: 'community', label: 'هاب جامعه و معنا', icon: <HeartIcon className="w-5 h-5" /> }, 
         { id: 'growth', label: 'موتور رشد', icon: <ChartBarIcon className="w-5 h-5" /> }, 
