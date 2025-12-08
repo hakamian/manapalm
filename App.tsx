@@ -15,7 +15,6 @@ import MeaningCompanionWidget from './components/MeaningCompanionWidget';
 import BottomNavBar from './components/BottomNavBar';
 import { supabase } from './services/supabaseClient';
 import { useRouteSync } from './hooks/useRouteSync'; // Virtual Router
-import SmartLanding from './components/SmartLanding'; // Smart Landing
 import SEOIndex from './components/seo/SEOIndex'; // Live Sitemap
 
 const App: React.FC = () => {
@@ -228,14 +227,6 @@ const App: React.FC = () => {
             <WelcomeTour />
             <LiveActivityBanner />
             <Header />
-            
-            {/* Conditional Rendering for Smart Landing */}
-            {state.currentView === 'HOME' && (
-                <SmartLanding 
-                    user={user} 
-                    onStartJourneyClick={() => dispatch({ type: 'START_PLANTING_FLOW' })} 
-                />
-            )}
             
             {/* Main Content Router */}
             <MainContent />
