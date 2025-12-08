@@ -2,20 +2,21 @@
 import React, { useState, useEffect } from 'react';
 import { CommunityPost } from '../../types';
 import { analyzeCommunitySentimentAndTopics } from '../../services/geminiService';
-import { SparklesIcon, MegaphoneIcon, PencilSquareIcon, CloudIcon, ClockIcon, CheckCircleIcon, ArrowPathIcon, CpuChipIcon, BoltIcon } from '../icons';
+import { supabase } from '../../services/supabaseClient';
+import { SparklesIcon, MegaphoneIcon, PencilSquareIcon, CloudIcon, ClockIcon, CheckCircleIcon, ArrowPathIcon, CpuChipIcon, BoltIcon, ExclamationTriangleIcon } from '../icons';
 
 interface ContentFactoryDashboardProps {
     posts: CommunityPost[];
 }
 
-// Mock type for Agent Task
+// Definition matching your Supabase table
 interface AgentTask {
     id: string;
-    type: 'analyze_trends' | 'generate_article' | 'create_visuals';
+    type: string;
     status: 'pending' | 'processing' | 'completed' | 'failed';
     payload: any;
     result?: string;
-    timestamp: string;
+    created_at: string;
 }
 
 const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts }) => {
@@ -24,47 +25,93 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
     
     // Agent Queue State
     const [agentQueue, setAgentQueue] = useState<AgentTask[]>([]);
-    const [activeAgent, setActiveAgent] = useState<string | null>(null); // 'writer', 'analyst', 'artist'
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    // Simulation of polling for updates (In real app, use Supabase Realtime)
+    // 1. Load initial tasks and Setup Realtime Subscription
     useEffect(() => {
-        const interval = setInterval(() => {
-            setAgentQueue(prevQueue => {
-                return prevQueue.map(task => {
-                    if (task.status === 'pending') return { ...task, status: 'processing' };
-                    if (task.status === 'processing') return { ...task, status: 'completed', result: 'محتوا با موفقیت تولید و در پایگاه داده ذخیره شد.' };
-                    return task;
-                });
-            });
-        }, 5000); // Simulate agent working time
+        if (!supabase) return;
 
-        return () => clearInterval(interval);
+        // Fetch existing tasks
+        const fetchTasks = async () => {
+            const { data, error } = await supabase
+                .from('agent_tasks')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(20);
+            
+            if (data) {
+                setAgentQueue(data as AgentTask[]);
+            }
+        };
+
+        fetchTasks();
+
+        // Listen for changes in the DB (Magic happens here!)
+        const channel = supabase
+            .channel('agent_tasks_updates')
+            .on(
+                'postgres_changes',
+                { event: '*', schema: 'public', table: 'agent_tasks' },
+                (payload) => {
+                    console.log('Realtime update received:', payload);
+                    if (payload.eventType === 'INSERT') {
+                        setAgentQueue(prev => [payload.new as AgentTask, ...prev]);
+                    } else if (payload.eventType === 'UPDATE') {
+                        setAgentQueue(prev => prev.map(task => 
+                            task.id === payload.new.id ? (payload.new as AgentTask) : task
+                        ));
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
     }, []);
 
     const handleFetchTopics = async () => {
         setIsLoadingTopics(true);
-        setActiveAgent('analyst');
         try {
-            // In full architecture, this would also be an agent task
+            // Analyzing trends using Gemini directly (Client-side fast analysis)
             const result = await analyzeCommunitySentimentAndTopics(posts.slice(0, 30).map(p => p.text));
             setTrendingTopics(result.trendingTopics);
         } catch (e) {
-            console.error(e);
+            console.error("Trend analysis failed", e);
         } finally {
             setIsLoadingTopics(false);
-            setActiveAgent(null);
         }
     };
     
-    const dispatchAgentTask = (topic: string) => {
-        const newTask: AgentTask = {
-            id: `task-${Date.now()}`,
-            type: 'generate_article',
-            status: 'pending',
-            payload: { topic },
-            timestamp: new Date().toLocaleTimeString('fa-IR')
-        };
-        setAgentQueue(prev => [newTask, ...prev]);
+    const dispatchAgentTask = async (topic: string) => {
+        if (!supabase) {
+            alert("اتصال به پایگاه داده برقرار نیست.");
+            return;
+        }
+
+        setIsSubmitting(true);
+        try {
+            // Create a row in Supabase. This will trigger any Webhooks linked to Make.com later.
+            const { error } = await supabase
+                .from('agent_tasks')
+                .insert({
+                    type: 'generate_article',
+                    status: 'pending',
+                    payload: { topic: topic, tone: 'professional' },
+                    created_at: new Date().toISOString()
+                });
+
+            if (error) throw error;
+            
+            // Note: We don't need to manually update state here, 
+            // the Realtime subscription above will catch the INSERT and update UI!
+
+        } catch (e: any) {
+            console.error("Error dispatching task:", e);
+            alert(`خطا در ثبت سفارش: ${e.message}`);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     return (
@@ -72,7 +119,7 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
             {/* Left: Command Center (Trigger) */}
             <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 shadow-lg">
                 <div className="flex items-center gap-3 mb-6 border-b border-gray-700 pb-4">
-                    <div className={`p-3 rounded-full ${activeAgent === 'analyst' ? 'bg-blue-500/20 text-blue-400 animate-pulse' : 'bg-gray-700 text-gray-400'}`}>
+                    <div className={`p-3 rounded-full bg-gray-700 text-gray-400`}>
                         <CpuChipIcon className="w-6 h-6" />
                     </div>
                     <div>
@@ -94,7 +141,7 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                     ) : 'شناسایی موضوعات داغ'}
                 </button>
                 
-                {trendingTopics.length > 0 && (
+                {trendingTopics.length > 0 ? (
                     <div className="space-y-3">
                         <h4 className="font-semibold text-sm text-gray-300 mb-2 flex items-center gap-2">
                             <SparklesIcon className="w-4 h-4 text-yellow-400"/>
@@ -105,13 +152,18 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                                 <span className="text-gray-200 font-medium text-sm">{topic}</span>
                                 <button 
                                     onClick={() => dispatchAgentTask(topic)}
-                                    className="text-xs bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 border border-green-500/30"
+                                    disabled={isSubmitting}
+                                    className="text-xs bg-green-600/20 text-green-400 hover:bg-green-600 hover:text-white px-3 py-1.5 rounded-lg transition-all flex items-center gap-1 border border-green-500/30 disabled:opacity-50"
                                 >
                                     <BoltIcon className="w-3 h-3" />
                                     تولید محتوا
                                 </button>
                             </div>
                         ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-700 rounded-xl">
+                        <p>هنوز موضوعی شناسایی نشده است.</p>
                     </div>
                 )}
             </div>
@@ -125,8 +177,8 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                         <MegaphoneIcon className="w-6 h-6" />
                     </div>
                     <div>
-                        <h3 className="text-xl font-bold text-white">خط تولید محتوا (Agent Pipeline)</h3>
-                        <p className="text-sm text-gray-400">وضعیت لحظه‌ای پردازش توسط Make.com</p>
+                        <h3 className="text-xl font-bold text-white">خط تولید محتوا (Live Pipeline)</h3>
+                        <p className="text-sm text-gray-400">وضعیت زنده ایجنت‌ها در دیتابیس</p>
                     </div>
                 </div>
                 
@@ -139,29 +191,39 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                         </div>
                     ) : (
                         agentQueue.map((task) => (
-                            <div key={task.id} className="bg-gray-900/50 p-4 rounded-xl border border-gray-700 animate-slide-in-up">
+                            <div key={task.id} className={`p-4 rounded-xl border animate-slide-in-up transition-colors ${
+                                task.status === 'completed' ? 'bg-green-900/10 border-green-500/30' :
+                                task.status === 'failed' ? 'bg-red-900/10 border-red-500/30' :
+                                'bg-gray-900/50 border-gray-700'
+                            }`}>
                                 <div className="flex justify-between items-start mb-2">
-                                    <span className="text-sm font-bold text-white">تولید مقاله: {task.payload.topic}</span>
-                                    <span className="text-[10px] font-mono text-gray-500">{task.timestamp}</span>
+                                    <span className="text-sm font-bold text-white">تولید مقاله: {task.payload?.topic || 'موضوع نامشخص'}</span>
+                                    <span className="text-[10px] font-mono text-gray-500">{new Date(task.created_at).toLocaleTimeString('fa-IR')}</span>
                                 </div>
                                 
                                 <div className="flex items-center gap-3 mt-3">
                                     {task.status === 'pending' && (
-                                        <div className="flex items-center gap-2 text-xs text-yellow-400 bg-yellow-900/20 px-2 py-1 rounded-full">
+                                        <div className="flex items-center gap-2 text-xs text-yellow-400 bg-yellow-900/20 px-2 py-1 rounded-full border border-yellow-500/20">
                                             <div className="w-2 h-2 bg-yellow-400 rounded-full animate-ping"></div>
                                             در صف انتظار...
                                         </div>
                                     )}
                                     {task.status === 'processing' && (
-                                        <div className="flex items-center gap-2 text-xs text-blue-400 bg-blue-900/20 px-2 py-1 rounded-full">
+                                        <div className="flex items-center gap-2 text-xs text-blue-400 bg-blue-900/20 px-2 py-1 rounded-full border border-blue-500/20">
                                             <ArrowPathIcon className="w-3 h-3 animate-spin"/>
                                             ایجنت در حال نگارش...
                                         </div>
                                     )}
                                     {task.status === 'completed' && (
-                                        <div className="flex items-center gap-2 text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded-full">
+                                        <div className="flex items-center gap-2 text-xs text-green-400 bg-green-900/20 px-2 py-1 rounded-full border border-green-500/20">
                                             <CheckCircleIcon className="w-3 h-3"/>
                                             تکمیل شد
+                                        </div>
+                                    )}
+                                    {task.status === 'failed' && (
+                                        <div className="flex items-center gap-2 text-xs text-red-400 bg-red-900/20 px-2 py-1 rounded-full border border-red-500/20">
+                                            <ExclamationTriangleIcon className="w-3 h-3"/>
+                                            خطا در اجرا
                                         </div>
                                     )}
                                 </div>
@@ -173,7 +235,7 @@ const ContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({ posts
                                 )}
                                 
                                 {task.result && (
-                                    <div className="mt-3 text-xs text-gray-400 bg-gray-800 p-2 rounded border border-gray-700">
+                                    <div className="mt-3 text-xs text-gray-300 bg-black/20 p-2 rounded border border-gray-600/50 line-clamp-2">
                                         > {task.result}
                                     </div>
                                 )}
