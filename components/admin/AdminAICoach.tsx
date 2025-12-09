@@ -76,7 +76,7 @@ const AdminAICoach: React.FC<AdminAICoachProps> = (props) => {
             <div className="flex flex-col flex-grow bg-gray-900/50 rounded-lg border border-gray-700 overflow-hidden">
                 {/* Advisor Selector */}
                 <div className="p-2 border-b border-gray-700 flex items-center gap-2 overflow-x-auto bg-gray-800/80 custom-scrollbar">
-                     {Object.entries(advisorConfig).slice(0, 4).map(([key, config]) => (
+                     {Object.entries(advisorConfig).map(([key, config]) => (
                         <button 
                             key={key}
                             onClick={() => setPersonalJourneyAdvisor(key as AdvisorType)} 
@@ -149,3 +149,4 @@ const AdminAICoach: React.FC<AdminAICoachProps> = (props) => {
 };
 
 export default AdminAICoach;
+    
