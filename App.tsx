@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
-import { View, User, DailyChestReward, PointLog } from './types';
+import { View, DailyChestReward, PointLog } from './types';
 import { useAppState, useAppDispatch } from './AppContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -13,20 +13,19 @@ import LiveActivityBanner from './components/LiveActivityBanner';
 import AIChatWidget from './components/AIChatWidget';
 import MeaningCompanionWidget from './components/MeaningCompanionWidget';
 import BottomNavBar from './components/BottomNavBar';
+import CommandPalette from './components/CommandPalette'; // New Import
 import { supabase } from './services/supabaseClient';
-import { useRouteSync } from './hooks/useRouteSync'; // Virtual Router
-import SEOIndex from './components/seo/SEOIndex'; // Live Sitemap
+import { useRouteSync } from './hooks/useRouteSync';
+import SEOIndex from './components/seo/SEOIndex';
 
 const App: React.FC = () => {
     const state = useAppState();
     const dispatch = useAppDispatch();
     
-    // Activate Virtual Router
     useRouteSync();
 
-    const { user, allUsers, products } = state; // products needed for Sitemap
+    const { user, allUsers, products } = state;
 
-    // --- Daily Chest Logic ---
     const canClaimChest = useMemo(() => {
         if (!user) return false;
         const today = new Date().toISOString().split('T')[0];
@@ -75,12 +74,11 @@ const App: React.FC = () => {
         });
     };
 
-    const mapSupabaseUserToAppUser = (supabaseUser: any, existingAppUser?: User): User => {
+    const mapSupabaseUserToAppUser = (supabaseUser: any, existingAppUser?: any): any => {
         const isAdmin = supabaseUser.email === 'hhakamian@gmail.com' || 
                         supabaseUser.email === 'admin@nakhlestanmana.com' ||
                         (supabaseUser.phone && supabaseUser.phone === '09222453571');
         
-        // Handle Google Metadata variations
         const meta = supabaseUser.user_metadata || {};
         const fullName = meta.full_name || meta.name || meta.user_name;
         const avatarUrl = meta.avatar_url || meta.picture || existingAppUser?.profileImageUrl;
@@ -131,7 +129,7 @@ const App: React.FC = () => {
             const updatedUser = isAdminLogin ? { ...existingUser, isAdmin: true } : existingUser;
             dispatch({ type: 'LOGIN_SUCCESS', payload: { user: updatedUser, orders: [], keepOpen: false } });
         } else {
-            const newUser: User = {
+            const newUser = {
                 id: isAdminLogin ? 'user_admin_custom' : `user_${Date.now()}`,
                 name: loginData.fullName || 'کاربر جدید',
                 fullName: loginData.fullName,
@@ -148,20 +146,14 @@ const App: React.FC = () => {
                 reflectionAnalysesRemaining: 0,
                 ambassadorPacksRemaining: 0
             };
-             dispatch({ type: 'LOGIN_SUCCESS', payload: { user: newUser, orders: [], keepOpen: true } });
+             dispatch({ type: 'LOGIN_SUCCESS', payload: { user: newUser as any, orders: [], keepOpen: true } });
         }
     }, [allUsers, dispatch]);
 
-    // Dedicated function to clean URL parameters
     const cleanAuthUrl = () => {
-        // Only run in browser environment
         if (typeof window === 'undefined') return;
-        
         const params = new URLSearchParams(window.location.search);
-        // Only clean if auth params exist to avoid unnecessary history state pushes
-        if (params.has('code') || params.has('error') || params.has('error_description') || params.has('access_token') || params.has('refresh_token')) {
-            
-            // Remove sensitive or temporary auth params
+        if (params.has('code') || params.has('error') || params.has('access_token')) {
             params.delete('code');
             params.delete('error');
             params.delete('error_description');
@@ -169,11 +161,8 @@ const App: React.FC = () => {
             params.delete('refresh_token');
             params.delete('expires_in');
             params.delete('token_type');
-            
-            // Reconstruct URL. Keep other params (like ?view=...) if they exist
             const newQuery = params.toString();
             const newUrl = window.location.pathname + (newQuery ? '?' + newQuery : '');
-            
             window.history.replaceState({}, document.title, newUrl);
         }
     };
@@ -181,34 +170,24 @@ const App: React.FC = () => {
     useEffect(() => {
         if (!supabase) return;
         
-        // 1. Initial Session Check (Happens on load/refresh)
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) {
                 const existingUser = allUsers.find(u => u.email === session.user.email);
                 const appUser = mapSupabaseUserToAppUser(session.user, existingUser);
                 dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
-                
-                // CRITICAL: Only clean URL if we have a valid session.
-                // This ensures Supabase has processed the 'code' before we remove it.
                 cleanAuthUrl();
             }
         });
 
-        // 2. Listen for auth changes (Happens when code is exchanged or user logs out)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             if (session?.user) {
                  const existingUser = allUsers.find(u => u.email === session.user.email);
                  const appUser = mapSupabaseUserToAppUser(session.user, existingUser);
-                 
-                 // If user state is different, update it
                  if (!user || user.id !== appUser.id) {
                      dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
                      dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: false });
                  }
-                 
-                 // CRITICAL: Clean URL immediately upon successful sign-in event
                  cleanAuthUrl();
-
             } else if (_event === 'SIGNED_OUT') {
                 if (user) {
                     dispatch({ type: 'LOGOUT' });
@@ -222,14 +201,25 @@ const App: React.FC = () => {
     }, [dispatch, allUsers]); 
 
     return (
-        <div className="bg-gray-900 text-white min-h-screen overflow-x-hidden">
+        <div className="relative min-h-screen text-white overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-100">
+            {/* 1. Atmospheric Background */}
+            <div className="aurora-bg">
+                <div className="aurora-blob blob-1"></div>
+                <div className="aurora-blob blob-2"></div>
+                <div className="aurora-blob blob-3"></div>
+            </div>
+            <div className="noise-overlay"></div>
+
             <SEOIndex products={products} />
             <WelcomeTour />
             <LiveActivityBanner />
             <Header />
             
-            {/* Main Content Router */}
-            <MainContent />
+            <CommandPalette />
+
+            <div className="relative z-10">
+                <MainContent />
+            </div>
 
             {user && canClaimChest && (
                 <DailyMysteryChest 
@@ -244,7 +234,6 @@ const App: React.FC = () => {
             <BottomNavBar />
             
             <GlobalModals onLoginSuccess={handleLoginSuccess} />
-            
         </div>
     );
 };

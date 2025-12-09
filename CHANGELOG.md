@@ -1,3 +1,4 @@
+
 # Changelog
 
 All notable changes to this project will be documented in this file.
@@ -23,3 +24,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - **User Management with Potential Score**: Enhanced the user list with a predictive "User Potential Score" to prioritize engagement efforts.
 - **Comprehensive Component Library**: Built out a wide range of reusable UI components for modals, notifications, navigation, and various feature pages.
 - **PWA & Offline Support**: Implemented a service worker for basic offline functionality.
+- **Domain Configuration**: Updated all internal links and SEO metadata to reflect `manapalm.com`.
+
+### Changed
+- **Navigation Structure**: Refactored `Header.tsx` and `BottomNavBar.tsx` to use the unified `siteConfig` for consistent navigation.
+- **Database Logic**: Centralized data access in `dbAdapter.ts` to allow easy switching between Mock Data and Supabase.
+- **Gemini Integration**: Updated API calls to use the secure Proxy pattern (ready for server-side implementation).
+
+### Fixed
+- **Mobile Responsiveness**: Adjusted grid layouts and padding for better display on mobile devices.
+- **Icon Consistency**: Standardized icon usage across the application using `icons/index.tsx`.
+

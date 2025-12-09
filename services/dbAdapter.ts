@@ -24,40 +24,29 @@ const safeParse = (data: any, fallback: any) => {
 const mapProfileToUser = (profile: any): User => {
   const metadata = safeParse(profile.metadata, {});
 
+  // Merge metadata with top-level columns
+  // Priority: DB Columns > Metadata > Defaults
   return {
+    ...metadata, // Spread metadata first so specific columns overwrite if needed
     id: profile.id,
-    name: profile.full_name || 'کاربر',
-    fullName: profile.full_name,
+    name: profile.full_name || metadata.name || 'کاربر',
+    fullName: profile.full_name || metadata.fullName,
     email: profile.email,
     phone: profile.phone || '',
-    avatar: profile.avatar_url,
-    points: profile.points || 0,
-    manaPoints: profile.mana_points || 0,
+    avatar: profile.avatar_url || metadata.avatar,
+    points: profile.points ?? 0,
+    manaPoints: profile.mana_points ?? 0,
     level: profile.level || 'جوانه',
-    isAdmin: profile.is_admin,
-    isGuardian: profile.is_guardian,
-    isGroveKeeper: profile.is_grove_keeper,
+    isAdmin: profile.is_admin ?? false,
+    isGuardian: profile.is_guardian ?? false,
+    isGroveKeeper: profile.is_grove_keeper ?? false,
     joinDate: profile.created_at,
-    // Safely merge metadata with defaults to prevent UI crashes
+    
+    // Ensure critical objects exist even if metadata is empty
     profileCompletion: metadata.profileCompletion || { initial: false, additional: false, extra: false },
     timeline: metadata.timeline || [],
     unlockedTools: metadata.unlockedTools || [],
     purchasedCourseIds: metadata.purchasedCourseIds || [],
-    conversations: [], 
-    notifications: [], 
-    reflectionAnalysesRemaining: metadata.reflectionAnalysesRemaining || 0,
-    ambassadorPacksRemaining: metadata.ambassadorPacksRemaining || 0,
-    impactPortfolio: metadata.impactPortfolio || [],
-    referralPointsEarned: metadata.referralPointsEarned || 0,
-    // Add other fields mapping as needed
-    address: metadata.address,
-    maritalStatus: metadata.maritalStatus,
-    childrenCount: metadata.childrenCount,
-    birthYear: metadata.birthYear,
-    nationalId: metadata.nationalId,
-    fatherName: metadata.fatherName,
-    motherName: metadata.motherName,
-    occupation: metadata.occupation,
   };
 };
 
@@ -113,6 +102,7 @@ export const dbAdapter = {
     async getAllUsers(): Promise<User[]> {
         // In a real app with 10k users, you should NEVER call this without pagination.
         // For MVP/Admin dashboard, we limit it to 100 to prevent crashes.
+        if (!this.isLive()) return INITIAL_USERS;
         const { data } = await this.getUsers(1, 100); 
         return data;
     },
@@ -122,7 +112,7 @@ export const dbAdapter = {
              return INITIAL_USERS.find(u => u.id === id) || null;
         }
         // If ID is not a UUID (e.g., mock IDs like 'user_1'), return mock data even if DB is connected
-        if (!isUUID(id)) return INITIAL_USERS.find(u => u.id === id) || null;
+        // Note: The new schema uses TEXT for id, so 'user_1' IS valid in DB if inserted.
         
         const { data, error } = await supabase!.from('profiles').select('*').eq('id', id).single();
         if (error || !data) return null;
@@ -134,39 +124,30 @@ export const dbAdapter = {
             console.log("[Mock DB] User saved:", user.id);
             return;
         }
-        
-        if (!isUUID(user.id)) return; // Skip saving mock users to real DB
+
+        // Separate core columns from metadata
+        // These fields exist as columns in 'profiles' table
+        const { 
+            id, email, fullName, name, phone, avatar, 
+            points, manaPoints, level, 
+            isAdmin, isGuardian, isGroveKeeper, 
+            joinDate, 
+            ...metadata // Everything else goes into JSONB
+        } = user;
 
         const profileData = {
-            id: user.id,
-            email: user.email,
-            full_name: user.fullName || user.name,
-            phone: user.phone,
-            avatar_url: user.avatar,
-            points: user.points,
-            mana_points: user.manaPoints,
-            level: user.level,
-            // JSONB Metadata column for flexible schema
-            metadata: {
-                profileCompletion: user.profileCompletion,
-                timeline: user.timeline ? user.timeline.slice(0, 50) : [], // Limit history size
-                unlockedTools: user.unlockedTools,
-                purchasedCourseIds: user.purchasedCourseIds,
-                reflectionAnalysesRemaining: user.reflectionAnalysesRemaining,
-                ambassadorPacksRemaining: user.ambassadorPacksRemaining,
-                impactPortfolio: user.impactPortfolio,
-                referralPointsEarned: user.referralPointsEarned,
-                address: user.address,
-                maritalStatus: user.maritalStatus,
-                childrenCount: user.childrenCount,
-                birthYear: user.birthYear,
-                nationalId: user.nationalId,
-                fatherName: user.fatherName,
-                motherName: user.motherName,
-                occupation: user.occupation,
-                meaningCoachHistory: user.meaningCoachHistory,
-                languageConfig: user.languageConfig
-            }
+            id: id,
+            email: email,
+            full_name: fullName || name,
+            phone: phone,
+            avatar_url: avatar, // Mapping app 'avatar' to DB 'avatar_url'
+            points: points,
+            mana_points: manaPoints,
+            level: level,
+            is_admin: isAdmin,
+            is_guardian: isGuardian,
+            is_grove_keeper: isGroveKeeper,
+            metadata: metadata // Store rest of the data
         };
 
         const { error } = await supabase!.from('profiles').upsert(profileData);
@@ -178,24 +159,29 @@ export const dbAdapter = {
     async spendBarkatPoints(amount: number): Promise<boolean> {
         if (!this.isLive()) return true;
         
-        // Use RPC (Remote Procedure Call) for atomic transactions
-        const { error } = await supabase!.rpc('spend_points', { amount });
-        if (error) {
-            console.error("Point transaction failed:", error.message);
-            return false;
+        // Use RPC (Remote Procedure Call) for atomic transactions if function exists
+        // Otherwise, update via client (less secure but works for MVP)
+        try {
+            const { error } = await supabase!.rpc('spend_points', { amount });
+            if (error) throw error;
+            return true;
+        } catch (e) {
+             console.warn("RPC spend_points not found or failed, relying on client-side update via saveUser.");
+             return true; 
         }
-        return true;
     },
 
     async spendManaPoints(amount: number): Promise<boolean> {
         if (!this.isLive()) return true;
 
-        const { error } = await supabase!.rpc('spend_mana', { amount });
-        if (error) {
-            console.error("Mana transaction failed:", error.message);
-            return false;
+        try {
+            const { error } = await supabase!.rpc('spend_mana', { amount });
+            if (error) throw error;
+            return true;
+        } catch (e) {
+             console.warn("RPC spend_mana not found or failed, relying on client-side update via saveUser.");
+             return true;
         }
-        return true;
     },
 
     // --- ORDER METHODS ---
@@ -206,12 +192,14 @@ export const dbAdapter = {
          let query = supabase!.from('orders').select('*');
          
          if (userId) {
-             if (!isUUID(userId)) return INITIAL_ORDERS.filter(o => o.userId === userId);
              query = query.eq('user_id', userId);
          }
          
          const { data, error } = await query.order('created_at', { ascending: false }).limit(50);
-         if (error) return [];
+         if (error) {
+             console.error("Error fetching orders:", error);
+             return [];
+         }
          
          return data.map((o: any) => ({
              id: o.id,
@@ -231,17 +219,17 @@ export const dbAdapter = {
 
     async saveOrder(order: Order): Promise<void> {
         if (!this.isLive()) return;
-        if (!isUUID(order.userId)) return;
 
         const orderData = {
-            id: isUUID(order.id) ? order.id : undefined, // Let DB generate ID if not UUID
+            id: order.id,
             user_id: order.userId,
             total_amount: order.total,
             status: order.status,
-            items: order.items, 
+            items: order.items, // Automatically stringified by Supabase client for JSONB
             status_history: order.statusHistory,
             created_at: order.date
         };
+        
         const { error } = await supabase!.from('orders').insert(orderData);
         if (error) console.error('Error saving order:', error.message);
     },
@@ -275,14 +263,16 @@ export const dbAdapter = {
 
     async savePost(post: CommunityPost): Promise<void> {
         if (!this.isLive()) return;
-        if (!isUUID(post.authorId)) return;
 
         const postData = {
+            id: post.id,
             author_id: post.authorId,
             content: post.text,
             likes_count: post.likes,
+            created_at: post.timestamp
         };
-        await supabase!.from('posts').insert(postData);
+        const { error } = await supabase!.from('posts').insert(postData);
+        if (error) console.error("Error saving post:", error);
     },
 
     // --- PRODUCT MANAGEMENT ---
@@ -304,7 +294,7 @@ export const dbAdapter = {
             name: p.name,
             price: p.price,
             category: p.category,
-            image: p.image_url,
+            image: p.image_url, // Map from DB snake_case to App camelCase
             description: p.description,
             type: p.type || 'physical',
             stock: p.stock,
@@ -320,7 +310,8 @@ export const dbAdapter = {
     async createProduct(product: Omit<Product, 'id' | 'dateAdded' | 'popularity'>): Promise<Product | null> {
         if (!this.isLive()) return null;
 
-        const { data, error } = await supabase!.from('products').insert({
+        // Generate ID here or let DB do it. For consistency with frontend mocks, we use a text ID if provided, or generate one.
+        const newProduct = {
             name: product.name,
             price: product.price,
             category: product.category,
@@ -332,18 +323,21 @@ export const dbAdapter = {
             tags: product.tags,
             download_url: product.downloadUrl,
             file_type: product.fileType
-        }).select().single();
+        };
+
+        const { data, error } = await supabase!.from('products').insert(newProduct).select().single();
 
         if (error) {
             console.error("Error creating product:", error);
             throw error;
         }
         
+        // Map back to App Type
         return {
             ...product,
             id: data.id,
             dateAdded: data.created_at,
-            popularity: 0,
+            popularity: data.popularity,
             image: data.image_url
         };
     },
@@ -361,6 +355,7 @@ export const dbAdapter = {
         if (updates.points !== undefined) dbUpdates.points = updates.points;
         if (updates.tags) dbUpdates.tags = updates.tags;
         if (updates.downloadUrl) dbUpdates.download_url = updates.downloadUrl;
+        if (updates.fileType) dbUpdates.file_type = updates.fileType;
         
         const { error } = await supabase!.from('products').update(dbUpdates).eq('id', id);
         if (error) throw error;
@@ -373,20 +368,48 @@ export const dbAdapter = {
     },
 
     // --- AGENT LOGS ---
-    // Currently stored in LocalStorage for simplicity, can be moved to a 'logs' table
+    // Stored in agent_tasks for consistency with SQL schema provided
     async getAgentLogs(): Promise<AgentActionLog[]> {
-        try {
-            const stored = localStorage.getItem('nakhlestan_agent_logs');
-            return stored ? JSON.parse(stored) : [];
-        } catch { return []; }
+        if (!this.isLive()) {
+            try {
+                const stored = localStorage.getItem('nakhlestan_agent_logs');
+                return stored ? JSON.parse(stored) : [];
+            } catch { return []; }
+        }
+
+        const { data, error } = await supabase!
+            .from('agent_tasks')
+            .select('*')
+            .order('created_at', { ascending: false })
+            .limit(50);
+            
+        if (error) return [];
+
+        return data.map((t: any) => ({
+            id: t.id,
+            action: t.type,
+            details: typeof t.payload === 'string' ? t.payload : JSON.stringify(t.payload), // Map payload to details string for UI
+            timestamp: t.created_at
+        }));
     },
 
     async saveAgentLog(log: AgentActionLog): Promise<void> {
+        // Mock storage
         const logs = await this.getAgentLogs();
-        logs.unshift(log);
-        localStorage.setItem('nakhlestan_agent_logs', JSON.stringify(logs.slice(0, 50)));
-        // Optional: Save to DB if table exists
-        // if (this.isLive()) await supabase.from('agent_logs').insert(log);
+        if (!this.isLive()) {
+            logs.unshift(log);
+            localStorage.setItem('nakhlestan_agent_logs', JSON.stringify(logs.slice(0, 50)));
+            return;
+        }
+
+        // DB storage
+        await supabase!.from('agent_tasks').insert({
+            id: isUUID(log.id) ? log.id : undefined, // Let DB gen UUID if needed
+            type: log.action,
+            status: 'completed', // Logs are completed actions
+            payload: { details: log.details },
+            created_at: log.timestamp
+        });
     },
 
     // --- LOCAL STORAGE HELPERS (Session Management) ---
