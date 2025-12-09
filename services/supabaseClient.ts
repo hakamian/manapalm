@@ -16,21 +16,24 @@ const getEnv = (key: string) => {
   return undefined;
 };
 
-// Default Project URL (Safe to expose as it requires a key to work)
-const DEFAULT_SUPABASE_URL = "https://sbjrayzghjfsmmuygwbw.supabase.co";
+// --- CONFIGURATION ---
+// We prioritize Environment Variables, then fall back to Hardcoded values for the MVP.
+// SECURITY NOTE: We ONLY use the 'Publishable Key' here. Never expose the 'Secret Key' in frontend code.
+
+const PROVIDED_SUPABASE_URL = "https://sbjrayzghjfsmmuygwbw.supabase.co";
+const PROVIDED_ANON_KEY = "sb_publishable_A7_rHrRypeOVpMKyEDEd2w_x_msAcBi";
 
 // Load configuration
-let supabaseUrl = getEnv('VITE_SUPABASE_URL');
-let supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
+let supabaseUrl = getEnv('VITE_SUPABASE_URL') || PROVIDED_SUPABASE_URL;
+let supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY') || PROVIDED_ANON_KEY;
 
-// Fallback to LocalStorage (Manual Setup via UI)
+// Fallback to LocalStorage (Manual Setup via UI if needed)
 if (typeof window !== 'undefined') {
-    if (!supabaseUrl || supabaseUrl === 'undefined') {
-        supabaseUrl = localStorage.getItem('VITE_SUPABASE_URL') || DEFAULT_SUPABASE_URL;
-    }
-    if (!supabaseAnonKey || supabaseAnonKey === 'undefined') {
-        supabaseAnonKey = localStorage.getItem('VITE_SUPABASE_ANON_KEY') || '';
-    }
+    const storedUrl = localStorage.getItem('VITE_SUPABASE_URL');
+    const storedKey = localStorage.getItem('VITE_SUPABASE_ANON_KEY');
+    
+    if (storedUrl) supabaseUrl = storedUrl;
+    if (storedKey) supabaseAnonKey = storedKey;
 }
 
 // Initialize Supabase Client ONLY if key is present
