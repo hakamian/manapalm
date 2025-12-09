@@ -9,7 +9,7 @@ export const LocalBusinessSchema: React.FC = () => {
         "@type": "NGO",
         "name": "نخلستان معنا",
         "alternateName": "Nakhlestan Ma'na",
-        "url": "https://nakhlestanmana.com",
+        "url": "https://manapalm.com",
         "logo": "https://picsum.photos/seed/nakhlestan-logo/512/512",
         "description": "یک کسب و کار اجتماعی برای کاشت نخل، ایجاد اشتغال پایدار و توسعه معنا در زندگی.",
         "address": {
@@ -86,7 +86,7 @@ export const BreadcrumbSchema: React.FC<{ items: BreadcrumbItem[] }> = ({ items 
             "@type": "ListItem",
             "position": index + 1,
             "name": item.name,
-            "item": `https://nakhlestanmana.com/${item.item}`
+            "item": `https://manapalm.com/${item.item}`
         }))
     };
 

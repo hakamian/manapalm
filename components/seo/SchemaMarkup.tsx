@@ -55,7 +55,7 @@ export const OrganizationSchema: React.FC = () => {
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "نخلستان معنا",
-        "url": "https://nakhlestanmana.com",
+        "url": "https://manapalm.com",
         "logo": "https://picsum.photos/seed/nakhlestan-logo/512/512",
         "sameAs": [
             "https://www.instagram.com/nakhlestan",

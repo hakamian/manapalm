@@ -16,7 +16,7 @@ const SEOHead: React.FC<SEOHeadProps> = ({
   description, 
   keywords = [], 
   image = 'https://picsum.photos/seed/nakhlestan-logo/1200/630', // Default social image
-  url = 'https://nakhlestanmana.com',
+  url = 'https://manapalm.com',
   type = 'website'
 }) => {
   const siteTitle = 'نخلستان معنا | Nakhlestan Ma\'na';
