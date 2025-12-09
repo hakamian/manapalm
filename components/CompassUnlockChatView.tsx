@@ -2,9 +2,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useAppState, useAppDispatch } from '../AppContext';
 import { User, ChatMessage, View, COMPASS_TRIAL_SECONDS } from '../types';
-import { GoogleGenAI, LiveServerMessage, Modality, Blob as GenAIBlob, Session, Chat } from "@google/genai";
+import { GoogleGenAI, LiveServerMessage, Modality, Blob as GenAIBlob, Session } from "@google/genai";
 import { PaperAirplaneIcon, ArrowLeftIcon, BrainCircuitIcon, ClockIcon, MicrophoneIcon, ChatBubbleOvalLeftEllipsisIcon, XMarkIcon, StopIcon, SparklesIcon, DoubleCheckIcon, KeyboardIcon } from './icons';
-import { getFallbackMessage, getGeminiApiKey } from '../services/ai/core'; // Updated import
+import { getFallbackMessage, getGeminiApiKey } from '../services/ai/core'; 
+import { sendChatMessage } from '../services/geminiService';
 import LiveSessionAccessModal from './LiveSessionAccessModal';
 import AIContentRenderer from './AIContentRenderer';
 
@@ -73,7 +74,6 @@ const CompassUnlockChatView: React.FC = () => {
 
     const [textInput, setTextInput] = useState('');
     const [isTextLoading, setIsTextLoading] = useState(false);
-    const textChatRef = useRef<Chat | null>(null);
 
     const [error, setError] = useState('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -213,7 +213,6 @@ const CompassUnlockChatView: React.FC = () => {
         }
     }, [isTimeUp, connectionStatus, handleStopSession]);
 
-    // Session Start Logic
     const systemInstruction = `
     ROLE: You are 'Rahnavard' (رهنورد), a professional Meaning Coach at 'Nakhlestan Ma'na'.
     GOAL: Help the user unlock their "Meaning Compass" through deep, reflective conversation.
@@ -227,7 +226,7 @@ const CompassUnlockChatView: React.FC = () => {
     const startVoiceSession = async () => {
         const apiKey = getGeminiApiKey();
         if (!apiKey) {
-            setError('خطا: کلید API یافت نشد.');
+            setError('خطا: کلید API یافت نشد. لطفا در تنظیمات کلید را وارد کنید یا از حالت متنی استفاده کنید.');
             return;
         }
 
@@ -301,37 +300,39 @@ const CompassUnlockChatView: React.FC = () => {
     };
     
     const startTextSession = async () => {
-        const apiKey = getGeminiApiKey();
-        if (!apiKey) {
-            setError('خطا: کلید API یافت نشد.');
-            return;
-        }
-
         if (!user || isLoading) return;
         if (timeLeft <= 0) { setIsAccessModalOpen(true); return; }
         setChatMode('text'); setIsLoading(true); setError(''); setIsTimeUp(false);
         if (!user.hasUnlockedCompass) { dispatch({ type: 'UPDATE_USER', payload: { ...user, hasUnlockedCompass: true } }); }
+        
         try {
-            const ai = new GoogleGenAI({ apiKey });
-            textChatRef.current = ai.chats.create({ model: 'gemini-3-pro-preview', config: { systemInstruction }, history: history });
             if (history.length === 0) {
-                 const response = await textChatRef.current.sendMessage({ message: "شروع کن" });
+                 const response = await sendChatMessage(
+                    [], 
+                    "شروع کن", 
+                    systemInstruction
+                 );
                  const cleanText = (response.text || '').replace(/\[OPTIONS:.*?\]/, '').trim();
                  setHistory([{ role: 'model', text: cleanText }]);
             }
             setIsSessionActive(true); sessionStartTimeRef.current = Date.now();
-        } catch (err) { setError(getFallbackMessage('chat')); } finally { setIsLoading(false); }
+        } catch (err) { 
+            console.error(err);
+            setError(getFallbackMessage('chat')); 
+        } finally { 
+            setIsLoading(false); 
+        }
     };
 
     const handleSendTextMessage = async (msg: string) => {
-        if (!msg.trim() || isTextLoading || !textChatRef.current) return;
+        if (!msg.trim() || isTextLoading) return;
         const userMessage: ChatMessage = { role: 'user', text: msg.trim() };
         setHistory(prev => [...prev, userMessage]);
         setSuggestions([]);
         setTextInput('');
         setIsTextLoading(true);
         try {
-            const response = await textChatRef.current.sendMessage({ message: userMessage.text });
+            const response = await sendChatMessage(history, userMessage.text, systemInstruction);
             let cleanText = response.text || '';
             const optionsMatch = cleanText.match(/\[OPTIONS:(.*?)\]/);
             if (optionsMatch) { setSuggestions(optionsMatch[1].split('|').map(s => s.trim())); cleanText = cleanText.replace(/\[OPTIONS:.*?\]/, '').trim(); } else { setSuggestions([]); }
@@ -374,6 +375,11 @@ const CompassUnlockChatView: React.FC = () => {
                 .custom-scrollbar::-webkit-scrollbar { width: 5px; }
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
                 .custom-scrollbar::-webkit-scrollbar-thumb { background: #2b2b2b; border-radius: 10px; }
+                @keyframes pulse-glow {
+                    0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
+                    70% { box-shadow: 0 0 0 15px rgba(74, 222, 128, 0); }
+                }
+                .pulse-glow-animation { animation: pulse-glow 2.5s infinite; }
                 @keyframes fade-in-up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
                 .animate-fade-in-up { animation: fade-in-up 0.5s ease-out forwards; }
                 .animate-fade-in { animation: fade-in 0.5s ease-in-out; }
@@ -389,7 +395,7 @@ const CompassUnlockChatView: React.FC = () => {
                                 <div className="w-11 h-11 bg-gradient-to-br from-green-600 to-teal-700 rounded-full flex items-center justify-center border border-gray-600 shadow-inner">
                                     <BrainCircuitIcon className="w-6 h-6 text-white" />
                                 </div>
-                                <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-400 border-2 border-[#1e293b] rounded-full animate-pulse"></span>
+                                <span className="absolute bottom-0 right-0 block h-3 w-3 rounded-full bg-green-500 ring-2 ring-[#17212B] animate-pulse"></span>
                             </div>
                             <div>
                                 <h1 className="text-base font-bold text-white">قطب‌نمای معنا</h1>
@@ -417,7 +423,7 @@ const CompassUnlockChatView: React.FC = () => {
                                 <div className="bg-[#2b5278] p-4 rounded-full group-hover:scale-110 transition-transform shadow-lg">
                                     <MicrophoneIcon className="w-8 h-8 text-white" />
                                 </div>
-                                <span className="text-lg font-semibold text-white">گفتگو با صدا</span>
+                                <span className="text-lg font-semibold text-white">گفتگو با صدا (زنده)</span>
                             </button>
                             <button onClick={startTextSession} className="p-8 bg-[#242F3D] hover:bg-[#2b5278] rounded-2xl transition-all flex flex-col items-center gap-4 group border border-gray-700 hover:border-blue-500">
                                 <div className="bg-[#2b5278] p-4 rounded-full group-hover:scale-110 transition-transform"><ChatBubbleOvalLeftEllipsisIcon className="w-8 h-8 text-white" /></div>

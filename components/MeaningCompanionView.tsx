@@ -4,7 +4,8 @@ import { GoogleGenAI, LiveServerMessage, Modality, Blob as GenAIBlob, Session, C
 import { useAppDispatch, useAppState } from '../AppContext';
 import { View, COMPANION_TRIAL_SECONDS, ChatMessage } from '../types';
 import { ArrowLeftIcon, MicrophoneIcon, SparklesIcon, ClockIcon, PaperAirplaneIcon, ChatBubbleOvalLeftEllipsisIcon, DoubleCheckIcon, StopIcon, BrainCircuitIcon, CheckCircleIcon, PaperClipIcon, XMarkIcon, SpeakerWaveIcon } from './icons';
-import { getFallbackMessage, getGeminiApiKey } from '../services/ai/core'; // Updated import
+import { getFallbackMessage, getGeminiApiKey } from '../services/ai/core'; 
+import { sendChatMessage } from '../services/geminiService';
 import LiveSessionAccessModal from './LiveSessionAccessModal';
 import AIContentRenderer from './AIContentRenderer';
 
@@ -143,7 +144,6 @@ const MeaningCompanionView: React.FC = () => {
     const [textInput, setTextInput] = useState('');
     const [isTextLoading, setIsTextLoading] = useState(false);
     const [suggestions, setSuggestions] = useState<string[]>([]);
-    const textChatRef = useRef<Chat | null>(null);
     
     // Refs for audio resources
     const streamRef = useRef<MediaStream | null>(null);
@@ -343,7 +343,7 @@ const MeaningCompanionView: React.FC = () => {
     const startVoiceSession = async () => {
         const apiKey = getGeminiApiKey();
         if (!apiKey) {
-            setError('کلید API یافت نشد.');
+            setError('خطا: کلید API یافت نشد. لطفا در تنظیمات کلید را وارد کنید یا از حالت متنی استفاده کنید.');
             return;
         }
 
@@ -426,35 +426,19 @@ const MeaningCompanionView: React.FC = () => {
                     },
                     onmessage: async (message: LiveServerMessage) => {
                         const base64Audio = message.serverContent?.modelTurn?.parts[0]?.inlineData?.data;
-                        if (base64Audio) {
-                             if (!outputAudioContextRef.current) return;
-                            const outputContext = outputAudioContextRef.current;
-                            if (outputContext.state === 'suspended') await outputContext.resume();
-                            if ((outputContext.state as string) === 'closed') return;
-
-                            setConnectionStatus('speaking');
-
-                            nextStartTimeRef.current = Math.max(nextStartTimeRef.current, outputContext.currentTime);
-                            try {
-                                const audioBuffer = await decodeAudioData(decode(base64Audio), outputContext, 24000, 1);
-                                if ((outputContext.state as string) === 'closed') return;
-                                const source = outputContext.createBufferSource();
-                                source.buffer = audioBuffer;
-                                source.connect(outputContext.destination);
-                                source.addEventListener('ended', () => {
-                                    audioSourcesRef.current.delete(source);
-                                    if(audioSourcesRef.current.size === 0) setConnectionStatus('connected');
-                                });
-                                source.start(nextStartTimeRef.current);
-                                nextStartTimeRef.current += audioBuffer.duration;
-                                audioSourcesRef.current.add(source);
-                            } catch(e) { console.error("Audio decode error", e); }
+                        if (base64Audio && outputAudioContextRef.current) {
+                             const ctx = outputAudioContextRef.current;
+                             setConnectionStatus('speaking');
+                             nextStartTimeRef.current = Math.max(nextStartTimeRef.current, ctx.currentTime);
+                             try {
+                                 const buffer = await decodeAudioData(decode(base64Audio), ctx, 24000, 1);
+                                 const source = ctx.createBufferSource(); source.buffer = buffer; source.connect(ctx.destination);
+                                 source.addEventListener('ended', () => { audioSourcesRef.current.delete(source); if(audioSourcesRef.current.size === 0) { setConnectionStatus('connected'); } });
+                                 source.start(nextStartTimeRef.current); nextStartTimeRef.current += buffer.duration; audioSourcesRef.current.add(source);
+                             } catch(e) {}
                         }
                         
-                        if (message.serverContent?.interrupted) {
-                            stopAudioPlayback();
-                            setConnectionStatus('connected');
-                        }
+                        if (message.serverContent?.interrupted) { stopAudioPlayback(); setConnectionStatus('connected'); }
 
                         if (message.serverContent?.inputTranscription) {
                             setConnectionStatus('listening');
@@ -485,9 +469,7 @@ const MeaningCompanionView: React.FC = () => {
                         setError(getFallbackMessage('connection'));
                         handleStopSession();
                     },
-                    onclose: () => {
-                        handleStopSession();
-                    },
+                    onclose: () => { handleStopSession(); },
                 },
                 config: {
                     responseModalities: [Modality.AUDIO],
@@ -497,51 +479,26 @@ const MeaningCompanionView: React.FC = () => {
                 },
             });
             setSessionPromise(newSessionPromise);
-        } catch (err) {
-            console.error('Failed to start session:', err);
-            setError("امکان دسترسی به میکروفون وجود ندارد. لطفاً مجوزهای مرورگر را بررسی کنید.");
-            setIsLoading(false);
-            setChatMode('choice');
-        }
+        } catch (err) { setError("خطا در دسترسی به میکروفون."); setIsLoading(false); setChatMode('choice'); setConnectionStatus('idle'); cleanup(); }
     };
     
     // --- Text Chat Logic ---
     const startTextSession = async () => {
-        if (isSessionActive || isLoading) return;
+        if (!user || isLoading) return;
         if (timeLeft <= 0) { setIsAccessModalOpen(true); return; }
-        setChatMode('text');
-        setIsLoading(true);
-        setError(null);
+        setChatMode('text'); setIsLoading(true); setError('');
+        if (!user.hasUnlockedCompass) { dispatch({ type: 'UPDATE_USER', payload: { ...user, hasUnlockedCompass: true } }); }
         
         try {
-            const apiKey = getGeminiApiKey();
-            if (!apiKey) {
-                 setError('کلید API یافت نشد.');
-                 setIsLoading(false);
-                 return;
-            }
-
-            const ai = new GoogleGenAI({ apiKey });
-            textChatRef.current = ai.chats.create({
-                model: 'gemini-3-pro-preview',
-                config: { systemInstruction },
-            });
-            
-            const response = await textChatRef.current.sendMessage({ message: "سلام، لطفا خودت را معرفی کن." });
-            let cleanText = response.text || '';
-            
-            const optionsMatch = cleanText.match(/\[OPTIONS:(.*?)\]/);
-            if (optionsMatch) {
-                const opts = optionsMatch[1].split('|').map(s => s.trim());
-                setSuggestions(opts);
-                cleanText = cleanText.replace(/\[OPTIONS:.*?\]/, '').trim();
-            } else {
-                 setSuggestions(["شروع کنیم!", "چطور می‌تونی کمکم کنی؟", "یک سوال از من بپرس"]);
-            }
-            
-            setTextMessages([{ role: 'model', text: cleanText }]);
-            setSessionState('active');
-            sessionStartTimeRef.current = Date.now();
+             // Initial greeting
+             const response = await sendChatMessage(
+                [], 
+                "سلام، لطفا خودت را معرفی کن.",
+                systemInstruction
+             );
+             setTextMessages([{ role: 'model', text: response.text || '' }]);
+             setSessionState('active');
+             sessionStartTimeRef.current = Date.now();
         } catch (e) {
             console.error(e);
             setError(getFallbackMessage('chat'));
@@ -552,37 +509,31 @@ const MeaningCompanionView: React.FC = () => {
 
     const handleSendTextMessage = async (text?: string) => {
         const msgToSend = text || textInput;
-        if (!msgToSend.trim() || isTextLoading || !textChatRef.current) return;
+        if (!msgToSend.trim() || isTextLoading) return;
         
         const userMessage: ChatMessage = { role: 'user', text: msgToSend.trim() };
-        setTextMessages(prev => [...prev, userMessage, { role: 'model', text: '' }]);
+        setTextMessages(prev => [...prev, userMessage]);
         setTextInput('');
-        setSuggestions([]); // Clear suggestions while loading
+        setSuggestions([]); 
         setIsTextLoading(true);
 
         try {
-            const stream = await textChatRef.current.sendMessageStream({ message: userMessage.text });
-            let modelResponse = '';
-            for await (const chunk of stream) {
-                modelResponse += chunk.text;
-                setTextMessages(prev => {
-                    const newMessages = [...prev];
-                    newMessages[newMessages.length - 1] = { role: 'model', text: modelResponse.replace(/\[OPTIONS:.*?\]/, '') };
-                    return newMessages;
-                });
-            }
+            const response = await sendChatMessage(textMessages, userMessage.text, systemInstruction);
+            const responseText = response.text || '';
             
-            const optionsMatch = modelResponse.match(/\[OPTIONS:(.*?)\]/);
+            const optionsMatch = responseText.match(/\[OPTIONS:(.*?)\]/);
             if (optionsMatch) {
                 const opts = optionsMatch[1].split('|').map(s => s.trim());
                 setSuggestions(opts);
             } else {
                 setSuggestions([]);
             }
+            const cleanText = responseText.replace(/\[OPTIONS:.*?\]/, '').trim();
+            setTextMessages(prev => [...prev, { role: 'model', text: cleanText }]);
+
         } catch (e) { 
             console.error(e); 
             setError(getFallbackMessage('chat')); 
-            setTextMessages(prev => prev.slice(0, -2));
         } finally { 
             setIsTextLoading(false); 
         }
@@ -628,8 +579,8 @@ const MeaningCompanionView: React.FC = () => {
                             </div>
                             <span className="text-lg font-semibold text-white">گفتگو با صدا (زنده)</span>
                         </button>
-                        <button onClick={startTextSession} className="p-10 bg-[#242F3D] hover:bg-[#2b5278] rounded-2xl transition-colors flex flex-col items-center gap-4 group border border-gray-700">
-                            <div className="bg-blue-600 p-6 rounded-full group-hover:scale-110 transition-transform shadow-lg">
+                        <button onClick={startTextSession} className="p-10 bg-[#242F3D] hover:bg-[#2b5278] rounded-2xl transition-colors flex flex-col items-center gap-4 group border border-gray-700 hover:border-blue-500">
+                            <div className="bg-[#2b5278] p-4 rounded-full group-hover:scale-110 transition-transform">
                                 <ChatBubbleOvalLeftEllipsisIcon className="w-12 h-12 text-white" />
                             </div>
                             <div className="text-center">
@@ -687,7 +638,7 @@ const MeaningCompanionView: React.FC = () => {
                                             : 'bg-[#182533] text-white rounded-2xl rounded-bl-sm'
                                         }`}
                                     >
-                                        {msg.text}
+                                        <AIContentRenderer content={msg.text} />
                                         {isMe && (
                                             <div className="flex justify-end mt-1">
                                                  <DoubleCheckIcon className="w-3 h-3 text-blue-300" />

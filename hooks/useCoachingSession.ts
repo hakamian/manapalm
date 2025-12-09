@@ -1,16 +1,14 @@
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { ChatMessage, CoachingRole } from '../types';
-import { GoogleGenAI, Chat } from '@google/genai';
-import { getFallbackMessage, getGeminiApiKey } from '../services/ai/core'; // Updated import
+import { sendChatMessage } from '../services/geminiService';
 
-export const useCoachingSession = (role: CoachingRole, topic: string) => { // Removed apiKey prop
+export const useCoachingSession = (role: CoachingRole, topic: string) => {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [isThinking, setIsThinking] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [suggestions, setSuggestions] = useState<string[]>([]);
-    const chatSessionRef = useRef<Chat | null>(null);
 
     const systemInstruction = `
     ROLE: You are 'Rahnavard' (رهنورد), a world-class Business Mentor and Strategist.
@@ -40,24 +38,18 @@ export const useCoachingSession = (role: CoachingRole, topic: string) => { // Re
     `;
 
     const initChat = async (initialHistory: ChatMessage[] = []) => {
-        const apiKey = getGeminiApiKey();
-        if (!apiKey) {
-            setError('خطا: کلید API یافت نشد. لطفا تنظیمات را بررسی کنید.');
-            return;
-        }
-
         setIsThinking(true);
-        setMessages(initialHistory);
+        setError(null);
+        
         try {
-            const ai = new GoogleGenAI({ apiKey });
-            const chat = ai.chats.create({ 
-                model: 'gemini-3-pro-preview', 
-                config: { systemInstruction } 
-            });
-            chatSessionRef.current = chat;
-            
             if (initialHistory.length === 0) {
-                const response = await chat.sendMessage({ message: "Start the session. Greet the user warmly based on the topic and ask a powerful opening question." });
+                // Initial kick-off message to the model to start the conversation
+                const response = await sendChatMessage(
+                    [], 
+                    "Start the session. Greet the user warmly based on the topic and ask a powerful opening question.", 
+                    systemInstruction
+                );
+                
                 const text = response.text || '';
                 
                 // Parse options
@@ -70,6 +62,8 @@ export const useCoachingSession = (role: CoachingRole, topic: string) => { // Re
                 // Remove options tag from display text
                 const cleanText = text.replace(/\[OPTIONS:.*?\]/, '').trim();
                 setMessages([{ role: 'model', text: cleanText }]);
+            } else {
+                setMessages(initialHistory);
             }
         } catch (e) {
             console.error(e);
@@ -80,15 +74,17 @@ export const useCoachingSession = (role: CoachingRole, topic: string) => { // Re
     };
 
     const sendMessage = async (text: string) => {
-        if (!text.trim() || isThinking || !chatSessionRef.current) return;
+        if (!text.trim() || isThinking) return;
         
         const userMsg: ChatMessage = { role: 'user', text };
-        setMessages(prev => [...prev, userMsg]);
+        const newHistory = [...messages, userMsg];
+        setMessages(newHistory);
         setSuggestions([]); // Clear suggestions
         setIsThinking(true);
+        setError(null);
         
         try {
-            const response = await chatSessionRef.current.sendMessage({ message: text });
+            const response = await sendChatMessage(messages, text, systemInstruction);
             const responseText = response.text || '';
 
             // Parse options
@@ -105,7 +101,8 @@ export const useCoachingSession = (role: CoachingRole, topic: string) => { // Re
 
             setMessages(prev => [...prev, { role: 'model', text: cleanText }]);
         } catch (e) {
-            setError('خطا در ارسال پیام.');
+            console.error(e);
+            setError('خطا در ارسال پیام. لطفا اتصال اینترنت را بررسی کنید.');
         } finally {
             setIsThinking(false);
         }
