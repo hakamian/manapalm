@@ -17,8 +17,13 @@ const getEnv = (key: string) => {
 };
 
 // --- CONFIGURATION ---
-const DEFAULT_URL = 'https://sbjrayzghjfsmmuygwbw.supabase.co';
+const DEFAULT_URL = 'https://sbjrayzghjfsmmuygwbw.supabase.co'; // Correct URL (uyg)
 const DEFAULT_KEY = 'sb_publishable_A7_rHrRypeOVpMKyEDEd2w_x_msAcBi';
+
+// Typos or old URLs to automatically clean up from user's cache
+const BAD_URLS = [
+    'https://sbjrayzghjfsmmuugwbw.supabase.co', // The typo version
+];
 
 let supabaseUrl = getEnv('VITE_SUPABASE_URL') || DEFAULT_URL;
 let supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY') || DEFAULT_KEY;
@@ -28,8 +33,16 @@ if (typeof window !== 'undefined') {
     const storedUrl = localStorage.getItem('VITE_SUPABASE_URL');
     const storedKey = localStorage.getItem('VITE_SUPABASE_ANON_KEY');
     
-    if (storedUrl) supabaseUrl = storedUrl;
-    if (storedKey) supabaseAnonKey = storedKey;
+    // Auto-fix: Check if stored URL is one of the known bad ones
+    if (storedUrl && BAD_URLS.includes(storedUrl)) {
+        console.warn("Detected incorrect Supabase URL in cache. Cleaning up...");
+        localStorage.removeItem('VITE_SUPABASE_URL');
+        localStorage.removeItem('VITE_SUPABASE_ANON_KEY');
+        // Force reload to apply clean state might be needed, but for now we just ignore the stored value
+    } else {
+        if (storedUrl) supabaseUrl = storedUrl;
+        if (storedKey) supabaseAnonKey = storedKey;
+    }
 }
 
 const isConfigured = supabaseUrl && supabaseAnonKey && supabaseUrl.startsWith('http');
