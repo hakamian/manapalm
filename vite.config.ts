@@ -39,7 +39,7 @@ export default defineConfig(({ mode }) => {
         outDir: 'dist',
         assetsDir: 'assets',
         sourcemap: false,
-        chunkSizeWarningLimit: 500,
+        chunkSizeWarningLimit: 1000, // Increased limit to suppress warnings for large vendor chunks
         rollupOptions: {
           output: {
             manualChunks: (id) => {

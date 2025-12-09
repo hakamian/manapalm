@@ -23,7 +23,7 @@ import {
     SparklesIcon, LightBulbIcon, ChatBubbleLeftRightIcon, ChartBarIcon, UserGroupIcon, CpuChipIcon, TrophyIcon, HeartIcon,
     TrashIcon, PencilIcon, ArrowPathIcon, ArrowTrendingUpIcon, FunnelIcon, MegaphoneIcon, BullseyeIcon, UserFrownIcon,
     ChevronDownIcon, RadarIcon, CogIcon, SaplingIcon, TreeIcon, MatureTreeIcon, PencilSquareIcon, PaperAirplaneIcon,
-    SunIcon, CheckCircleIcon, XMarkIcon, CalculatorIcon, ShieldExclamationIcon, PhotoIcon, ShoppingCartIcon, AcademicCapIcon
+    SunIcon, CheckCircleIcon, XMarkIcon, CalculatorIcon, ShieldExclamationIcon
 } from './icons';
 import BarChartDisplay from './BarChartDisplay';
 import ActionableDraftCard from './ActionableDraftCard';
@@ -109,8 +109,8 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
     const tabs = [ 
         { id: 'pulse', label: 'داشبورد پالس', icon: <PresentationChartLineIcon className="w-5 h-5" /> }, 
         { id: 'economy', label: 'اقتصاد واحد', icon: <CalculatorIcon className="w-5 h-5" /> },
-        { id: 'shop_manager', label: 'مدیریت فروشگاه', icon: <ShoppingCartIcon className="w-5 h-5" /> }, 
-        { id: 'academies', label: 'مدیریت آکادمی‌ها', icon: <AcademicCapIcon className="w-5 h-5" /> }, 
+        { id: 'shop_manager', label: 'مدیریت فروشگاه', icon: <BoxIcon className="w-5 h-5" /> }, 
+        { id: 'academies', label: 'مدیریت آکادمی‌ها', icon: <ArrowUpIcon className="w-5 h-5" /> }, 
         { id: 'community', label: 'هاب جامعه و معنا', icon: <HeartIcon className="w-5 h-5" /> }, 
         { id: 'growth', label: 'موتور رشد', icon: <ChartBarIcon className="w-5 h-5" /> }, 
         { id: 'gamification', label: 'کنترل گیمیفیکیشن', icon: <TrophyIcon className="w-5 h-5" /> }, 
