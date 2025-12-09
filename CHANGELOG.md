@@ -1,37 +1,39 @@
 
 # Changelog
 
-All notable changes to this project will be documented in this file.
+تمام تغییرات قابل توجه پروژه "نخلستان معنا" در این فایل ثبت می‌شود.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+این پروژه از [Semantic Versioning](https://semver.org/spec/v2.0.0.html) پیروی می‌کند.
 
-## [0.1.0] - 2024-08-15 (User Version: 0815/18)
+## [0.1.0] - 1403/05/25 (نسخه نمایشی پیشرفته)
 
-### Added
+این نسخه، زیرساخت‌های اصلی را برای تبدیل شدن به یک PWA کامل و هوشمند فراهم می‌کند. تمرکز اصلی بر روی جداسازی لایه داده، امنیت هوش مصنوعی و ایجاد داشبوردهای مدیریتی بوده است.
 
-- **Initial Professional Versioning**: Established `package.json` and `CHANGELOG.md` to track project history.
-- **Interactive Homepage**: Implemented the "Interactive Meaning Finder" to personalize the landing experience for new users.
-- **Unified User Dashboard ("Living Garden")**: Merged the "My Garden" and "Profile" pages into a single, immersive, narrative-driven timeline of the user's journey.
-- **Strategic Command Center (Admin Panel)**:
-    - **Smart Board Meeting**: Created a multi-persona AI advisory council for strategic analysis and actionable outcomes, including generating meeting minutes.
-    - **Growth & Analytics Dashboard**:
-        - Activated the dashboard with key metrics on user growth and engagement.
-        - Implemented **User Segmentation Analysis** (Champions, Rising Stars, At-Risk).
-        - Added **Golden Path Analysis** for all user segments to understand user journeys.
-        - Created the **User Lifecycle Funnel** for a high-level strategic overview.
-        - Added the **AI Growth Engine** for defining predictive nudging rules.
-    - **User Management with Potential Score**: Enhanced the user list with a predictive "User Potential Score" to prioritize engagement efforts.
-- **Comprehensive Component Library**: Built out a wide range of reusable UI components for modals, notifications, navigation, and various feature pages.
-- **PWA & Offline Support**: Implemented a service worker for basic offline functionality.
-- **Domain Configuration**: Updated all internal links and SEO metadata to reflect `manapalm.com`.
+### 🌟 ویژگی‌های برجسته (Highlights)
+- **داشبورد هوشمند:** راه‌اندازی «باغ زنده» که با فعالیت کاربر رشد می‌کند و تغییر فصل می‌دهد.
+- **مشاوران AI:** اضافه شدن ۵ شخصیت هوشمند (استراتژیست، مالی، مارکتینگ و...) برای مدیریت کسب‌وکار در پنل ادمین.
+- **زیرساخت ترکیبی:** معماری `dbAdapter` برای سوییچ آنی بین داده‌های دمو و دیتابیس واقعی (Supabase).
 
-### Changed
-- **Navigation Structure**: Refactored `Header.tsx` and `BottomNavBar.tsx` to use the unified `siteConfig` for consistent navigation.
-- **Database Logic**: Centralized data access in `dbAdapter.ts` to allow easy switching between Mock Data and Supabase.
-- **Gemini Integration**: Updated API calls to use the secure Proxy pattern (ready for server-side implementation).
+### 🏗 تغییرات به تفکیک بخش‌ها (By Scope)
 
-### Fixed
-- **Mobile Responsiveness**: Adjusted grid layouts and padding for better display on mobile devices.
-- **Icon Consistency**: Standardized icon usage across the application using `icons/index.tsx`.
+#### 🛒 فروشگاه و محصول (Shop)
+- **Feat:** سیستم محاسبه اقساط پویا بر اساس امتیاز گیمیفیکیشن کاربر.
+- **UI:** اضافه شدن افکت‌های Glassmorphism و انیمیشن‌های تعاملی به کارت‌های محصول.
+- **Feat:** قابلیت "خرید گروهی" (Crowdfunding) برای محصولات گران‌قیمت.
 
+#### 🎓 آکادمی و آموزش (Academy)
+- **Feat:** موتور تولید کورس (Omni-Course) با پشتیبانی از ورودی PDF، ویدیو و صدا.
+- **Feat:** اضافه شدن آزمون‌های شخصیت‌شناسی (DISC, Enneagram) برای شخصی‌سازی مسیر یادگیری.
+- **UI:** طراحی مجدد صفحه "مسیر معنا" با نمودارهای پیشرفت بصری.
+
+#### ⚙️ هسته و زیرساخت (Core)
+- **Chore:** پیاده‌سازی الگوی Proxy در `api/proxy.js` برای مخفی‌سازی کلیدهای API گوگل.
+- **Refactor:** بازنویسی کامل مدیریت وضعیت با `AppContext` برای کاهش پیچیدگی.
+- **Feat:** اضافه شدن Service Worker برای قابلیت نصب (PWA) و کشینگ آفلاین.
+- **Security:** افزودن سیستم تشخیص تقلب (Fraud Detection) مبتنی بر هوش مصنوعی.
+
+#### 📡 ارتباطات (Community)
+- **Feat:** سیستم چت‌روم زنده با قابلیت تشخیص گفتار (Live API) برای "همراه معنا".
+- **Feat:** سیستم نوتیفیکیشن‌های هوشمند بر اساس فعالیت کاربر.
+
+---

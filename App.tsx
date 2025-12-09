@@ -13,7 +13,8 @@ import LiveActivityBanner from './components/LiveActivityBanner';
 import AIChatWidget from './components/AIChatWidget';
 import MeaningCompanionWidget from './components/MeaningCompanionWidget';
 import BottomNavBar from './components/BottomNavBar';
-import CommandPalette from './components/CommandPalette'; // New Import
+import CommandPalette from './components/CommandPalette';
+import WhatsNewModal from './components/WhatsNewModal'; // New Import
 import { supabase } from './services/supabaseClient';
 import { useRouteSync } from './hooks/useRouteSync';
 import SEOIndex from './components/seo/SEOIndex';
@@ -212,6 +213,7 @@ const App: React.FC = () => {
 
             <SEOIndex products={products} />
             <WelcomeTour />
+            <WhatsNewModal /> {/* New Component Added Here */}
             <LiveActivityBanner />
             <Header />
             
