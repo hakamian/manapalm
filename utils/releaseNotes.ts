@@ -1,17 +1,20 @@
 
-import { SparklesIcon, CogIcon, ShoppingCartIcon, AcademicCapIcon, UsersIcon } from '../components/icons';
+import { SparklesIcon, CogIcon, ShoppingCartIcon, AcademicCapIcon, UsersIcon, ShieldCheckIcon } from '../components/icons';
+
+export interface Feature {
+    category: string;
+    icon: any;
+    items: string[];
+    audience: 'all' | 'admin'; // 'all' for everyone, 'admin' for admins/devs only
+}
 
 export interface ReleaseNote {
     version: string;
     date: string;
     title: string;
     description: string;
-    features: {
-        category: string;
-        icon: any;
-        items: string[];
-    }[];
-    isMajor: boolean; // If true, automatically show modal on first visit
+    features: Feature[];
+    isMajor: boolean; 
 }
 
 export const RELEASE_NOTES: ReleaseNote[] = [
@@ -23,28 +26,41 @@ export const RELEASE_NOTES: ReleaseNote[] = [
         isMajor: true,
         features: [
             {
-                category: 'هوش مصنوعی',
+                category: 'هوش مصنوعی (برای همه)',
                 icon: SparklesIcon,
+                audience: 'all',
                 items: [
-                    'اضافه شدن ۵ مشاور تخصصی در پنل مدیریت',
                     'قابلیت گفتگو با اسناد (PDF/Audio) در استودیو',
-                    'تولید خودکار دوره‌های آموزشی از روی ویدیوهای یوتیوب'
+                    'دستیار نویسنده هوشمند برای خلق داستان نخل'
                 ]
             },
             {
                 category: 'فروشگاه',
                 icon: ShoppingCartIcon,
+                audience: 'all',
                 items: [
                     'خرید اقساطی بر اساس اعتبار امتیاز شما',
                     'امکان خرید گروهی (Crowdfunding) برای هدایا'
                 ]
             },
             {
-                category: 'زیرساخت',
+                category: 'پنل مدیریت (ویژه مدیران)',
+                icon: ShieldCheckIcon,
+                audience: 'admin',
+                items: [
+                    'اضافه شدن ۵ مشاور تخصصی در پنل ادمین',
+                    'داشبورد تحلیل احساسات کاربران',
+                    'سیستم تشخیص تقلب (Fraud Detection)'
+                ]
+            },
+            {
+                category: 'زیرساخت فنی',
                 icon: CogIcon,
+                audience: 'admin',
                 items: [
                     'افزایش امنیت و سرعت با معماری جدید',
-                    'قابلیت نصب برنامه روی موبایل (PWA)'
+                    'بهینه‌سازی دیتابیس برای لود سریع‌تر',
+                    'اتصال پروکسی برای هوش مصنوعی'
                 ]
             }
         ]

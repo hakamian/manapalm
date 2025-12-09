@@ -1,32 +1,46 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { getLatestRelease } from '../utils/releaseNotes';
 import Modal from './Modal';
-import { SparklesIcon, CheckCircleIcon, RocketLaunchIcon } from './icons';
+import { RocketLaunchIcon, CheckCircleIcon } from './icons';
+import { useAppState } from '../AppContext';
 
-interface WhatsNewModalProps {
-    // No props needed, it manages its own visibility based on local storage
-}
-
-const WhatsNewModal: React.FC<WhatsNewModalProps> = () => {
+const WhatsNewModal: React.FC = () => {
+    const { user } = useAppState();
     const [isOpen, setIsOpen] = useState(false);
     const latest = getLatestRelease();
 
+    // Filter features based on user role
+    const visibleFeatures = useMemo(() => {
+        if (!latest) return [];
+        return latest.features.filter(feature => {
+            if (feature.audience === 'all') return true;
+            if (feature.audience === 'admin' && user?.isAdmin) return true;
+            return false;
+        });
+    }, [latest, user]);
+
     useEffect(() => {
+        if (!latest) return;
+        
+        // Don't show modal if there are no visible features for this user
+        if (visibleFeatures.length === 0) return;
+
         const lastSeenVersion = localStorage.getItem('last_seen_version');
+        
+        // Show if version changed AND it's a major update
         if (lastSeenVersion !== latest.version && latest.isMajor) {
-            // Delay slightly for better UX
             const timer = setTimeout(() => setIsOpen(true), 2000);
             return () => clearTimeout(timer);
         }
-    }, [latest.version, latest.isMajor]);
+    }, [latest, visibleFeatures.length]);
 
     const handleClose = () => {
         localStorage.setItem('last_seen_version', latest.version);
         setIsOpen(false);
     };
 
-    if (!latest) return null;
+    if (!latest || visibleFeatures.length === 0) return null;
 
     return (
         <Modal isOpen={isOpen} onClose={handleClose}>
@@ -46,11 +60,16 @@ const WhatsNewModal: React.FC<WhatsNewModalProps> = () => {
 
                 {/* Body */}
                 <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                    {latest.features.map((feature, idx) => (
+                    {visibleFeatures.map((feature, idx) => (
                         <div key={idx}>
                             <h3 className="flex items-center gap-2 text-lg font-bold text-white mb-3">
                                 {React.createElement(feature.icon, { className: "w-5 h-5 text-amber-400" })}
                                 {feature.category}
+                                {feature.audience === 'admin' && (
+                                    <span className="text-[10px] bg-red-900/50 text-red-200 px-2 py-0.5 rounded border border-red-500/30">
+                                        محرمانه مدیران
+                                    </span>
+                                )}
                             </h3>
                             <ul className="space-y-2">
                                 {feature.items.map((item, i) => (
