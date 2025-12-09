@@ -19,7 +19,7 @@ const getEnv = (key: string) => {
 // --- CONFIGURATION ---
 // We use the provided credentials as defaults if environment variables are missing.
 
-const DEFAULT_URL = 'https://sbjrayzghjfsmmuugwbw.supabase.co';
+const DEFAULT_URL = 'https://sbjrayzghjfsmmuygwbw.supabase.co';
 const DEFAULT_KEY = 'sb_publishable_A7_rHrRypeOVpMKyEDEd2w_x_msAcBi';
 
 let supabaseUrl = getEnv('VITE_SUPABASE_URL') || DEFAULT_URL;
