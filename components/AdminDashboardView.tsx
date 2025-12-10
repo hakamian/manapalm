@@ -1,5 +1,5 @@
 
-<<<<<<< HEAD
+
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { User, Order, CommunityPost, OrderStatus, CartItem, Campaign, PalmType, ChatMessage, ProactiveReport, AdvisorType, IndividualOpinion, Suggestion, ArticleDraft, CommunityProject, ProjectUpdate } from '../types';
 import { useAppState, useAppDispatch } from '../AppContext';
