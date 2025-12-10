@@ -1,34 +1,14 @@
 
-import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { User, Order, CommunityPost, OrderStatus, CartItem, Campaign, PalmType, ChatMessage, ProactiveReport, AdvisorType, IndividualOpinion, Suggestion, ArticleDraft, CommunityProject, ProjectUpdate } from '../types';
-import { useAppState, useAppDispatch } from '../AppContext';
+import React, { useState, useMemo } from 'react';
+import { User, Order, CommunityPost, CartItem, Campaign, PalmType, CommunityProject, ProjectUpdate } from '../types';
+import { useAppState } from '../AppContext';
 import { 
-    getBoardMeetingAdvice, 
-    analyzeCommunitySentimentAndTopics, 
-    generateSegmentActionPlan, 
-    generateText, 
-    generateExecutionPlan, 
-    generateOpportunityRadarInsights, 
-    synthesizeDecisionFromOpinions, 
-    generateOperationalPlans, 
-    getAdvisorChatResponse, 
-    generateProactiveWeeklyReport,
-    getStrategicAdvice,
-    generateCampaignIdea,
-    generateArticleDraft
-} from '../services/geminiService';
-import { POINT_ALLOCATIONS, BARKAT_LEVELS } from '../services/gamificationService';
-import { 
-    PresentationChartLineIcon, BanknotesIcon, UsersIcon, BoxIcon, SproutIcon, ArrowUpIcon, ArrowDownIcon, 
-    SparklesIcon, LightBulbIcon, ChatBubbleLeftRightIcon, ChartBarIcon, UserGroupIcon, CpuChipIcon, TrophyIcon, HeartIcon,
-    TrashIcon, PencilIcon, ArrowPathIcon, ArrowTrendingUpIcon, FunnelIcon, MegaphoneIcon, BullseyeIcon, UserFrownIcon,
-    ChevronDownIcon, RadarIcon, CogIcon, SaplingIcon, TreeIcon, MatureTreeIcon, PencilSquareIcon, PaperAirplaneIcon,
-    SunIcon, CheckCircleIcon, XMarkIcon, CalculatorIcon, ShieldExclamationIcon
+    PresentationChartLineIcon, BoxIcon, SproutIcon, ArrowUpIcon, 
+    SparklesIcon, HeartIcon, ChartBarIcon, UserGroupIcon, CpuChipIcon, TrophyIcon, 
+    PencilSquareIcon, SunIcon, CogIcon, CalculatorIcon, ShieldExclamationIcon,
+    MegaphoneIcon, UsersIcon
 } from './icons';
-import BarChartDisplay from './BarChartDisplay';
-import ActionableDraftCard from './ActionableDraftCard';
-import SimpleBarChart from './SimpleBarChart';
-import SentimentTrend from './SentimentTrend';
+
 import AIInsightsDashboard from './admin/AIInsightsDashboard';
 import AdminAICoach from './admin/AdminAICoach';
 import ExecutiveDashboard from './admin/ExecutiveDashboard';
@@ -45,7 +25,6 @@ import UnitEconomicsDashboard from './admin/UnitEconomicsDashboard';
 import SecurityDashboard from './admin/SecurityDashboard';
 import AcademiesDashboard from './admin/AcademiesDashboard';
 import ShopManagement from './admin/ShopManagement'; 
-import { timeAgo } from '../utils/time';
 
 interface AdminDashboardViewProps {
     users: User[];

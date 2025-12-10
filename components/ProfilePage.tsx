@@ -3,17 +3,18 @@ import React, { useEffect } from 'react';
 import { useAppDispatch } from '../AppContext';
 import { View } from '../types';
 
-// This component acts as a redirector or alias to UserProfileView
-// to ensure file existence and valid export.
 const ProfilePage: React.FC = () => {
     const dispatch = useAppDispatch();
 
     useEffect(() => {
-        // Redirect to the canonical UserProfile view
         dispatch({ type: 'SET_VIEW', payload: View.UserProfile });
     }, [dispatch]);
 
-    return null;
+    return (
+        <div className="flex items-center justify-center h-screen bg-gray-900 text-white">
+            <p>در حال انتقال به پروفایل...</p>
+        </div>
+    );
 };
 
 export default ProfilePage;
