@@ -7,8 +7,8 @@ import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS, INITIAL_PRODUCTS } from '
 // This layer isolates the UI from the Data Source.
 // It automatically switches between Supabase (Real) and Dummy Data (Mock) based on configuration.
 
-// Helper to check if string is a valid UUID
-const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+// Helper to check if string is a valid UUID (REMOVED: We now use Text IDs)
+// const isUUID = (id: string) => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
 
 // Safe JSON parser
 const safeParse = (data: any, fallback: any) => {
@@ -122,7 +122,7 @@ export const dbAdapter = {
              return INITIAL_USERS.find(u => u.id === id) || null;
         }
         // If ID is not a UUID (e.g., mock IDs like 'user_1'), return mock data even if DB is connected
-        if (!isUUID(id)) return INITIAL_USERS.find(u => u.id === id) || null;
+        // if (!isUUID(id)) return INITIAL_USERS.find(u => u.id === id) || null;
         
         const { data, error } = await supabase!.from('profiles').select('*').eq('id', id).single();
         if (error || !data) return null;
@@ -135,7 +135,7 @@ export const dbAdapter = {
             return;
         }
         
-        if (!isUUID(user.id)) return; // Skip saving mock users to real DB
+        // if (!isUUID(user.id)) return; // Skip saving mock users to real DB
 
         const profileData = {
             id: user.id,
@@ -206,7 +206,7 @@ export const dbAdapter = {
          let query = supabase!.from('orders').select('*');
          
          if (userId) {
-             if (!isUUID(userId)) return INITIAL_ORDERS.filter(o => o.userId === userId);
+              if (userId.startsWith('user_')) return INITIAL_ORDERS.filter(o => o.userId === userId); // Mock user check
              query = query.eq('user_id', userId);
          }
          
@@ -231,10 +231,10 @@ export const dbAdapter = {
 
     async saveOrder(order: Order): Promise<void> {
         if (!this.isLive()) return;
-        if (!isUUID(order.userId)) return;
+        // if (!isUUID(order.userId)) return;
 
         const orderData = {
-            id: isUUID(order.id) ? order.id : undefined, // Let DB generate ID if not UUID
+            id: order.id, // (isUUID(order.id) ? order.id : undefined) -> Let DB handle ID or pass provided ID
             user_id: order.userId,
             total_amount: order.total,
             status: order.status,
@@ -275,7 +275,7 @@ export const dbAdapter = {
 
     async savePost(post: CommunityPost): Promise<void> {
         if (!this.isLive()) return;
-        if (!isUUID(post.authorId)) return;
+        // if (!isUUID(post.authorId)) return;
 
         const postData = {
             author_id: post.authorId,

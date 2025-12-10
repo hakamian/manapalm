@@ -2,24 +2,25 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { User, Order, CommunityPost, OrderStatus, CartItem, Campaign, PalmType, ChatMessage, ProactiveReport, AdvisorType, IndividualOpinion, Suggestion, ArticleDraft, CommunityProject, ProjectUpdate } from '../types';
 import { useAppState, useAppDispatch } from '../AppContext';
-import { 
-    getBoardMeetingAdvice, 
-    analyzeCommunitySentimentAndTopics, 
-    generateSegmentActionPlan, 
-    generateText, 
-    generateExecutionPlan, 
-    generateOpportunityRadarInsights, 
-    synthesizeDecisionFromOpinions, 
-    generateOperationalPlans, 
-    getAdvisorChatResponse, 
+import {
+    getBoardMeetingAdvice,
+    analyzeCommunitySentimentAndTopics,
+    generateSegmentActionPlan,
+    generateText,
+    generateExecutionPlan,
+    generateOpportunityRadarInsights,
+    synthesizeDecisionFromOpinions,
+    generateOperationalPlans,
+    getAdvisorChatResponse,
     generateProactiveWeeklyReport,
     getStrategicAdvice,
     generateCampaignIdea,
     generateArticleDraft
 } from '../services/geminiService';
 import { POINT_ALLOCATIONS, BARKAT_LEVELS } from '../services/gamificationService';
-import { 
-    PresentationChartLineIcon, BanknotesIcon, UsersIcon, BoxIcon, SproutIcon, ArrowUpIcon, ArrowDownIcon, 
+import { dbAdapter } from '../services/dbAdapter';
+import {
+    PresentationChartLineIcon, BanknotesIcon, UsersIcon, BoxIcon, SproutIcon, ArrowUpIcon, ArrowDownIcon,
     SparklesIcon, LightBulbIcon, ChatBubbleLeftRightIcon, ChartBarIcon, UserGroupIcon, CpuChipIcon, TrophyIcon, HeartIcon,
     TrashIcon, PencilIcon, ArrowPathIcon, ArrowTrendingUpIcon, FunnelIcon, MegaphoneIcon, BullseyeIcon, UserFrownIcon,
     ChevronDownIcon, RadarIcon, CogIcon, SaplingIcon, TreeIcon, MatureTreeIcon, PencilSquareIcon, PaperAirplaneIcon,
@@ -44,7 +45,7 @@ import SettingsDashboard from './admin/SettingsDashboard';
 import UnitEconomicsDashboard from './admin/UnitEconomicsDashboard';
 import SecurityDashboard from './admin/SecurityDashboard';
 import AcademiesDashboard from './admin/AcademiesDashboard';
-import ShopManagement from './admin/ShopManagement'; 
+import ShopManagement from './admin/ShopManagement';
 import { timeAgo } from '../utils/time';
 
 interface AdminDashboardViewProps {
@@ -61,6 +62,20 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
     const { mentorshipRequests } = useAppState();
     const [activeTab, setActiveTab] = useState('pulse');
     const [activeSubTab, setActiveSubTab] = useState<string>('users');
+    const [dbHealth, setDbHealth] = useState<{ status: string; color: string }>({ status: 'checking', color: 'bg-yellow-500/20 text-yellow-500' });
+
+    useEffect(() => {
+        checkDbHealth();
+    }, []);
+
+    const checkDbHealth = async () => {
+        const health = await dbAdapter.getSystemHealth();
+        if (health.status.includes('Healthy') || health.status.includes('Connected')) {
+            setDbHealth({ status: 'سیستم آنلاین (Live)', color: 'bg-green-500/20 text-green-400 border-green-500/50' });
+        } else {
+            setDbHealth({ status: 'حالت آفلاین (Mock)', color: 'bg-red-500/20 text-red-400 border-red-500/50' });
+        }
+    };
 
     const allInsights = useMemo(() => users.flatMap(u => u.timeline || []), [users]);
 
@@ -81,8 +96,8 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
     }, [orders, users]);
 
     const platformData = useMemo(() => ({
-        totalUsers: users.length, 
-        totalPalms: orders.reduce((acc, order) => acc + (order.deeds?.length || 0), 0), 
+        totalUsers: users.length,
+        totalPalms: orders.reduce((acc, order) => acc + (order.deeds?.length || 0), 0),
         totalRevenue: orders.reduce((acc, order) => acc + order.total, 0),
         recentPosts: posts.slice(0, 5).map(p => p.text),
         recentUserGoals: users.slice(0, 5).map(u => u.meaningGoal || '').filter(Boolean),
@@ -101,30 +116,30 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
     };
 
     const handleAddProjectUpdateWrapper = (projectId: string, update: Omit<ProjectUpdate, 'date'>) => {
-         if (onAddProjectUpdate) {
-             onAddProjectUpdate(projectId, update);
-         }
+        if (onAddProjectUpdate) {
+            onAddProjectUpdate(projectId, update);
+        }
     };
 
-    const tabs = [ 
-        { id: 'pulse', label: 'داشبورد پالس', icon: <PresentationChartLineIcon className="w-5 h-5" /> }, 
+    const tabs = [
+        { id: 'pulse', label: 'داشبورد پالس', icon: <PresentationChartLineIcon className="w-5 h-5" /> },
         { id: 'economy', label: 'اقتصاد واحد', icon: <CalculatorIcon className="w-5 h-5" /> },
-        { id: 'shop_manager', label: 'مدیریت فروشگاه', icon: <ShoppingCartIcon className="w-5 h-5" /> }, 
-        { id: 'academies', label: 'مدیریت آکادمی‌ها', icon: <AcademicCapIcon className="w-5 h-5" /> }, 
-        { id: 'community', label: 'هاب جامعه و معنا', icon: <HeartIcon className="w-5 h-5" /> }, 
-        { id: 'growth', label: 'موتور رشد', icon: <ChartBarIcon className="w-5 h-5" /> }, 
-        { id: 'gamification', label: 'کنترل گیمیفیکیشن', icon: <TrophyIcon className="w-5 h-5" /> }, 
-        { id: 'campaigns', label: 'کمپین‌ها', icon: <MegaphoneIcon className="w-5 h-5" /> }, 
-        { id: 'content_factory', label: 'کارخانه محتوا', icon: <PencilSquareIcon className="w-5 h-5" /> }, 
-        { id: 'ai_think_tank', label: 'اتاق فکر استراتژیک', icon: <UserGroupIcon className="w-5 h-5" /> }, 
-        { id: 'personal_journey', label: 'سفر شخصی', icon: <SunIcon className="w-5 h-5" /> }, 
-        { id: 'management', label: 'مدیریت', icon: <UsersIcon className="w-5 h-5" /> }, 
+        { id: 'shop_manager', label: 'مدیریت فروشگاه', icon: <ShoppingCartIcon className="w-5 h-5" /> },
+        { id: 'academies', label: 'مدیریت آکادمی‌ها', icon: <AcademicCapIcon className="w-5 h-5" /> },
+        { id: 'community', label: 'هاب جامعه و معنا', icon: <HeartIcon className="w-5 h-5" /> },
+        { id: 'growth', label: 'موتور رشد', icon: <ChartBarIcon className="w-5 h-5" /> },
+        { id: 'gamification', label: 'کنترل گیمیفیکیشن', icon: <TrophyIcon className="w-5 h-5" /> },
+        { id: 'campaigns', label: 'کمپین‌ها', icon: <MegaphoneIcon className="w-5 h-5" /> },
+        { id: 'content_factory', label: 'کارخانه محتوا', icon: <PencilSquareIcon className="w-5 h-5" /> },
+        { id: 'ai_think_tank', label: 'اتاق فکر استراتژیک', icon: <UserGroupIcon className="w-5 h-5" /> },
+        { id: 'personal_journey', label: 'سفر شخصی', icon: <SunIcon className="w-5 h-5" /> },
+        { id: 'management', label: 'مدیریت', icon: <UsersIcon className="w-5 h-5" /> },
         { id: 'security', label: 'امنیت و ریسک', icon: <ShieldExclamationIcon className="w-5 h-5" /> },
-        { id: 'api_management', label: 'مدیریت API', icon: <CpuChipIcon className="w-5 h-5" /> }, 
-        { id: 'ai_reports', label: 'گزارش‌های هوشمند', icon: <SparklesIcon className="w-5 h-5" /> }, 
-        { id: 'settings', label: 'تنظیمات', icon: <CogIcon className="w-5 h-5" /> } 
+        { id: 'api_management', label: 'مدیریت API', icon: <CpuChipIcon className="w-5 h-5" /> },
+        { id: 'ai_reports', label: 'گزارش‌های هوشمند', icon: <SparklesIcon className="w-5 h-5" /> },
+        { id: 'settings', label: 'تنظیمات', icon: <CogIcon className="w-5 h-5" /> }
     ];
-    
+
     return (
         <div className="bg-gray-900 text-white">
             <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
@@ -132,7 +147,12 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                 <div className="pt-22 pb-8">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
-                            <h1 className="text-4xl font-extrabold text-white tracking-tight">داشبورد ادمین</h1>
+                            <h1 className="text-4xl font-extrabold text-white tracking-tight flex items-center gap-4">
+                                داشبورد ادمین
+                                <button onClick={checkDbHealth} className={`text-xs px-3 py-1 rounded-full border ${dbHealth.color} cursor-pointer hover:opacity-80 transition-all`}>
+                                    {dbHealth.status}
+                                </button>
+                            </h1>
                             <p className="mt-1 text-lg text-gray-400">مرکز کنترل و تحلیل داده‌های نخلستان معنا</p>
                         </div>
                     </div>
@@ -144,11 +164,10 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`group p-4 rounded-xl border-2 flex flex-col items-center justify-center text-center transition-all duration-200 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 ${
-                                    activeTab === tab.id
+                                className={`group p-4 rounded-xl border-2 flex flex-col items-center justify-center text-center transition-all duration-200 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 ${activeTab === tab.id
                                         ? 'bg-green-800/50 border-green-600 text-white shadow-lg shadow-green-900/50'
                                         : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700/50 hover:border-gray-600'
-                                }`}
+                                    }`}
                             >
                                 {React.cloneElement(tab.icon, { className: 'w-7 h-7 mb-2 transition-transform duration-200 group-hover:scale-110' })}
                                 <span className="text-xs font-semibold leading-tight">{tab.label}</span>
@@ -159,13 +178,13 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
 
                 <main className="py-8">
                     {activeTab === 'pulse' && (
-                        <ExecutiveDashboard 
-                            allUsers={users} 
-                            allProjects={allProjects} 
-                            allInsights={allInsights} 
-                            mentorshipRequests={mentorshipRequests} 
-                            setActiveTab={(tab: any) => setActiveTab(tab)} 
-                            setActiveSubTab={(subTab: any) => setActiveSubTab(subTab)} 
+                        <ExecutiveDashboard
+                            allUsers={users}
+                            allProjects={allProjects}
+                            allInsights={allInsights}
+                            mentorshipRequests={mentorshipRequests}
+                            setActiveTab={(tab: any) => setActiveTab(tab)}
+                            setActiveSubTab={(subTab: any) => setActiveSubTab(subTab)}
                         />
                     )}
                     {activeTab === 'shop_manager' && <ShopManagement />}
@@ -177,23 +196,23 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                     {activeTab === 'campaigns' && <CampaignsDashboard campaign={campaign} platformData={platformData} />}
                     {activeTab === 'content_factory' && <ContentFactoryDashboard posts={posts} />}
                     {activeTab === 'ai_think_tank' && (
-                        <AdminAICoach 
-                            allUsers={users} 
-                            allInsights={allInsights} 
-                            allProjects={allProjects} 
-                            mentorshipRequests={mentorshipRequests} 
-                            onAddProjectUpdate={handleAddProjectUpdateWrapper} 
-                            onUpdateInsightStatus={handleUpdateInsightStatus} 
-                            onRespondToRequest={handleRespondToRequest} 
-                            onGrantPoints={handleGrantPoints} 
+                        <AdminAICoach
+                            allUsers={users}
+                            allInsights={allInsights}
+                            allProjects={allProjects}
+                            mentorshipRequests={mentorshipRequests}
+                            onAddProjectUpdate={handleAddProjectUpdateWrapper}
+                            onUpdateInsightStatus={handleUpdateInsightStatus}
+                            onRespondToRequest={handleRespondToRequest}
+                            onGrantPoints={handleGrantPoints}
                         />
                     )}
                     {activeTab === 'ai_reports' && (
-                        <AIInsightsDashboard 
-                            allInsights={allInsights} 
-                            allProjects={allProjects || []} 
-                            onUpdateInsightStatus={handleUpdateInsightStatus} 
-                            onAddProjectUpdate={handleAddProjectUpdateWrapper} 
+                        <AIInsightsDashboard
+                            allInsights={allInsights}
+                            allProjects={allProjects || []}
+                            onUpdateInsightStatus={handleUpdateInsightStatus}
+                            onAddProjectUpdate={handleAddProjectUpdateWrapper}
                         />
                     )}
                     {activeTab === 'personal_journey' && <PersonalJourneyDashboard />}

@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-12-10 (Day 1: Infrastructure & Studio)
+
+### 🌟 New Features
+- **Auto-CEO (Management)**: Added `ExecutiveDashboard` for strategic sales analysis and automated suggestions.
+- **Creation Studio**:
+    - **Omni-Converter**: New tool to convert content formats (`components/tools/OmniConverterTool.tsx`).
+    - **Knowledge Refiner (RAG)**: Structured knowledge distillation tool (`components/tools/KnowledgeRefinerTool.tsx`).
+
+### 🛠 Improvements
+- **Infrastructure**: Established separation between "AI Lab" and "Production Code".
+- **Database**: Addressed data type mismatches (UUID vs Text) for upcoming Supabase migration.
+
 ## [0.1.0] - 2024-08-15 (User Version: 0815/18)
 
 ### Added
