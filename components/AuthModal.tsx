@@ -258,21 +258,37 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     setIsLoading(true);
     setError('');
     
-    // Simulate Backend Assumption: If backend is ready, this would redirect.
-    // If we are in demo mode without keys, we simulate a successful callback.
-    if (!supabase) {
+    const simulateLogin = () => {
         setTimeout(() => {
              onLoginSuccess({
                 email: 'user@gmail.com',
-                fullName: 'کاربر گوگل',
+                fullName: 'کاربر گوگل (دمو)',
             });
             onClose();
             setIsLoading(false);
         }, 1500);
+    };
+
+    // 1. Check if Supabase client exists
+    if (!supabase) {
+        simulateLogin();
         return;
     }
 
+    // 2. Connectivity Check (Ping)
+    // We try to fetch the Supabase URL to see if it's reachable.
+    // If it fails (e.g. DNS error or Blocked), we switch to simulation immediately.
     try {
+        const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || "https://sbjrayzghjfsmmuygwbw.supabase.co";
+        // Short timeout for connectivity check
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 3000);
+        
+        // We just check if we can make a HEAD request or simple fetch without erroring on network
+        await fetch(supabaseUrl, { mode: 'no-cors', signal: controller.signal });
+        clearTimeout(timeoutId);
+        
+        // 3. If reachable, proceed with OAuth
         const { error } = await supabase.auth.signInWithOAuth({
             provider: 'google',
             options: {
@@ -284,19 +300,11 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
             }
         });
         if (error) throw error;
+
     } catch (e: any) {
-         // Fallback to simulation if config is bad
-        console.warn("Google Auth failed, switching to simulation:", e);
-        setTimeout(() => {
-             onLoginSuccess({
-                email: 'user@gmail.com',
-                fullName: 'کاربر گوگل',
-            });
-            onClose();
-        }, 1500);
-    } finally {
-         // Keep loading state until redirect happens or simulation finishes
-         // setIsLoading(false); 
+         // Fallback to simulation if config is bad OR network is unreachable
+        console.warn("Google Auth network/config failed, switching to simulation:", e);
+        simulateLogin();
     }
   };
 

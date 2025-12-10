@@ -1,4 +1,5 @@
 
+<<<<<<< HEAD
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { User, Order, CommunityPost, OrderStatus, CartItem, Campaign, PalmType, ChatMessage, ProactiveReport, AdvisorType, IndividualOpinion, Suggestion, ArticleDraft, CommunityProject, ProjectUpdate } from '../types';
 import { useAppState, useAppDispatch } from '../AppContext';
@@ -165,8 +166,8 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
                                 className={`group p-4 rounded-xl border-2 flex flex-col items-center justify-center text-center transition-all duration-200 transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-offset-2 focus:ring-offset-gray-900 ${activeTab === tab.id
-                                        ? 'bg-green-800/50 border-green-600 text-white shadow-lg shadow-green-900/50'
-                                        : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700/50 hover:border-gray-600'
+                                    ? 'bg-green-800/50 border-green-600 text-white shadow-lg shadow-green-900/50'
+                                    : 'bg-gray-800 border-gray-700 text-gray-400 hover:bg-gray-700/50 hover:border-gray-600'
                                     }`}
                             >
                                 {React.cloneElement(tab.icon, { className: 'w-7 h-7 mb-2 transition-transform duration-200 group-hover:scale-110' })}

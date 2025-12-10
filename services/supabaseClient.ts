@@ -17,27 +17,45 @@ const getEnv = (key: string) => {
 };
 
 // --- CONFIGURATION ---
-// We prioritize Environment Variables, then fall back to Hardcoded values for the MVP.
-// SECURITY NOTE: We ONLY use the 'Publishable Key' here. Never expose the 'Secret Key' in frontend code.
+// The CORRECT URL has 'uyg' in it. The typo was 'uug'.
+const DEFAULT_URL = 'https://sbjrayzghjfsmmuygwbw.supabase.co'; 
+const DEFAULT_KEY = 'sb_publishable_A7_rHrRypeOVpMKyEDEd2w_x_msAcBi'; // Replace with env var in prod
 
-const PROVIDED_SUPABASE_URL = "https://sbjrayzghjfsmmuygwbw.supabase.co";
-const PROVIDED_ANON_KEY = "sb_publishable_A7_rHrRypeOVpMKyEDEd2w_x_msAcBi";
+// Known bad URLs to automatically clean up from user's cache
+const BAD_URLS = [
+    'https://sbjrayzghjfsmmuugwbw.supabase.co', // The typo version (uug)
+];
 
-// Load configuration
-let supabaseUrl = getEnv('VITE_SUPABASE_URL') || PROVIDED_SUPABASE_URL;
-let supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY') || PROVIDED_ANON_KEY;
+let supabaseUrl = getEnv('VITE_SUPABASE_URL') || DEFAULT_URL;
+let supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY') || DEFAULT_KEY;
 
-// Fallback to LocalStorage (Manual Setup via UI if needed)
+// Fallback to LocalStorage with Auto-Fix
 if (typeof window !== 'undefined') {
     const storedUrl = localStorage.getItem('VITE_SUPABASE_URL');
     const storedKey = localStorage.getItem('VITE_SUPABASE_ANON_KEY');
     
-    if (storedUrl) supabaseUrl = storedUrl;
-    if (storedKey) supabaseAnonKey = storedKey;
+    // Auto-fix: Check if stored URL is one of the known bad ones OR contains the specific typo
+    const isBadUrl = storedUrl && (BAD_URLS.includes(storedUrl) || storedUrl.includes('uugwbw'));
+
+    if (isBadUrl) {
+        console.warn("⚠️ Detected incorrect Supabase URL in cache (uug). Cleaning up and enforcing correct URL (uyg)...");
+        localStorage.removeItem('VITE_SUPABASE_URL');
+        localStorage.removeItem('VITE_SUPABASE_ANON_KEY');
+        supabaseUrl = DEFAULT_URL; // Force correct URL immediately
+    } else {
+        if (storedUrl) supabaseUrl = storedUrl;
+        if (storedKey) supabaseAnonKey = storedKey;
+    }
 }
 
-// Initialize Supabase Client ONLY if key is present
-export const supabase: SupabaseClient | null = (supabaseUrl && supabaseAnonKey)
+const isConfigured = supabaseUrl && supabaseAnonKey && supabaseUrl.startsWith('http');
+
+if (!isConfigured) {
+    console.warn("Supabase credentials missing. App running in offline/demo mode.");
+}
+
+// Initialize Supabase Client
+export const supabase: SupabaseClient | null = isConfigured
   ? createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
           persistSession: true,

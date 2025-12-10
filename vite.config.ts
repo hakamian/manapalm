@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
         proxy: {
           // Tunneling Supabase requests to bypass client-side restrictions
           '/supaproxy': {
-            target: 'https://sbjrayzghjfsmmuygwbw.supabase.co',
+            target: 'https://sbjrayzghjfsmmuygwbw.supabase.co', // Correct URL (uyg)
             changeOrigin: true,
             secure: false,
             rewrite: (path) => path.replace(/^\/supaproxy/, ''),
@@ -39,7 +39,7 @@ export default defineConfig(({ mode }) => {
         outDir: 'dist',
         assetsDir: 'assets',
         sourcemap: false,
-        chunkSizeWarningLimit: 500,
+        chunkSizeWarningLimit: 1000, // Increased limit to suppress warnings for large vendor chunks
         rollupOptions: {
           output: {
             manualChunks: (id) => {
