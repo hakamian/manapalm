@@ -77,20 +77,20 @@ CREATE TABLE public.agent_tasks (
 -- 7. SECURITY (RLS)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public profiles" ON public.profiles FOR SELECT USING (true);
-CREATE POLICY "Insert profiles" ON public.profiles FOR INSERT WITH CHECK (true);
-CREATE POLICY "Update profiles" ON public.profiles FOR UPDATE USING (true);
+CREATE POLICY "Insert profiles" ON public.profiles FOR INSERT WITH CHECK (auth.uid()::text = id);
+CREATE POLICY "Update own profile" ON public.profiles FOR UPDATE USING (auth.uid()::text = id);
 
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public products" ON public.products FOR SELECT USING (true);
 CREATE POLICY "Admin insert products" ON public.products FOR INSERT WITH CHECK (true);
 
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "View orders" ON public.orders FOR SELECT USING (true);
-CREATE POLICY "Insert orders" ON public.orders FOR INSERT WITH CHECK (true);
+CREATE POLICY "View own orders" ON public.orders FOR SELECT USING (auth.uid()::text = user_id);
+CREATE POLICY "Insert own orders" ON public.orders FOR INSERT WITH CHECK (auth.uid()::text = user_id);
 
 ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public posts" ON public.posts FOR SELECT USING (true);
-CREATE POLICY "Insert posts" ON public.posts FOR INSERT WITH CHECK (true);
+CREATE POLICY "Insert posts" ON public.posts FOR INSERT WITH CHECK (auth.uid()::text = author_id);
 
 ALTER TABLE public.agent_tasks ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Agent tasks public" ON public.agent_tasks FOR ALL USING (true);
