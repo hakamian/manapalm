@@ -17,28 +17,31 @@ const getEnv = (key: string) => {
 };
 
 // --- CONFIGURATION ---
-const DEFAULT_URL = 'https://sbjrayzghjfsmmuygwbw.supabase.co'; // Correct URL (uyg)
-const DEFAULT_KEY = 'sb_publishable_A7_rHrRypeOVpMKyEDEd2w_x_msAcBi';
+// The CORRECT URL has 'uyg' in it. The typo was 'uug'.
+const DEFAULT_URL = 'https://sbjrayzghjfsmmuygwbw.supabase.co'; 
+const DEFAULT_KEY = 'sb_publishable_A7_rHrRypeOVpMKyEDEd2w_x_msAcBi'; // Replace with env var in prod
 
-// Typos or old URLs to automatically clean up from user's cache
+// Known bad URLs to automatically clean up from user's cache
 const BAD_URLS = [
-    'https://sbjrayzghjfsmmuugwbw.supabase.co', // The typo version
+    'https://sbjrayzghjfsmmuugwbw.supabase.co', // The typo version (uug)
 ];
 
 let supabaseUrl = getEnv('VITE_SUPABASE_URL') || DEFAULT_URL;
 let supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY') || DEFAULT_KEY;
 
-// Fallback to LocalStorage
+// Fallback to LocalStorage with Auto-Fix
 if (typeof window !== 'undefined') {
     const storedUrl = localStorage.getItem('VITE_SUPABASE_URL');
     const storedKey = localStorage.getItem('VITE_SUPABASE_ANON_KEY');
     
-    // Auto-fix: Check if stored URL is one of the known bad ones
-    if (storedUrl && BAD_URLS.includes(storedUrl)) {
-        console.warn("Detected incorrect Supabase URL in cache. Cleaning up...");
+    // Auto-fix: Check if stored URL is one of the known bad ones OR contains the specific typo
+    const isBadUrl = storedUrl && (BAD_URLS.includes(storedUrl) || storedUrl.includes('uugwbw'));
+
+    if (isBadUrl) {
+        console.warn("⚠️ Detected incorrect Supabase URL in cache (uug). Cleaning up and enforcing correct URL (uyg)...");
         localStorage.removeItem('VITE_SUPABASE_URL');
         localStorage.removeItem('VITE_SUPABASE_ANON_KEY');
-        // Force reload to apply clean state might be needed, but for now we just ignore the stored value
+        supabaseUrl = DEFAULT_URL; // Force correct URL immediately
     } else {
         if (storedUrl) supabaseUrl = storedUrl;
         if (storedKey) supabaseAnonKey = storedKey;

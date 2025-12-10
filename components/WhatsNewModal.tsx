@@ -27,6 +27,17 @@ const WhatsNewModal: React.FC = () => {
         if (visibleFeatures.length === 0) return;
 
         const lastSeenVersion = localStorage.getItem('last_seen_version');
+        const hasSeenTour = localStorage.getItem('has_seen_onboarding_tour_v1');
+
+        // CRITICAL FIX: If user hasn't seen the tour, they are "New".
+        // New users shouldn't see "What's New" (everything is new).
+        // We silently update the version so they don't see this specific update later.
+        if (!hasSeenTour) {
+             if (lastSeenVersion !== latest.version) {
+                 localStorage.setItem('last_seen_version', latest.version);
+             }
+             return;
+        }
         
         // Show if version changed AND it's a major update
         if (lastSeenVersion !== latest.version && latest.isMajor) {

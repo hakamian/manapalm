@@ -65,9 +65,17 @@ const WelcomeTour: React.FC = () => {
     useEffect(() => {
         // Check if tour has been seen
         const hasSeenTour = localStorage.getItem('has_seen_onboarding_tour_v1');
+        
         if (!hasSeenTour) {
-            // Delay start slightly to allow app to render
-            setTimeout(() => setIsVisible(true), 1500);
+            // Check if WelcomeMat (Home Intro) is likely displayed in this session
+            const hasSeenWelcomeMat = sessionStorage.getItem('hasSeenWelcomeMat');
+            
+            // If Mat hasn't been seen/closed yet (new session), give it time (e.g. 5 seconds)
+            // If Mat has been seen (e.g. user refreshed or navigated back), start sooner (1.5s)
+            const delay = !hasSeenWelcomeMat ? 5000 : 1500;
+            
+            const timer = setTimeout(() => setIsVisible(true), delay);
+            return () => clearTimeout(timer);
         }
     }, []);
 
