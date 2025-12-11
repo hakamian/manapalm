@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { SparklesIcon, ArrowPathIcon, DocumentTextIcon, ClipboardIcon } from '../../../components/icons';
-import { convertContent } from '../../services/geminiService';
+import { convertContent } from '../../../services/geminiService';
 
 const OmniConverter: React.FC = () => {
     const [sourceText, setSourceText] = useState('');
