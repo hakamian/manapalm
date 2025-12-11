@@ -109,53 +109,62 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, user, 
                                     <span className="text-2xl font-bold text-white">{product.price.toLocaleString('fa-IR')} <span className="text-base font-normal">تومان</span></span>
                                 </div>
 
-                            </>
+                                <button
+                                    onClick={() => onAddToCart(product, selectedPlan || undefined)}
+                                    className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-3 px-6 rounded-xl font-bold transition-all shadow-lg hover:shadow-green-500/50 flex items-center justify-center gap-2"
+                                    disabled={product.stock === 0}
+                                >
+                                    {product.stock > 0 ? (
+                                        <>
+                                            <ArrowDownTrayIcon className="w-5 h-5" />
+                                            <span>افزودن به سبد</span>
+                                        </>
                                     ) : 'فعلاً موجود نیست'}
-                        </button>
-                        {(product.category === 'heritage' || product.price >= 5000000) && (
-                            <InstallmentSelector
-                                user={user}
-                                price={product.price}
-                                onSelectPlan={setSelectedPlan}
-                                selectedPlanId={selectedPlan?.id}
-                            />
-                        )}
+                                </button>
+                                {(product.category === 'heritage' || product.price >= 5000000) && (
+                                    <InstallmentSelector
+                                        user={user}
+                                        price={product.price}
+                                        onSelectPlan={setSelectedPlan}
+                                        selectedPlanId={selectedPlan?.id}
+                                    />
+                                )}
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
 
-            {/* Additional Info / Ritual Context */}
-            {(product.botanicalInfo || product.culturalSignificance) && (
-                <div className="bg-stone-950 p-6 md:p-8 border-t border-stone-800">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        {product.botanicalInfo && (
-                            <div>
-                                <h3 className="text-lg font-bold text-stone-300 mb-3 flex items-center gap-2">
-                                    <LeafIcon className="w-5 h-5 text-green-500" />
-                                    شناسنامه گیاه
-                                </h3>
-                                <ul className="space-y-2 text-sm text-stone-400">
-                                    <li><span className="text-stone-500">نام علمی:</span> {product.botanicalInfo.scientificName}</li>
-                                    <li><span className="text-stone-500">خاستگاه:</span> {product.botanicalInfo.origin}</li>
-                                    <li><span className="text-stone-500">ویژگی:</span> {product.botanicalInfo.fruitCharacteristics}</li>
-                                </ul>
+                    {/* Additional Info / Ritual Context */}
+                    {(product.botanicalInfo || product.culturalSignificance) && (
+                        <div className="bg-stone-950 p-6 md:p-8 border-t border-stone-800">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                {product.botanicalInfo && (
+                                    <div>
+                                        <h3 className="text-lg font-bold text-stone-300 mb-3 flex items-center gap-2">
+                                            <LeafIcon className="w-5 h-5 text-green-500" />
+                                            شناسنامه گیاه
+                                        </h3>
+                                        <ul className="space-y-2 text-sm text-stone-400">
+                                            <li><span className="text-stone-500">نام علمی:</span> {product.botanicalInfo.scientificName}</li>
+                                            <li><span className="text-stone-500">خاستگاه:</span> {product.botanicalInfo.origin}</li>
+                                            <li><span className="text-stone-500">ویژگی:</span> {product.botanicalInfo.fruitCharacteristics}</li>
+                                        </ul>
+                                    </div>
+                                )}
+                                {product.culturalSignificance && (
+                                    <div>
+                                        <h3 className="text-lg font-bold text-stone-300 mb-3 flex items-center gap-2">
+                                            <QuoteIcon className="w-5 h-5 text-amber-500" />
+                                            روح و معنا
+                                        </h3>
+                                        <p className="text-sm text-stone-400 leading-relaxed italic border-r-2 border-stone-700 pr-4">
+                                            "{product.culturalSignificance}"
+                                        </p>
+                                    </div>
+                                )}
                             </div>
-                        )}
-                        {product.culturalSignificance && (
-                            <div>
-                                <h3 className="text-lg font-bold text-stone-300 mb-3 flex items-center gap-2">
-                                    <QuoteIcon className="w-5 h-5 text-amber-500" />
-                                    روح و معنا
-                                </h3>
-                                <p className="text-sm text-stone-400 leading-relaxed italic border-r-2 border-stone-700 pr-4">
-                                    "{product.culturalSignificance}"
-                                </p>
-                            </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
-            )}
-        </div>
             </div >
         </div >
     );
