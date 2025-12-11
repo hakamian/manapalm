@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Product } from '../../../types';
-import { XMarkIcon, UsersIcon, LinkIcon, CheckCircleIcon } from '../../../components/icons';
+import { XMarkIcon, UsersIcon, LinkIcon, CheckCircleIcon } from '../../../../components/icons';
 
 interface CrowdfundModalProps {
     isOpen: boolean;

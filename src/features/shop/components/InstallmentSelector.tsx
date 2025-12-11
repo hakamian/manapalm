@@ -2,7 +2,7 @@
 import React from 'react';
 import { User } from '../../../types';
 import { PaymentPlan } from '../../../types/commerce'; // Ensure this type is exported
-import { BanknotesIcon, CheckCircleIcon, LockClosedIcon } from '../../../components/icons';
+import { BanknotesIcon, CheckCircleIcon, LockClosedIcon } from '../../../../components/icons';
 
 interface InstallmentSelectorProps {
     user: User | null;
