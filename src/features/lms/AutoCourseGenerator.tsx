@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { SparklesIcon, BookOpenIcon, ArrowPathIcon } from '../../../components/icons';
-import { LMSCourse } from '../../types/lms';
+import { LMSCourse } from '../../../types/lms';
 import { getAIAssistedText } from '../../../services/geminiService';
 
 interface AutoCourseGeneratorProps {

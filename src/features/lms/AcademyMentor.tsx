@@ -2,7 +2,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { SparklesIcon, XMarkIcon, PaperAirplaneIcon, UserCircleIcon, ChatBubbleLeftRightIcon } from '../../../components/icons';
 import { sendChatMessage } from '../../../services/geminiService';
-import { ChatMessage } from '../../types';
+import { ChatMessage } from '../../../types';
 
 interface AcademyMentorProps {
     courseTitle?: string;

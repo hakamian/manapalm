@@ -1,9 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { LMSCourse, CourseModule, Lesson } from '../../types/lms';
+import { LMSCourse, CourseModule, Lesson } from '../../../types/lms';
 import { PlayIcon, CheckCircleIcon, LockClosedIcon, LeafIcon } from '../../../components/icons';
-import { useAppState, useAppDispatch } from '../../AppContext';
-import SEOHead from '../../components/seo/SEOHead';
+import { useAppState, useAppDispatch } from '../../../AppContext';
+import SEOHead from '../../../components/seo/SEOHead';
 
 interface CoursePlayerProps {
     course: LMSCourse;
