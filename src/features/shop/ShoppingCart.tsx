@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { View, Order } from '../../../types';
 import { useAppState, useAppDispatch } from '../../../AppContext';
-import { XMarkIcon, ShoppingCartIcon, SproutIcon, TrophyIcon, SparklesIcon, MinusIcon, PlusIcon } from '../../../components/icons';
+import { XMarkIcon, ShoppingCartIcon, SproutIcon, TrophyIcon, SparklesIcon, MinusIcon, PlusIcon, CloudIcon, HeartIcon } from '../../../components/icons';
 
 const ShoppingCart: React.FC = () => {
   const { isCartOpen, cartItems, user } = useAppState();
@@ -205,51 +205,88 @@ const ShoppingCart: React.FC = () => {
                 </ul>
               </div>
 
-              <footer className="p-4 border-t border-gray-700 bg-gray-900 space-y-4">
-                {palmCount > 0 && (
-                  <div className="bg-green-900/40 border border-green-700 text-green-200 p-3 rounded-md text-center">
-                    <p className="flex items-center justify-center">
-                      <SproutIcon className="w-6 h-6 ml-2" />
-                      <span>با این خرید شما در کاشت <strong className="font-bold">{palmCount.toLocaleString('fa-IR')} نخل</strong> سهیم خواهید بود.</span>
-                    </p>
+              <footer className="p-0 bg-gray-900 space-y-0">
+                {/* Impact Dashboard */}
+                <div className="bg-gradient-to-br from-gray-800 to-gray-900 border-t border-gray-700 p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <div className="bg-green-500/20 p-2 rounded-full animate-pulse-slow">
+                        <SproutIcon className="w-5 h-5 text-green-400" />
+                      </div>
+                      <h4 className="text-gray-200 font-bold">اثرگذاری این خرید</h4>
+                    </div>
+                    <span className="text-xs text-gray-500 bg-gray-800 px-2 py-1 rounded-full border border-gray-700">Level 1: Seedling</span>
                   </div>
-                )}
-                <div className="flex justify-between items-center text-gray-300">
-                  <span className="flex items-center"><TrophyIcon className="w-5 h-5 ml-2 text-yellow-400" /> امتیاز دریافتی:</span>
-                  <span className="font-bold text-lg text-yellow-300">{formatPrice(totalPoints)}</span>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center text-green-300">
-                    <span className="font-semibold">جمع سرمایه‌گذاری اجتماعی:</span>
-                    <span className="font-bold text-lg">{formatPrice(subtotal * 0.9)} تومان</span>
+
+                  {/* Progress Bar */}
+                  <div className="mb-4">
+                    <div className="flex justify-between text-xs text-gray-400 mb-1">
+                      <span>تا کاشت نخل بعدی</span>
+                      <span>{(palmCount * 25)}%</span>
+                    </div>
+                    <div className="w-full bg-gray-700 rounded-full h-2.5 overflow-hidden">
+                      <div
+                        className="bg-gradient-to-r from-green-500 to-emerald-400 h-2.5 rounded-full transition-all duration-1000 ease-out"
+                        style={{ width: `${Math.min((palmCount * 25), 100)}%` }}
+                      ></div>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center text-white font-bold text-lg border-t border-gray-700 pt-2">
-                    <span className="text-lg">{hasInstallmentItem ? 'مبلغ پرداخت اولیه:' : 'جمع کل قابل پرداخت:'}</span>
-                    <span className="text-xl font-bold">{formatPrice(subtotal)} تومان</span>
+
+                  {/* Impact Metrics */}
+                  <div className="grid grid-cols-3 gap-2 mb-6">
+                    <div className="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700 hover:border-green-500/30 transition-colors">
+                      <CloudIcon className="w-5 h-5 text-blue-400 mx-auto mb-1" />
+                      <span className="block text-xs text-gray-400">هوای پاک</span>
+                      <span className="block text-sm font-bold text-gray-200">{(palmCount * 12).toLocaleString('fa-IR')} kg</span>
+                    </div>
+                    <div className="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700 hover:border-yellow-500/30 transition-colors">
+                      <TrophyIcon className="w-5 h-5 text-yellow-400 mx-auto mb-1" />
+                      <span className="block text-xs text-gray-400">امتیاز معنا</span>
+                      <span className="block text-sm font-bold text-gray-200">{totalPoints.toLocaleString('fa-IR')}</span>
+                    </div>
+                    <div className="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700 hover:border-orange-500/30 transition-colors">
+                      <HeartIcon className="w-5 h-5 text-orange-400 mx-auto mb-1" />
+                      <span className="block text-xs text-gray-400">حمایت</span>
+                      <span className="block text-sm font-bold text-gray-200">{(subtotal * 0.05).toLocaleString('fa-IR')} T</span>
+                    </div>
                   </div>
-                </div>
-                {user ? (
-                  <>
-                    {error && (
-                      <div className="bg-red-900/50 text-red-300 text-sm p-3 rounded-md" role="alert">
-                        {error}
+
+                  {/* Totals & Action */}
+                  <div className="space-y-3 pt-4 border-t border-gray-700/50">
+                    <div className="flex justify-between items-center text-gray-300 text-sm">
+                      <span>جمع کل خرید:</span>
+                      <span>{formatPrice(subtotal)} تومان</span>
+                    </div>
+                    <div className="flex justify-between items-center text-green-400 text-sm">
+                      <span>سرمایه‌گذاری اجتماعی (۹۰٪):</span>
+                      <span>{formatPrice(subtotal * 0.9)} تومان</span>
+                    </div>
+
+                    {user ? (
+                      <>
+                        {error && (
+                          <div className="bg-red-900/50 text-red-300 text-sm p-3 rounded-md animate-shake" role="alert">
+                            {error}
+                          </div>
+                        )}
+                        <button
+                          onClick={handleCheckout}
+                          className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold py-3.5 rounded-xl transition-all shadow-lg hover:shadow-green-500/20 active:scale-95 flex items-center justify-center gap-2 group"
+                        >
+                          <span>تکمیل خرید و کاشت</span>
+                          <SproutIcon className="w-5 h-5 group-hover:animate-bounce" />
+                        </button>
+                      </>
+                    ) : (
+                      <div className="text-center bg-gray-800 p-3 rounded-xl border border-gray-700">
+                        <p className="text-xs text-gray-400 mb-2">برای ثبت نخل به نام خودتان، وارد شوید.</p>
+                        <button onClick={() => { handleClose(); dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true }); }} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg transition-colors text-sm">
+                          ورود | ثبت نام
+                        </button>
                       </div>
                     )}
-                    <button
-                      onClick={handleCheckout}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-md transition-colors flex items-center justify-center"
-                    >
-                      تکمیل خرید و پرداخت
-                    </button>
-                  </>
-                ) : (
-                  <div className="text-center bg-gray-700 p-3 rounded-md">
-                    <p className="text-sm text-gray-300 mb-2">برای تکمیل خرید، لطفاً وارد حساب کاربری خود شوید.</p>
-                    <button onClick={() => { handleClose(); dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true }); }} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded-md transition-colors">
-                      ورود | ثبت نام
-                    </button>
                   </div>
-                )}
+                </div>
               </footer>
             </>
           ) : (
@@ -273,6 +310,9 @@ const ShoppingCart: React.FC = () => {
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 3px; }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #6b7280; }
         .animate-fade-in { animation: fadeIn 0.3s ease-in-out; }
+        .animate-pulse-slow { animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .animate-shake { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
     </>

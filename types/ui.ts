@@ -3,76 +3,77 @@ import React from 'react';
 import { User } from './user';
 
 export enum View {
-  Home = 'HOME',
-  About = 'ABOUT',
-  HallOfHeritage = 'HALL_OF_HERITAGE',
-  Shop = 'SHOP',
-  Courses = 'COURSES',
-  HerosJourney = 'HEROS_JOURNEY',
-  UserProfile = 'USER_PROFILE',
-  Corporate = 'CORPORATE',
-  OurGrove = 'OUR_GROVE',
-  MeaningCoachingScholarship = 'MEANING_COACHING_SCHOLARSHIP',
-  CompassUnlockChat = 'COMPASS_UNLOCK_CHAT',
-  PathOfMeaning = 'PATH_OF_MEANING',
-  CommunityHub = 'COMMUNITY_HUB',
-  Articles = 'ARTICLES',
-  AdminDashboard = 'ADMIN_DASHBOARD',
-  CoCreation = 'CO_CREATION',
-  DailyOasis = 'DAILY_OASIS',
-  DIRECT_MESSAGES = 'DIRECT_MESSAGES',
-  TransparencyDashboard = 'TRANSPARENCY_DASHBOARD',
-  Contact = 'CONTACT',
-  AIPortal = 'AI_PORTAL',
-  AI_CREATION_STUDIO = 'AI_CREATION_STUDIO',
-  AI_ACADEMY = 'AI_ACADEMY', 
-  LIFE_MASTERY_ACADEMY = 'LIFE_MASTERY_ACADEMY', 
-  MeaningCompanion = 'MEANING_COMPANION',
-  ENGLISH_ACADEMY = 'ENGLISH_ACADEMY',
-  ENGLISH_PLACEMENT_TEST = 'ENGLISH_PLACEMENT_TEST',
-  AI_CONVERSATION_PARTNER = 'AI_CONVERSATION_PARTNER',
-  VOCABULARY_BUILDER = 'VOCABULARY_BUILDER',
-  BUSINESS_ACADEMY = 'BUSINESS_ACADEMY',
-  BUSINESS_PROCESS_MODELER = 'BUSINESS_PROCESS_MODELER',
-  DISC_TEST = 'DISC_TEST',
-  ENNEAGRAM_TEST = 'ENNEAGRAM_TEST',
-  STRENGTHS_TEST = 'STRENGTHS_TEST',
-  IKIGAI_TEST = 'IKIGAI_TEST',
-  HEROS_JOURNEY_INTRO = 'HEROS_JOURNEY_INTRO',
-  COACHING_LAB = 'COACHING_LAB',
-  COACHING_SESSION = 'COACHING_SESSION',
-  'digital-heritage-architect' = 'DIGITAL_HERITAGE_ARCHITECT',
-  GiftConcierge = 'GIFT_CONCIERGE',
-  'living-heritage' = 'LIVING_HERITAGE',
-  'garden-of-heroes' = 'GARDEN_OF_HEROES',
-  'meaning-coach' = 'MEANING_COACH',
-  'community-projects' = 'COMMUNITY_PROJECTS',
-  Microfinance = 'MICROFINANCE',
-  SMART_CONSULTANT = 'SMART_CONSULTANT',
-  BUSINESS_MENTOR = 'BUSINESS_MENTOR',
-  'ai-tools' = 'AI_TOOLS',
-  PAYMENT_CALLBACK = 'PAYMENT_CALLBACK',
-  PublicStory = 'PUBLIC_STORY' // New View
+    Home = 'HOME',
+    About = 'ABOUT',
+    HallOfHeritage = 'HALL_OF_HERITAGE',
+    Shop = 'SHOP',
+    Courses = 'COURSES',
+    HerosJourney = 'HEROS_JOURNEY',
+    UserProfile = 'USER_PROFILE',
+    Corporate = 'CORPORATE',
+    OurGrove = 'OUR_GROVE',
+    MeaningCoachingScholarship = 'MEANING_COACHING_SCHOLARSHIP',
+    CompassUnlockChat = 'COMPASS_UNLOCK_CHAT',
+    PathOfMeaning = 'PATH_OF_MEANING',
+    CommunityHub = 'COMMUNITY_HUB',
+    Articles = 'ARTICLES',
+    AdminDashboard = 'ADMIN_DASHBOARD',
+    CoCreation = 'CO_CREATION',
+    DailyOasis = 'DAILY_OASIS',
+    DIRECT_MESSAGES = 'DIRECT_MESSAGES',
+    TransparencyDashboard = 'TRANSPARENCY_DASHBOARD',
+    Contact = 'CONTACT',
+    AIPortal = 'AI_PORTAL',
+    AI_CREATION_STUDIO = 'AI_CREATION_STUDIO',
+    AI_ACADEMY = 'AI_ACADEMY',
+    LIFE_MASTERY_ACADEMY = 'LIFE_MASTERY_ACADEMY',
+    MeaningCompanion = 'MEANING_COMPANION',
+    ENGLISH_ACADEMY = 'ENGLISH_ACADEMY',
+    ENGLISH_PLACEMENT_TEST = 'ENGLISH_PLACEMENT_TEST',
+    AI_CONVERSATION_PARTNER = 'AI_CONVERSATION_PARTNER',
+    VOCABULARY_BUILDER = 'VOCABULARY_BUILDER',
+    BUSINESS_ACADEMY = 'BUSINESS_ACADEMY',
+    BUSINESS_PROCESS_MODELER = 'BUSINESS_PROCESS_MODELER',
+    DISC_TEST = 'DISC_TEST',
+    ENNEAGRAM_TEST = 'ENNEAGRAM_TEST',
+    STRENGTHS_TEST = 'STRENGTHS_TEST',
+    IKIGAI_TEST = 'IKIGAI_TEST',
+    HEROS_JOURNEY_INTRO = 'HEROS_JOURNEY_INTRO',
+    COACHING_LAB = 'COACHING_LAB',
+    COACHING_SESSION = 'COACHING_SESSION',
+    'digital-heritage-architect' = 'DIGITAL_HERITAGE_ARCHITECT',
+    GiftConcierge = 'GIFT_CONCIERGE',
+    'living-heritage' = 'LIVING_HERITAGE',
+    'garden-of-heroes' = 'GARDEN_OF_HEROES',
+    'meaning-coach' = 'MEANING_COACH',
+    'community-projects' = 'COMMUNITY_PROJECTS',
+    Microfinance = 'MICROFINANCE',
+    SMART_CONSULTANT = 'SMART_CONSULTANT',
+    BUSINESS_MENTOR = 'BUSINESS_MENTOR',
+    'ai-tools' = 'AI_TOOLS',
+    PAYMENT_CALLBACK = 'PAYMENT_CALLBACK',
+    PublicStory = 'PUBLIC_STORY',
+    AutoCEO = 'AUTO_CEO' // New View
 }
 
 export type Page = View;
 
 export interface NavItem {
-  title: string;
-  description: string;
-  icon: string;
-  view?: View;
-  page?: View; 
+    title: string;
+    description: string;
+    icon: string;
+    view?: View;
+    page?: View;
 }
 
 export interface NavCategory {
-  category: string;
-  children: NavItem[];
+    category: string;
+    children: NavItem[];
 }
 
 export interface LiveActivity {
     id: string;
-    icon: React.ReactNode; 
+    icon: React.ReactNode;
     text: string;
 }
 
@@ -213,5 +214,5 @@ export interface DailyChestReward {
     amount: number;
     message: string;
     bonusMultiplier?: number;
-    item?: string; 
+    item?: string;
 }

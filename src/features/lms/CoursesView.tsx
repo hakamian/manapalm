@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { ChevronDownIcon, ClockIcon, ChartBarIcon, UsersIcon, PlayIcon } from '../../../components/icons';
+import { ChevronDownIcon, ClockIcon, ChartBarIcon, UsersIcon, PlayIcon, SparklesIcon } from '../../../components/icons';
 import { LMSCourse } from '../../../types/lms';
 import AutoCourseGenerator from './AutoCourseGenerator';
 import CoursePlayer from './CoursePlayer';
+import AcademyMentor from './AcademyMentor';
 
 // --- Mock Data (Adapted to LMSCourse) ---
 const initialCourses: LMSCourse[] = [
@@ -36,6 +37,7 @@ const CoursesView: React.FC = () => {
     const [courses, setCourses] = useState<LMSCourse[]>(initialCourses);
     const [activeCourse, setActiveCourse] = useState<LMSCourse | null>(null);
     const [expandedCourseId, setExpandedCourseId] = useState<string | null>(null);
+    const [showMentor, setShowMentor] = useState(false);
 
     const handleCourseGenerated = (newCourse: LMSCourse) => {
         setCourses(prev => [newCourse, ...prev]);
@@ -122,8 +124,34 @@ const CoursesView: React.FC = () => {
                     ))}
                 </div>
             </div>
+            {/* AI Mentor Floating Widget */}
+            <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-4">
+                {showMentor && (
+                    <div className="w-80 h-96 mb-2 animate-fade-in-up">
+                        <AcademyMentor
+                            courseTitle={activeCourse?.title}
+                            onClose={() => setShowMentor(false)}
+                        />
+                    </div>
+                )}
+
+                <button
+                    onClick={() => setShowMentor(!showMentor)}
+                    className={`p-4 rounded-full shadow-2xl transition-all transform hover:scale-110 flex items-center justify-center ${showMentor
+                        ? 'bg-red-500 hover:bg-red-600 rotate-90'
+                        : 'bg-indigo-600 hover:bg-indigo-500'
+                        }`}
+                >
+                    {showMentor ? (
+                        <span className="text-white font-bold text-xl">×</span>
+                    ) : (
+                        <SparklesIcon className="w-8 h-8 text-white animate-pulse" />
+                    )}
+                </button>
+            </div>
         </div>
     );
 };
+
 
 export default CoursesView;

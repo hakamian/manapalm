@@ -26,6 +26,7 @@ const DirectMessagesView = React.lazy(() => import('../DirectMessagesView'));
 const TransparencyDashboardView = React.lazy(() => import('../TransparencyDashboardView'));
 const ContactView = React.lazy(() => import('../ContactView'));
 const AIStudioView = React.lazy(() => import('../../src/features/ai-studio/AIStudioView'));
+const AutoCEOView = React.lazy(() => import('../../src/features/admin/AutoCEOView'));
 const MeaningCompanionView = React.lazy(() => import('../MeaningCompanionView'));
 const EnglishAcademyView = React.lazy(() => import('../EnglishAcademyView'));
 const EnglishPlacementTestView = React.lazy(() => import('../EnglishPlacementTestView'));
@@ -117,6 +118,7 @@ const MainContent: React.FC = () => {
             case View.Contact: return <ContactView />;
             case View.AIPortal:
             case View.AI_CREATION_STUDIO: return <AIStudioView />;
+            case View.AutoCEO: return <AutoCEOView />;
             case View.AI_ACADEMY: return <AICreationStudio initialTab="academy" />;
             case View.MeaningCompanion: return <MeaningCompanionView />;
             case View.ENGLISH_ACADEMY: return <EnglishAcademyView />;

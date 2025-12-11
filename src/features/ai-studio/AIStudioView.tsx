@@ -1,6 +1,7 @@
 
 import React from 'react';
 import OmniConverter from './OmniConverter';
+import KnowledgeRefiner from './KnowledgeRefiner';
 import { SparklesIcon, CpuChipIcon } from '../../components/icons';
 
 const AIStudioView: React.FC = () => {
@@ -24,12 +25,8 @@ const AIStudioView: React.FC = () => {
                     <OmniConverter />
 
                     {/* Placeholder for Knowledge Refiner */}
-                    <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8 text-center opacity-75 hover:opacity-100 transition-opacity cursor-not-allowed">
-                        <h3 className="text-2xl font-bold text-gray-500 mb-2">Knowledge Refiner (بزودی)</h3>
-                        <p className="text-gray-600">
-                            سیستم RAG برای سازماندهی دانش شخصی شما و تبدیل آن به «مغز دوم».
-                        </p>
-                    </div>
+                    {/* Knowledge Refiner Tool */}
+                    <KnowledgeRefiner />
                 </div>
             </div>
         </div>

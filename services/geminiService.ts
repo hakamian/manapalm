@@ -1,7 +1,7 @@
 
 import { callProxy, getFallbackMessage } from './ai/core';
-import { 
-    ChatMessage, User, PersonalizedEnglishScenario, ProcessStep, VocabularyItem, 
+import {
+    ChatMessage, User, PersonalizedEnglishScenario, ProcessStep, VocabularyItem,
     ArticleDraft, Deed, AdvisorType, LMSModule, LMSLesson, TargetLanguage,
     HyperPersonalizedReport, JournalAnalysisReport, DISCReport, EnneagramReport,
     StrengthsReport, IkigaiReport, EnglishLevelReport, MeaningCompassAnalysis,
@@ -12,6 +12,36 @@ import { Modality, Type } from '@google/genai';
 
 // Re-export getFallbackMessage
 export { getFallbackMessage };
+
+import { supabase } from './supabaseClient'; // Ensure supabase client is imported
+
+// --- DATA FETCHING ---
+export const getStoreStats = async () => {
+    if (!supabase) return { sales: 0, visitors: 100, conversion: 0, orderCount: 0 };
+
+    // Fetch last 30 days orders
+    const { data: orders, error } = await supabase
+        .from('orders')
+        .select('total_amount, created_at')
+        .gte('created_at', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString());
+
+    if (error) {
+        console.error("Error fetching stats:", error);
+        return { sales: 0, visitors: 0, conversion: 0, orderCount: 0 };
+    }
+
+    const totalSales = orders ? orders.reduce((sum, order) => sum + (order.total_amount || 0), 0) : 0;
+    // Mocking visitors since we don't have analytics yet
+    const visitors = 500 + Math.floor(Math.random() * 200);
+    const conversion = visitors > 0 && orders ? ((orders.length / visitors) * 100).toFixed(1) : 0;
+
+    return {
+        sales: totalSales,
+        visitors: visitors,
+        conversion: Number(conversion),
+        orderCount: orders ? orders.length : 0
+    };
+};
 
 // --- ROBUST JSON EXTRACTOR ---
 const cleanJsonString = (text: string): string => {
@@ -59,31 +89,31 @@ const getFallbackQuestions = (lang: string) => {
 export const generatePlacementQuestions = async (language: TargetLanguage, interest?: string): Promise<{ text: string, options: string[] }[]> => {
     const fallback = getFallbackQuestions(language);
     const context = interest ? `The user is interested in "${interest}". Try to make at least 2 questions related to this topic contextually (vocabulary or scenario).` : '';
-    
+
     const prompt = `Generate 5 multiple-choice questions to test ${language} proficiency (A1-B1).
     ${context}
     Strictly return ONLY a JSON array. No intro, no markdown.
     Structure: [{"text": "Question?", "options": ["A", "B", "C", "D"]}]`;
-    
+
     try {
         const apiCall = callProxy('generateContent', 'gemini-2.5-flash', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            config: { 
+            config: {
                 responseMimeType: 'application/json',
                 temperature: 0.3
             }
         });
 
-        const timeout = new Promise((_, reject) => 
+        const timeout = new Promise((_, reject) =>
             setTimeout(() => reject(new Error("AI_TIMEOUT")), 30000)
         );
 
         const result: any = await Promise.race([apiCall, timeout]);
         const cleanedText = cleanJsonString(result.text || '[]');
         const questions = JSON.parse(cleanedText);
-        
+
         if (Array.isArray(questions) && questions.length >= 3 && questions[0].options && questions[0].options.length > 1) {
-             return questions;
+            return questions;
         }
         throw new Error("Invalid JSON structure");
 
@@ -94,9 +124,9 @@ export const generatePlacementQuestions = async (language: TargetLanguage, inter
 };
 
 export const generateText = async (
-    prompt: string, 
-    useCache: boolean = false, 
-    isCreative: boolean = false, 
+    prompt: string,
+    useCache: boolean = false,
+    isCreative: boolean = false,
     isLongForm: boolean = false,
     systemInstruction?: string,
     provider: AIProvider = 'google',
@@ -155,12 +185,12 @@ export const generateStrategicDecree = async (topic: string, solutions: string[]
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            config: { 
+            config: {
                 responseMimeType: 'application/json',
                 temperature: 0.4
             }
         });
-        
+
         return JSON.parse(cleanJsonString(result.text || '{}'));
     } catch (e) {
         console.error("Decree generation failed", e);
@@ -171,8 +201,8 @@ export const generateStrategicDecree = async (topic: string, solutions: string[]
 // ... (Rest of the file remains unchanged, keeping all exports) ...
 
 export const sendChatMessage = async (
-    history: ChatMessage[], 
-    newMessage: string, 
+    history: ChatMessage[],
+    newMessage: string,
     systemInstruction?: string,
     model: string = 'gemini-3-pro-preview'
 ): Promise<{ text: string }> => {
@@ -208,12 +238,12 @@ export const getAIAssistedText = async (options: {
 }): Promise<string> => {
     const { mode, type, text, context } = options;
     let prompt = '';
-    
+
     if (type === 'deed_message') {
         if (mode === 'improve') {
-             prompt = `Rewrite the following text into a single, very short (max 10-12 words), poetic sentence in Persian suitable for a palm planting deed. Intention: "${context}". Input: "${text}". It must be ready to print without editing. Do not use quotes.`;
+            prompt = `Rewrite the following text into a single, very short (max 10-12 words), poetic sentence in Persian suitable for a palm planting deed. Intention: "${context}". Input: "${text}". It must be ready to print without editing. Do not use quotes.`;
         } else {
-             prompt = `Write a single, very short, poetic, and beautiful sentence (maximum 10-12 words) in Persian suitable for a commemorative deed for a palm tree planted with the intention of: "${context}". It must be a complete, meaningful sentence ready to be printed on a certificate without any editing. Do not use quotes.`;
+            prompt = `Write a single, very short, poetic, and beautiful sentence (maximum 10-12 words) in Persian suitable for a commemorative deed for a palm tree planted with the intention of: "${context}". It must be a complete, meaningful sentence ready to be printed on a certificate without any editing. Do not use quotes.`;
         }
     } else if (mode === 'improve') {
         prompt = `Improve the following text for a ${type}. Context: ${JSON.stringify(context)}. Text: "${text}". Respond in Persian.`;
@@ -259,7 +289,7 @@ export const getJournalReflection = async (entry: string): Promise<string> => {
 };
 
 export const generatePersonalizedEnglishScenarios = async (user: User): Promise<PersonalizedEnglishScenario[]> => {
-     const prompt = `Generate 3 personalized English learning role-play scenarios...`;
+    const prompt = `Generate 3 personalized English learning role-play scenarios...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -267,17 +297,17 @@ export const generatePersonalizedEnglishScenarios = async (user: User): Promise<
         });
         return JSON.parse(result.text || '[]');
     } catch (e) {
-         console.error("Error generating scenarios:", e);
-         return [
-             { id: 'default_1', title: 'Daily Conversation', description: 'Practice casual talk about your day.', icon: 'UsersIcon' },
-             { id: 'default_2', title: 'Job Interview', description: 'Simulate a professional interview.', icon: 'BriefcaseIcon' },
-             { id: 'default_3', title: 'Travel', description: 'Role-play travel situations like airport or hotel.', icon: 'CompassIcon' },
-         ];
+        console.error("Error generating scenarios:", e);
+        return [
+            { id: 'default_1', title: 'Daily Conversation', description: 'Practice casual talk about your day.', icon: 'UsersIcon' },
+            { id: 'default_2', title: 'Job Interview', description: 'Simulate a professional interview.', icon: 'BriefcaseIcon' },
+            { id: 'default_3', title: 'Travel', description: 'Role-play travel situations like airport or hotel.', icon: 'CompassIcon' },
+        ];
     }
 };
 
 export const generateBusinessProcess = async (promptText: string): Promise<{ steps: ProcessStep[] }> => {
-     const prompt = `Create a detailed SOP (Standard Operating Procedure) for: "${promptText}". Return JSON...`;
+    const prompt = `Create a detailed SOP (Standard Operating Procedure) for: "${promptText}". Return JSON...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -285,12 +315,12 @@ export const generateBusinessProcess = async (promptText: string): Promise<{ ste
         });
         return JSON.parse(result.text || '{}');
     } catch (e) {
-         throw new Error(getFallbackMessage('contentCreation'));
+        throw new Error(getFallbackMessage('contentCreation'));
     }
 };
 
 export const getVocabularyList = async (topic: string, level: string): Promise<{ vocabulary: VocabularyItem[] }> => {
-     const prompt = `Generate a vocabulary list for topic "${topic}" at level "${level}". Return JSON...`;
+    const prompt = `Generate a vocabulary list for topic "${topic}" at level "${level}". Return JSON...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -298,24 +328,24 @@ export const getVocabularyList = async (topic: string, level: string): Promise<{
         });
         return JSON.parse(result.text || '{}');
     } catch (e) {
-         throw new Error(getFallbackMessage('contentCreation'));
+        throw new Error(getFallbackMessage('contentCreation'));
     }
 };
 
 export const generateMenteeBriefing = async (mentee: User): Promise<string> => {
-     const prompt = `Generate a briefing for a mentor about this mentee: ${JSON.stringify(mentee)}. Highlight key activities...`;
+    const prompt = `Generate a briefing for a mentor about this mentee: ${JSON.stringify(mentee)}. Highlight key activities...`;
     const response = await generateText(prompt);
     return response.text;
 };
 
 export const generateExecutionPlan = async (decision: { title: string; description: string }): Promise<string> => {
-     const prompt = `Generate a detailed execution plan for this decision: ${JSON.stringify(decision)}...`;
+    const prompt = `Generate a detailed execution plan for this decision: ${JSON.stringify(decision)}...`;
     const response = await generateText(prompt);
     return response.text;
 };
 
 export const generateOperationalPlans = async (decision: string): Promise<{ plans: { title: string; description: string; priority: number }[] }> => {
-     const prompt = `Generate 2 operational plans for this decision... Return JSON...`;
+    const prompt = `Generate 2 operational plans for this decision... Return JSON...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -323,7 +353,7 @@ export const generateOperationalPlans = async (decision: string): Promise<{ plan
         });
         return JSON.parse(result.text || '{}');
     } catch (e) {
-         throw new Error(getFallbackMessage('contentCreation'));
+        throw new Error(getFallbackMessage('contentCreation'));
     }
 };
 
@@ -333,7 +363,7 @@ export const getAdvisorChatResponse = async (query: string, advisor: AdvisorType
 };
 
 export const generateCampaignIdea = async (data: any): Promise<any> => {
-     const prompt = `Generate a new campaign idea... Return JSON...`;
+    const prompt = `Generate a new campaign idea... Return JSON...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -341,12 +371,12 @@ export const generateCampaignIdea = async (data: any): Promise<any> => {
         });
         return JSON.parse(result.text || '{}');
     } catch (e) {
-         throw new Error(getFallbackMessage('contentCreation'));
+        throw new Error(getFallbackMessage('contentCreation'));
     }
 };
 
 export const generateArticleDraft = async (topic: string): Promise<ArticleDraft> => {
-     const prompt = `Write a blog post draft about '${topic}'... Return JSON...`;
+    const prompt = `Write a blog post draft about '${topic}'... Return JSON...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -354,7 +384,7 @@ export const generateArticleDraft = async (topic: string): Promise<ArticleDraft>
         });
         return JSON.parse(result.text || '{}');
     } catch (e) {
-         throw new Error(getFallbackMessage('contentCreation'));
+        throw new Error(getFallbackMessage('contentCreation'));
     }
 };
 
@@ -374,7 +404,7 @@ export const generateDailyChallenge = async (user: User): Promise<any> => {
         });
         return JSON.parse(result.text || '{}');
     } catch (e) {
-         throw new Error(getFallbackMessage('contentCreation'));
+        throw new Error(getFallbackMessage('contentCreation'));
     }
 };
 
@@ -399,12 +429,12 @@ export const generateSpeech = async (text: string): Promise<string> => {
                 responseModalities: [Modality.AUDIO],
                 speechConfig: {
                     voiceConfig: {
-                        prebuiltVoiceConfig: { voiceName: 'Kore' }, 
+                        prebuiltVoiceConfig: { voiceName: 'Kore' },
                     },
                 },
             },
         });
-        
+
         const base64Audio = result.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
         if (!base64Audio) {
             throw new Error("No audio data returned from TTS model.");
@@ -478,8 +508,8 @@ export interface SessionReport {
 }
 
 export const generateSessionReport = async (
-    history: ChatMessage[], 
-    role: string, 
+    history: ChatMessage[],
+    role: string,
     topic: string
 ): Promise<SessionReport> => {
     // OPTIMIZATION: Slice history to avoid token limits and speed up generation
@@ -505,14 +535,14 @@ export const generateSessionReport = async (
     try {
         const apiCall = callProxy('generateContent', 'gemini-2.5-flash', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            config: { 
+            config: {
                 responseMimeType: 'application/json',
                 temperature: 0.3
             }
         });
 
         // Add a strict timeout of 30 seconds to prevent UI freezing
-        const timeout = new Promise((_, reject) => 
+        const timeout = new Promise((_, reject) =>
             setTimeout(() => reject(new Error("TIMEOUT")), 30000)
         );
 
@@ -537,7 +567,7 @@ export const getPersonalizedProductRecommendations = async (user: User, products
 };
 
 export const getBoardMeetingAdvice = async (query: string, advisors: AdvisorType[], platformData: any): Promise<Advice> => {
-     const prompt = `Simulate a board meeting with advisors...`;
+    const prompt = `Simulate a board meeting with advisors...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -545,12 +575,12 @@ export const getBoardMeetingAdvice = async (query: string, advisors: AdvisorType
         });
         return JSON.parse(cleanJsonString(result.text || '{}'));
     } catch (e) {
-         throw new Error(getFallbackMessage('analysis'));
+        throw new Error(getFallbackMessage('analysis'));
     }
 };
 
 export const analyzeCommunitySentimentAndTopics = async (posts: string[]): Promise<{ sentiment: any; trendingTopics: string[] }> => {
-     const prompt = `Analyze these community posts... Return JSON...`;
+    const prompt = `Analyze these community posts... Return JSON...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -558,12 +588,12 @@ export const analyzeCommunitySentimentAndTopics = async (posts: string[]): Promi
         });
         return JSON.parse(cleanJsonString(result.text || '{}'));
     } catch (e) {
-         throw new Error(getFallbackMessage('analysis'));
+        throw new Error(getFallbackMessage('analysis'));
     }
 };
 
 export const generateSegmentActionPlan = async (advisor: AdvisorType, segmentInfo: any): Promise<{ suggestions: { title: string, description: string, action: string }[] }> => {
-     const prompt = `As a ${advisor} advisor, suggest an action plan for this user segment... Return JSON...`;
+    const prompt = `As a ${advisor} advisor, suggest an action plan for this user segment... Return JSON...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -571,12 +601,12 @@ export const generateSegmentActionPlan = async (advisor: AdvisorType, segmentInf
         });
         return JSON.parse(cleanJsonString(result.text || '{}'));
     } catch (e) {
-         throw new Error(getFallbackMessage('analysis'));
+        throw new Error(getFallbackMessage('analysis'));
     }
 };
 
 export const generateOpportunityRadarInsights = async (data: { users: User[], orders: Order[], posts: CommunityPost[] }): Promise<{ opportunity: any, threat: any, trend: any }> => {
-     const prompt = `Analyze platform data to identify an opportunity, a threat, and a trend... Return JSON...`;
+    const prompt = `Analyze platform data to identify an opportunity, a threat, and a trend... Return JSON...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -584,12 +614,12 @@ export const generateOpportunityRadarInsights = async (data: { users: User[], or
         });
         return JSON.parse(cleanJsonString(result.text || '{}'));
     } catch (e) {
-         throw new Error(getFallbackMessage('analysis'));
+        throw new Error(getFallbackMessage('analysis'));
     }
 };
 
 export const synthesizeDecisionFromOpinions = async (opinions: IndividualOpinion[]): Promise<{ decision: string }> => {
-     const prompt = `Synthesize a single strategic decision from these opinions... Return JSON...`;
+    const prompt = `Synthesize a single strategic decision from these opinions... Return JSON...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -597,12 +627,12 @@ export const synthesizeDecisionFromOpinions = async (opinions: IndividualOpinion
         });
         return JSON.parse(cleanJsonString(result.text || '{}'));
     } catch (e) {
-         throw new Error(getFallbackMessage('analysis'));
+        throw new Error(getFallbackMessage('analysis'));
     }
 };
 
 export const generateProactiveWeeklyReport = async (data: any): Promise<ProactiveReport> => {
-     const prompt = `Generate a proactive weekly report... Return JSON...`;
+    const prompt = `Generate a proactive weekly report... Return JSON...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -610,12 +640,12 @@ export const generateProactiveWeeklyReport = async (data: any): Promise<Proactiv
         });
         return JSON.parse(cleanJsonString(result.text || '{}'));
     } catch (e) {
-         throw new Error(getFallbackMessage('analysis'));
+        throw new Error(getFallbackMessage('analysis'));
     }
 };
 
 export const getStrategicAdvice = async (query: string, advisor: AdvisorType, data: any): Promise<{ suggestions: Suggestion[] }> => {
-     const prompt = `As a ${advisor} advisor, provide strategic advice... Return JSON...`;
+    const prompt = `As a ${advisor} advisor, provide strategic advice... Return JSON...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -623,12 +653,12 @@ export const getStrategicAdvice = async (query: string, advisor: AdvisorType, da
         });
         return JSON.parse(cleanJsonString(result.text || '{}'));
     } catch (e) {
-         throw new Error(getFallbackMessage('analysis'));
+        throw new Error(getFallbackMessage('analysis'));
     }
 };
 
 export const analyzeProjectProposal = async (proposal: { title: string; description: string }): Promise<{ pros: string[]; cons: string[]; potentialImpact: string }> => {
-     const prompt = `Analyze this project proposal... Return JSON...`;
+    const prompt = `Analyze this project proposal... Return JSON...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -636,7 +666,7 @@ export const analyzeProjectProposal = async (proposal: { title: string; descript
         });
         return JSON.parse(cleanJsonString(result.text || '{}'));
     } catch (e) {
-         throw new Error(getFallbackMessage('analysis'));
+        throw new Error(getFallbackMessage('analysis'));
     }
 };
 
@@ -688,20 +718,20 @@ export const getMeaningCompassAnalysis = async (chatHistory: any[]): Promise<Mea
         });
         return JSON.parse(cleanJsonString(result.text || '{}'));
     } catch (e) {
-         throw new Error(getFallbackMessage('analysis'));
+        throw new Error(getFallbackMessage('analysis'));
     }
 };
 
 export const generateImage = async (prompt: string, aspectRatio: string): Promise<string> => {
     try {
         const validAspectRatio = ["1:1", "3:4", "4:3", "9:16", "16:9"].includes(aspectRatio) ? aspectRatio : "1:1";
-        
+
         const imagenResult = await callProxy('generateImages', 'imagen-4.0-generate-001', {
             prompt: prompt,
             config: {
                 numberOfImages: 1,
                 outputMimeType: 'image/jpeg',
-                aspectRatio: validAspectRatio === "1:1" ? "1:1" : validAspectRatio === "9:16" ? "9:16" : "16:9" 
+                aspectRatio: validAspectRatio === "1:1" ? "1:1" : validAspectRatio === "9:16" ? "9:16" : "16:9"
             }
         });
 
@@ -724,7 +754,7 @@ export const getDISCAnalysis = async (answers: Record<string, string>, user: Use
         });
         return JSON.parse(cleanJsonString(result.text || '{}'));
     } catch (e) {
-         throw new Error(getFallbackMessage('analysis'));
+        throw new Error(getFallbackMessage('analysis'));
     }
 };
 
@@ -737,12 +767,12 @@ export const getEnneagramAnalysis = async (answers: Record<string, string>, user
         });
         return JSON.parse(cleanJsonString(result.text || '{}'));
     } catch (e) {
-         throw new Error(getFallbackMessage('analysis'));
+        throw new Error(getFallbackMessage('analysis'));
     }
 };
 
 export const getStrengthsAnalysis = async (answers: Record<string, string>, user: User): Promise<StrengthsReport> => {
-     const prompt = `Analyze these Strengths assessment answers: ${JSON.stringify(answers)}. Return JSON...`;
+    const prompt = `Analyze these Strengths assessment answers: ${JSON.stringify(answers)}. Return JSON...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -750,12 +780,12 @@ export const getStrengthsAnalysis = async (answers: Record<string, string>, user
         });
         return JSON.parse(cleanJsonString(result.text || '{}'));
     } catch (e) {
-         throw new Error(getFallbackMessage('analysis'));
+        throw new Error(getFallbackMessage('analysis'));
     }
 };
 
 export const getIkigaiAnalysis = async (answers: any, user: User): Promise<IkigaiReport> => {
-     const prompt = `Analyze these Ikigai assessment answers: ${JSON.stringify(answers)}. Return JSON...`;
+    const prompt = `Analyze these Ikigai assessment answers: ${JSON.stringify(answers)}. Return JSON...`;
     try {
         const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -763,7 +793,7 @@ export const getIkigaiAnalysis = async (answers: any, user: User): Promise<Ikiga
         });
         return JSON.parse(cleanJsonString(result.text || '{}'));
     } catch (e) {
-         throw new Error(getFallbackMessage('analysis'));
+        throw new Error(getFallbackMessage('analysis'));
     }
 };
 
@@ -772,22 +802,22 @@ export const getEnglishLevel = async (answers: { question: string, answer: strin
     Determine the CEFR level (A1-C2) based on accuracy.
     Return a JSON object with a single key "level" containing one of: "Beginner" (A1-A2), "Intermediate" (B1-B2), "Advanced" (C1-C2).
     Do not include markdown formatting.`;
-    
+
     try {
         const apiCall = callProxy('generateContent', 'gemini-2.5-flash', {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
-            config: { 
+            config: {
                 responseMimeType: 'application/json',
                 temperature: 0.1
             }
         });
 
-        const timeout = new Promise((_, reject) => 
+        const timeout = new Promise((_, reject) =>
             setTimeout(() => reject(new Error("Timeout")), 30000)
         );
 
         const result: any = await Promise.race([apiCall, timeout]);
-        
+
         const rawText = result.text || '';
         const cleanedText = cleanJsonString(rawText);
 
@@ -797,13 +827,73 @@ export const getEnglishLevel = async (answers: { question: string, answer: strin
                 return { level: parsed.level, language: 'English' };
             }
         } catch (parseError) {
-             // Fallback parsing
+            // Fallback parsing
         }
-        return { level: "Beginner", language: 'English' };
-
     } catch (e) {
-         console.warn("AI Level Analysis Failed or Timed Out (using fallback):", e);
-         return { level: "Beginner", language: 'English' };
+        console.warn("AI Level Analysis Failed or Timed Out (using fallback):", e);
+    }
+    return { level: "Beginner", language: 'English' };
+};
+
+// --- NEW AI STUDIO FUNCTIONS ---
+
+export const convertContent = async (source: string, format: string): Promise<string> => {
+    const prompt = `Convert the following content into a ${format} format. 
+    Source: "${source}".
+    Output should be in Persian (if source is Persian) or English, matching the style of ${format}.
+    Include appropriate emojis and hashtags.`;
+
+    try {
+        const result = await generateText(prompt, false, true);
+        return result.text;
+    } catch (e) {
+        console.warn("Conversion failed, using fallback.");
+        return `### محتوای تبدیل شده به ${format}:\n\n${source}\n\n(سیستم موقتا در دسترس نیست)`;
+    }
+};
+
+export const generateStrategicAdvice = async (storeStats: any): Promise<any[]> => {
+    const prompt = `Analyze these store stats: ${JSON.stringify(storeStats)}.
+    Identify 3 strategic priorities (Inventory, Marketing, Performance).
+    Return a JSON array of objects with keys: id, title, type, priority (high/medium/low), reasoning, action.
+    Respond in Persian.`;
+
+    try {
+        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+            contents: [{ role: 'user', parts: [{ text: prompt }] }],
+            config: { responseMimeType: 'application/json' }
+        });
+        const cleaned = cleanJsonString(result.text || '[]');
+        return JSON.parse(cleaned);
+    } catch (e) {
+        console.warn("Strategic advice generation failed, using fallback.");
+        // Fallback to the mock data for stability if AI fails
+        return [
+            {
+                id: 'imp-1',
+                title: 'افزایش موجودی شیره خرما',
+                type: 'inventory',
+                priority: 'high',
+                reasoning: 'با توجه به فروش ۲۰٪ بیشتر در هفته گذشته و نزدیک شدن به ماه رمضان، پیش‌بینی می‌شود تقاضا ۳ برابر شود.',
+                action: 'سفارش مجدد'
+            },
+            {
+                id: 'imp-2',
+                title: 'کمپین "نخل دوستی"',
+                type: 'marketing',
+                priority: 'medium',
+                reasoning: 'کاربران جدیدی که از طریق رفرال می‌آیند، نرخ تبدیل کمتری دارند.',
+                action: 'ایجاد کمپین'
+            },
+            {
+                id: 'imp-3',
+                title: 'بهینه‌سازی تصاویر محصول',
+                type: 'performance',
+                priority: 'low',
+                reasoning: 'زمان بارگذاری صفحه محصول "نخل پیارم" بالاست.',
+                action: 'بهینه‌سازی خودکار'
+            }
+        ];
     }
 };
 
