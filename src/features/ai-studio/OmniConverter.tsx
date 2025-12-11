@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { SparklesIcon, ArrowPathIcon, DocumentTextIcon, ClipboardIcon } from '../../../components/icons';
+import { SparklesIcon, ArrowPathIcon, DocumentTextIcon } from '../../../components/icons';
 import { convertContent } from '../../../services/geminiService';
 
 const OmniConverter: React.FC = () => {
@@ -87,7 +87,7 @@ const OmniConverter: React.FC = () => {
                                     className="absolute top-2 right-2 p-2 bg-gray-800 rounded-md text-gray-400 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
                                     title="کپی"
                                 >
-                                    <ClipboardIcon className="w-5 h-5" />
+                                    <DocumentTextIcon className="w-5 h-5" />
                                 </button>
                             </>
                         ) : (
