@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { LMSCourse, CourseModule, Lesson } from '../../types/lms';
-import { PlayIcon, CheckCircleIcon, LockClosedIcon, LeafIcon } from '../../components/icons';
+import { PlayIcon, CheckCircleIcon, LockClosedIcon, LeafIcon } from '../../../components/icons';
 import { useAppState, useAppDispatch } from '../../AppContext';
 import SEOHead from '../../components/seo/SEOHead';
 

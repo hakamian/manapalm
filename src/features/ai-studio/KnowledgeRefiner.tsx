@@ -1,5 +1,5 @@
 import { convertContent } from '@/services/geminiService';
-import { SparklesIcon, DocumentTextIcon, ArrowPathIcon } from '../../components/icons';
+import { SparklesIcon, DocumentTextIcon, ArrowPathIcon } from '../../../components/icons';
 
 const KnowledgeRefiner: React.FC = () => {
     const [inputText, setInputText] = useState('');

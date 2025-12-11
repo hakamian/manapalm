@@ -2,7 +2,7 @@
 import React from 'react';
 import OmniConverter from './OmniConverter';
 import KnowledgeRefiner from './KnowledgeRefiner';
-import { SparklesIcon, CpuChipIcon } from '../../components/icons';
+import { SparklesIcon, CpuChipIcon } from '../../../components/icons';
 
 const AIStudioView: React.FC = () => {
     return (

@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { SparklesIcon, XMarkIcon, PaperAirplaneIcon, UserCircleIcon, ChatBubbleLeftRightIcon } from '../../components/icons';
+import { SparklesIcon, XMarkIcon, PaperAirplaneIcon, UserCircleIcon, ChatBubbleLeftRightIcon } from '../../../components/icons';
 import { sendChatMessage } from '../../services/geminiService';
 import { ChatMessage } from '../../types';
 

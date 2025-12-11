@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { SparklesIcon, ArrowPathIcon, DocumentTextIcon, ClipboardIcon } from '../../components/icons';
+import { SparklesIcon, ArrowPathIcon, DocumentTextIcon, ClipboardIcon } from '../../../components/icons';
 import { convertContent } from '../../services/geminiService';
 
 const OmniConverter: React.FC = () => {

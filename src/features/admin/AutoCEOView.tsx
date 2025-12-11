@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SparklesIcon, ChartBarIcon, ArrowTrendingUpIcon, ExclamationTriangleIcon, BoltIcon } from '../../components/icons';
+import { SparklesIcon, ChartBarIcon, ArrowTrendingUpIcon, ExclamationTriangleIcon, BoltIcon } from '../../../components/icons';
 import { generateStrategicAdvice, getStoreStats } from '@/services/geminiService';
 
 interface Advice {
