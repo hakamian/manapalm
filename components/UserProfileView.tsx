@@ -1,9 +1,9 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { User, View, Product, CartItem } from '../types';
-import { 
-    UserCircleIcon, BoxIcon, HeartIcon, BellIcon, CogIcon, GiftIcon, ContributionIcon, 
-    HomeIcon, TrophyIcon, ClockIcon, ShieldCheckIcon, CompassIcon, 
+import {
+    UserCircleIcon, BoxIcon, HeartIcon, BellIcon, CogIcon, GiftIcon, ContributionIcon,
+    HomeIcon, TrophyIcon, ClockIcon, ShieldCheckIcon, CompassIcon,
     BrainCircuitIcon, FlagIcon, PalmTreeIcon, SparklesIcon, XMarkIcon, ChartPieIcon,
     AwardIcon, HandshakeIcon, PlayIcon, LockClosedIcon
 } from './icons';
@@ -12,7 +12,7 @@ import { useAppState, useAppDispatch } from '../AppContext';
 import MenteeBriefingModal from './MenteeBriefingModal';
 import GroveKeeperDashboard from './GroveKeeperDashboard';
 import DeedDisplay from './DeedDisplay';
-import ProductCard from './shop/ProductCard';
+import ProductCard from '../src/features/shop/components/ProductCard';
 import ImpactHero from './profile/ImpactHero'; // Import the new component
 import CoachingLabAccessModal from './CoachingLabAccessModal'; // Import the access modal
 
@@ -32,7 +32,7 @@ import EnneagramReportTab from './profile/EnneagramReportTab';
 import StrengthsReportTab from './profile/StrengthsReportTab';
 import IkigaiReportTab from './profile/IkigaiReportTab';
 import MentorTab from './MentorTab';
-import ValueDashboardTab from './profile/ValueDashboardTab'; 
+import ValueDashboardTab from './profile/ValueDashboardTab';
 
 declare const html2canvas: any;
 
@@ -49,8 +49,8 @@ const UserProfileView: React.FC = () => {
     };
     const onToggleWishlist = (productId: string) => dispatch({ type: 'TOGGLE_WISHLIST', payload: productId });
     const onAddToCart = (product: Product) => {
-         // Simple add to cart logic reusing existing dispatch
-         const cartItem: CartItem = {
+        // Simple add to cart logic reusing existing dispatch
+        const cartItem: CartItem = {
             id: product.id,
             productId: product.id,
             name: product.name,
@@ -67,10 +67,10 @@ const UserProfileView: React.FC = () => {
         dispatch({ type: 'TOGGLE_CART', payload: true });
     };
 
-    
+
     const [activeTab, setActiveTab] = useState(profileInitialTab || 'dashboard');
     const [briefingMentee, setBriefingMentee] = useState<User | null>(null);
-    
+
     // State for access modal in compass tab
     const [isAccessModalOpen, setIsAccessModalOpen] = useState(false);
 
@@ -94,7 +94,7 @@ const UserProfileView: React.FC = () => {
 
     const [selectedDeed, setSelectedDeed] = useState<any | null>(null);
     const [isDeedModalOpen, setIsDeedModalOpen] = useState(false);
-    
+
     const openDeedModal = (deed: any) => {
         setSelectedDeed(deed);
         setIsDeedModalOpen(true);
@@ -112,22 +112,22 @@ const UserProfileView: React.FC = () => {
     const handlePurchaseAccess = () => {
         setIsAccessModalOpen(true);
     };
-    
+
     const handlePayWithPoints = () => {
-         if (user && user.manaPoints >= 200) {
-             dispatch({ type: 'SPEND_MANA_POINTS', payload: { points: 200, action: 'تمدید جلسه قطب‌نمای معنا' } });
-             // Assuming this grants 5 mins or session access
-             // Since we don't have direct session state here, just close modal and navigate. 
-             // The Compass view handles time check. We might need to 'add' time in reducer if needed.
-             // For simplicity, let's assume SPEND_MANA_POINTS handles logic or we dispatch update:
-             // (Simulated logic)
-             // dispatch({ type: 'UPDATE_USER', payload: { ...user, someTimeField: ... } }); 
-             // Actually, the modal usually handles the logic.
-             // Re-using logic from LiveSessionAccessModal would be best but that's local.
-             // Let's assume the user just needs to navigate and pay there if blocked, or we mock it here.
-             setIsAccessModalOpen(false);
-             onNavigate(View.CompassUnlockChat);
-         }
+        if (user && user.manaPoints >= 200) {
+            dispatch({ type: 'SPEND_MANA_POINTS', payload: { points: 200, action: 'تمدید جلسه قطب‌نمای معنا' } });
+            // Assuming this grants 5 mins or session access
+            // Since we don't have direct session state here, just close modal and navigate. 
+            // The Compass view handles time check. We might need to 'add' time in reducer if needed.
+            // For simplicity, let's assume SPEND_MANA_POINTS handles logic or we dispatch update:
+            // (Simulated logic)
+            // dispatch({ type: 'UPDATE_USER', payload: { ...user, someTimeField: ... } }); 
+            // Actually, the modal usually handles the logic.
+            // Re-using logic from LiveSessionAccessModal would be best but that's local.
+            // Let's assume the user just needs to navigate and pay there if blocked, or we mock it here.
+            setIsAccessModalOpen(false);
+            onNavigate(View.CompassUnlockChat);
+        }
     };
 
     if (!user) return null;
@@ -141,13 +141,13 @@ const UserProfileView: React.FC = () => {
         if (user.isGroveKeeper) {
             baseTabs.push({ id: 'grovekeeper', label: 'پنل نخلدار', icon: <PalmTreeIcon /> });
         }
-        
+
         baseTabs.push(
             { id: 'profile', label: 'ویرایش پروفایل', icon: <UserCircleIcon /> },
             { id: 'orders', label: 'سفارش‌ها', icon: <BoxIcon /> },
             { id: 'timeline', label: 'گاهشمار معنا', icon: <ClockIcon /> },
             { id: 'meaning-compass', label: 'قطب‌نمای معنا', icon: <CompassIcon /> },
-            
+
             // Psychometric Tests Group
             { id: 'disc_report', label: 'آینه رفتارشناسی (DISC)', icon: <BrainCircuitIcon /> },
             { id: 'enneagram_report', label: 'نقشه روان (Enneagram)', icon: <CompassIcon /> },
@@ -165,15 +165,15 @@ const UserProfileView: React.FC = () => {
         if (user.isGuardian) {
             baseTabs.push({ id: 'mentorship', label: 'مربی‌گری', icon: <ShieldCheckIcon /> });
         }
-        
+
         baseTabs.push(
             { id: 'settings', label: 'تنظیمات', icon: <CogIcon /> }
         );
 
         return baseTabs;
     }, [user.isGroveKeeper, user.isGuardian]);
-    
-    
+
+
     const renderContent = () => {
         switch (activeTab) {
             case 'dashboard':
@@ -209,13 +209,13 @@ const UserProfileView: React.FC = () => {
                     <div>
                         <h2 className="text-2xl font-bold mb-6">علاقه‌مندی‌های شما</h2>
                         {wishlistProducts.length > 0 ? (
-                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {wishlistProducts.map(product => (
-                                    <ProductCard 
-                                        key={product.id} 
-                                        product={product} 
-                                        isWishlisted={true} 
-                                        onViewDetails={() => onNavigate(View.Shop)} 
+                                    <ProductCard
+                                        key={product.id}
+                                        product={product}
+                                        isWishlisted={true}
+                                        onViewDetails={() => onNavigate(View.Shop)}
                                         onAddToCart={onAddToCart}
                                         onToggleWishlist={onToggleWishlist}
                                         user={user}
@@ -223,7 +223,7 @@ const UserProfileView: React.FC = () => {
                                 ))}
                             </div>
                         ) : (
-                             <div className="bg-gray-800 p-8 rounded-lg text-center">
+                            <div className="bg-gray-800 p-8 rounded-lg text-center">
                                 <HeartIcon className="w-16 h-16 mx-auto text-gray-600 mb-4" />
                                 <p className="text-gray-400 mb-6">لیست علاقه‌مندی‌های شما خالی است.</p>
                                 <button onClick={() => onNavigate(View.Shop)} className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md transition-colors">
@@ -234,11 +234,11 @@ const UserProfileView: React.FC = () => {
                     </div>
                 );
             case 'meaning-compass': {
-                 const compassHistory = user.meaningCoachHistory || [];
+                const compassHistory = user.meaningCoachHistory || [];
                 const compassDuration = user.compassChatDuration || 0;
                 const minutes = Math.floor(compassDuration / 60);
                 const seconds = compassDuration % 60;
-                
+
                 // 90 seconds trial
                 const usedTrial = user.meaningCompassTrialSecondsUsed || 0;
                 const hasTrialTimeLeft = usedTrial < 90;
@@ -249,30 +249,30 @@ const UserProfileView: React.FC = () => {
                             <span>تاریخچه قطب‌نمای معنا</span>
                             <div className="flex gap-2">
                                 {hasTrialTimeLeft ? (
-                                     <button onClick={handleResumeSession} className="text-sm bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md flex items-center gap-2 shadow-lg animate-pulse">
-                                         <PlayIcon className="w-4 h-4"/> ادامه جلسه (رایگان)
-                                     </button>
+                                    <button onClick={handleResumeSession} className="text-sm bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md flex items-center gap-2 shadow-lg animate-pulse">
+                                        <PlayIcon className="w-4 h-4" /> ادامه جلسه (رایگان)
+                                    </button>
                                 ) : (
-                                     <button onClick={handlePurchaseAccess} className="text-sm bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-4 rounded-md flex items-center gap-2 shadow-lg">
-                                         <LockClosedIcon className="w-4 h-4"/> خرید اشتراک هفتگی (۶۰ دقیقه)
-                                     </button>
+                                    <button onClick={handlePurchaseAccess} className="text-sm bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2 px-4 rounded-md flex items-center gap-2 shadow-lg">
+                                        <LockClosedIcon className="w-4 h-4" /> خرید اشتراک هفتگی (۶۰ دقیقه)
+                                    </button>
                                 )}
                             </div>
                         </h2>
-                        
+
                         <div className="bg-gray-700/50 p-4 rounded-lg mb-6 flex justify-around items-center text-center border border-gray-600">
-                             <div>
+                            <div>
                                 <p className="text-gray-400 text-xs">زمان استفاده شده</p>
                                 <p className="text-xl font-bold text-green-300">
                                     {minutes.toLocaleString('fa-IR')} د : {seconds.toLocaleString('fa-IR')} ث
                                 </p>
-                             </div>
-                             <div>
+                            </div>
+                            <div>
                                 <p className="text-gray-400 text-xs">وضعیت دسترسی</p>
                                 <p className={`text-sm font-bold ${hasTrialTimeLeft ? 'text-blue-300' : 'text-amber-400'}`}>
                                     {hasTrialTimeLeft ? 'آزمایشی' : 'نیازمند تمدید'}
                                 </p>
-                             </div>
+                            </div>
                         </div>
 
                         <h3 className="text-xl font-semibold mb-4">متن گفتگوها</h3>
@@ -342,7 +342,7 @@ const UserProfileView: React.FC = () => {
                 );
             }
             case 'mentorship': {
-                 const myMentees = allUsers.filter(u => user.menteeIds?.includes(u.id));
+                const myMentees = allUsers.filter(u => user.menteeIds?.includes(u.id));
                 return (
                     <div>
                         <h2 className="text-2xl font-bold mb-6">رهجویان شما</h2>
@@ -376,7 +376,7 @@ const UserProfileView: React.FC = () => {
                 );
             }
             case 'grovekeeper': {
-                 const onConfirmPlanting = (deedId: string, photoBase64: string) => {
+                const onConfirmPlanting = (deedId: string, photoBase64: string) => {
                     dispatch({ type: 'CONFIRM_PLANTING', payload: { deedId, photoBase64 } });
                 };
                 return <GroveKeeperDashboard currentUser={user} allOrders={orders} onConfirmPlanting={onConfirmPlanting} />;
@@ -385,19 +385,19 @@ const UserProfileView: React.FC = () => {
                 return <div>محتوای این بخش به زودی اضافه خواهد شد.</div>;
         }
     };
-    
+
     const circumference = 2 * Math.PI * 54;
     const strokeDashoffset = circumference - (animatedBarkatProgress / 100) * circumference;
 
     return (
         <div className="pt-22 pb-24 bg-gray-900 text-white">
             <div className="container mx-auto px-4 py-8">
-                
+
                 {/* Profile Header */}
-                <ProfileHeader 
-                    user={user} 
-                    animatedBarkatProgress={animatedBarkatProgress} 
-                    circumference={circumference} 
+                <ProfileHeader
+                    user={user}
+                    animatedBarkatProgress={animatedBarkatProgress}
+                    circumference={circumference}
                     strokeDashoffset={strokeDashoffset}
                     activeTab={activeTab}
                     setActiveTab={setActiveTab}
@@ -439,14 +439,14 @@ const UserProfileView: React.FC = () => {
                     </main>
                 </div>
             </div>
-             {briefingMentee && (
+            {briefingMentee && (
                 <MenteeBriefingModal
                     isOpen={!!briefingMentee}
                     onClose={() => setBriefingMentee(null)}
                     mentee={briefingMentee}
                 />
             )}
-            
+
             {isDeedModalOpen && selectedDeed && (
                 <div className="fixed inset-0 bg-black/70 z-[100] flex items-center justify-center p-4" onClick={() => setIsDeedModalOpen(false)}>
                     <div className="relative max-w-md w-full" onClick={e => e.stopPropagation()}>
@@ -460,7 +460,7 @@ const UserProfileView: React.FC = () => {
                     </div>
                 </div>
             )}
-            
+
             <CoachingLabAccessModal
                 isOpen={isAccessModalOpen}
                 onClose={() => setIsAccessModalOpen(false)}

@@ -4,16 +4,16 @@ import { useAppState, useAppDispatch } from '../AppContext';
 import { View, Product } from '../types';
 import { SparklesIcon, GiftIcon, ArrowLeftIcon, HeartIcon, UserCircleIcon, CalendarDaysIcon, PencilSquareIcon, CheckCircleIcon } from './icons';
 import { getGiftRecommendation } from '../services/geminiService';
-import ProductCard from './shop/ProductCard';
+import ProductCard from '../src/features/shop/components/ProductCard';
 
 const GiftConciergeView: React.FC = () => {
     const { products, wishlist, user } = useAppState();
     const dispatch = useAppDispatch();
-    
+
     const [relation, setRelation] = useState('');
     const [occasion, setOccasion] = useState('');
     const [description, setDescription] = useState('');
-    
+
     const [isLoading, setIsLoading] = useState(false);
     const [result, setResult] = useState<{ recommendedProduct: Product | undefined, reasoning: string, suggestedMessage: string } | null>(null);
     const [error, setError] = useState<string | null>(null);
@@ -26,7 +26,7 @@ const GiftConciergeView: React.FC = () => {
             setError('لطفاً تمام فیلدها را پر کنید.');
             return;
         }
-        
+
         setIsLoading(true);
         setError(null);
         setResult(null);
@@ -38,7 +38,7 @@ const GiftConciergeView: React.FC = () => {
             );
 
             const product = products.find(p => p.id === recommendation.recommendedProductId);
-            
+
             if (product) {
                 setResult({
                     recommendedProduct: product,
@@ -64,17 +64,17 @@ const GiftConciergeView: React.FC = () => {
                 message: result.suggestedMessage,
                 fromName: user?.fullName || '',
             };
-            
+
             // We use SELECT_PALM_FOR_DEED logic but adapt it since we already have the message
             // Or we can add directly to cart. Let's use the standard add to cart for simplicity
             // but pass deedDetails.
-            dispatch({ 
-                type: 'ADD_TO_CART', 
-                payload: { 
-                    product: result.recommendedProduct, 
-                    quantity: 1, 
-                    deedDetails: deedDetails 
-                } 
+            dispatch({
+                type: 'ADD_TO_CART',
+                payload: {
+                    product: result.recommendedProduct,
+                    quantity: 1,
+                    deedDetails: deedDetails
+                }
             });
             dispatch({ type: 'TOGGLE_CART', payload: true });
         }
@@ -108,43 +108,43 @@ const GiftConciergeView: React.FC = () => {
                         <div className="space-y-5">
                             <div>
                                 <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                                    <UserCircleIcon className="w-4 h-4"/> نسبت با شما
+                                    <UserCircleIcon className="w-4 h-4" /> نسبت با شما
                                 </label>
-                                <input 
-                                    type="text" 
-                                    value={relation} 
-                                    onChange={e => setRelation(e.target.value)} 
-                                    placeholder="مثلاً: مادر، بهترین دوست، همکار" 
+                                <input
+                                    type="text"
+                                    value={relation}
+                                    onChange={e => setRelation(e.target.value)}
+                                    placeholder="مثلاً: مادر، بهترین دوست، همکار"
                                     className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-amber-500 outline-none"
                                 />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                                    <CalendarDaysIcon className="w-4 h-4"/> مناسبت
+                                    <CalendarDaysIcon className="w-4 h-4" /> مناسبت
                                 </label>
-                                <input 
-                                    type="text" 
-                                    value={occasion} 
-                                    onChange={e => setOccasion(e.target.value)} 
-                                    placeholder="مثلاً: تولد، تشکر، یادبود، شروع کار جدید" 
+                                <input
+                                    type="text"
+                                    value={occasion}
+                                    onChange={e => setOccasion(e.target.value)}
+                                    placeholder="مثلاً: تولد، تشکر، یادبود، شروع کار جدید"
                                     className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-amber-500 outline-none"
                                 />
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-300 mb-2 flex items-center gap-2">
-                                    <HeartIcon className="w-4 h-4"/> ویژگی‌های شخصیتی / علایق
+                                    <HeartIcon className="w-4 h-4" /> ویژگی‌های شخصیتی / علایق
                                 </label>
-                                <textarea 
-                                    value={description} 
-                                    onChange={e => setDescription(e.target.value)} 
+                                <textarea
+                                    value={description}
+                                    onChange={e => setDescription(e.target.value)}
                                     rows={4}
-                                    placeholder="مثلاً: عاشق طبیعت است، به شعر علاقه دارد، فردی بسیار مهربان و حامی است..." 
+                                    placeholder="مثلاً: عاشق طبیعت است، به شعر علاقه دارد، فردی بسیار مهربان و حامی است..."
                                     className="w-full bg-gray-700 border border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-amber-500 outline-none resize-none"
                                 />
                             </div>
-                            
-                            <button 
-                                onClick={handleGetSuggestion} 
+
+                            <button
+                                onClick={handleGetSuggestion}
                                 disabled={isLoading}
                                 className="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold py-3 rounded-xl transition-all shadow-lg transform hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
@@ -172,22 +172,22 @@ const GiftConciergeView: React.FC = () => {
                                 <p className="text-gray-400">منتظر دریافت اطلاعات برای پیشنهاد بهترین هدیه...</p>
                             </div>
                         )}
-                        
+
                         {result && result.recommendedProduct && (
                             <div className="animate-fade-in space-y-6">
                                 <div className="bg-green-900/30 border border-green-700/50 p-6 rounded-2xl">
                                     <h3 className="text-lg font-bold text-green-400 mb-3 flex items-center gap-2">
-                                        <SparklesIcon className="w-5 h-5"/> چرا این نخل؟
+                                        <SparklesIcon className="w-5 h-5" /> چرا این نخل؟
                                     </h3>
                                     <p className="text-gray-200 text-sm leading-relaxed italic">"{result.reasoning}"</p>
                                 </div>
 
                                 <div>
                                     <h3 className="text-lg font-bold text-white mb-4">پیشنهاد ما برای شما:</h3>
-                                    <ProductCard 
-                                        product={result.recommendedProduct} 
-                                        isWishlisted={wishlist.includes(result.recommendedProduct.id)} 
-                                        onViewDetails={() => {}} // No details needed here really
+                                    <ProductCard
+                                        product={result.recommendedProduct}
+                                        isWishlisted={wishlist.includes(result.recommendedProduct.id)}
+                                        onViewDetails={() => { }} // No details needed here really
                                         onAddToCart={handleAddToCart}
                                         onToggleWishlist={(productId) => dispatch({ type: 'TOGGLE_WISHLIST', payload: productId })}
                                         user={user}
@@ -196,13 +196,13 @@ const GiftConciergeView: React.FC = () => {
 
                                 <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700">
                                     <h3 className="text-lg font-bold text-white mb-3 flex items-center gap-2">
-                                        <PencilSquareIcon className="w-5 h-5 text-amber-400"/> پیام پیشنهادی برای کارت هدیه
+                                        <PencilSquareIcon className="w-5 h-5 text-amber-400" /> پیام پیشنهادی برای کارت هدیه
                                     </h3>
                                     <blockquote className="text-gray-300 italic border-r-4 border-amber-500 pr-4 py-2 bg-gray-700/30 rounded-r-md">
                                         "{result.suggestedMessage}"
                                     </blockquote>
-                                    <button 
-                                        onClick={() => {navigator.clipboard.writeText(result.suggestedMessage); alert('متن کپی شد!')}}
+                                    <button
+                                        onClick={() => { navigator.clipboard.writeText(result.suggestedMessage); alert('متن کپی شد!') }}
                                         className="mt-4 text-xs text-gray-400 hover:text-white flex items-center gap-1"
                                     >
                                         <CheckCircleIcon className="w-4 h-4" /> کپی متن
