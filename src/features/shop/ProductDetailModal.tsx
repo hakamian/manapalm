@@ -1,33 +1,36 @@
 
 import React, { useMemo } from 'react';
-import { Product, User } from '../types';
-import { XMarkIcon, SparklesIcon, ArrowDownTrayIcon, LeafIcon, QuoteIcon, HandshakeIcon, BanknotesIcon } from './icons';
-import InstallmentInfo from './InstallmentInfo';
-import { ProductSchema } from './seo/SchemaMarkup';
+import { Product, User } from '../../../types';
+import { PaymentPlan } from '../../../types/commerce';
+import { XMarkIcon, SparklesIcon, ArrowDownTrayIcon, LeafIcon, QuoteIcon, HandshakeIcon, BanknotesIcon } from '../../../components/icons';
+import InstallmentSelector from './components/InstallmentSelector';
+import { ProductSchema } from '../../../components/seo/SchemaMarkup';
 
 interface ProductDetailModalProps {
     product: Product;
     user: User | null;
     allProducts: Product[];
     onClose: () => void;
-    onAddToCart: (product: Product) => void;
+    onAddToCart: (product: Product, paymentPlan?: PaymentPlan) => void;
     onGenerateDescription: (productId: string) => void;
     isGenerating: boolean;
     onSelectSimilar: (product: Product) => void;
 }
 
 const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, user, allProducts, onClose, onAddToCart, onGenerateDescription, isGenerating, onSelectSimilar }) => {
+    const [selectedPlan, setSelectedPlan] = React.useState<PaymentPlan | null>(null);
+
     const similarProducts = allProducts
         .filter(p => p.category === product.category && p.id !== product.id)
         .slice(0, 4);
 
-    const hasBonus = useMemo(() => 
+    const hasBonus = useMemo(() =>
         user?.values && product.tags?.some(tag => user.values?.includes(tag)),
         [user, product]
     );
 
     const bonusPoints = hasBonus && product.points ? Math.round(product.points * 0.5) : 0;
-    
+
     // Financial Quantification (Value Proposition)
     const socialInvestment = product.price * 0.9; // 90% goes to cause
     const platformFee = product.price * 0.1;
@@ -35,10 +38,10 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, user, 
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm z-[60] flex items-center justify-center p-4 transition-opacity" onClick={onClose}>
-            <ProductSchema 
-                name={product.name} 
-                description={product.description} 
-                image={product.image} 
+            <ProductSchema
+                name={product.name}
+                description={product.description}
+                image={product.image}
                 price={product.price}
                 availability={product.stock > 0 ? 'InStock' : 'OutOfStock'}
             />
@@ -46,19 +49,19 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, user, 
                 <button onClick={onClose} className="absolute top-4 left-4 text-gray-400 hover:text-white z-20" aria-label="Close modal">
                     <XMarkIcon />
                 </button>
-                
+
                 <div className="overflow-y-auto p-0">
                     <div className="grid grid-cols-1 md:grid-cols-2">
                         {/* Image Section */}
                         <div className="relative h-64 md:h-full min-h-[300px]">
-                             <img src={product.image.replace('/400/400', '/600/600')} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
-                             <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-transparent to-transparent md:bg-gradient-to-r"></div>
-                             <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 z-10">
+                            <img src={product.image.replace('/400/400', '/600/600')} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-gradient-to-t from-stone-900 via-transparent to-transparent md:bg-gradient-to-r"></div>
+                            <div className="absolute bottom-4 right-4 md:bottom-8 md:right-8 z-10">
                                 <div className="bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs text-amber-300 border border-amber-500/30 inline-flex items-center gap-1">
                                     <SparklesIcon className="w-3 h-3" />
                                     <span>میراث ماندگار</span>
                                 </div>
-                             </div>
+                            </div>
                         </div>
 
                         {/* Content Section */}
@@ -69,7 +72,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, user, 
                             {/* Value Proposition Block (Quantified) */}
                             <div className="bg-gradient-to-br from-green-900/30 to-stone-800 rounded-xl p-5 border border-green-800/50 mb-6">
                                 <h3 className="text-sm font-bold text-green-400 mb-3 flex items-center gap-2">
-                                    <HandshakeIcon className="w-4 h-4"/>
+                                    <HandshakeIcon className="w-4 h-4" />
                                     شفافیت ارزش (ROI اجتماعی)
                                 </h3>
                                 {/* Visual Breakdown Bar */}
@@ -88,7 +91,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, user, 
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <div className="prose prose-invert prose-sm text-stone-300 mb-6">
                                 <p>{product.description}</p>
                             </div>
@@ -102,57 +105,59 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, user, 
 
                             <div className="mt-auto space-y-3">
                                 <div className="flex justify-between items-end mb-2">
-                                     <span className="text-sm text-stone-400">هزینه کل</span>
-                                     <span className="text-2xl font-bold text-white">{product.price.toLocaleString('fa-IR')} <span className="text-base font-normal">تومان</span></span>
+                                    <span className="text-sm text-stone-400">هزینه کل</span>
+                                    <span className="text-2xl font-bold text-white">{product.price.toLocaleString('fa-IR')} <span className="text-base font-normal">تومان</span></span>
                                 </div>
-                                
-                                <button onClick={() => onAddToCart(product)} className={`w-full py-4 px-6 rounded-xl font-bold text-lg transition-all transform hover:scale-[1.02] shadow-lg flex items-center justify-center gap-2 ${product.stock > 0 ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white' : 'bg-gray-700 text-gray-400 cursor-not-allowed'}`} disabled={product.stock === 0}>
-                                    {product.stock > 0 ? (
-                                        <>
-                                            <LeafIcon className="w-5 h-5" />
-                                            <span>{product.category === 'نخل میراث' ? 'شروع آیین کاشت' : 'افزودن به سبد'}</span>
-                                        </>
-                                    ) : 'فعلاً موجود نیست'}
-                                </button>
-                                {product.category === 'نخل میراث' && <InstallmentInfo user={user} price={product.price} />}
-                            </div>
-                        </div>
-                    </div>
 
-                    {/* Additional Info / Ritual Context */}
-                    {(product.botanicalInfo || product.culturalSignificance) && (
-                        <div className="bg-stone-950 p-6 md:p-8 border-t border-stone-800">
-                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                {product.botanicalInfo && (
-                                    <div>
-                                        <h3 className="text-lg font-bold text-stone-300 mb-3 flex items-center gap-2">
-                                            <LeafIcon className="w-5 h-5 text-green-500" />
-                                            شناسنامه گیاه
-                                        </h3>
-                                        <ul className="space-y-2 text-sm text-stone-400">
-                                            <li><span className="text-stone-500">نام علمی:</span> {product.botanicalInfo.scientificName}</li>
-                                            <li><span className="text-stone-500">خاستگاه:</span> {product.botanicalInfo.origin}</li>
-                                            <li><span className="text-stone-500">ویژگی:</span> {product.botanicalInfo.fruitCharacteristics}</li>
-                                        </ul>
-                                    </div>
-                                )}
-                                {product.culturalSignificance && (
-                                    <div>
-                                        <h3 className="text-lg font-bold text-stone-300 mb-3 flex items-center gap-2">
-                                            <QuoteIcon className="w-5 h-5 text-amber-500" />
-                                            روح و معنا
-                                        </h3>
-                                        <p className="text-sm text-stone-400 leading-relaxed italic border-r-2 border-stone-700 pr-4">
-                                            "{product.culturalSignificance}"
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    )}
+                            </>
+                                    ) : 'فعلاً موجود نیست'}
+                        </button>
+                        {(product.category === 'heritage' || product.price >= 5000000) && (
+                            <InstallmentSelector
+                                user={user}
+                                price={product.price}
+                                onSelectPlan={setSelectedPlan}
+                                selectedPlanId={selectedPlan?.id}
+                            />
+                        )}
+                    </div>
                 </div>
             </div>
+
+            {/* Additional Info / Ritual Context */}
+            {(product.botanicalInfo || product.culturalSignificance) && (
+                <div className="bg-stone-950 p-6 md:p-8 border-t border-stone-800">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        {product.botanicalInfo && (
+                            <div>
+                                <h3 className="text-lg font-bold text-stone-300 mb-3 flex items-center gap-2">
+                                    <LeafIcon className="w-5 h-5 text-green-500" />
+                                    شناسنامه گیاه
+                                </h3>
+                                <ul className="space-y-2 text-sm text-stone-400">
+                                    <li><span className="text-stone-500">نام علمی:</span> {product.botanicalInfo.scientificName}</li>
+                                    <li><span className="text-stone-500">خاستگاه:</span> {product.botanicalInfo.origin}</li>
+                                    <li><span className="text-stone-500">ویژگی:</span> {product.botanicalInfo.fruitCharacteristics}</li>
+                                </ul>
+                            </div>
+                        )}
+                        {product.culturalSignificance && (
+                            <div>
+                                <h3 className="text-lg font-bold text-stone-300 mb-3 flex items-center gap-2">
+                                    <QuoteIcon className="w-5 h-5 text-amber-500" />
+                                    روح و معنا
+                                </h3>
+                                <p className="text-sm text-stone-400 leading-relaxed italic border-r-2 border-stone-700 pr-4">
+                                    "{product.culturalSignificance}"
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </div>
+            </div >
+        </div >
     );
 };
 

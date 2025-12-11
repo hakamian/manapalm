@@ -8,8 +8,8 @@ import LoadingSpinner from '../LoadingSpinner'; // Ensure this component exists
 const HomeView = React.lazy(() => import('../HomeView'));
 const AboutView = React.lazy(() => import('../AboutView'));
 const HallOfHeritageView = React.lazy(() => import('../HallOfHeritageView'));
-const ShopView = React.lazy(() => import('../ShopView'));
-const CoursesView = React.lazy(() => import('../CoursesView'));
+const ShopView = React.lazy(() => import('../../src/features/shop/ShopView'));
+const CoursesView = React.lazy(() => import('../../src/features/lms/CoursesView'));
 const HerosJourneyView = React.lazy(() => import('../HerosJourneyView'));
 const UserProfileView = React.lazy(() => import('../UserProfileView'));
 const CorporateView = React.lazy(() => import('../CorporateView'));
@@ -25,14 +25,14 @@ const DailyOasisView = React.lazy(() => import('../DailyOasisView'));
 const DirectMessagesView = React.lazy(() => import('../DirectMessagesView'));
 const TransparencyDashboardView = React.lazy(() => import('../TransparencyDashboardView'));
 const ContactView = React.lazy(() => import('../ContactView'));
-const AICreationStudio = React.lazy(() => import('../AICreationStudio'));
+const AIStudioView = React.lazy(() => import('../../src/features/ai-studio/AIStudioView'));
 const MeaningCompanionView = React.lazy(() => import('../MeaningCompanionView'));
 const EnglishAcademyView = React.lazy(() => import('../EnglishAcademyView'));
 const EnglishPlacementTestView = React.lazy(() => import('../EnglishPlacementTestView'));
 const AIConversationPartnerView = React.lazy(() => import('../AIConversationPartnerView'));
 const VocabularyBuilderView = React.lazy(() => import('../VocabularyBuilderView'));
 const BusinessAcademyView = React.lazy(() => import('../BusinessAcademyView'));
-const LifeMasteryAcademyView = React.lazy(() => import('../LifeMasteryAcademyView')); 
+const LifeMasteryAcademyView = React.lazy(() => import('../LifeMasteryAcademyView'));
 const BusinessProcessModelerView = React.lazy(() => import('../BusinessProcessModelerView'));
 const DISCTestView = React.lazy(() => import('../DISCTestView'));
 const EnneagramTestView = React.lazy(() => import('../EnneagramTestView'));
@@ -54,17 +54,17 @@ const PaymentCallbackView = React.lazy(() => import('../PaymentCallbackView'));
 const PublicStoryView = React.lazy(() => import('../seo/PublicStoryView')); // New Import
 
 const MainContent: React.FC = () => {
-    const { 
-        currentView, 
-        user, 
-        allUsers, 
-        orders, 
-        communityPosts, 
-        campaign, 
-        palmTypes, 
+    const {
+        currentView,
+        user,
+        allUsers,
+        orders,
+        communityPosts,
+        campaign,
+        palmTypes,
         proposals
     } = useAppState();
-    
+
     const dispatch = useAppDispatch();
 
     // Check for payment callback in URL
@@ -76,12 +76,12 @@ const MainContent: React.FC = () => {
         }
         // Handle direct link to story (Programmatic SEO)
         if (viewParam === 'STORY') {
-             dispatch({ type: 'SET_VIEW', payload: View.PublicStory });
+            dispatch({ type: 'SET_VIEW', payload: View.PublicStory });
         }
     }, [dispatch]);
 
     const onAddProjectUpdate = (projectId: string, update: { title: string, description: string }) => {
-         console.log('Project Update:', projectId, update);
+        console.log('Project Update:', projectId, update);
     };
 
     // Render logic based on view
@@ -101,12 +101,12 @@ const MainContent: React.FC = () => {
             case View.PathOfMeaning: return <PathOfMeaningView />;
             case View.CommunityHub: return <CommunityHubView />;
             case View.Articles: return <ArticlesView />;
-            case View.AdminDashboard: 
-                return <AdminDashboardView 
-                    users={allUsers} 
-                    orders={orders} 
-                    posts={communityPosts} 
-                    campaign={campaign} 
+            case View.AdminDashboard:
+                return <AdminDashboardView
+                    users={allUsers}
+                    orders={orders}
+                    posts={communityPosts}
+                    campaign={campaign}
                     palmTypes={palmTypes}
                     onAddProjectUpdate={onAddProjectUpdate}
                 />;
@@ -115,8 +115,8 @@ const MainContent: React.FC = () => {
             case View.DIRECT_MESSAGES: return <DirectMessagesView />;
             case View.TransparencyDashboard: return <TransparencyDashboardView />;
             case View.Contact: return <ContactView />;
-            case View.AIPortal: 
-            case View.AI_CREATION_STUDIO: return <AICreationStudio initialTab="studio" />;
+            case View.AIPortal:
+            case View.AI_CREATION_STUDIO: return <AIStudioView />;
             case View.AI_ACADEMY: return <AICreationStudio initialTab="academy" />;
             case View.MeaningCompanion: return <MeaningCompanionView />;
             case View.ENGLISH_ACADEMY: return <EnglishAcademyView />;
@@ -124,7 +124,7 @@ const MainContent: React.FC = () => {
             case View.AI_CONVERSATION_PARTNER: return <AIConversationPartnerView />;
             case View.VOCABULARY_BUILDER: return <VocabularyBuilderView />;
             case View.BUSINESS_ACADEMY: return <BusinessAcademyView />;
-            case View.LIFE_MASTERY_ACADEMY: return <LifeMasteryAcademyView user={user} />; 
+            case View.LIFE_MASTERY_ACADEMY: return <LifeMasteryAcademyView user={user} />;
             case View.BUSINESS_PROCESS_MODELER: return <BusinessProcessModelerView />;
             case View.DISC_TEST: return <DISCTestView />;
             case View.ENNEAGRAM_TEST: return <EnneagramTestView />;
@@ -134,19 +134,19 @@ const MainContent: React.FC = () => {
             case View.COACHING_LAB: return <CoachingLabView />;
             case View.COACHING_SESSION: return <CoachingSessionView />;
             case View.GiftConcierge: return <GiftConciergeView />;
-            case View.Microfinance: return <MicrofinanceView />; 
+            case View.Microfinance: return <MicrofinanceView />;
             case View.SMART_CONSULTANT: return <SmartConsultantView />;
             case View.BUSINESS_MENTOR: return <BusinessMentorView />;
             case View.PAYMENT_CALLBACK: return <PaymentCallbackView />;
             case View.PublicStory: return <PublicStoryView />; // New route
-            case View['living-heritage']: return <div>Living Heritage View (Data Needed)</div>; 
+            case View['living-heritage']: return <div>Living Heritage View (Data Needed)</div>;
             case View['digital-heritage-architect']: return <DigitalHeritageArchitectPage />;
-            case View['garden-of-heroes']: 
-                return <GardenOfHeroesPage allUsers={allUsers} currentUser={user} onLoginClick={() => dispatch({type: 'TOGGLE_AUTH_MODAL', payload: true})} />;
-            case View['meaning-coach']: 
-                return user ? <MeaningCoachPage user={user} onSaveHistory={()=>{}} onUpdateProfile={(u) => dispatch({type: 'UPDATE_USER', payload: u})}/> : <HomeView />;
-            case View['community-projects']: 
-                return <CommunityProjectsPage user={user} allCommunityProjects={[]} onContribute={()=>{}} onLoginClick={() => dispatch({type: 'TOGGLE_AUTH_MODAL', payload: true})}/>; 
+            case View['garden-of-heroes']:
+                return <GardenOfHeroesPage allUsers={allUsers} currentUser={user} onLoginClick={() => dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })} />;
+            case View['meaning-coach']:
+                return user ? <MeaningCoachPage user={user} onSaveHistory={() => { }} onUpdateProfile={(u) => dispatch({ type: 'UPDATE_USER', payload: u })} /> : <HomeView />;
+            case View['community-projects']:
+                return <CommunityProjectsPage user={user} allCommunityProjects={[]} onContribute={() => { }} onLoginClick={() => dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })} />;
             default: return <HomeView />;
         }
     };

@@ -4,8 +4,8 @@ import { useAppState, useAppDispatch } from '../../AppContext';
 import { View } from '../../types';
 
 // Import Modals
-import AuthModal from '../AuthModal';
-import ShoppingCart from '../ShoppingCart';
+import AuthModal from '../../src/features/auth/AuthModal';
+import ShoppingCart from '../../src/features/shop/ShoppingCart';
 import OrderSuccessModal from '../OrderSuccessModal';
 import WelcomeModal from '../WelcomeModal';
 import PointsAwardedToast from '../PointsAwardedToast';
@@ -25,18 +25,18 @@ interface GlobalModalsProps {
 }
 
 const GlobalModals: React.FC<GlobalModalsProps> = ({ onLoginSuccess }) => {
-    const { 
-        isAuthModalOpen, 
-        isCartOpen, 
-        isOrderSuccessModalOpen, 
-        lastOrderDeeds, 
+    const {
+        isAuthModalOpen,
+        isCartOpen,
+        isOrderSuccessModalOpen,
+        lastOrderDeeds,
         lastOrderPointsEarned,
-        isWelcomeModalOpen, 
-        user, 
-        pointsToast, 
-        isPalmSelectionModalOpen, 
+        isWelcomeModalOpen,
+        user,
+        pointsToast,
+        isPalmSelectionModalOpen,
         palmTypes,
-        isDeedPersonalizationModalOpen, 
+        isDeedPersonalizationModalOpen,
         selectedPalmForPersonalization,
         isCompanionUnlockModalOpen,
         isCompanionTrialModalOpen,
@@ -71,7 +71,7 @@ const GlobalModals: React.FC<GlobalModalsProps> = ({ onLoginSuccess }) => {
                     dispatch({ type: 'CLOSE_DEED_MODALS' });
                 }}
             />
-             <WelcomeModal
+            <WelcomeModal
                 isOpen={isWelcomeModalOpen}
                 onClose={() => dispatch({ type: 'SET_WELCOME_MODAL', payload: false })}
                 onGoToProfile={() => {
@@ -87,7 +87,7 @@ const GlobalModals: React.FC<GlobalModalsProps> = ({ onLoginSuccess }) => {
                     onClose={() => dispatch({ type: 'HIDE_POINTS_TOAST' })}
                 />
             )}
-             <PalmSelectionModal
+            <PalmSelectionModal
                 isOpen={isPalmSelectionModalOpen}
                 onClose={() => dispatch({ type: 'CLOSE_DEED_MODALS' })}
                 palmTypes={palmTypes}
@@ -134,7 +134,7 @@ const GlobalModals: React.FC<GlobalModalsProps> = ({ onLoginSuccess }) => {
                 onClose={() => dispatch({ type: 'TOGGLE_MEANING_PALM_ACTIVATION_MODAL', payload: false })}
                 user={user}
             />
-             {futureVisionDeed && (
+            {futureVisionDeed && (
                 <FutureVisionModal
                     isOpen={isFutureVisionModalOpen}
                     onClose={() => dispatch({ type: 'CLOSE_FUTURE_VISION_MODAL' })}

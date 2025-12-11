@@ -4,22 +4,22 @@ import { User } from '../types';
 
 // Safely access environment variables
 const getEnv = (key: string) => {
-  try {
-    // @ts-ignore
-    if (typeof import.meta !== 'undefined' && import.meta.env) {
-      // @ts-ignore
-      return import.meta.env[key];
+    try {
+        // @ts-ignore
+        if (typeof import.meta !== 'undefined' && import.meta.env) {
+            // @ts-ignore
+            return import.meta.env[key];
+        }
+    } catch (e) {
+        console.warn('Error reading env var:', key);
     }
-  } catch (e) {
-    console.warn('Error reading env var:', key);
-  }
-  return undefined;
+    return undefined;
 };
 
 // --- CONFIGURATION ---
 // The CORRECT URL has 'uyg' in it. The typo was 'uug'.
-const DEFAULT_URL = 'https://sbjrayzghjfsmmuygwbw.supabase.co'; 
-const DEFAULT_KEY = 'sb_publishable_A7_rHrRypeOVpMKyEDEd2w_x_msAcBi'; // Replace with env var in prod
+const DEFAULT_URL = 'https://sbjrayzghjfsmmuygwbw.supabase.co';
+const DEFAULT_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNianJheXpnaGpmc21tdXlnd2J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM3MjU2NzgsImV4cCI6MjA0OTMwMTY3OH0.A7_rHrRypeOVpMKyEDEd2w_x_msAcBi1QBbPQmRYdJU'; // Real Supabase anon key
 
 // Known bad URLs to automatically clean up from user's cache
 const BAD_URLS = [
@@ -33,7 +33,7 @@ let supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY') || DEFAULT_KEY;
 if (typeof window !== 'undefined') {
     const storedUrl = localStorage.getItem('VITE_SUPABASE_URL');
     const storedKey = localStorage.getItem('VITE_SUPABASE_ANON_KEY');
-    
+
     // Auto-fix: Check if stored URL is one of the known bad ones OR contains the specific typo
     const isBadUrl = storedUrl && (BAD_URLS.includes(storedUrl) || storedUrl.includes('uugwbw'));
 
@@ -56,15 +56,15 @@ if (!isConfigured) {
 
 // Initialize Supabase Client
 export const supabase: SupabaseClient | null = isConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-          persistSession: true,
-          autoRefreshToken: true,
-          detectSessionInUrl: true,
-          flowType: 'pkce'
-      }
-  }) 
-  : null;
+    ? createClient(supabaseUrl, supabaseAnonKey, {
+        auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true,
+            flowType: 'pkce'
+        }
+    })
+    : null;
 
 // Helper to manually set keys from UI (AuthModal)
 export const setupSupabaseKeys = (url: string, key: string) => {
@@ -73,7 +73,7 @@ export const setupSupabaseKeys = (url: string, key: string) => {
     if (url) {
         localStorage.setItem('VITE_SUPABASE_URL', url);
     }
-    window.location.reload(); 
+    window.location.reload();
 };
 
 // Helper to map Supabase user to App User type

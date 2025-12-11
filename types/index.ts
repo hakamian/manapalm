@@ -3,12 +3,13 @@ export * from './ui';
 export * from './user';
 export * from './commerce';
 export * from './content';
+export * from './lms';
 export * from './education';
 export * from './ai';
 
 import { User, PointLog, Contribution } from './user';
 import { View, AppSettings, SiteConfig, CoachingRole, NavCategory, Achievement, CommunityProject, AdminKPIs, FunnelStep, DailyChestReward, LiveActivity } from './ui';
-import { Order, CartItem, Product, Campaign, PalmType, MicrofinanceProject, HeritageItem, OrderStatus } from './commerce';
+import { Order, CartItem, Product, Campaign, PalmType, MicrofinanceProject, HeritageItem, OrderStatus, ImpactCategory } from './commerce';
 import { Notification, CommunityEvent, CommunityPost, Deed, DeedUpdate, ProjectProposal, TimelineEvent, Review } from './content';
 import { Course, CoursePersonalization, WebDevProject, LMSLesson, TargetLanguage, MentorshipRequest } from './education';
 import { AIConfig } from './ai';
@@ -33,8 +34,8 @@ export interface StrategicDecree {
 
 export interface AppState {
     user: User | null;
-    users: User[]; 
-    allUsers: User[]; 
+    users: User[];
+    allUsers: User[];
     orders: Order[];
     cartItems: CartItem[];
     wishlist: string[];
@@ -58,7 +59,7 @@ export interface AppState {
     isMeaningPalmActivationModalOpen: boolean;
     isFutureVisionModalOpen: boolean;
     isVoiceOfPalmModalOpen: boolean;
-    isBottomNavVisible: boolean; 
+    isBottomNavVisible: boolean;
     pendingRedirectView?: View;
 
     lastOrderDeeds: Deed[];
@@ -67,7 +68,7 @@ export interface AppState {
     selectedPalmForPersonalization: PalmType | null;
     futureVisionDeed: Deed | null;
     voiceOfPalmDeed: Deed | null;
-    
+
     communityEvents: CommunityEvent[];
     communityPosts: CommunityPost[];
     allDeeds: Deed[];
@@ -76,11 +77,11 @@ export interface AppState {
     campaign: Campaign;
     palmTypes: PalmType[];
     products: Product[];
-    
+
     mentorshipRequests: MentorshipRequest[];
-    
+
     socialPostGeneratorData: { deed: Deed | null };
-    
+
     communityStats: {
         totalPalmsPlanted: number;
         totalJobHours: number;
@@ -91,9 +92,9 @@ export interface AppState {
         jobHours: number;
         co2Absorbed: number;
     };
-    
+
     profileInitialTab?: string;
-    
+
     appSettings: AppSettings;
     apiSettings: {
         budget: number;
@@ -102,11 +103,11 @@ export interface AppState {
     aiConfig: AIConfig;
     siteConfig: SiteConfig;
     apiSettingsHistory: any[];
-    
+
     liveActivities: LiveActivity[];
-    
+
     onboardingStep: 'none' | 'certificate';
-    
+
     coachingSession: {
         role: CoachingRole;
         topic: string;
@@ -115,13 +116,13 @@ export interface AppState {
         isRealSession: boolean;
         returnView?: View;
     } | null;
-    
+
     currentEnglishScenario?: string;
     currentVocabularyTopic?: string;
     selectedLanguage?: TargetLanguage;
 }
 
-export type Action = 
+export type Action =
     | { type: 'SET_USER'; payload: User | null }
     | { type: 'UPDATE_USER'; payload: Partial<User> }
     | { type: 'SAVE_COURSE_PERSONALIZATION'; payload: { courseId: string, personalization: CoursePersonalization } }

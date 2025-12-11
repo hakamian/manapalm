@@ -2,19 +2,36 @@
 import { Deed } from './content';
 import { WebDevProject } from './education';
 
-export type OrderStatus = 'ثبت شده' | 'در حال پردازش' | 'ارسال شده' | 'تحویل داده شده' | 'لغو شده';
+export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'completed' | 'cancelled';
+export type ProductImpactType = 'tree' | 'hour' | 'meal' | 'unit';
+
+export interface ImpactCategory {
+    id: string;
+    name: string;
+    description?: string;
+    icon?: string;
+}
 
 export interface Product {
     id: string;
     name: string;
+    description?: string;
     price: number;
-    category: string;
-    image: string;
-    popularity: number;
-    dateAdded: string;
+    image: string; // mapped to image_url in DB
+    category: 'physical' | 'digital' | 'donation' | 'service' | 'heritage';
+
+    // Impact fields
+    impactCategoryId?: string;
+    impactValue?: number;
+    impactUnit?: ProductImpactType;
+
     stock: number;
-    description: string;
-    type: 'physical' | 'digital' | 'service' | 'upgrade' | 'heritage' | 'course';
+    isActive: boolean;
+    popularity: number; // calculated
+    dateAdded: string;
+
+    // Legacy/Frontend fields (keep optional for compat)
+    type?: 'physical' | 'digital' | 'service' | 'upgrade' | 'heritage' | 'course';
     points?: number;
     tags?: string[];
     culturalSignificance?: string;
@@ -26,53 +43,45 @@ export interface Product {
     downloadUrl?: string;
     fileType?: string;
     unlocksFeatureId?: string;
+    allowedPaymentPlanIds?: string[];
 }
 
-export interface CartItem {
-    id: string;
-    productId: string;
-    name: string;
-    price: number;
+export interface CartItem extends Product {
     quantity: number;
-    image: string;
-    stock: number;
-    type: 'heritage' | 'digital' | 'service' | 'course' | 'upgrade';
-    points?: number;
-    bonusPoints?: number;
-    item?: any;
-    popularity?: number;
-    dateAdded: string;
-    deedDetails?: {
-        name: string;
-        intention: string;
-        message: string;
-        fromName?: string;
-        groveKeeperId?: string;
-    };
-    webDevDetails?: WebDevProject['initialRequest'];
-    coCreationDetails?: {
-        packageName: string;
-        siteName: string;
-        style: string;
-        colors: string;
-        features: string[];
-        tagline: string;
-    };
-    paymentPlan?: {
-        installments: number;
-    };
-    fileType?: string;
+    // Keep legacy cart/customization fields
+    deedDetails?: any;
+    webDevDetails?: any;
+    coCreationDetails?: any;
+    paymentPlan?: any; // To be deprecated or mapped to PaymentPlan
 }
 
 export interface Order {
     id: string;
     userId: string;
-    date: string;
-    items: CartItem[];
-    total: number;
-    status: string;
-    statusHistory: { status: string; date: string }[];
+    status: OrderStatus;
+    type?: 'standard' | 'installment' | 'crowdfund';
+    paymentPlanId?: string;
+    totalAmount: number;
+    paymentRef?: string;
+    createdAt: string;
+    items: CartItem[]; // joined view
+    statusHistory?: { status: OrderStatus; date: string }[];
+
+    // Legacy mapping
+    total?: number;
+    date?: string; // map to createdAt
     deeds?: Deed[];
+}
+
+export interface UserImpactLog {
+    id: string;
+    userId: string;
+    sourceType: 'order' | 'course_completion' | 'daily_quest' | 'direct_action';
+    sourceId?: string;
+    impactCategoryId?: string;
+    impactAmount: number;
+    description?: string;
+    createdAt: string;
 }
 
 export interface PalmType {
@@ -137,4 +146,33 @@ export interface MicrofinanceProject {
     status: 'funding' | 'active' | 'completed';
     backersCount: number;
     updates?: { date: string; title: string; description: string }[];
+}
+
+export interface PaymentPlan {
+    id: string;
+    title: string;
+    months: number;
+    interestRate: number;
+    minUserLevel: string;
+    isActive: boolean;
+}
+
+export interface Crowdfund {
+    id: string;
+    creatorId: string;
+    productId: string;
+    targetAmount: number;
+    collectedAmount: number;
+    expiryDate: string;
+    status: 'active' | 'completed' | 'expired';
+    contributors?: CrowdfundContributor[];
+}
+
+export interface CrowdfundContributor {
+    id: string;
+    crowdfundId: string;
+    contributorName: string;
+    amount: number;
+    message?: string;
+    createdAt: string;
 }

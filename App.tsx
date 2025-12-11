@@ -4,8 +4,8 @@ import { View, DailyChestReward, PointLog } from './types';
 import { useAppState, useAppDispatch } from './AppContext';
 import Header from './components/Header';
 import Footer from './components/Footer';
-import AuthModal from './components/AuthModal';
-import DailyMysteryChest from './components/DailyMysteryChest'; 
+import AuthModal from './src/features/auth/AuthModal';
+import DailyMysteryChest from './components/DailyMysteryChest';
 import MainContent from './components/layout/MainContent';
 import GlobalModals from './components/layout/GlobalModals';
 import WelcomeTour from './components/WelcomeTour';
@@ -22,7 +22,7 @@ import SEOIndex from './components/seo/SEOIndex';
 const App: React.FC = () => {
     const state = useAppState();
     const dispatch = useAppDispatch();
-    
+
     useRouteSync();
 
     const { user, allUsers, products } = state;
@@ -35,20 +35,20 @@ const App: React.FC = () => {
 
     const handleClaimDailyReward = (reward: DailyChestReward) => {
         if (!user) return;
-        
+
         const today = new Date().toISOString().split('T')[0];
         const newPoints = user.points + (reward.type === 'barkat' || reward.type === 'epic' ? reward.amount : 0);
         const newMana = user.manaPoints + (reward.type === 'mana' ? reward.amount : 0);
-        
+
         let newStreak = user.dailyStreak || 0;
         const lastClaimDate = user.lastDailyChestClaimed ? new Date(user.lastDailyChestClaimed) : null;
         const yesterday = new Date();
         yesterday.setDate(yesterday.getDate() - 1);
-        
+
         if (lastClaimDate && lastClaimDate.toISOString().split('T')[0] === yesterday.toISOString().split('T')[0]) {
             newStreak += 1;
         } else {
-            newStreak = 1; 
+            newStreak = 1;
         }
 
         const newPointLog: PointLog = {
@@ -69,31 +69,31 @@ const App: React.FC = () => {
             }
         });
 
-        dispatch({ 
-            type: 'SHOW_POINTS_TOAST', 
-            payload: { points: reward.amount, action: reward.message, type: reward.type === 'mana' ? 'mana' : 'barkat' } 
+        dispatch({
+            type: 'SHOW_POINTS_TOAST',
+            payload: { points: reward.amount, action: reward.message, type: reward.type === 'mana' ? 'mana' : 'barkat' }
         });
     };
 
     const mapSupabaseUserToAppUser = (supabaseUser: any, existingAppUser?: any): any => {
-        const isAdmin = supabaseUser.email === 'hhakamian@gmail.com' || 
-                        supabaseUser.email === 'admin@nakhlestanmana.com' ||
-                        (supabaseUser.phone && supabaseUser.phone === '09222453571');
-        
+        const isAdmin = supabaseUser.email === 'hhakamian@gmail.com' ||
+            supabaseUser.email === 'admin@nakhlestanmana.com' ||
+            (supabaseUser.phone && supabaseUser.phone === '09222453571');
+
         const meta = supabaseUser.user_metadata || {};
         const fullName = meta.full_name || meta.name || meta.user_name;
         const avatarUrl = meta.avatar_url || meta.picture || existingAppUser?.profileImageUrl;
 
         if (existingAppUser) {
-             return {
-                 ...existingAppUser,
-                 email: supabaseUser.email,
-                 profileImageUrl: avatarUrl,
-                 fullName: fullName || existingAppUser.fullName,
-                 name: fullName || existingAppUser.name,
-                 isAdmin: isAdmin || existingAppUser.isAdmin,
-                 id: supabaseUser.id
-             };
+            return {
+                ...existingAppUser,
+                email: supabaseUser.email,
+                profileImageUrl: avatarUrl,
+                fullName: fullName || existingAppUser.fullName,
+                name: fullName || existingAppUser.name,
+                isAdmin: isAdmin || existingAppUser.isAdmin,
+                id: supabaseUser.id
+            };
         }
 
         return {
@@ -103,7 +103,7 @@ const App: React.FC = () => {
             phone: '',
             email: supabaseUser.email,
             points: 100,
-            manaPoints: 50, 
+            manaPoints: 50,
             level: 'جوانه',
             isAdmin: isAdmin,
             joinDate: new Date().toISOString(),
@@ -117,14 +117,14 @@ const App: React.FC = () => {
     };
 
     const handleLoginSuccess = useCallback((loginData: { phone?: string; email?: string; fullName?: string }) => {
-        const existingUser = allUsers.find(u => 
-            (loginData.phone && u.phone === loginData.phone) || 
+        const existingUser = allUsers.find(u =>
+            (loginData.phone && u.phone === loginData.phone) ||
             (loginData.email && u.email === loginData.email)
         );
-        
-        const isAdminLogin = loginData.email === 'hhakamian@gmail.com' || 
-                             loginData.email === 'admin@nakhlestanmana.com' ||
-                             loginData.phone === '09222453571';
+
+        const isAdminLogin = loginData.email === 'hhakamian@gmail.com' ||
+            loginData.email === 'admin@nakhlestanmana.com' ||
+            loginData.phone === '09222453571';
 
         if (existingUser) {
             const updatedUser = isAdminLogin ? { ...existingUser, isAdmin: true } : existingUser;
@@ -137,7 +137,7 @@ const App: React.FC = () => {
                 phone: loginData.phone || '',
                 email: loginData.email,
                 points: isAdminLogin ? 50000 : 100,
-                manaPoints: isAdminLogin ? 10000 : 500, 
+                manaPoints: isAdminLogin ? 10000 : 500,
                 level: isAdminLogin ? 'استاد کهنسال' : 'جوانه',
                 isAdmin: isAdminLogin,
                 joinDate: new Date().toISOString(),
@@ -147,7 +147,7 @@ const App: React.FC = () => {
                 reflectionAnalysesRemaining: 0,
                 ambassadorPacksRemaining: 0
             };
-             dispatch({ type: 'LOGIN_SUCCESS', payload: { user: newUser as any, orders: [], keepOpen: true } });
+            dispatch({ type: 'LOGIN_SUCCESS', payload: { user: newUser as any, orders: [], keepOpen: true } });
         }
     }, [allUsers, dispatch]);
 
@@ -170,7 +170,7 @@ const App: React.FC = () => {
 
     useEffect(() => {
         if (!supabase) return;
-        
+
         supabase.auth.getSession().then(({ data: { session } }) => {
             if (session?.user) {
                 const existingUser = allUsers.find(u => u.email === session.user.email);
@@ -182,13 +182,13 @@ const App: React.FC = () => {
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
             if (session?.user) {
-                 const existingUser = allUsers.find(u => u.email === session.user.email);
-                 const appUser = mapSupabaseUserToAppUser(session.user, existingUser);
-                 if (!user || user.id !== appUser.id) {
-                     dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
-                     dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: false });
-                 }
-                 cleanAuthUrl();
+                const existingUser = allUsers.find(u => u.email === session.user.email);
+                const appUser = mapSupabaseUserToAppUser(session.user, existingUser);
+                if (!user || user.id !== appUser.id) {
+                    dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
+                    dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: false });
+                }
+                cleanAuthUrl();
             } else if (_event === 'SIGNED_OUT') {
                 if (user) {
                     dispatch({ type: 'LOGOUT' });
@@ -199,7 +199,7 @@ const App: React.FC = () => {
         return () => {
             subscription.unsubscribe();
         };
-    }, [dispatch, allUsers]); 
+    }, [dispatch, allUsers]);
 
     return (
         <div className="relative min-h-screen text-white overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-100">
@@ -216,7 +216,7 @@ const App: React.FC = () => {
             <WhatsNewModal /> {/* New Component Added Here */}
             <LiveActivityBanner />
             <Header />
-            
+
             <CommandPalette />
 
             <div className="relative z-10">
@@ -224,9 +224,9 @@ const App: React.FC = () => {
             </div>
 
             {user && canClaimChest && (
-                <DailyMysteryChest 
-                    streak={user.dailyStreak || 0} 
-                    onClaim={handleClaimDailyReward} 
+                <DailyMysteryChest
+                    streak={user.dailyStreak || 0}
+                    onClaim={handleClaimDailyReward}
                 />
             )}
 
@@ -234,7 +234,7 @@ const App: React.FC = () => {
             <AIChatWidget />
             {user && <MeaningCompanionWidget />}
             <BottomNavBar />
-            
+
             <GlobalModals onLoginSuccess={handleLoginSuccess} />
         </div>
     );
