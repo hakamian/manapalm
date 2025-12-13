@@ -3,6 +3,7 @@ import React, { createContext, useContext, useReducer, ReactNode, useEffect } fr
 import { AppState, Action, View, Deed, TimelineEvent, Order, CartItem, WebDevProject, AIConfig, TargetLanguage, Review, User, SmartAction, Campaign, CommunityPost, DeedUpdate } from './types';
 import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS, INITIAL_DEEDS, PALM_TYPES_DATA, INITIAL_PROPOSALS, INITIAL_LIVE_ACTIVITIES, INITIAL_PRODUCTS, INITIAL_NOTIFICATIONS, INITIAL_MENTORSHIP_REQUESTS, INITIAL_MICROFINANCE_PROJECTS, INITIAL_REVIEWS } from './utils/dummyData';
 import { dbAdapter } from './services/dbAdapter';
+import { supabase, mapSupabaseUser } from './services/supabaseClient';
 
 const initialNavigation = [
     {
@@ -463,13 +464,15 @@ const AppContext = createContext<{ state: AppState; dispatch: React.Dispatch<Act
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [state, dispatch] = useReducer(appReducer, initialState);
 
+
+
     useEffect(() => {
         const loadData = async () => {
             const [users, orders, posts, products] = await Promise.all([
                 dbAdapter.getAllUsers(),
                 dbAdapter.getAllOrders(),
                 dbAdapter.getAllPosts(),
-                dbAdapter.getAllProducts() // Load products
+                dbAdapter.getAllProducts()
             ]);
 
             const currentUserId = dbAdapter.getCurrentUserId();
@@ -482,12 +485,57 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     allUsers: users,
                     orders,
                     communityPosts: posts,
-                    products: products.length > 0 ? products : INITIAL_PRODUCTS, // Use loaded or default
+                    products: products.length > 0 ? products : INITIAL_PRODUCTS,
                     user: currentUser
                 }
             });
         };
         loadData();
+
+        // 🟢 AUTH LISTENER (Unified Meaning OS Fix)
+        // Keeps local state in sync with Supabase Auth (Google Login support)
+        if (supabase) {
+            const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+                console.log("🔐 Auth Event:", event);
+
+                if (event === 'SIGNED_IN' && session?.user) {
+                    const currentId = dbAdapter.getCurrentUserId();
+                    // Prevent redundant updates if already logged in matches
+                    if (currentId === session.user.id) return;
+
+                    console.log("✅ User Signed In, Syncing...");
+
+                    // 1. Try to get full profile from our DB
+                    let appUser = await dbAdapter.getUserById(session.user.id);
+
+                    // 2. If new user, map from Supabase and save
+                    if (!appUser) {
+                        console.log("🌱 New User/First Login - Creating Profile");
+                        appUser = {
+                            ...mapSupabaseUser(session.user),
+                            id: session.user.id // Ensure ID matches
+                        } as User;
+                        await dbAdapter.saveUser(appUser);
+                    }
+
+                    dispatch({
+                        type: 'LOGIN_SUCCESS',
+                        payload: {
+                            user: appUser!,
+                            orders: [],
+                            keepOpen: false
+                        }
+                    });
+                }
+                else if (event === 'SIGNED_OUT') {
+                    dispatch({ type: 'LOGOUT' });
+                }
+            });
+
+            return () => {
+                subscription.unsubscribe();
+            };
+        }
     }, []);
 
     return (

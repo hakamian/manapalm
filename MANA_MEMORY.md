@@ -1,7 +1,7 @@
 # 🧠 MANA Memory - حافظه بلند مدت پروژه نخلستان معنا
 
-> **آخرین به‌روزرسانی:** 2025-12-11 | 12:24 UTC+3:30  
-> **نسخه:** 0.1.0 → 1.0.0 (در حال گذار به Production)
+> **آخرین به‌روزرسانی:** 2025-12-13 | Unified Meaning OS V5.1 (Low-Error Mode)
+> **وضعیت سیستم:** Anti-Gravity Environment | Active
 
 ---
 
@@ -15,6 +15,31 @@
 - 🎯 مسیر بعدی را مشخص می‌کند
 
 **قانون طلایی:** هر بار که کاری انجام می‌شود، این فایل به‌روزرسانی می‌شود.
+
+---
+
+## 🧠 System Core: Unified Meaning OS V5.1
+
+> **Mode:** Low-Error / High-Stability  
+> **Environment:** Anti-Gravity (Codebase-Aware)
+
+### 🧭 Supreme Law (Low-Error Principle)
+1. **No separation:** Life = Business = Code.
+2. **Simplicity First:** Simplicity beats ambition at every step.
+3. **Mana is the Core Asset:** Energy, clarity, and nervous system stability come first.
+4. **Code Rule:** Code must reduce cognitive load, not increase it.
+5. **Uncertainty Rule:** When uncertain → choose the simpler, safer, reversible path.
+
+### 🔱 Intelligence Layers (Strict Order)
+1. **Life & Identity (ROOT):** Before major changes, check: Will this drain energy/focus?
+2. **Business Engine (TRUNK):** Focus on Profitable, Simple, Human-centered.
+3. **Execution & Code (LEAVES):** MVP First, Clean & Boring Code. Readable > Clever.
+
+### 🛠 Tech Stack Defaults
+- **Frontend:** React / Next.js + Tailwind
+- **Backend:** Supabase
+- **Deployment:** Vercel
+- **AI:** Gemini / GPT
 
 ---
 
@@ -398,6 +423,7 @@ graph TD
 
 | تاریخ | تغییر | توسط |
 |-------|-------|------|
+| 2025-12-13 14:35 | رفع کامل مشکل لاگین گوگل (Auth Listener + API Key) | Mana (CTO) |
 | 2025-12-11 12:49 | تأیید Database - 16 جدول موجود | Mana (CTO) |
 | 2025-12-11 12:30 | رفع باگ Schema و ایجاد راهنماهای Deployment | Mana (CTO) |
 | 2025-12-11 12:24 | ایجاد MANA_MEMORY.md | Mana (CTO) |
