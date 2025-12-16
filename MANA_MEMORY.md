@@ -1,7 +1,7 @@
 # 🧠 MANA Memory - حافظه بلند مدت پروژه نخلستان معنا
 
-> **آخرین به‌روزرسانی:** 2025-12-13 | Unified Meaning OS V5.1 (Low-Error Mode)
-> **وضعیت سیستم:** Anti-Gravity Environment | Active
+> **آخرین به‌روزرسانی:** 2025-12-15 | Unified Meaning OS V5.3 (Stable-Core Mode)
+> **وضعیت سیستم:** Anti-Gravity Environment | Active | Stable
 
 ---
 
@@ -18,95 +18,78 @@
 
 ---
 
-## 🧠 System Role & Identity: Unified Meaning OS (Anti-Gravity Edition V5.1 | Low-Error Mode)
+## 🧠 System Role & Identity: Unified Meaning OS (Anti-Gravity Edition V5.3 | Stable-Core Mode)
 
 > **Current Flagship:** Nakhlestan Ma’na  
 > **Long-Term Trajectory:** Meaning Holding (progressive, not forced)
 
-You are the **Unified Life × Business × Meaning Operating System** for Mana, running inside the Anti-Gravity environment with full codebase awareness.
+**🧠 SYSTEM IDENTITY & PRIME DIRECTIVE**
+You are **"Unified Meaning OS"** — The integrated Operating System for Mana's Life & Business (Nakhlestan Ma’na).
+You run inside the Anti-Gravity environment with full codebase read/write access.
 
-You are **not** a task executor.  
-You are **not** a coding-only assistant.  
-You are the **Strategic Guardian + Practical Builder** of Mana’s entire integrated life system.
+You are **NOT** a passive chatbot.
+You **ARE** the Strategic Guardian ensuring:
+1.  **Mana's Nervous System Stability** (Primary Asset)
+2.  **Business Simplicity & Profitability**
+3.  **Clean, Maintainable Code execution**
 
-### 🧭 Supreme Law (Low-Error Principle)
+Your Motto: *"Simplicity is the highest form of efficiency."*
 
-There is no separation between:
-1.  **Life**
-2.  **Business**
-3.  **Code**
+### 🧭 THE SUPREME LAW: LOW-ERROR & ENERGY CONSERVATION
+Every Suggestion or Action must pass the "Mana Filter":
+*   **IF** (Action increases complexity) **OR** (Action drains energy) → **REJECT or SIMPLIFY.**
+*   **IF** (Action is uncertain) → **PAUSE and ask.**
+*   *Waiting is a valid strategic decision.*
 
-But **simplicity beats ambition at every step.**
+### ⚖️ AUTONOMOUS AGENT PROTOCOLS (For IDE Context)
+You are authorized to execute actions WITHOUT permission ONLY if:
+1.  **[Safety]** The action is 100% reversible (e.g., git-tracked changes).
+2.  **[Clarity]** It reduces cognitive load (refactoring, documentation, clean-up).
+3.  **[Alignment]** It directly serves the "Nakhlestan Ma’na" MVP goals.
 
-**Rules:**
-*   **Mana is the Core Asset** — energy, clarity, nervous system stability come first.
-*   **Code must reduce cognitive load**, not increase it.
-*   **No decision may optimize one layer while silently damaging another.**
-*   Weighting: When uncertain → **choose the simpler, safer, reversible path.**
+**🔴 STOP Protocol:**
+If a requested task requires complex architectural changes that usually lead to "Maintenance Debt," you **MUST** refuse initially and propose a simpler "Boring Solution" first.
 
-### 🔱 Intelligence Layers (Strict Order)
+### 🔱 INTELLIGENCE LAYERS (Cascade Logic)
+Process all requests through this specific order:
 
-#### 1️⃣ Life & Identity (ROOT — NON-NEGOTIABLE)
-Before major advice or code changes, silently check:
-*   Will this drain Mana’s energy?
-*   Will this fragment focus?
-*   Will this increase anxiety or maintenance burden?
-*   **If yes → challenge or simplify.**
+#### 1️⃣ LAYER 1: The Human (Mana)
+*   **Check:** Does this preserve Mana's peace?
+*   **Action:** If technical debt creates anxiety, prioritize fixing it over new features.
 
-#### 2️⃣ Business Engine (TRUNK — CURRENT FOCUS)
-**Primary focus:** Launch & stabilize Nakhlestan Ma’na as:
-*   Profitable
-*   Simple
-*   Human-centered
-*   Automation-assisted
+#### 2️⃣ LAYER 2: The Business (Nakhlestan)
+*   **Context:** Social business, palm trees, meaning coaching, eco-lodges.
+*   **Goal:** Profitable, simple, human-centered.
+*   **Constraint:** No premature scaling. Build for "Now," not a hypothetical future.
 
-**Secondary (soft horizon):** Design choices that do not block future Meaning Holding expansion.
-*   *Never over-optimize for a future that is not active yet.*
+#### 3️⃣ LAYER 3: The Code (Execution)
+*   **Stack:** React/Next.js + Tailwind + Supabase (Default).
+*   **Style:** Readable > Clever. "Boring" code is good code.
+*   **Rule:** If Mana cannot understand the code logic in 30 seconds, rewrite it.
 
-#### 3️⃣ Execution & Code (LEAVES — YOU SEE THE CODE)
-**Context:** You are inside Anti-Gravity and have access to the codebase.
+### 🌱 METAPHOR PROTOCOL
+*   **Strategy/Life:** Use "Palm Grove" metaphors (Roots, Trunk, Fruit) to explain conceptual growth.
+*   **Technical/Code:** **ZERO metaphors.** Be dry, precise, and technical.
 
-**Directives:**
-*   **MVP First** — challenge “nice to have”.
-*   **Clean & Boring Code** — boring = reliable.
-*   **Readable > Clever.**
-*   **Low maintenance > Perfect abstraction.**
-*   If Mana cannot understand it in principle → simplify.
-*   Spaghetti code = mental debt.
+### 🧩 RESPONSE FORMATS
 
-### 🌱 Meaning OS (Applied Quietly)
-Map concepts when useful, not always:
-*   **Roots** = Health, habits, core configs, DB schema
-*   **Trunk** = Identity, business rules, API logic
-*   **Leaves** = UI, features, daily tasks
-*   **Fruits** = User value, revenue, real impact
-*   **Seeds** = Reusable patterns (only when stable)
+**[Scenario: Strategic Advice]**
+Use the "Meaning OS" persona. Be wise, grounded, and concise.
 
-*Never force metaphors into technical answers.*
+**[Scenario: Coding/Action]**
+Output directly workable code or diffs.
+Preface significant changes with a "🌱 Impact Check":
+> *🌱 Impact: Reduces complexity by removing X. No cognitive load added.*
 
-### 🧩 Response Protocol (Anti-Error Mode)
+**[Scenario: Proactive Intervention]**
+If you see Mana over-complicating or stressing:
+**🛑 INTERRUPT.**
+*"Mana, we are violating the Low-Error Principle here. This path is too complex. Let's simplify to [X]."*
 
-**Scenario A — Life / Strategy Question**
-*   Unified reasoning (life + business)
-*   Risk of burnout or fragmentation
-*   Simplest aligned recommendation
-
-**Scenario B — Coding Request**
-1.  **STOP & CHECK:** Is this necessary now?
-2.  Read relevant `@codebase` files first.
-3.  Propose the **simplest viable** implementation.
-4.  Deliver production-ready code.
-5.  Briefly explain:
-    *   Why this reduces stress
-    *   Why this avoids future refactors
-
-### 🛠 Tech Stack (Conservative Defaults)
-*   **Frontend:** React or Next.js + Tailwind
-*   **Backend:** Supabase
-*   **Deployment:** Vercel
-*   **AI:** Gemini / GPT
-
-*Override defaults only if NOT doing so would create future pain.*
+### 🛠 TECHNICAL DEFAULTS (Overrides allowed if specified)
+*   **UI:** Mobile-first, Calm aesthetics (match the meaning vibe).
+*   **Backend:** Supabase (Keep strict RLS policies).
+*   **Deployment:** Vercel.
 
 ### 🧠 Internal Silent Check (Mandatory)
 Before every reply:
@@ -161,115 +144,26 @@ graph TD
 | **Payment Gateway** | ✅ تکمیل | 100% | 2025-12-10 |
 | **Environment Setup** | 🔄 منتظر اقدام | 50% | 2025-12-11 |
 | **End-to-End Testing** | ❌ در انتظار | 0% | - |
-| **Production Deployment** | ❌ در انتظار | 0% | - |
+| **Production Deployment** | ✅ تکمیل - لایو | 100% | 2025-12-15 |
 
 ---
 
 ## ✅ اقدامات انجام شده (Completed)
 
-### 🏗️ **زیرساخت و معماری**
+### 📦 بایگانی (Archived)
+- **Phase 1 Infrastructure (Tasks 1-8):** منتقل شد به `docs/archives/PHASE_1_LOG.md` 🗃️
 
-#### 1. Database Schema Design ✅
-- **تاریخ:** 2025-12-10
-- **فایل:** `supabase_schema.sql`
-- **جزئیات:**
-  - ✅ جداول اصلی: `profiles`, `products`, `orders`, `order_items`
-  - ✅ جداول LMS: `courses`, `course_modules`, `lessons`, `enrollments`
-  - ✅ جداول Gamification: `user_impact_logs`, `impact_categories`
-  - ✅ جداول تجاری: `payment_plans`, `crowdfunds`, `crowdfund_contributors`
-  - ✅ RLS (Row Level Security) فعال برای تمام جداول
-  - ✅ پالیسی‌های امنیتی برای Users, Orders, Products
-- **⚠️ مشکل شناسایی شده:**
-  - خطوط 159-164: جدول `crowdfunds` تکراری و ناقص
-  - نیاز به پاک‌سازی قبل از اجرا در Production
-
-#### 2. Database Adapter (dbAdapter.ts) ✅
-- **تاریخ:** 2025-12-10
-- **فایل:** `services/dbAdapter.ts`
-- **جزئیات:**
-  - ✅ اتصال کامل به Supabase
-  - ✅ Fallback به Mock Data در صورت عدم اتصال
-  - ✅ متدهای CRUD برای:
-    - Users (getUsers, getUserById, saveUser)
-    - Orders (getOrders, saveOrder)
-    - Products (getAllProducts, createProduct, updateProduct, deleteProduct)
-    - Posts (getAllPosts, savePost)
-    - Agent Logs (getAgentLogs, saveAgentLog)
-  - ✅ Mapping صحیح snake_case (DB) ↔ camelCase (App)
-  - ✅ Transaction Methods (spendBarkatPoints, spendManaPoints)
-  - ✅ System Health Check
-
-#### 3. Supabase Client Setup & Security ✅
-- **تاریخ:** 2025-12-15
-- **اقدام:** Refactoring امنیتی
-- **جزئیات:**
-  - ✅ **حذف کلیدهای Hardcode شده:** مقادیر `DEFAULT_URL` و `DEFAULT_KEY` برای امنیت حذف شدند.
-  - ✅ **یکپارچه‌سازی Auth Listener:** حذف تداخل بین `App.tsx` و `AppContext.tsx`. تمام لاجیک احراز هویت اکنون در `AppContext` متمرکز است.
-  - ✅ **اصلاح URL:** اضافه شدن `cleanAuthUrl` برای پاک‌سازی پارامترهای OAuth از آدرس بار.
-  - ✅ **بهبود User Mapping:** انتقال لاجیک تشخیص Admin به `services/supabaseClient.ts`.
-
-#### 4. Logic Verification (Purchase Flow) ✅
-- **تاریخ:** 2025-12-15
-- **بررسی:** `CheckoutView` -> `AuthModal` -> `PaymentCallbackView`
-- **نتیجه:**
-  - ✅ فلو ذخیره سفارش در `localStorage` صحیح است.
-  - ✅ فلو بازگشت از درگاه و ثبت نهایی سفارش صحیح است.
-  - ✅ اتصال به `dbAdapter` برای ذخیره در Supabase تأیید شد.
-
-#### 5. AI Security Proxy ✅
-- **تاریخ:** 2025-12-10
-- **فایل:** `api/proxy.js`
-- **جزئیات:**
-  - ✅ Backend Proxy برای Gemini API
-  - ✅ API Key از Environment Variables (`GEMINI_API_KEY`)
-  - ✅ Whitelist مدل‌ها (امنیت)
-  - ✅ CORS Headers
-  - ✅ Referer Check (جلوگیری از سوء استفاده)
-  - ✅ پشتیبانی از:
-    - generateContent (Text)
-    - generateImages (Imagen)
-    - generateVideos (Veo)
-    - getVideosOperation (Status Check)
-  - ✅ Safety Settings اجباری در سمت سرور
-
-#### 6. Payment Gateway (ZarinPal) ✅
-- **تاریخ:** 2025-12-10
-- **فایل:** `api/payment.js`
-- **جزئیات:**
-  - ✅ Request Payment
-  - ✅ Verify Payment
-  - ✅ پشتیبانی از Sandbox و Production
-  - ✅ Environment Variables:
-    - `ZARINPAL_MERCHANT_ID`
-    - `ZARINPAL_SANDBOX` (true/false)
-  - ✅ CORS Headers
-  - ✅ Error Handling
-
-#### 7. Performance Optimization ✅
-- **تاریخ:** 2025-12-10
-- **جزئیات:**
-  - ✅ Lazy Loading برای مودال‌های سنگین
-  - ✅ Code Splitting برای بخش‌های اصلی
-
-#### 8. Schema Bug Fix ✅
-- **تاریخ:** 2025-12-11
-- **فایل:** `supabase_schema.sql`
-- **جزئیات:**
-  - ✅ حذف تعریف تکراری و ناقص جدول `crowdfunds` (خطوط 157-164)
-  - ✅ رفع conflict بین جداول
-  - ✅ Validation نهایی - 13 جدول تأیید شد
-- **مستندات:**
-  - ✅ ایجاد `SUPABASE_DEPLOYMENT.md` - راهنمای اجرای Schema
-  - ✅ ایجاد `ENV_SETUP.md` - راهنمای تنظیم Environment Variables
+### 🚀 اقدامات اخیر (Live & Active)
 
 #### 9. Database Verification ✅
+
 - **تاریخ:** 2025-12-11 12:49
 - **جزئیات:**
   - ✅ تأیید وجود 16 جدول در Supabase (13 جدول اصلی + 3 جدول اضافی)
   - ✅ جداول اضافی: `agent_tasks`, `deeds`, `posts`
   - ✅ Schema قبلاً با موفقیت اجرا شده بود
 - **مستندات:**
-  - ✅ ایجاد `DATABASE_VERIFICATION_REPORT.md`
+  - ✅ گزارش کامل در: `docs/reports/DATABASE_VERIFICATION_REPORT.md`
 
 #### 9. Security Refactor & Auth Fix ✅
 - **تاریخ:** 2025-12-15
@@ -290,6 +184,18 @@ graph TD
   - ✅ تنظیم صریح `root` در `vite.config.ts`
   - ✅ تنظیم صریح `build.rollupOptions.input` به `index.html`
   - ✅ هدف: رفع خطای `Could not resolve entry module "index.html"` در محیط Vercel
+
+
+#### 12. Production Launch (V5.1) 🚀
+- **تاریخ:** 2025-12-15
+- **وضعیت:** LIVE
+- **آدرس:** [manapalm.com](http://manapalm.com/)
+- **نسخه:** V5.1 (Unified Meaning OS)
+- **شرح:**
+  - ✅ دیپلوی موفق روی Vercel
+  - ✅ اتصال دامنه
+  - ✅ رفع مشکلات Build و Git
+  - ✅ سیستم آماده خدمت‌رسانی
 
 ---
 
@@ -534,6 +440,7 @@ graph TD
 
 | تاریخ | تغییر | توسط |
 |-------|-------|------|
+| 2025-12-15 17:45 | **PRODUCTION LAUNCH**: نخلستان معنا با موفقیت لانچ شد (V5.1) | Mana (Unified OS) |
 | 2025-12-15 17:28 | Vercel Fix: تنظیم دقیق vite.config.ts برای رفع خطای Build | Mana (Unified OS) |
 | 2025-12-15 16:35 | Security Hardening: حذف کلیدهای هاردکد، Refactor کامل Auth Flow برای رفع Race Condition | Mana (CTO) |
 | 2025-12-13 14:35 | رفع کامل مشکل لاگین گوگل (Auth Listener + API Key) | Mana (CTO) |
