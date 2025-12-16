@@ -1,17 +1,14 @@
-
-import { GoogleGenAI } from '@google/genai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Allowed models whitelist
 const ALLOWED_MODELS = [
-  'gemini-2.5-flash',
-  'gemini-3-pro-preview',
-  'imagen-4.0-generate-001',
-  'veo-3.1-fast-generate-preview',
-  'gemini-2.5-flash-preview-tts',
-  'gemini-2.5-flash-native-audio-preview-09-2025',
-  'gpt-4o',
-  'gpt-4o-mini',
-  'claude-3-5-sonnet'
+  'gemini-2.5-flash-lite',
+  'gemini-2.5-flash-preview-09-2025',
+  'gemini-2.0-flash',
+  'gemini-1.5-flash',
+  'gemini-1.5-pro',
+  'gemini-pro',
+  'gemini-pro-vision'
 ];
 
 export default async function handler(req, res) {
@@ -19,11 +16,11 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', true);
   const allowedOrigins = ['https://manapalm.com', 'http://localhost:3000', 'https://nakhlestan-mana.com'];
   const origin = req.headers.origin;
-  
+
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
-  
+
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
@@ -36,91 +33,54 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // 2. Referer Check (Basic Protection)
-  const referer = req.headers.referer || req.headers.origin;
-  if (!referer || !allowedOrigins.some(url => referer.startsWith(url))) {
-      // In production, uncomment this line to block external requests
-      // return res.status(403).json({ error: 'Unauthorized request source' });
-  }
-
   try {
-    const { action, model, data, provider } = req.body;
+    const { action, model, data } = req.body;
+    let targetModel = model || 'gemini-2.5-flash-lite';
 
-    // 3. Validation
-    if (model && !ALLOWED_MODELS.includes(model)) {
-      return res.status(403).json({ error: 'Model not authorized' });
+    // Map new experimental model names to stable ones if needed, or keep as is if supported
+    // Removed override to allow 2.5 usage
+    /*
+    if (targetModel.includes('gemini-2.5') || targetModel.includes('gemini-3')) {
+      targetModel = 'gemini-1.5-pro'; // Fallback to stable for now to ensure reliability
     }
-    
+    */
+
     const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
-    
+
     if (!apiKey) {
       console.error('API Key missing on server');
       return res.status(500).json({ error: 'Server configuration error' });
     }
 
-    const ai = new GoogleGenAI({ apiKey });
-    let result;
-
-    // --- ACTION HANDLERS ---
+    const genAI = new GoogleGenerativeAI(apiKey);
 
     if (action === 'generateContent') {
-      let contents = data.contents;
-      let config = data.config;
-
-      // Force Safety Settings on Server Side
-      config = {
-          ...config,
-          safetySettings: [
-              { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
-              { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' }
-          ]
-      };
-
-      const actualModel = (model.startsWith('gpt') || model.startsWith('claude')) ? 'gemini-3-pro-preview' : model;
-
-      const response = await ai.models.generateContent({
-        model: actualModel,
-        contents: contents,
-        config: config
+      const modelInstance = genAI.getGenerativeModel({
+        model: targetModel,
+        safetySettings: data.config?.safetySettings,
+        generationConfig: data.config
       });
-      
-      result = {
-        text: response.text,
-        candidates: response.candidates,
-        functionCalls: response.functionCalls
-      };
-      
-    } else if (action === 'generateImages') {
-       const response = await ai.models.generateImages({
-         model: model,
-         prompt: data.prompt,
-         config: data.config
-       });
-       
-       if (response.generatedImages) {
-           result = {
-               images: response.generatedImages.map(img => img.image.imageBytes)
-           };
-       }
-    } else if (action === 'generateVideos') {
-        const operation = await ai.models.generateVideos({
-            model: model,
-            prompt: data.prompt,
-            image: data.image,
-            config: data.config
-        });
-        result = { operation };
-        
-    } else if (action === 'getVideosOperation') {
-        const operation = await ai.operations.getVideosOperation({
-            name: data.operationName 
-        });
-        result = { operation };
-    } else {
-        return res.status(400).json({ error: 'Invalid action' });
-    }
 
-    return res.status(200).json(result);
+      // Convert "contents" format if needed, but SDK usually handles standard format
+      // Standard SDK expects "contents" array in generateContent
+      const result = await modelInstance.generateContent({
+        contents: data.contents,
+      });
+
+      const response = await result.response;
+      const text = response.text();
+
+      return res.status(200).json({
+        text: text,
+        candidates: response.candidates
+      });
+
+    } else {
+      // For other actions like image generation, currently using standard REST fallback or disabling
+      // The Node SDK focuses on text/multimodal content. 
+      // Image generation (Imagen) typically requires Vertex AI SDK or REST.
+      return res.status(400).json({ error: 'Action not supported in stable SDK migration yet' });
+    }
 
   } catch (error) {
     console.error('Proxy Error:', error);
