@@ -18,6 +18,7 @@ import {
     generateCampaignIdea,
     generateArticleDraft
 } from '../services/geminiService';
+import AutoCEOView from '../src/features/admin/AutoCEOView';
 import { POINT_ALLOCATIONS, BARKAT_LEVELS } from '../services/gamificationService';
 import { dbAdapter } from '../services/dbAdapter';
 import {
@@ -25,7 +26,7 @@ import {
     SparklesIcon, LightBulbIcon, ChatBubbleLeftRightIcon, ChartBarIcon, UserGroupIcon, CpuChipIcon, TrophyIcon, HeartIcon,
     TrashIcon, PencilIcon, ArrowPathIcon, ArrowTrendingUpIcon, FunnelIcon, MegaphoneIcon, BullseyeIcon, UserFrownIcon,
     ChevronDownIcon, RadarIcon, CogIcon, SaplingIcon, TreeIcon, MatureTreeIcon, PencilSquareIcon, PaperAirplaneIcon,
-    SunIcon, CheckCircleIcon, XMarkIcon, CalculatorIcon, ShieldExclamationIcon, PhotoIcon, ShoppingCartIcon, AcademicCapIcon
+    SunIcon, CheckCircleIcon, XMarkIcon, CalculatorIcon, ShieldExclamationIcon, PhotoIcon, ShoppingCartIcon, AcademicCapIcon, BoltIcon
 } from './icons';
 import BarChartDisplay from './BarChartDisplay';
 import ActionableDraftCard from './ActionableDraftCard';
@@ -138,7 +139,9 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
         { id: 'security', label: 'امنیت و ریسک', icon: <ShieldExclamationIcon className="w-5 h-5" /> },
         { id: 'api_management', label: 'مدیریت API', icon: <CpuChipIcon className="w-5 h-5" /> },
         { id: 'ai_reports', label: 'گزارش‌های هوشمند', icon: <SparklesIcon className="w-5 h-5" /> },
-        { id: 'settings', label: 'تنظیمات', icon: <CogIcon className="w-5 h-5" /> }
+        { id: 'ai_reports', label: 'گزارش‌های هوشمند', icon: <SparklesIcon className="w-5 h-5" /> },
+        { id: 'settings', label: 'تنظیمات', icon: <CogIcon className="w-5 h-5" /> },
+        { id: 'auto_ceo', label: 'مدیر عامل خودکار', icon: <BoltIcon className="w-5 h-5" /> }
     ];
 
     return (
@@ -221,6 +224,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                     {activeTab === 'security' && <SecurityDashboard users={users} logs={[]} transactions={orders} />}
                     {activeTab === 'api_management' && <ApiManagementDashboard />}
                     {activeTab === 'settings' && <SettingsDashboard />}
+                    {activeTab === 'auto_ceo' && <AutoCEOView />}
                 </main>
             </div>
         </div>
