@@ -25,7 +25,7 @@ const AutoCEOView: React.FC = () => {
     const [activeTab, setActiveTab] = useState<'strategy' | 'command'>('strategy');
 
     return (
-        <div className="min-h-screen bg-gray-950 text-white pt-24 pb-24">
+        <div className="bg-gray-950 text-white pb-8">
             <div className="container mx-auto px-6">
                 <div className="mb-8 text-center">
                     <div className="inline-flex items-center justify-center p-3 bg-indigo-900/30 rounded-full mb-4 ring-1 ring-indigo-500/50">
@@ -257,7 +257,7 @@ const CommandView: React.FC = () => {
                                     {task.payload?.request || 'بدون عنوان'}
                                 </span>
                                 <span className={`px-2 py-1 rounded text-xs ${task.status === 'pending' ? 'bg-yellow-900/30 text-yellow-500' :
-                                        task.status === 'completed' ? 'bg-green-900/30 text-green-500' : 'bg-gray-800 text-gray-500'
+                                    task.status === 'completed' ? 'bg-green-900/30 text-green-500' : 'bg-gray-800 text-gray-500'
                                     }`}>
                                     {task.status === 'pending' ? 'در انتظار' : task.status === 'completed' ? 'انجام شد' : task.status}
                                 </span>
