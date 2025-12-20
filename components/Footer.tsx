@@ -77,14 +77,14 @@ const Footer: React.FC = () => {
                         </ul>
                     </div>
 
-                    {/* Column 4: Contact */}
+                    {/* Column 4: Contact & Trust */}
                     <div>
                         <h3 className="text-lg font-semibold text-white mb-4">تماس با ما</h3>
                         <ul className="space-y-2">
                             <li><a href="mailto:info@nakhlestanmana.com" className="hover:text-green-400 transition-colors">info@nakhlestanmana.com</a></li>
                             <li><p>آدرس: ایران، استان بوشهر</p></li>
                         </ul>
-                        <div className="flex flex-wrap gap-4 mt-6">
+                        <div className="flex flex-wrap gap-4 mt-6 mb-6">
                             <a href="#" className="text-gray-400 hover:text-white" aria-label="X (Twitter)"><XIcon /></a>
                             <a href="#" className="text-gray-400 hover:text-white" aria-label="Instagram"><InstagramIcon /></a>
                             <a href="#" className="text-gray-400 hover:text-white" aria-label="LinkedIn"><LinkedInIcon /></a>
@@ -93,6 +93,21 @@ const Footer: React.FC = () => {
                             <a href="#" className="text-gray-400 hover:text-white" aria-label="WhatsApp"><WhatsAppIcon /></a>
                             <a href="#" className="text-gray-400 hover:text-white" aria-label="Bale"><BaleIcon /></a>
                             <a href="#" className="text-gray-400 hover:text-white" aria-label="Eitaa"><EitaaIcon /></a>
+                        </div>
+
+                        {/* Enamad (Trust Seal) */}
+                        <div className="mt-4">
+                            <div className="bg-white p-2 rounded-xl inline-block shadow-lg hover:shadow-xl transition-shadow">
+                                <a referrerPolicy="origin" target="_blank" href="https://trustseal.enamad.ir/?id=688018&Code=L3fRINUNpHHtIVrmDGYEjmRNsXfLRR2T" rel="noopener noreferrer">
+                                    <img
+                                        referrerPolicy="origin"
+                                        src="https://trustseal.enamad.ir/logo.aspx?id=688018&Code=L3fRINUNpHHtIVrmDGYEjmRNsXfLRR2T"
+                                        alt="Enamad Logo"
+                                        style={{ cursor: 'pointer' }}
+                                        {...{ 'code': 'L3fRINUNpHHtIVrmDGYEjmRNsXfLRR2T' } as any}
+                                    />
+                                </a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -106,3 +121,4 @@ const Footer: React.FC = () => {
 };
 
 export default React.memo(Footer);
+
