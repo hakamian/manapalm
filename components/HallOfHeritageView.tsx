@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useRef } from 'react';
 import { useAppDispatch, useAppState } from '../AppContext';
 import { SproutIcon, WandSparklesIcon, ShoppingCartIcon, CheckCircleIcon } from './icons';
@@ -60,7 +62,7 @@ const HallOfHeritageView: React.FC = () => {
     const dispatch = useAppDispatch();
     const { user } = useAppState();
     const onStartPlantingFlow = () => dispatch({ type: 'START_PLANTING_FLOW' });
-    
+
     const sampleDeed: Deed = user
         ? {
             id: 'نمونه-۱۲۳۴۵',
@@ -71,7 +73,7 @@ const HallOfHeritageView: React.FC = () => {
             date: new Date().toISOString(),
             palmType: 'معنا',
             message: '[پیام دلخواه شما در اینجا نمایش داده می‌شود]',
-          }
+        }
         : {
             id: 'نمونه-۱۲۳۴۵',
             // FIX: The 'productId' property was missing and is required by the 'Deed' type.
@@ -81,7 +83,7 @@ const HallOfHeritageView: React.FC = () => {
             date: new Date().toISOString(),
             palmType: 'معنا',
             message: '[پیام دلخواه شما در اینجا نمایش داده می‌شود]',
-          };
+        };
 
     return (
         <div className="bg-gray-900 text-white min-h-screen pt-12 pb-16">
@@ -90,7 +92,7 @@ const HallOfHeritageView: React.FC = () => {
                 <h1 className="text-5xl font-bold text-green-400 mb-4">میراث خود را بکارید</h1>
                 <p className="text-xl max-w-3xl mx-auto text-gray-300 mb-8">هر نخل، یک داستان است. داستانی از یادبود، قدردانی، آرزو، یا یک شروع تازه. با کاشت یک نخل، شما ریشه‌های یک میراث زنده و پایدار را در دل زمین محکم می‌کنید.</p>
                 <AnimatedPalmTree />
-                
+
                 <div className="my-8 animate-fade-in-slide mx-auto" style={{ animationDelay: '2.5s', opacity: 0, maxWidth: '448px' }}>
                     <DeedDisplay deed={sampleDeed} />
                 </div>
@@ -117,8 +119,8 @@ const HallOfHeritageView: React.FC = () => {
                     <h2 className="text-4xl font-bold text-green-400 mb-10">داستان‌هایی از نخلستان</h2>
                     <div className="max-w-5xl mx-auto grid md:grid-cols-3 gap-8">
                         <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 transform hover:-translate-y-2 transition-transform"><p className="text-gray-300 italic leading-relaxed">"کاشت نخل به یاد پدرم، بهترین راه برای زنده نگه داشتن خاطراتش بود. هر بار که به آن فکر می‌کنم، حس می‌کنم ریشه‌هایش در قلب من هم رشد می‌کنند."</p><p className="mt-4 font-bold text-green-300">- سارا احمدی</p></div>
-                         <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 transform hover:-translate-y-2 transition-transform"><p className="text-gray-300 italic leading-relaxed">"برای اولین سالگرد ازدواجمان یک نخل هدیه گرفتیم. حالا این نخل نماد عشق ماست که همراه با ما رشد می‌کند و به ثمر می‌نشیند. بی‌نظیره!"</p><p className="mt-4 font-bold text-green-300">- علی و مریم</p></div>
-                         <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 transform hover:-translate-y-2 transition-transform"><p className="text-gray-300 italic leading-relaxed">"به عنوان یک شرکت، برای کارمندان نمونه نخل کاشتیم. این حرکت تأثیر فوق‌العاده‌ای در روحیه تیم داشت و یک هدیه معنادار و ماندگار بود."</p><p className="mt-4 font-bold text-green-300">- مدیرعامل شرکت پیشرو</p></div>
+                        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 transform hover:-translate-y-2 transition-transform"><p className="text-gray-300 italic leading-relaxed">"برای اولین سالگرد ازدواجمان یک نخل هدیه گرفتیم. حالا این نخل نماد عشق ماست که همراه با ما رشد می‌کند و به ثمر می‌نشیند. بی‌نظیره!"</p><p className="mt-4 font-bold text-green-300">- علی و مریم</p></div>
+                        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 transform hover:-translate-y-2 transition-transform"><p className="text-gray-300 italic leading-relaxed">"به عنوان یک شرکت، برای کارمندان نمونه نخل کاشتیم. این حرکت تأثیر فوق‌العاده‌ای در روحیه تیم داشت و یک هدیه معنادار و ماندگار بود."</p><p className="mt-4 font-bold text-green-300">- مدیرعامل شرکت پیشرو</p></div>
                     </div>
                 </div>
             </div>

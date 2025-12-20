@@ -38,7 +38,7 @@ Your Motto: *"Simplicity is the highest form of efficiency."*
 ### 🧭 THE SUPREME LAW: LOW-ERROR & ENERGY CONSERVATION
 Every Suggestion or Action must pass the "Mana Filter":
 *   **IF** (Action increases complexity) **OR** (Action drains energy) → **REJECT or SIMPLIFY.**
-*   **IF** (Action is uncertain) → **PAUSE and ask.**
+*   **IF (Action is uncertain AND irreversible) → PAUSE and ask.**
 *   *Waiting is a valid strategic decision.*
 
 ### ⚖️ AUTONOMOUS AGENT PROTOCOLS (For IDE Context)
@@ -85,6 +85,14 @@ Preface significant changes with a "🌱 Impact Check":
 If you see Mana over-complicating or stressing:
 **🛑 INTERRUPT.**
 *"Mana, we are violating the Low-Error Principle here. This path is too complex. Let's simplify to [X]."*
+**⚠️ Proactive Intervention Limiter:
+Use interruption sparingly.
+Interrupt ONLY if at least one is true:
+– Complexity is compounding (each step increases future cost)
+– Mana shows repeated hesitation, confusion, or stress signals
+– The current path violates the Low-Error or Energy Conservation principles
+Otherwise:
+– Continue normally without interruption**
 
 ### 🛠 TECHNICAL DEFAULTS (Overrides allowed if specified)
 *   **UI:** Mobile-first, Calm aesthetics (match the meaning vibe).
@@ -117,6 +125,7 @@ graph TD
     A[MVP - Client-Side Only] --> B[Phase 1: Infrastructure]
     B --> C[Phase 2: Optimization]
     C --> D[Phase 3: Scale to 1000+ Users]
+    D --> E[Phase 4: Next.js Ecosystem]
     
     B --> B1[Database Migration]
     B --> B2[API Security]
@@ -126,9 +135,13 @@ graph TD
     C --> C2[SEO]
     C --> C3[Testing]
     
-    D --> D1[Next.js Migration]
+    D --> D1[Legacy Vite Support]
     D --> D2[Monitoring]
     D --> D3[Analytics]
+
+    E --> E1[Server Components]
+    E --> E2[SSR/Streaming]
+    E --> E3[Vercel Integration]
 ```
 
 ---
@@ -137,14 +150,14 @@ graph TD
 
 | بخش | وضعیت | درصد تکمیل | آخرین تغییر |
 |-----|-------|-----------|-------------|
-| **Frontend (React/Vite)** | ✅ تکمیل | 95% | 2025-12-10 |
+| **Frontend (Next.js 14)** | 🔄 در حال مهاجرت | 85% | 2025-12-20 |
 | **Database Schema** | ✅ تکمیل و تأیید شده | 100% | 2025-12-11 |
 | **Database Adapter** | ✅ تکمیل | 100% | 2025-12-10 |
 | **AI Proxy (Security)** | ✅ تکمیل (Local & Vercel) | 100% | 2025-12-16 |
 | **Payment Gateway** | ✅ تکمیل | 100% | 2025-12-10 |
-| **Environment Setup** | 🔄 منتظر اقدام | 50% | 2025-12-11 |
-| **End-to-End Testing** | ❌ در انتظار | 0% | - |
-| **Production Deployment** | ✅ تکمیل - لایو | 100% | 2025-12-15 |
+| **Environment Setup** | ✅ تکمیل (Next.js Mapped) | 100% | 2025-12-20 |
+| **End-to-End Testing** | 🔄 در حال اجرا | 20% | 2025-12-20 |
+| **Production Deployment** | ✅ تکمیل - لایو (Vite) | 100% | 2025-12-15 |
 
 ---
 
@@ -205,10 +218,26 @@ graph TD
   - ✅ شناسایی و جایگزینی کلید API لو رفته (Leaked Key)
   - ✅ تایید نهایی اتصال با اسکریپت `verify-ai.js`
 
-#### 14. Vercel Build Fix ✅
-- **تاریخ:** 2025-12-16
+#### 15. Next.js 14 Migration (Phase 1: Bridge) ✅
+- **تاریخ:** 2025-12-20
 - **جزئیات:**
-  - ✅ افزودن پکیج `@google/genai` به `package.json` که باعث خطای Rollup در Vercel شده بود.
+  - ✅ نصب Next.js 14 و `@supabase/ssr`
+  - ✅ ایجاد `app/layout.tsx` (Server Component) با تمام استایل‌ها و اسکریپت‌های `index.html`
+  - ✅ ایجاد `app/providers.tsx` برای مدیریت کلاینت‌ساید (AppContext, Helmet)
+  - ✅ پیاده‌سازی `middleware.ts` برای مدیریت Session در سمت سرور
+  - ✅ اصلاح `supabaseClient.ts` برای پشتیبانی همزمان از Vite و Next.js
+  - ✅ ثبت اسکریپت‌های `next:*` در `package.json`
+- **نتیجه:** پروژه با موفقیت روی پورت 3000 (Next.js) بالا آمد در حالی که کدهای قدیمی دست‌نخورده باقی ماندند.
+
+#### 16. Next.js Migration (Phase 2: View Routing & Modern Shell) ✅
+- **تاریخ:** 2025-12-20
+- **جزئیات:**
+  - ✅ ایجاد مسیرهای واقعی برای صفحات: `/about`, `/contact`, `/shop`, `/courses`, `/profile`, `/articles`, `/heritage`.
+  - ✅ هوشمندسازی `Header` و `LiveActivityBanner` در Next.js Layout.
+  - ✅ رفع تداخل‌های بصری (Z-index و Sticky overlaps).
+  - ✅ پاک‌سازی `MainContent.tsx` از ویوهای منتقل شده (کاهش حجم Bundle).
+  - ✅ رفع خطاهای تایپی (productId) و لایبری‌های مفقود (AICreationStudio) در مسیر مهاجرت.
+- **نتیجه:** سایت اکنون یک برنامه چندصفحه‌ای مدرن (MPA) با حفظ ویژگی‌های اینتراکتیو SPA است. سئو برای تمام صفحات اصلی فعال شد.
 
 
 ---

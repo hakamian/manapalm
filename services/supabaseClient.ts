@@ -5,6 +5,11 @@ import { User } from '../types';
 // Safely access environment variables
 const getEnv = (key: string) => {
     try {
+        // Priority to process.env (Next.js)
+        if (typeof process !== 'undefined' && process.env && process.env[key]) {
+            return process.env[key];
+        }
+        // Fallback to import.meta.env (Vite)
         // @ts-ignore
         if (typeof import.meta !== 'undefined' && import.meta.env) {
             // @ts-ignore

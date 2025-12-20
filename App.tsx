@@ -202,21 +202,10 @@ const App: React.FC = () => {
     }, [dispatch, allUsers]);
 
     return (
-        <div className="relative min-h-screen text-white overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-100">
-            {/* 1. Atmospheric Background */}
-            <div className="aurora-bg">
-                <div className="aurora-blob blob-1"></div>
-                <div className="aurora-blob blob-2"></div>
-                <div className="aurora-blob blob-3"></div>
-            </div>
-            <div className="noise-overlay"></div>
-
+        <>
             <SEOIndex products={products} />
             <WelcomeTour />
-            <WhatsNewModal /> {/* New Component Added Here */}
-            <LiveActivityBanner />
-            <Header />
-
+            <WhatsNewModal />
             <CommandPalette />
 
             <div className="relative z-10">
@@ -230,13 +219,12 @@ const App: React.FC = () => {
                 />
             )}
 
-            <Footer />
             <AIChatWidget />
             {user && <MeaningCompanionWidget />}
             <BottomNavBar />
 
             <GlobalModals onLoginSuccess={handleLoginSuccess} />
-        </div>
+        </>
     );
 };
 

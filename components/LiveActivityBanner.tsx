@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { useAppState, useAppDispatch } from '../AppContext';
 import { View } from '../types';
@@ -53,7 +55,7 @@ const LiveActivityBanner: React.FC = () => {
                         </div>
                     </div>
                     <div className="flex-shrink-0 pr-4 pl-6 h-full flex items-center bg-gray-800/50">
-                        <button 
+                        <button
                             onClick={handleJoinClick}
                             className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-4 rounded-full transition-colors duration-300 transform hover:scale-105"
                         >

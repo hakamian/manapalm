@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { EnvelopeIcon, PhoneIcon, MapPinIcon, XIcon, InstagramIcon, LinkedInIcon, TelegramIcon, YouTubeIcon, WhatsAppIcon, BaleIcon, EitaaIcon, SparklesIcon, PencilSquareIcon } from './icons';
 import MapComponent from './MapComponent';
@@ -49,7 +51,7 @@ const ContactView: React.FC = () => {
 
         setIsSubmitting(true);
         setSubmitMessage('');
-        
+
         // Simulate API call
         setTimeout(() => {
             setIsSubmitting(false);
@@ -104,8 +106,8 @@ const ContactView: React.FC = () => {
                         </div>
 
                         <div>
-                             <h3 className="text-2xl font-bold text-green-400 mb-4">شبکه‌های اجتماعی</h3>
-                             <div className="flex flex-wrap gap-5">
+                            <h3 className="text-2xl font-bold text-green-400 mb-4">شبکه‌های اجتماعی</h3>
+                            <div className="flex flex-wrap gap-5">
                                 <a href="#" className="text-gray-400 hover:text-white" aria-label="X (Twitter)"><XIcon /></a>
                                 <a href="#" className="text-gray-400 hover:text-white" aria-label="Instagram"><InstagramIcon /></a>
                                 <a href="#" className="text-gray-400 hover:text-white" aria-label="LinkedIn"><LinkedInIcon /></a>
@@ -116,12 +118,12 @@ const ContactView: React.FC = () => {
                                 <a href="#" className="text-gray-400 hover:text-white" aria-label="Eitaa"><EitaaIcon /></a>
                             </div>
                         </div>
-                        
+
                         <div>
-                             <h3 className="text-2xl font-bold text-green-400 mb-4">موقعیت ما</h3>
-                             <div className="rounded-lg overflow-hidden shadow-2xl border-2 border-gray-700">
+                            <h3 className="text-2xl font-bold text-green-400 mb-4">موقعیت ما</h3>
+                            <div className="rounded-lg overflow-hidden shadow-2xl border-2 border-gray-700">
                                 <MapComponent />
-                             </div>
+                            </div>
                         </div>
                     </div>
 
@@ -133,24 +135,24 @@ const ContactView: React.FC = () => {
                                 <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">نام و نام خانوادگی</label>
                                 <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} required className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-green-500" />
                             </div>
-                             <div>
+                            <div>
                                 <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">ایمیل</label>
                                 <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} required className={`w-full bg-gray-700 border rounded-md p-3 focus:outline-none focus:ring-2 ${formErrors.email ? 'border-red-500 focus:ring-red-500' : 'border-gray-600 focus:ring-green-500'}`} />
                                 {formErrors.email && <p className="text-red-400 text-sm mt-1">{formErrors.email}</p>}
                             </div>
-                             <div>
+                            <div>
                                 <label htmlFor="subject" className="block text-sm font-medium text-gray-300 mb-2">موضوع</label>
                                 <input type="text" id="subject" name="subject" value={formData.subject} onChange={handleChange} required className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-green-500" />
                             </div>
                             <div>
                                 <div className="flex justify-between items-center mb-2">
                                     <label htmlFor="message" className="block text-sm font-medium text-gray-300">پیام شما</label>
-                                     <button 
-                                        type="button" 
-                                        onClick={() => handleMessageAIAssist(formData.message ? 'improve' : 'generate')} 
-                                        disabled={isMessageAIAssistLoading} 
+                                    <button
+                                        type="button"
+                                        onClick={() => handleMessageAIAssist(formData.message ? 'improve' : 'generate')}
+                                        disabled={isMessageAIAssistLoading}
                                         className="flex items-center gap-1 text-xs py-1 px-2 bg-blue-600 hover:bg-blue-700 rounded-full text-white disabled:bg-gray-500" title="کمک گرفتن از هوشمانا">
-                                        <SparklesIcon className="w-4 h-4"/>
+                                        <SparklesIcon className="w-4 h-4" />
                                         <span>{formData.message ? 'بهبود با هوشمانا' : 'کمک از هوشمانا'}</span>
                                     </button>
                                 </div>
@@ -167,7 +169,7 @@ const ContactView: React.FC = () => {
                                     {isSubmitting ? 'در حال ارسال...' : 'ارسال پیام'}
                                 </button>
                             </div>
-                             {submitMessage && (
+                            {submitMessage && (
                                 <div className="text-center p-3 rounded-md bg-green-900/50 text-green-300">
                                     {submitMessage}
                                 </div>

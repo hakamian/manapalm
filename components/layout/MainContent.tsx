@@ -6,27 +6,21 @@ import LoadingSpinner from '../LoadingSpinner'; // Ensure this component exists
 
 // Lazy load all views to split the bundle
 const HomeView = React.lazy(() => import('../HomeView'));
-const AboutView = React.lazy(() => import('../AboutView'));
-const HallOfHeritageView = React.lazy(() => import('../HallOfHeritageView'));
-const ShopView = React.lazy(() => import('../../src/features/shop/ShopView'));
-const CoursesView = React.lazy(() => import('../../src/features/lms/CoursesView'));
 const HerosJourneyView = React.lazy(() => import('../HerosJourneyView'));
-const UserProfileView = React.lazy(() => import('../UserProfileView'));
 const CorporateView = React.lazy(() => import('../CorporateView'));
 const OurGroveView = React.lazy(() => import('../OurGroveView'));
 const MeaningCoachingScholarshipView = React.lazy(() => import('../MeaningCoachingScholarshipView'));
 const CompassUnlockChatView = React.lazy(() => import('../CompassUnlockChatView'));
 const PathOfMeaningView = React.lazy(() => import('../PathOfMeaningView'));
 const CommunityHubView = React.lazy(() => import('../CommunityHubView'));
-const ArticlesView = React.lazy(() => import('../ArticlesView'));
 const AdminDashboardView = React.lazy(() => import('../AdminDashboardView'));
 const CoCreationView = React.lazy(() => import('../CoCreationView'));
 const DailyOasisView = React.lazy(() => import('../DailyOasisView'));
 const DirectMessagesView = React.lazy(() => import('../DirectMessagesView'));
 const TransparencyDashboardView = React.lazy(() => import('../TransparencyDashboardView'));
-const ContactView = React.lazy(() => import('../ContactView'));
 const AIStudioView = React.lazy(() => import('../../src/features/ai-studio/AIStudioView'));
 const AutoCEOView = React.lazy(() => import('../../src/features/admin/AutoCEOView'));
+const AICreationStudio = React.lazy(() => import('../AICreationStudio'));
 const MeaningCompanionView = React.lazy(() => import('../MeaningCompanionView'));
 const EnglishAcademyView = React.lazy(() => import('../EnglishAcademyView'));
 const EnglishPlacementTestView = React.lazy(() => import('../EnglishPlacementTestView'));
@@ -89,19 +83,13 @@ const MainContent: React.FC = () => {
     const renderView = () => {
         switch (currentView) {
             case View.Home: return <HomeView />;
-            case View.About: return <AboutView />;
-            case View.HallOfHeritage: return <HallOfHeritageView />;
-            case View.Shop: return <ShopView />;
-            case View.Courses: return <CoursesView />;
             case View.HerosJourney: return <HerosJourneyView />;
-            case View.UserProfile: return <UserProfileView />;
             case View.Corporate: return <CorporateView />;
             case View.OurGrove: return <OurGroveView />;
             case View.MeaningCoachingScholarship: return <MeaningCoachingScholarshipView />;
             case View.CompassUnlockChat: return <CompassUnlockChatView />;
             case View.PathOfMeaning: return <PathOfMeaningView />;
             case View.CommunityHub: return <CommunityHubView />;
-            case View.Articles: return <ArticlesView />;
             case View.AdminDashboard:
                 return <AdminDashboardView
                     users={allUsers}
@@ -115,7 +103,6 @@ const MainContent: React.FC = () => {
             case View.DailyOasis: return <DailyOasisView />;
             case View.DIRECT_MESSAGES: return <DirectMessagesView />;
             case View.TransparencyDashboard: return <TransparencyDashboardView />;
-            case View.Contact: return <ContactView />;
             case View.AIPortal:
             case View.AI_CREATION_STUDIO: return <AIStudioView />;
             case View.AutoCEO: return <AutoCEOView />;

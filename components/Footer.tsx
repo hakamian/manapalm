@@ -1,3 +1,4 @@
+'use client';
 
 import React, { useState } from 'react';
 import { View } from '../types';
@@ -48,21 +49,21 @@ const Footer: React.FC = () => {
 
                     {/* Column 2: Newsletter */}
                     <div className="col-span-1 md:col-span-2 lg:col-span-1">
-                         <h3 className="text-lg font-semibold text-white mb-4">خبرنامه</h3>
-                         <p className="mb-4 text-sm">برای دریافت آخرین اخبار و پیشنهادها، در خبرنامه ما عضو شوید.</p>
-                         <form onSubmit={handleSubscribe}>
-                             <input 
+                        <h3 className="text-lg font-semibold text-white mb-4">خبرنامه</h3>
+                        <p className="mb-4 text-sm">برای دریافت آخرین اخبار و پیشنهادها، در خبرنامه ما عضو شوید.</p>
+                        <form onSubmit={handleSubscribe}>
+                            <input
                                 type="email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 placeholder="ایمیل شما"
                                 className="w-full bg-gray-700 border border-gray-600 rounded-md py-2 px-3 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
-                             />
-                             <button type="submit" className="w-full mt-2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors">
-                                 عضویت
-                             </button>
-                             {message && <p className="text-sm mt-2 text-green-300">{message}</p>}
-                         </form>
+                            />
+                            <button type="submit" className="w-full mt-2 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition-colors">
+                                عضویت
+                            </button>
+                            {message && <p className="text-sm mt-2 text-green-300">{message}</p>}
+                        </form>
                     </div>
 
                     {/* Column 3: Quick Links */}
@@ -80,10 +81,10 @@ const Footer: React.FC = () => {
                     <div>
                         <h3 className="text-lg font-semibold text-white mb-4">تماس با ما</h3>
                         <ul className="space-y-2">
-                           <li><a href="mailto:info@nakhlestanmana.com" className="hover:text-green-400 transition-colors">info@nakhlestanmana.com</a></li>
-                           <li><p>آدرس: ایران، استان بوشهر</p></li>
+                            <li><a href="mailto:info@nakhlestanmana.com" className="hover:text-green-400 transition-colors">info@nakhlestanmana.com</a></li>
+                            <li><p>آدرس: ایران، استان بوشهر</p></li>
                         </ul>
-                         <div className="flex flex-wrap gap-4 mt-6">
+                        <div className="flex flex-wrap gap-4 mt-6">
                             <a href="#" className="text-gray-400 hover:text-white" aria-label="X (Twitter)"><XIcon /></a>
                             <a href="#" className="text-gray-400 hover:text-white" aria-label="Instagram"><InstagramIcon /></a>
                             <a href="#" className="text-gray-400 hover:text-white" aria-label="LinkedIn"><LinkedInIcon /></a>

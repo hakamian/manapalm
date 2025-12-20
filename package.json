@@ -6,17 +6,22 @@
   "homepage": "https://manapalm.com",
   "scripts": {
     "dev": "vite",
+    "next:dev": "next dev",
     "build": "vite build",
+    "next:build": "next build",
     "preview": "vite preview",
-    "server": "node local-server.js"
+    "server": "node local-server.js",
+    "next:start": "next start"
   },
   "dependencies": {
     "@google/genai": "^1.33.0",
     "@google/generative-ai": "^0.21.0",
     "@sentry/react": "^7.114.0",
-    "@supabase/supabase-js": "^2.39.7",
+    "@supabase/ssr": "^0.8.0",
+    "@supabase/supabase-js": "^2.89.0",
     "cloudinary": "^2.0.1",
     "jspdf": "^2.5.1",
+    "next": "^14.2.35",
     "pdfjs-dist": "^5.4.394",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

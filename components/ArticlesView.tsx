@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo } from 'react';
 import { Article } from '../types';
 
@@ -13,7 +15,7 @@ const mockArticles: Article[] = [
         excerpt: 'هوش مصنوعی دیگر تنها در انحصار شرکت‌های بزرگ نیست. مدل‌های قدرتمندی مانند Gemini می‌توانند به کسب‌وکارهای اجتماعی در بازاریابی، مدیریت و تحلیل داده‌ها کمک شایانی کنند.',
         content: 'در این مقاله، به بررسی کاربردهای عملی مدل Gemini برای سازمان‌های غیرانتفاعی و کسب‌وکارهای اجتماعی می‌پردازیم. از تولید محتوای جذاب برای کمپین‌های جذب سرمایه گرفته تا تحلیل بازخورد مشتریان برای بهبود خدمات، Gemini می‌تواند به عنوان یک همکار هوشمند و خستگی‌ناپذیر عمل کند. ما موارد مطالعاتی واقعی را بررسی می‌کنیم.', type: 'official', likes: 210, authorImage: 'https://i.pravatar.cc/150?u=sara-mohammadi'
     },
-     {
+    {
         id: 'cs1', title: 'داستان نخل من: هدیه‌ای برای پدربزرگ', author: 'مریم صالحی', date: '۱۴۰۳/۰۵/۰۷', category: 'داستان جامعه', image: 'https://picsum.photos/seed/grandpa-story/800/600',
         excerpt: 'وقتی به دنبال هدیه‌ای متفاوت برای تولد ۸۰ سالگی پدربزرگم بودم، با نخلستان معنا آشنا شدم. کاشت یک نخل به نام او، بهترین راه برای قدردانی از ریشه‌های محکمی بود که به ما داده است.',
         content: 'متن کامل داستان در اینجا قرار می‌گیرد...', type: 'community', likes: 350, authorImage: 'https://i.pravatar.cc/150?u=maryam-salehi'
@@ -33,12 +35,12 @@ const mockArticles: Article[] = [
         excerpt: 'خرما، این طلای شیرین جنوب، سرشار از مواد مغذی است. بیاموزید چگونه این میوه پرانرژی را در رژیم غذایی روزانه خود بگنجانید.',
         content: 'متن کامل مقاله در اینجا قرار می‌گیرد...', type: 'official', likes: 95, authorImage: 'https://i.pravatar.cc/150?u=maryam-hosseini'
     },
-     {
+    {
         id: 'a5', title: 'نقش کشاورزی ارگانیک در حفظ تنوع زیستی', author: 'دکتر علی رضایی', date: '۱۴۰۳/۰۴/۲۸', category: 'کشاورزی پایدار', image: 'https://picsum.photos/seed/organic-farming/800/600',
         excerpt: 'کشاورزی ارگانیک تنها به معنای عدم استفاده از سموم شیمیایی نیست، بلکه رویکردی جامع برای احیای خاک، حفظ گونه‌های جانوری و ساختن آینده‌ای سالم‌تر برای سیاره ما است.',
         content: 'متن کامل مقاله در اینجا قرار می‌گیرد...', type: 'official', likes: 140, authorImage: 'https://i.pravatar.cc/150?u=ali-rezaei'
     },
-     {
+    {
         id: 'a6', title: 'کوچینگ معنا: چگونه هدف واقعی خود را در زندگی پیدا کنیم؟', author: 'مهندس سارا محمدی', date: '۱۴۰۳/۰۴/۲۵', category: 'سبک زندگی', image: 'https://picsum.photos/seed/coaching-meaning/800/600',
         excerpt: 'در دنیای پرشتاب امروز، بسیاری از ما احساس گم‌گشتگی می‌کنیم. کوچینگ معنا به شما کمک می‌کند تا با شناخت ارزش‌های درونی خود، قطب‌نمای زندگی‌تان را پیدا کرده و در مسیر درست حرکت کنید.',
         content: 'متن کامل مقاله در اینجا قرار می‌گیرد...', type: 'official', likes: 195, authorImage: 'https://i.pravatar.cc/150?u=sara-mohammadi'
@@ -71,7 +73,7 @@ const ArticleCard: React.FC<{ article: Article }> = ({ article }) => (
 const FeaturedArticleCard: React.FC<{ article: Article }> = ({ article }) => (
     <div className="bg-gray-800 rounded-lg shadow-2xl overflow-hidden md:flex border border-gray-700 group">
         <div className="md:w-1/2">
-             <img src={article.image} alt={article.title} className="w-full h-64 md:h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+            <img src={article.image} alt={article.title} className="w-full h-64 md:h-full object-cover transition-transform duration-300 group-hover:scale-105" />
         </div>
         <div className="md:w-1/2 p-8 flex flex-col justify-center">
             <p className="text-sm text-green-400 mb-2 uppercase font-semibold tracking-wider">مقاله ویژه</p>
@@ -82,7 +84,7 @@ const FeaturedArticleCard: React.FC<{ article: Article }> = ({ article }) => (
                 <span className="mx-2">|</span>
                 <span>{article.date}</span>
             </div>
-             <button className="mt-6 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-md transition-colors self-start">
+            <button className="mt-6 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-md transition-colors self-start">
                 ادامه مطلب
             </button>
         </div>
@@ -113,10 +115,10 @@ const ArticlesView: React.FC = () => {
                 return titleMatch || excerptMatch || contentMatch;
             });
     }, [searchTerm, selectedCategory]);
-    
+
     const featuredArticle = filteredArticles[0];
     const paginatedArticles = filteredArticles.slice(1); // Exclude the featured one
-    
+
     const totalPages = Math.ceil(paginatedArticles.length / ITEMS_PER_PAGE);
     const currentArticles = paginatedArticles.slice(
         (currentPage - 1) * ITEMS_PER_PAGE,
@@ -141,7 +143,7 @@ const ArticlesView: React.FC = () => {
                     کاوشی عمیق در دنیای کشاورزی پایدار، کسب‌وکارهای اجتماعی، و فناوری‌های نوین برای ساختن آینده‌ای بهتر.
                 </p>
             </div>
-            
+
             <div className="container mx-auto px-6 py-12">
                 {/* Filters and Search */}
                 <div className="mb-10">
@@ -180,7 +182,7 @@ const ArticlesView: React.FC = () => {
                         <div className="mb-12">
                             <FeaturedArticleCard article={featuredArticle} />
                         </div>
-                        
+
                         {/* Articles Grid */}
                         {currentArticles.length > 0 && (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">

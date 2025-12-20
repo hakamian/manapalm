@@ -1,3 +1,4 @@
+'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { HeartIcon, ShareIcon, EyeIcon, XMarkIcon, SparklesIcon, FireIcon, Squares2x2Icon, Bars3Icon, CloudIcon, LockClosedIcon, CheckCircleIcon, MagnifyingGlassIcon, GiftIcon, ArrowLeftIcon } from '../../../components/icons';

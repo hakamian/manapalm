@@ -1,3 +1,4 @@
+'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
 import { User, View, Product, CartItem } from '../types';
@@ -52,12 +53,13 @@ const UserProfileView: React.FC = () => {
         // Simple add to cart logic reusing existing dispatch
         const cartItem: CartItem = {
             id: product.id,
-            productId: product.id,
             name: product.name,
             price: product.price,
             quantity: 1,
             image: product.image,
             stock: product.stock,
+            category: product.category,
+            isActive: product.isActive,
             type: product.type as 'heritage' | 'digital' | 'service' | 'course' | 'upgrade',
             points: product.points,
             popularity: 100,

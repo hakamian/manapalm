@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { ChevronDownIcon, ClockIcon, ChartBarIcon, UsersIcon, PlayIcon, SparklesIcon } from '../../../components/icons';
 import { LMSCourse } from '../../../types/lms';

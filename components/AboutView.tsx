@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import TeamView from './TeamView';
 import { View } from '../types';
@@ -18,8 +20,8 @@ const AboutView: React.FC = () => {
                     <p className="text-xl max-w-3xl mx-auto mb-12">
                         ما باور داریم که هر دانه می‌تواند جنگلی را بسازد و هر انسان می‌تواند معنایی عمیق در زندگی خود و دیگران بکارد.
                     </p>
-                    <img 
-                        src="https://picsum.photos/seed/thriving-grove/1200/500" 
+                    <img
+                        src="https://picsum.photos/seed/thriving-grove/1200/500"
                         alt="A thriving palm grove under a hopeful sky"
                         className="rounded-lg shadow-2xl w-full max-w-5xl mx-auto object-cover h-auto"
                     />
@@ -36,7 +38,7 @@ const AboutView: React.FC = () => {
                         </p>
                     </div>
                     <div className="flex justify-center">
-                         <img src="https://picsum.photos/seed/community-hands/500/500" alt="Our Mission" className="rounded-lg shadow-2xl object-cover w-full h-80" />
+                        <img src="https://picsum.photos/seed/community-hands/500/500" alt="Our Mission" className="rounded-lg shadow-2xl object-cover w-full h-80" />
                     </div>
                 </div>
 
@@ -60,27 +62,27 @@ const AboutView: React.FC = () => {
                 </div>
 
                 {/* Impact Section */}
-                 <div className="text-center mb-16">
+                <div className="text-center mb-16">
                     <h2 className="text-4xl font-bold mb-10">تأثیر ما تا امروز</h2>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
                             <p className="text-4xl font-bold text-green-400">۱۵۰۰+</p>
                             <p className="text-gray-400 mt-2">نخل کاشته شده</p>
                         </div>
-                         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
                             <p className="text-4xl font-bold text-green-400">۵۰+</p>
                             <p className="text-gray-400 mt-2">خانواده بهره‌مند</p>
                         </div>
-                         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
                             <p className="text-4xl font-bold text-green-400">۱۰ هکتار</p>
                             <p className="text-gray-400 mt-2">زمین احیا شده</p>
                         </div>
-                         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+                        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
                             <p className="text-4xl font-bold text-green-400">۵</p>
                             <p className="text-gray-400 mt-2">محصول جدید</p>
                         </div>
                     </div>
-                     <div className="mt-12">
+                    <div className="mt-12">
                         <button onClick={onStartPlantingFlow} className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-110 shadow-[0_5px_15px_rgba(74,222,128,0.4)]">
                             شما هم در این تاثیر سهیم شوید
                         </button>
