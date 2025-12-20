@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "vite",
     "next:dev": "next dev",
-    "build": "vite build",
+    "build": "next build",
     "next:build": "next build",
     "preview": "vite preview",
     "server": "node local-server.js",
