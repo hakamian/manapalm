@@ -1,4 +1,3 @@
-'use client';
 import React from 'react';
 import { Providers } from './providers';
 import Script from 'next/script';
