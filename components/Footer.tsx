@@ -104,6 +104,9 @@ const Footer: React.FC = () => {
                                         src="https://trustseal.enamad.ir/logo.aspx?id=688018&Code=L3fRINUNpHHtIVrmDGYEjmRNsXfLRR2T"
                                         alt="Enamad Logo"
                                         style={{ cursor: 'pointer' }}
+                                        width="125"
+                                        height="136"
+                                        loading="lazy"
                                         {...{ 'code': 'L3fRINUNpHHtIVrmDGYEjmRNsXfLRR2T' } as any}
                                     />
                                 </a>

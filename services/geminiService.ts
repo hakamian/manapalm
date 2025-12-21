@@ -1,5 +1,5 @@
 
-import { callProxy, getFallbackMessage } from './ai/core';
+import { callProxy, getFallbackMessage, DEFAULT_FREE_MODEL } from './ai/core';
 import {
     ChatMessage, User, PersonalizedEnglishScenario, ProcessStep, VocabularyItem,
     ArticleDraft, Deed, AdvisorType, LMSModule, LMSLesson, TargetLanguage,
@@ -96,7 +96,7 @@ export const generatePlacementQuestions = async (language: TargetLanguage, inter
     Structure: [{"text": "Question?", "options": ["A", "B", "C", "D"]}]`;
 
     try {
-        const apiCall = callProxy('generateContent', 'gemini-2.5-flash', {
+        const apiCall = callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: {
                 responseMimeType: 'application/json',
@@ -133,7 +133,7 @@ export const generateText = async (
     model?: AIModel
 ): Promise<{ text: string }> => {
     try {
-        const modelName = model || 'gemini-2.5-flash';
+        const modelName = model || DEFAULT_FREE_MODEL;
         const result = await callProxy('generateContent', modelName, {
             provider, // Pass provider to proxy
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
@@ -183,7 +183,7 @@ export const generateStrategicDecree = async (topic: string, solutions: string[]
     `;
 
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: {
                 responseMimeType: 'application/json',
@@ -204,7 +204,7 @@ export const sendChatMessage = async (
     history: ChatMessage[],
     newMessage: string,
     systemInstruction?: string,
-    model: string = 'gemini-3-pro-preview'
+    model: string = DEFAULT_FREE_MODEL
 ): Promise<{ text: string }> => {
     try {
         const contents = [
@@ -258,7 +258,7 @@ export const getAIAssistedText = async (options: {
 export const generateWebPrototype = async (userPrompt: string): Promise<string> => {
     const systemInstruction = `You are an expert Frontend Developer. Generate a clean, single-file HTML/CSS/JS prototype using Tailwind CSS. Return ONLY the code, no explanation.`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: `Create a web prototype for: ${userPrompt}` }] }],
             config: { systemInstruction, temperature: 0.2 }
         });
@@ -291,7 +291,7 @@ export const getJournalReflection = async (entry: string): Promise<string> => {
 export const generatePersonalizedEnglishScenarios = async (user: User): Promise<PersonalizedEnglishScenario[]> => {
     const prompt = `Generate 3 personalized English learning role-play scenarios...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -309,7 +309,7 @@ export const generatePersonalizedEnglishScenarios = async (user: User): Promise<
 export const generateBusinessProcess = async (promptText: string): Promise<{ steps: ProcessStep[] }> => {
     const prompt = `Create a detailed SOP (Standard Operating Procedure) for: "${promptText}". Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -322,7 +322,7 @@ export const generateBusinessProcess = async (promptText: string): Promise<{ ste
 export const getVocabularyList = async (topic: string, level: string): Promise<{ vocabulary: VocabularyItem[] }> => {
     const prompt = `Generate a vocabulary list for topic "${topic}" at level "${level}". Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -347,7 +347,7 @@ export const generateExecutionPlan = async (decision: { title: string; descripti
 export const generateOperationalPlans = async (decision: string): Promise<{ plans: { title: string; description: string; priority: number }[] }> => {
     const prompt = `Generate 2 operational plans for this decision... Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -365,7 +365,7 @@ export const getAdvisorChatResponse = async (query: string, advisor: AdvisorType
 export const generateCampaignIdea = async (data: any): Promise<any> => {
     const prompt = `Generate a new campaign idea... Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -378,7 +378,7 @@ export const generateCampaignIdea = async (data: any): Promise<any> => {
 export const generateArticleDraft = async (topic: string): Promise<ArticleDraft> => {
     const prompt = `Write a blog post draft about '${topic}'... Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -398,7 +398,7 @@ export const generateDailyChallenge = async (user: User): Promise<any> => {
     }
 
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -411,7 +411,7 @@ export const generateDailyChallenge = async (user: User): Promise<any> => {
 export const generatePalmVoice = async (deed: Deed, context: { season: string; weather: string }): Promise<{ message: string; mood: string }> => {
     const prompt = `You are the spirit of a Date Palm tree... Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -462,7 +462,7 @@ export const generateSyllabus = async (language: TargetLanguage, level: string, 
     Return ONLY valid JSON. No markdown.`;
 
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -490,7 +490,7 @@ export const generateLessonContent = async (lessonTitle: string, language: Targe
     `;
 
     try {
-        const result = await callProxy('generateContent', 'gemini-2.5-flash', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
         });
         return result.text || '';
@@ -533,7 +533,7 @@ export const generateSessionReport = async (
     `;
 
     try {
-        const apiCall = callProxy('generateContent', 'gemini-2.5-flash', {
+        const apiCall = callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: {
                 responseMimeType: 'application/json',
@@ -569,7 +569,7 @@ export const getPersonalizedProductRecommendations = async (user: User, products
 export const getBoardMeetingAdvice = async (query: string, advisors: AdvisorType[], platformData: any): Promise<Advice> => {
     const prompt = `Simulate a board meeting with advisors...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -608,7 +608,7 @@ export const generateSegmentActionPlan = async (advisor: AdvisorType, segmentInf
 export const generateOpportunityRadarInsights = async (data: { users: User[], orders: Order[], posts: CommunityPost[] }): Promise<{ opportunity: any, threat: any, trend: any }> => {
     const prompt = `Analyze platform data to identify an opportunity, a threat, and a trend... Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -621,7 +621,7 @@ export const generateOpportunityRadarInsights = async (data: { users: User[], or
 export const synthesizeDecisionFromOpinions = async (opinions: IndividualOpinion[]): Promise<{ decision: string }> => {
     const prompt = `Synthesize a single strategic decision from these opinions... Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -634,7 +634,7 @@ export const synthesizeDecisionFromOpinions = async (opinions: IndividualOpinion
 export const generateProactiveWeeklyReport = async (data: any): Promise<ProactiveReport> => {
     const prompt = `Generate a proactive weekly report... Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -647,7 +647,7 @@ export const generateProactiveWeeklyReport = async (data: any): Promise<Proactiv
 export const getStrategicAdvice = async (query: string, advisor: AdvisorType, data: any): Promise<{ suggestions: Suggestion[] }> => {
     const prompt = `As a ${advisor} advisor, provide strategic advice... Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -660,7 +660,7 @@ export const getStrategicAdvice = async (query: string, advisor: AdvisorType, da
 export const analyzeProjectProposal = async (proposal: { title: string; description: string }): Promise<{ pros: string[]; cons: string[]; potentialImpact: string }> => {
     const prompt = `Analyze this project proposal... Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -673,7 +673,7 @@ export const analyzeProjectProposal = async (proposal: { title: string; descript
 export const getHyperPersonalizedAnalysis = async (user: User): Promise<HyperPersonalizedReport> => {
     const prompt = `Analyze this user profile: ${JSON.stringify(user)}. Provide a 'coreValue', 'currentFocus', and a 'suggestedMission' (title and description) in JSON format. Respond in Persian values.`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -686,7 +686,7 @@ export const getHyperPersonalizedAnalysis = async (user: User): Promise<HyperPer
 export const getJournalAnalysis = async (entries: string[], goal: string): Promise<JournalAnalysisReport> => {
     const prompt = `Analyze these journal entries against the goal "${goal}": ${JSON.stringify(entries)}. Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -699,7 +699,7 @@ export const getJournalAnalysis = async (entries: string[], goal: string): Promi
 export const generateMorningBriefing = async (data: any): Promise<MorningBriefing> => {
     const prompt = `You are the Chief of Staff... Analyze data... Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -712,7 +712,7 @@ export const generateMorningBriefing = async (data: any): Promise<MorningBriefin
 export const getMeaningCompassAnalysis = async (chatHistory: any[]): Promise<MeaningCompassAnalysis> => {
     const prompt = `Analyze this chat history to identify key themes and a suggested next step. History: ${JSON.stringify(chatHistory)}. Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -748,7 +748,7 @@ export const generateImage = async (prompt: string, aspectRatio: string): Promis
 export const getDISCAnalysis = async (answers: Record<string, string>, user: User): Promise<DISCReport> => {
     const prompt = `Analyze these DISC assessment answers for user ${user.name}: ${JSON.stringify(answers)}. Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -761,7 +761,7 @@ export const getDISCAnalysis = async (answers: Record<string, string>, user: Use
 export const getEnneagramAnalysis = async (answers: Record<string, string>, user: User): Promise<EnneagramReport> => {
     const prompt = `Analyze these Enneagram assessment answers: ${JSON.stringify(answers)}. Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -774,7 +774,7 @@ export const getEnneagramAnalysis = async (answers: Record<string, string>, user
 export const getStrengthsAnalysis = async (answers: Record<string, string>, user: User): Promise<StrengthsReport> => {
     const prompt = `Analyze these Strengths assessment answers: ${JSON.stringify(answers)}. Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -787,7 +787,7 @@ export const getStrengthsAnalysis = async (answers: Record<string, string>, user
 export const getIkigaiAnalysis = async (answers: any, user: User): Promise<IkigaiReport> => {
     const prompt = `Analyze these Ikigai assessment answers: ${JSON.stringify(answers)}. Return JSON...`;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -804,7 +804,7 @@ export const getEnglishLevel = async (answers: { question: string, answer: strin
     Do not include markdown formatting.`;
 
     try {
-        const apiCall = callProxy('generateContent', 'gemini-2.5-flash', {
+        const apiCall = callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: {
                 responseMimeType: 'application/json',
@@ -859,7 +859,7 @@ export const generateStrategicAdvice = async (storeStats: any): Promise<any[]> =
     Respond in Persian.`;
 
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -904,7 +904,7 @@ export const getGiftRecommendation = async (
     const prompt = `... User Request: ${JSON.stringify(input)} ... Products: ${JSON.stringify(availableProducts)} ... Return JSON...`;
 
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });
@@ -933,7 +933,7 @@ export const detectFraudPatterns = async (
     Respond ONLY with a JSON...
     `;
     try {
-        const result = await callProxy('generateContent', 'gemini-3-pro-preview', {
+        const result = await callProxy('generateContent', DEFAULT_FREE_MODEL, {
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: { responseMimeType: 'application/json' }
         });

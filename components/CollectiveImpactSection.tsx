@@ -49,20 +49,30 @@ const InteractiveStatCard: React.FC<InteractiveStatCardProps> = ({ label, commun
     };
 
     return (
-        <div className={`bg-gray-800/50 p-6 rounded-2xl relative overflow-hidden cursor-pointer transform transition-all duration-300 hover:-translate-y-2 hover:shadow-xl border border-gray-700 backdrop-blur-sm min-h-[140px] opacity-0 ${isVisible ? 'scroll-animate scroll-slide-up' : ''}`} style={{ animationDelay: `${delay}ms` }} onMouseEnter={() => setIsHovered(true)} onMouseLeave={() => setIsHovered(false)}>
-            {isVisible && (<div className="gradient-sweep-effect" style={{ animationPlayState: 'running', animationDelay: `${delay + 400}ms` }}></div>)}
-            
-            <div className={`transition-all duration-300 ${isHovered ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+        <div
+            className={`glass-card p-8 rounded-[2rem] relative overflow-hidden cursor-pointer min-h-[160px] opacity-0 ${isVisible ? 'animate-fade-in-up' : ''}`}
+            style={{ animationDelay: `${delay}ms` }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+        >
+            {/* Hover Glow Effect */}
+            {isHovered && (
+                <div className={`absolute -inset-0 opacity-20 blur-3xl pointer-events-none transition-opacity duration-500 ${colorClass.replace('text-', 'bg-')}`}></div>
+            )}
+
+            <div className={`transition-all duration-500 ${isHovered ? 'opacity-0 scale-95 blur-sm' : 'opacity-100 scale-100'}`}>
                 <div className="flex flex-col items-center justify-center h-full text-center">
-                     <div className={`p-4 rounded-full bg-gray-700/50 mb-3 ${colorClass.replace('text-', 'bg-').replace('400', '900/20')}`}>
+                    <div className={`p-5 rounded-3xl mb-4 bg-white/5 border border-white/10 ${colorClass}`}>
                         {icon}
                     </div>
-                    <p className={`text-4xl font-extrabold mb-1 ${colorClass}`}>{animatedValue.toLocaleString('fa-IR')}{hasPlusSign ? '+' : ''}</p>
-                    <p className="text-sm text-gray-300 font-medium">{label}</p>
+                    <p className={`text-5xl font-black mb-2 tracking-tight ${colorClass}`}>{animatedValue.toLocaleString('fa-IR')}{hasPlusSign ? '+' : ''}</p>
+                    <p className="text-base text-gray-400 font-medium tracking-wide">{label}</p>
                 </div>
             </div>
 
-            <div className={`absolute inset-0 p-4 flex flex-col items-center justify-center text-center transition-all duration-300 bg-gray-900/90 backdrop-blur-md ${isHovered ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}>{renderHoverContent()}</div>
+            <div className={`absolute inset-0 p-6 flex flex-col items-center justify-center text-center transition-all duration-500 bg-white/[0.02] backdrop-blur-xl ${isHovered ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'}`}>
+                {renderHoverContent()}
+            </div>
         </div>
     );
 };
@@ -71,31 +81,31 @@ const CollectiveImpactSection: React.FC = () => {
     const { user, communityStats, personalStats } = useAppState();
     const dispatch = useAppDispatch();
     const [sectionRef, isSectionVisible] = useScrollAnimate(0.3);
-    
+
     const onAuthClick = () => dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true });
     const onNavigate = (view: View) => dispatch({ type: 'SET_VIEW', payload: view });
     const onNavigateToProfileTab = (tab: string) => dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: tab });
     const onStartPlantingFlow = () => dispatch({ type: 'START_PLANTING_FLOW' });
-    
+
     const hasPlanted = !!user && personalStats.palms > 0;
-    
+
     const stats = [
-        { label:"نخل کاشته شده در خاک ایران", communityValue: communityStats.totalPalmsPlanted.toLocaleString('fa-IR') + '+', personalValue: personalStats.palms.toLocaleString('fa-IR'), colorClass: "text-green-400", icon: <SproutIcon className="w-8 h-8 text-green-400" /> },
-        { label:"ساعت کار و اشتغال برای جوانان", communityValue: communityStats.totalJobHours.toLocaleString('fa-IR') + '+', personalValue: personalStats.jobHours.toLocaleString('fa-IR'), colorClass: "text-blue-400", icon: <BriefcaseIcon className="w-8 h-8 text-blue-400" /> },
-        { label:"کیلوگرم اکسیژن تازه (جذب CO2)", communityValue: communityStats.totalCo2Absorbed.toLocaleString('fa-IR') + '+', personalValue: personalStats.co2Absorbed.toLocaleString('fa-IR'), colorClass: "text-teal-400", icon: <CloudIcon className="w-8 h-8 text-teal-400" /> },
+        { label: "نخل کاشته شده در خاک ایران", communityValue: communityStats.totalPalmsPlanted.toLocaleString('fa-IR') + '+', personalValue: personalStats.palms.toLocaleString('fa-IR'), colorClass: "text-green-400", icon: <SproutIcon className="w-8 h-8 text-green-400" /> },
+        { label: "ساعت کار و اشتغال برای جوانان", communityValue: communityStats.totalJobHours.toLocaleString('fa-IR') + '+', personalValue: personalStats.jobHours.toLocaleString('fa-IR'), colorClass: "text-blue-400", icon: <BriefcaseIcon className="w-8 h-8 text-blue-400" /> },
+        { label: "کیلوگرم اکسیژن تازه (جذب CO2)", communityValue: communityStats.totalCo2Absorbed.toLocaleString('fa-IR') + '+', personalValue: personalStats.co2Absorbed.toLocaleString('fa-IR'), colorClass: "text-teal-400", icon: <CloudIcon className="w-8 h-8 text-teal-400" /> },
     ];
 
     return (
-        <section ref={sectionRef} className="py-24 bg-gray-900 overflow-hidden relative">
-            {/* Background Pattern */}
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-5 pointer-events-none"></div>
+        <section ref={sectionRef} className="py-32 bg-mana-bg overflow-hidden relative border-t border-white/5">
+            {/* V5.4 Atmospheric Pattern */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(16,185,129,0.05),transparent_70%)] opacity-50"></div>
 
             <div className="container mx-auto px-6 relative z-10">
-                <div className={`text-center mb-16 transition-all duration-700 ${isSectionVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
-                    <h2 className="text-4xl md:text-5xl font-extrabold text-white mb-4">قدرتِ «ما»</h2>
-                    <p className="text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed">
-                        این اعداد فقط آمار نیستند؛ آن‌ها نشان‌دهنده امید، زندگی و آینده‌ای هستند که ما با هم می‌سازیم. <br/>
-                        هر نخل، یک سنگر سبز در برابر بیابان‌زایی و فقر است.
+                <div className={`text-center mb-20 transition-all duration-1000 ${isSectionVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                    <h2 className="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight">قدرتِ <span className="text-gradient-green">«ما»</span></h2>
+                    <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed font-light">
+                        این اعداد فقط آمار نیستند؛ آن‌ها نشان‌دهنده امید، زندگی و آینده‌ای هستند که ما با هم می‌سازیم. <br />
+                        هر نخل، <span className="text-white font-medium">یک سنگر سبز</span> در برابر بیابان‌زایی و فقر است.
                     </p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

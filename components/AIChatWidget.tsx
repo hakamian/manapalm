@@ -30,7 +30,7 @@ const AIChatWidget: React.FC = () => {
             setHasStarted(true);
             setIsLoading(true);
             setTimeout(() => {
-                 setMessages([
+                setMessages([
                     {
                         role: 'model',
                         text: 'سلام! من دستیار هوشمانا نخلستان معنا هستم. چطور می‌توانم در مسیر رشد و اثرگذاری به شما کمک کنم؟'
@@ -50,7 +50,7 @@ const AIChatWidget: React.FC = () => {
         const userMessage: ChatMessage = { role: 'user', text: messageText };
         setMessages(prev => [...prev, userMessage]);
         setUserInput('');
-        setSuggestions([]); 
+        setSuggestions([]);
         setIsLoading(true);
 
         try {
@@ -65,9 +65,9 @@ const AIChatWidget: React.FC = () => {
 
             OPTIONS: At the end, suggest 2-3 follow-up options in format: [OPTIONS: A | B].
             `;
-            
+
             const response = await generateText(messageText, false, false, false, systemInstruction);
-            
+
             let text = response.text;
             const optionsMatch = text.match(/\[OPTIONS:(.*?)\]/);
             if (optionsMatch) {
@@ -75,9 +75,9 @@ const AIChatWidget: React.FC = () => {
                 setSuggestions(opts);
                 text = text.replace(/\[OPTIONS:.*?\]/, '').trim();
             } else {
-                 // Fallback suggestions logic
-                 const lowerText = text.toLowerCase();
-                 if (lowerText.includes('نخل') || lowerText.includes('کاشت')) {
+                // Fallback suggestions logic
+                const lowerText = text.toLowerCase();
+                if (lowerText.includes('نخل') || lowerText.includes('کاشت')) {
                     setSuggestions(["انواع نخل‌ها", "هزینه کاشت"]);
                 } else if (lowerText.includes('دوره')) {
                     setSuggestions(["لیست دوره‌ها", "کوچینگ چیست؟"]);
@@ -91,9 +91,9 @@ const AIChatWidget: React.FC = () => {
 
         } catch (error) {
             console.error("AI chat widget error:", error);
-            const errorMessage: ChatMessage = { 
-                role: 'model', 
-                text: "متاسفانه در حال حاضر ارتباط با سرور برقرار نشد. لطفاً اتصال اینترنت خود را بررسی کنید و دوباره تلاش کنید." 
+            const errorMessage: ChatMessage = {
+                role: 'model',
+                text: "متاسفانه در حال حاضر ارتباط با سرور برقرار نشد. لطفاً اتصال اینترنت خود را بررسی کنید و دوباره تلاش کنید."
             };
             setMessages(prev => [...prev, errorMessage]);
             setSuggestions(["تلاش مجدد"]);
@@ -109,9 +109,17 @@ const AIChatWidget: React.FC = () => {
         }
     };
 
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) return null;
+
     return (
         <>
-             <style>{`
+            <style>{`
                 @keyframes pulse-glow {
                     0%, 100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
                     70% { box-shadow: 0 0 0 15px rgba(74, 222, 128, 0); }
@@ -125,7 +133,7 @@ const AIChatWidget: React.FC = () => {
                 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
                 .custom-scrollbar::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 2px; }
             `}</style>
-            
+
             <div className={`fixed ${isBottomNavVisible ? 'bottom-24' : 'bottom-5'} md:bottom-5 right-5 z-[100] transition-all duration-300 transform ${isOpen ? 'translate-y-10 opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`}>
                 <button
                     onClick={() => setIsOpen(true)}
@@ -140,8 +148,8 @@ const AIChatWidget: React.FC = () => {
                 className={`fixed ${isBottomNavVisible ? 'bottom-24' : 'bottom-5'} md:bottom-5 right-5 z-[100] w-[calc(100%-40px)] max-w-[360px] h-[75vh] max-h-[650px] bg-[#17212B] rounded-2xl shadow-2xl flex flex-col transition-all duration-300 ease-in-out border border-gray-700/50 overflow-hidden ${isOpen ? 'opacity-100 transform translate-y-0' : 'opacity-0 transform translate-y-20 pointer-events-none'}`}
             >
                 {/* Header */}
-                <header 
-                    className="relative z-10 flex items-center justify-between p-4 bg-gradient-to-r from-[#17212B] to-[#1f2c3a] border-b border-white/5 cursor-pointer" 
+                <header
+                    className="relative z-10 flex items-center justify-between p-4 bg-gradient-to-r from-[#17212B] to-[#1f2c3a] border-b border-white/5 cursor-pointer"
                     onClick={() => setIsOpen(false)}
                 >
                     <div className="flex items-center gap-3">
@@ -164,14 +172,14 @@ const AIChatWidget: React.FC = () => {
                 {/* Messages */}
                 <div className="relative z-10 flex-grow overflow-y-auto p-3 space-y-4 bg-[#0E1621] custom-scrollbar">
                     <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-                    
+
                     {messages.map((msg, index) => {
-                         const isMe = msg.role === 'user';
-                         return (
-                            <div key={index} style={{'--origin': isMe ? 'bottom right' : 'bottom left'} as React.CSSProperties} className={`chat-bubble flex w-full ${isMe ? 'justify-end' : 'justify-start'}`}>
+                        const isMe = msg.role === 'user';
+                        return (
+                            <div key={index} style={{ '--origin': isMe ? 'bottom right' : 'bottom left' } as React.CSSProperties} className={`chat-bubble flex w-full ${isMe ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[88%] p-3 text-sm leading-relaxed shadow-md relative break-words
-                                    ${isMe 
-                                        ? 'bg-[#2b5278] text-white rounded-2xl rounded-br-sm' 
+                                    ${isMe
+                                        ? 'bg-[#2b5278] text-white rounded-2xl rounded-br-sm'
                                         : 'bg-[#182533] text-gray-100 rounded-2xl rounded-bl-sm border border-gray-800'
                                     }`}>
                                     {isMe ? (
@@ -183,9 +191,9 @@ const AIChatWidget: React.FC = () => {
                             </div>
                         );
                     })}
-                    
+
                     {isLoading && (
-                        <div className="chat-bubble flex justify-start" style={{'--origin': 'bottom left'} as React.CSSProperties}>
+                        <div className="chat-bubble flex justify-start" style={{ '--origin': 'bottom left' } as React.CSSProperties}>
                             <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-[#182533] border border-gray-800">
                                 <div className="flex items-center gap-1.5">
                                     <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
@@ -200,13 +208,13 @@ const AIChatWidget: React.FC = () => {
 
                 {/* Suggestions & Input */}
                 <footer className="relative z-20 bg-[#17212B] border-t border-white/5 pb-2">
-                    
+
                     {/* Suggestion Chips - Vertical */}
                     {suggestions.length > 0 && !isLoading && (
                         <div className="flex flex-col gap-2 px-3 py-2">
                             {suggestions.map((s, i) => (
-                                <button 
-                                    key={i} 
+                                <button
+                                    key={i}
                                     onClick={() => handleSendMessage(s)}
                                     className="w-full text-right text-xs font-medium text-blue-200 bg-[#242f3d] hover:bg-[#2b5278] px-3 py-2.5 rounded-xl border border-blue-500/20 transition-colors"
                                 >
@@ -226,9 +234,9 @@ const AIChatWidget: React.FC = () => {
                             className="flex-grow bg-[#0E1621] text-white rounded-2xl py-3 px-4 focus:outline-none placeholder-gray-500 resize-none text-sm custom-scrollbar max-h-24 border border-transparent focus:border-[#2b5278] transition-colors"
                             style={{ minHeight: '46px' }}
                         />
-                        <button 
-                            onClick={() => handleSendMessage()} 
-                            disabled={isLoading || !userInput.trim()} 
+                        <button
+                            onClick={() => handleSendMessage()}
+                            disabled={isLoading || !userInput.trim()}
                             className={`p-3 rounded-full flex-shrink-0 transition-all transform ${userInput.trim() ? 'bg-[#2b5278] text-white hover:bg-[#346391] scale-100 shadow-lg' : 'text-gray-500 bg-[#242f3d] scale-95'}`}
                         >
                             {userInput.trim() ? <PaperAirplaneIcon className="w-5 h-5 dir-ltr" /> : <SparklesIcon className="w-5 h-5" />}

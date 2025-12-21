@@ -18,7 +18,7 @@ export interface Product {
     description?: string;
     price: number;
     image: string; // mapped to image_url in DB
-    category: 'physical' | 'digital' | 'donation' | 'service' | 'heritage';
+    category: 'physical' | 'digital' | 'donation' | 'service' | 'heritage' | 'نخل میراث' | 'محصولات دیجیتال' | 'محصولات خرما' | 'صنایع دستی' | 'ارتقا';
 
     // Impact fields
     impactCategoryId?: string;

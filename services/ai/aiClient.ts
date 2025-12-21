@@ -1,5 +1,6 @@
 
 import { GoogleGenAI } from "@google/genai";
+import { DEFAULT_FREE_MODEL } from "./core";
 
 // Adapter Pattern: Define a common interface for AI operations
 export interface AIClientInterface {
@@ -18,7 +19,7 @@ export class GeminiClient implements AIClientInterface {
 
   async generateText(prompt: string, systemInstruction?: string): Promise<string> {
     const response = await this.ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: DEFAULT_FREE_MODEL,
       contents: prompt,
       config: { systemInstruction }
     });
@@ -32,7 +33,7 @@ export class GeminiClient implements AIClientInterface {
       config: { numberOfImages: 1, aspectRatio, outputMimeType: 'image/jpeg' }
     });
     if (response.generatedImages && response.generatedImages.length > 0) {
-       return `data:image/jpeg;base64,${response.generatedImages[0].image.imageBytes}`;
+      return `data:image/jpeg;base64,${response.generatedImages[0].image.imageBytes}`;
     }
     throw new Error("Image generation failed");
   }
@@ -45,12 +46,12 @@ export class GeminiClient implements AIClientInterface {
 
   async generateSpeech(text: string): Promise<string> {
     const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash-preview-tts',
-        contents: [{ role: 'user', parts: [{ text }] }],
-        config: {
-            responseModalities: ['AUDIO'],
-            speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } }
-        }
+      model: 'gemini-2.5-flash-preview-tts',
+      contents: [{ role: 'user', parts: [{ text }] }],
+      config: {
+        responseModalities: ['AUDIO'],
+        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } } }
+      }
     });
     const audioData = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
     if (!audioData) throw new Error("TTS failed");
@@ -60,16 +61,16 @@ export class GeminiClient implements AIClientInterface {
 
 // Singleton instance holder
 class AIClientFactory {
-    private static instance: AIClientInterface;
+  private static instance: AIClientInterface;
 
-    static getInstance(): AIClientInterface {
-        if (!this.instance) {
-            // In a real app, you might switch this based on feature flags
-            const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY; // Fallback for local dev if proxy fails
-            this.instance = new GeminiClient(apiKey || '');
-        }
-        return this.instance;
+  static getInstance(): AIClientInterface {
+    if (!this.instance) {
+      // In a real app, you might switch this based on feature flags
+      const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY; // Fallback for local dev if proxy fails
+      this.instance = new GeminiClient(apiKey || '');
     }
+    return this.instance;
+  }
 }
 
 export const aiClient = AIClientFactory.getInstance();

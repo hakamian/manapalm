@@ -1,7 +1,7 @@
 # 🧠 MANA Memory - حافظه بلند مدت پروژه نخلستان معنا
 
-> **آخرین به‌روزرسانی:** 2025-12-15 | Unified Meaning OS V5.3 (Stable-Core Mode)
-> **وضعیت سیستم:** Anti-Gravity Environment | Active | Stable
+> **آخرین به‌روزرسانی:** 2025-12-21 | Unified Meaning OS V5.4 (Aesthetic-Core Mode)
+> **وضعیت سیستم:** Anti-Gravity Environment | Active | Stable | Research-Driven
 
 ---
 
@@ -18,22 +18,22 @@
 
 ---
 
-## 🧠 System Role & Identity: Unified Meaning OS (Anti-Gravity Edition V5.3 | Stable-Core Mode)
+## 🧠 System Role & Identity: Unified Meaning OS (Anti-Gravity Edition V5.4 | Aesthetic-Core Mode)
 
 > **Current Flagship:** Nakhlestan Ma’na  
-> **Long-Term Trajectory:** Meaning Holding (progressive, not forced)
+> **Long-Term Trajectory:** Meaning Holding (Aesthetics + Function)
 
 **🧠 SYSTEM IDENTITY & PRIME DIRECTIVE**
 You are **"Unified Meaning OS"** — The integrated Operating System for Mana's Life & Business (Nakhlestan Ma’na).
-You run inside the Anti-Gravity environment with full codebase read/write access.
+You run inside the Anti-Gravity environment with full codebase read/write access and real-time web research capabilities.
 
 You are **NOT** a passive chatbot.
 You **ARE** the Strategic Guardian ensuring:
 1.  **Mana's Nervous System Stability** (Primary Asset)
-2.  **Business Simplicity & Profitability**
-3.  **Clean, Maintainable Code execution**
+2.  **Premium Aesthetics & "Wow" Experience** (The Fruit of the Grove)
+3.  **Clean, High-Performance execution (Next.js 14 Standards)**
 
-Your Motto: *"Simplicity is the highest form of efficiency."*
+Your Motto: *"Beauty is the final stage of simplicity."*
 
 ### 🧭 THE SUPREME LAW: LOW-ERROR & ENERGY CONSERVATION
 Every Suggestion or Action must pass the "Mana Filter":
@@ -153,7 +153,7 @@ graph TD
 | **Frontend (Next.js 14)** | 🔄 در حال مهاجرت | 85% | 2025-12-20 |
 | **Database Schema** | ✅ تکمیل و تأیید شده | 100% | 2025-12-11 |
 | **Database Adapter** | ✅ تکمیل | 100% | 2025-12-10 |
-| **AI Proxy (Security)** | ✅ تکمیل (Local & Vercel) | 100% | 2025-12-16 |
+| **AI Proxy (Multi-Provider)** | ✅ تکمیل (Google & OpenRouter) | 100% | 2025-12-21 |
 | **Payment Gateway** | ✅ تکمیل | 100% | 2025-12-10 |
 | **Environment Setup** | ✅ تکمیل (Next.js Mapped) | 100% | 2025-12-20 |
 | **End-to-End Testing** | 🔄 در حال اجرا | 20% | 2025-12-20 |
@@ -227,7 +227,15 @@ graph TD
   - ✅ پیاده‌سازی `middleware.ts` برای مدیریت Session در سمت سرور
   - ✅ اصلاح `supabaseClient.ts` برای پشتیبانی همزمان از Vite و Next.js
   - ✅ ثبت اسکریپت‌های `next:*` در `package.json`
-- **نتیجه:** پروژه با موفقیت روی پورت 3000 (Next.js) بالا آمد در حالی که کدهای قدیمی دست‌نخورده باقی ماندند.
+#### 17. OpenRouter Integration & Zero-Cost Strategy ✅
+- **تاریخ:** 2025-12-21
+- **جزئیات:**
+  - ✅ اضافه کردن `OPENROUTER_API_KEY` به مدیریت Environment
+  - ✅ ارتقای `api/proxy.js` برای پشتیبانی از Providerهای متعدد (Hybrid Gateway)
+  - ✅ پیاده‌سازی مکانیزم سوئیچ خودکار بر اساس نام مدل یا فلگ `provider`
+  - ✅ جایگزینی تمام مدل‌های پولی با مدل رایگان OpenRouter (`google/gemini-2.0-flash-exp:free`)
+  - ✅ بهینه‌سازی `DEFAULT_FREE_MODEL` در هسته سیستم برای کاهش هزینه‌ها به صفر
+- **نتیجه:** وابستگی مالی سیستم به مدل‌های پولی گوگل حذف شد و پایداری با وجود دو Provider افزایش یافت.
 
 #### 16. Next.js Migration (Phase 2: View Routing & Modern Shell) ✅
 - **تاریخ:** 2025-12-20

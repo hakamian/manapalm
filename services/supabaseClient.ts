@@ -1,6 +1,7 @@
 
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { User } from '../types';
+import { REFERENCE_DATE_STR } from '../utils/dummyData';
 
 // Safely access environment variables
 const getEnv = (key: string) => {
@@ -90,6 +91,6 @@ export const mapSupabaseUser = (sbUser: any): Partial<User> => {
         avatar: sbUser.user_metadata?.avatar_url,
         points: 100,
         level: 'جوانه',
-        joinDate: new Date().toISOString(),
+        joinDate: REFERENCE_DATE_STR,
     };
 };

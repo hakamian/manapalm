@@ -48,6 +48,8 @@ import UnitEconomicsDashboard from './admin/UnitEconomicsDashboard';
 import SecurityDashboard from './admin/SecurityDashboard';
 import AcademiesDashboard from './admin/AcademiesDashboard';
 import ShopManagement from './admin/ShopManagement';
+import ModernDashboardOverview from './admin/ModernDashboardOverview';
+import ModernUserManagement from './admin/ModernUserManagement';
 import { timeAgo } from '../utils/time';
 
 interface AdminDashboardViewProps {
@@ -124,6 +126,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
     };
 
     const tabs = [
+        { id: 'modern_dashboard', label: '🎨 داشبورد مدرن', icon: <SparklesIcon className="w-5 h-5" /> },
         { id: 'pulse', label: 'داشبورد پالس', icon: <PresentationChartLineIcon className="w-5 h-5" /> },
         { id: 'economy', label: 'اقتصاد واحد', icon: <CalculatorIcon className="w-5 h-5" /> },
         { id: 'shop_manager', label: 'مدیریت فروشگاه', icon: <ShoppingCartIcon className="w-5 h-5" /> },
@@ -138,7 +141,6 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
         { id: 'management', label: 'مدیریت', icon: <UsersIcon className="w-5 h-5" /> },
         { id: 'security', label: 'امنیت و ریسک', icon: <ShieldExclamationIcon className="w-5 h-5" /> },
         { id: 'api_management', label: 'مدیریت API', icon: <CpuChipIcon className="w-5 h-5" /> },
-        { id: 'ai_reports', label: 'گزارش‌های هوشمند', icon: <SparklesIcon className="w-5 h-5" /> },
         { id: 'ai_reports', label: 'گزارش‌های هوشمند', icon: <SparklesIcon className="w-5 h-5" /> },
         { id: 'settings', label: 'تنظیمات', icon: <CogIcon className="w-5 h-5" /> },
         { id: 'auto_ceo', label: 'مدیر عامل خودکار', icon: <BoltIcon className="w-5 h-5" /> }
@@ -181,6 +183,18 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                 </nav>
 
                 <main className="py-8">
+                    {activeTab === 'modern_dashboard' && (
+                        <div>
+                            <ModernDashboardOverview users={users} orders={orders} posts={posts} />
+                            <div style={{ marginTop: '3rem' }}>
+                                <ModernUserManagement
+                                    allUsers={users}
+                                    onAdminUpdateUser={(userId, data) => console.log('Update user:', userId, data)}
+                                    onAdminGrantPoints={(userId, points, reason) => console.log('Grant points:', userId, points, reason)}
+                                />
+                            </div>
+                        </div>
+                    )}
                     {activeTab === 'pulse' && (
                         <ExecutiveDashboard
                             allUsers={users}

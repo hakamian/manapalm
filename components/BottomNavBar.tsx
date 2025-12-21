@@ -25,7 +25,7 @@ const BottomNavBar: React.FC = () => {
 
     const lastScrollY = useRef(0);
     const isVisibleRef = useRef(true); // Local ref to avoid dependency loop/excessive dispatch
-    
+
     useEffect(() => {
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
@@ -60,9 +60,17 @@ const BottomNavBar: React.FC = () => {
         { page: View.PathOfMeaning, label: 'مسیر', icon: CompassIcon },
     ];
 
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) return null;
+
     return (
         <div className={`fixed bottom-0 left-0 right-0 h-20 bg-gray-900/80 backdrop-blur-lg border-t border-gray-700/50 z-40 transition-transform duration-300 ease-in-out md:hidden ${isBottomNavVisible ? 'translate-y-0' : 'translate-y-full'}`}>
-             <style>{`
+            <style>{`
                 @keyframes pulse-gentle {
                     0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.4); }
                     70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(74, 222, 128, 0); }
@@ -75,12 +83,12 @@ const BottomNavBar: React.FC = () => {
                 <div className="w-full h-full">
                     <NavItem {...navItems[0]} isActive={page === navItems[0].page} onClick={() => handleNav(navItems[0].page)} />
                 </div>
-                 <div className="w-full h-full">
+                <div className="w-full h-full">
                     <NavItem {...navItems[1]} isActive={page === navItems[1].page} onClick={() => handleNav(navItems[1].page)} />
                 </div>
 
                 <div className="w-20 -mt-10">
-                    <button 
+                    <button
                         onClick={() => dispatch({ type: 'START_PLANTING_FLOW' })}
                         className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center text-white shadow-lg shadow-green-500/30 transform transition-transform hover:scale-105 animate-pulse-gentle"
                         aria-label="کاشت نخل جدید"
@@ -88,11 +96,11 @@ const BottomNavBar: React.FC = () => {
                         <PlusIcon className="w-8 h-8" />
                     </button>
                 </div>
-                
-                 <div className="w-full h-full">
+
+                <div className="w-full h-full">
                     <NavItem {...navItems[2]} isActive={page === navItems[2].page} onClick={() => handleNav(navItems[2].page)} />
                 </div>
-                 <div className="w-full h-full">
+                <div className="w-full h-full">
                     <NavItem {...navItems[3]} isActive={page === navItems[3].page} onClick={() => handleNav(navItems[3].page)} />
                 </div>
             </div>

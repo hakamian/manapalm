@@ -1,7 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Allowed models whitelist
-const ALLOWED_MODELS = [
+// Allowed models whitelist for Gemini
+const GEMINI_MODELS = [
+  'gemini-2.1-flash',
   'gemini-2.5-flash-lite',
   'gemini-2.5-flash-preview-09-2025',
   'gemini-2.0-flash',
@@ -10,6 +11,33 @@ const ALLOWED_MODELS = [
   'gemini-pro',
   'gemini-pro-vision'
 ];
+
+
+// Helper for delay
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Helper for fetching with retry and timeout
+async function fetchWithRetry(url, options, maxRetries = 2) {
+  let lastError;
+  for (let i = 0; i <= maxRetries; i++) {
+    try {
+      if (i > 0) await delay(1000 * Math.pow(2, i)); // Exponential backoff
+      const response = await fetch(url, options);
+
+      // If we get a 429 (Rate Limit), we only retry if we haven't exhausted retries
+      if (response.status === 429 && i < maxRetries) {
+        console.warn(`Rate limited (429). Retry attempt ${i + 1}...`);
+        continue;
+      }
+
+      return response;
+    } catch (error) {
+      lastError = error;
+      if (i < maxRetries) continue;
+    }
+  }
+  throw lastError || new Error('Fetch failed after retries');
+}
 
 export default async function handler(req, res) {
   // 1. CORS & Security Headers
@@ -34,56 +62,111 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { action, model, data } = req.body;
-    let targetModel = model || 'gemini-2.5-flash-lite';
+    const { action, model, data, provider } = req.body;
+    let targetModel = model || 'google/gemini-2.0-flash-exp:free';
 
-    // Map new experimental model names to stable ones if needed, or keep as is if supported
-    // Removed override to allow 2.5 usage
-    /*
-    if (targetModel.includes('gemini-2.5') || targetModel.includes('gemini-3')) {
-      targetModel = 'gemini-1.5-pro'; // Fallback to stable for now to ensure reliability
-    }
-    */
+    // Determine initial provider
+    let activeProvider = provider || (targetModel.includes('/') ? 'openrouter' : 'google');
 
-    const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
+    // ---------------------------------------------------------
+    // STRATEGY: TRY PRIMARY PROVIDER -> IF 429 -> TRY SECONDARY
+    // ---------------------------------------------------------
 
-    if (!apiKey) {
-      console.error('API Key missing on server');
-      return res.status(500).json({ error: 'Server configuration error' });
-    }
+    let resultText = null;
+    let finalProvider = activeProvider;
+    let finalModel = targetModel;
 
-    const genAI = new GoogleGenerativeAI(apiKey);
+    const tryOpenRouter = async (m) => {
+      const openRouterKey = process.env.OPENROUTER_API_KEY;
+      if (!openRouterKey) throw new Error('OpenRouter Key Missing');
 
-    if (action === 'generateContent') {
-      const modelInstance = genAI.getGenerativeModel({
-        model: targetModel,
-        safetySettings: data.config?.safetySettings,
-        generationConfig: data.config
+      const response = await fetchWithRetry("https://openrouter.ai/api/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${openRouterKey}`,
+          "HTTP-Referer": "https://manapalm.com",
+          "X-Title": "Nakhlestan Mana",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          "model": m,
+          "messages": data.contents.map(c => ({
+            role: c.role === 'model' ? 'assistant' : c.role,
+            content: typeof c.parts[0].text === 'string' ? c.parts[0].text : JSON.stringify(c.parts[0])
+          })),
+          "temperature": data.config?.temperature || 0.7,
+        })
       });
 
-      // Convert "contents" format if needed, but SDK usually handles standard format
-      // Standard SDK expects "contents" array in generateContent
-      const result = await modelInstance.generateContent({
-        contents: data.contents,
-      });
+      if (response.status === 429) throw { status: 429, message: 'OpenRouter Rate Limit' };
+      const resData = await response.json();
+      if (resData.error) throw new Error(resData.error.message || 'OpenRouter Error');
+      return resData.choices[0].message.content;
+    };
 
-      const response = await result.response;
-      const text = response.text();
+    const tryGemini = async (m) => {
+      const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
+      if (!apiKey) throw new Error('Gemini Key Missing');
 
-      return res.status(200).json({
-        text: text,
-        candidates: response.candidates
-      });
+      const genAI = new GoogleGenerativeAI(apiKey);
+      // Note: SDK doesn't natively support easy retry on 429 without custom wrapper
+      // but we can wrap the call
+      let lastErr;
+      for (let i = 0; i < 2; i++) {
+        try {
+          const modelInstance = genAI.getGenerativeModel({ model: m.includes('/') ? 'gemini-1.5-flash' : m });
+          const result = await modelInstance.generateContent({ contents: data.contents });
+          const response = await result.response;
+          return response.text();
+        } catch (err) {
+          lastErr = err;
+          if (err.message?.includes('429') && i < 1) {
+            await delay(2000);
+            continue;
+          }
+          throw err;
+        }
+      }
+      throw lastErr;
+    };
 
-    } else {
-      // For other actions like image generation, currently using standard REST fallback or disabling
-      // The Node SDK focuses on text/multimodal content. 
-      // Image generation (Imagen) typically requires Vertex AI SDK or REST.
-      return res.status(400).json({ error: 'Action not supported in stable SDK migration yet' });
+    // EXECUTION WITH FALLBACK
+    try {
+      if (activeProvider === 'openrouter') {
+        resultText = await tryOpenRouter(targetModel);
+      } else {
+        resultText = await tryGemini(targetModel);
+      }
+    } catch (err) {
+      if (err.status === 429 || err.message?.includes('429')) {
+        console.warn("Primary Provider Rate Limited. Attempting Fallback Hopping...");
+        // Swap Provider
+        if (activeProvider === 'openrouter') {
+          finalProvider = 'google';
+          finalModel = 'gemini-1.5-flash'; // Fallback to a stable direct model
+          resultText = await tryGemini(finalModel);
+        } else {
+          finalProvider = 'openrouter';
+          finalModel = 'google/gemini-2.0-flash-exp:free';
+          resultText = await tryOpenRouter(finalModel);
+        }
+      } else {
+        throw err;
+      }
     }
+
+    return res.status(200).json({
+      text: resultText,
+      provider: finalProvider,
+      model: finalModel,
+      isFallback: finalProvider !== activeProvider
+    });
 
   } catch (error) {
-    console.error('Proxy Error:', error);
-    return res.status(500).json({ error: error.message || 'Internal AI Service Error' });
+    console.error('Final Proxy Error:', error);
+    return res.status(error.status || 500).json({
+      error: error.message || 'AI Service Exhausted',
+      suggestion: 'سیستم در حال حاضر بیش از حد مشغول است. لطفا ۶۰ ثانیه دیگر تلاش کنید.'
+    });
   }
 }

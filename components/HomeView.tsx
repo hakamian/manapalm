@@ -16,6 +16,7 @@ import SEOHead from './seo/SEOHead';
 import { OrganizationSchema } from './seo/SchemaMarkup';
 import { LocalBusinessSchema, FAQSchema } from './seo/RichSnippets';
 import SmartImage from './ui/SmartImage'; // New import
+import { REFERENCE_DATE_STR } from '../utils/dummyData';
 
 // --- Helper Hooks ---
 const useScrollAnimate = (threshold = 0.2) => {
@@ -47,14 +48,19 @@ const useScrollAnimate = (threshold = 0.2) => {
 const HeroSection: React.FC<{ onStartJourneyClick: () => void, user: User | null }> = ({ onStartJourneyClick, user }) => {
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const sceneRef = useRef<HTMLDivElement>(null);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     useEffect(() => {
         const handleMouseMove = (event: MouseEvent) => {
             if (sceneRef.current) {
                 const { clientX, clientY } = event;
                 const { innerWidth, innerHeight } = window;
-                const x = (clientX / innerWidth - 0.5) * 2; 
-                const y = (clientY / innerHeight - 0.5) * 2; 
+                const x = (clientX / innerWidth - 0.5) * 2;
+                const y = (clientY / innerHeight - 0.5) * 2;
                 setMousePos({ x, y });
             }
         };
@@ -68,100 +74,163 @@ const HeroSection: React.FC<{ onStartJourneyClick: () => void, user: User | null
     });
 
     return (
-        <div ref={sceneRef} className="relative min-h-[100dvh] w-full bg-gray-900 flex flex-col">
-             <style>{`
+        <div ref={sceneRef} className="relative min-h-[90dvh] w-full flex flex-col items-center justify-center overflow-hidden">
+            <style>{`
                 @keyframes twinkle { 0%, 100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1); } }
                 .star { position: absolute; background-color: white; border-radius: 50%; animation: twinkle 4s infinite ease-in-out; }
                 @keyframes sway { 0%, 100% { transform: rotate(-1deg); } 50% { transform: rotate(1.5deg); } }
                 .palm-sway { transform-origin: bottom center; animation: sway 12s infinite ease-in-out; }
                 @keyframes scroll-indicator { 0%, 100% { transform: translateY(0); opacity: 1; } 50% { transform: translateY(10px); opacity: 0.5; } }
                 .scroll-indicator { animation: scroll-indicator 2s infinite ease-in-out; }
+
+                /* New styles for premium HeroSection */
+                .mana-bg { background-color: #0f172a; } /* Example base background color */
+                .mana-primary { color: #4ade80; } /* Example primary color */
+                .mana-accent { color: #facc15; } /* Example accent color */
+
+                @keyframes pulse-soft {
+                    0%, 100% { transform: scale(1); opacity: 0.7; }
+                    50% { transform: scale(1.05); opacity: 1; }
+                }
+                .animate-pulse-soft { animation: pulse-soft 8s infinite ease-in-out; }
+
+                @keyframes fade-in-down {
+                    0% { opacity: 0; transform: translateY(-20px); }
+                    100% { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fade-in-down { animation: fade-in-down 0.8s ease-out forwards; }
+
+                @keyframes fade-in-up {
+                    0% { opacity: 0; transform: translateY(20px); }
+                    100% { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fade-in-up { animation: fade-in-up 0.8s ease-out forwards; }
+
+                .glass-panel {
+                    background-color: rgba(255, 255, 255, 0.05);
+                    backdrop-filter: blur(10px);
+                    -webkit-backdrop-filter: blur(10px);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+                }
+
+                .text-gradient-green {
+                    background: linear-gradient(90deg, #4ade80, #16a34a);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }
+                .text-gradient-gold {
+                    background: linear-gradient(90deg, #facc15, #eab308);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }
             `}</style>
-            
-            {/* Background Layers Container - Absolute & Overflow Hidden */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a] to-[#1e293b]"></div>
-                <div className="absolute inset-0" style={getLayerStyle(8)}>
-                    {[...Array(150)].map((_, i) => {
-                        const size = Math.random() * 2 + 0.5;
-                        const style: any = { width: `${size}px`, height: `${size}px`, top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 5}s`, animationDuration: `${Math.random() * 3 + 3}s` };
-                        return <div key={i} className="star" style={style}></div>;
-                    })}
-                </div>
-                <div className="absolute bottom-0 left-0 w-full h-1/2" style={getLayerStyle(20)}><div className="absolute bottom-0 -left-1/4 w-[150%] h-[60%] bg-[#1c2741] rounded-t-[100%]"></div></div>
-                <div className="absolute bottom-0 left-0 w-full h-1/2" style={getLayerStyle(30)}><div className="absolute bottom-0 -right-1/4 w-[150%] h-[50%] bg-[#151d30] rounded-t-[100%]"></div></div>
-                <div className="absolute bottom-0 left-0 w-full h-full filter brightness-75" style={getLayerStyle(50)}>
-                    {/* Replaced standard img with SmartImage even though it's decorative, for consistency if CDN used later */}
-                    <img src="https://purepng.com/public/uploads/large/purepng.com-palm-treepalm-treealms-tree-941524671653r6kcs.png" alt="Palm tree silhouette" className="absolute bottom-0 right-[-15%] w-[55%] max-w-lg palm-sway" style={{ animationDelay: '0s' }} />
-                    <img src="https://purepng.com/public/uploads/large/purepng.com-palm-treepalm-treealms-tree-941524671653r6kcs.png" alt="Palm tree silhouette" className="absolute bottom-0 left-[-15%] w-[70%] max-w-xl palm-sway" style={{ animationDelay: '1.5s', transform: 'scaleX(-1)', filter: 'brightness(0.8)' }} />
-                </div>
-                <div className="absolute bottom-0 left-0 w-full h-1/4 bg-gradient-to-t from-gray-900 via-gray-900/80 to-transparent z-20"></div>
+            {/* V5.4 Atmospheric Background Integration */}
+            <div className="absolute inset-0 z-0 pointer-events-none">
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-mana-bg"></div>
+
+                {/* Animated Glows */}
+                <div className="absolute top-1/4 left-1/4 w-[40vw] h-[40vw] bg-mana-primary/10 rounded-full blur-[120px] animate-pulse-soft"></div>
+                <div className="absolute bottom-1/4 right-1/4 w-[30vw] h-[30vw] bg-mana-accent/5 rounded-full blur-[100px] animate-pulse-soft" style={{ animationDelay: '2s' }}></div>
+
+                {/* Parallax Stars */}
+                {mounted && (
+                    <div className="absolute inset-0" style={getLayerStyle(5)}>
+                        {[...Array(80)].map((_, i) => (
+                            <div
+                                key={i}
+                                className="absolute bg-white rounded-full opacity-30"
+                                style={{
+                                    width: Math.random() * 2 + 'px',
+                                    height: Math.random() * 2 + 'px',
+                                    top: Math.random() * 100 + '%',
+                                    left: Math.random() * 100 + '%',
+                                    animation: `twinkle ${Math.random() * 5 + 3}s infinite ease-in-out`
+                                }}
+                            />
+                        ))}
+                    </div>
+                )}
             </div>
 
-            {/* Content Container - Relative & Scrollable if needed */}
-            <div className="relative z-10 flex flex-col items-center justify-center flex-grow text-white text-center px-4 py-24" style={getLayerStyle(-15)}>
-                
-                <h1 className="text-4xl md:text-7xl font-bold mb-6 leading-tight drop-shadow-lg">
-                    {user 
-                        ? `سلام ${user.name}، به نخلستان خودت خوش آمدی` 
-                        : 'نخل بکارید، اثر بگذارید، جاودانه شوید'}
+            {/* Content Area */}
+            <div className="relative z-10 flex flex-col items-center justify-center text-white text-center px-6 max-w-6xl mx-auto" style={getLayerStyle(-10)}>
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border border-white/10 text-mana-primary text-sm font-medium mb-8 animate-fade-in-down">
+                    <SparklesIcon className="w-4 h-4" />
+                    <span>پلتفرم جامع معنا و مسئولیت اجتماعی</span>
+                </div>
+
+                <h1 className="text-5xl md:text-8xl font-bold mb-8 leading-[1.15] text-white animate-fade-in-up">
+                    {user
+                        ? <>سلام <span className="text-gradient-green">{user.name}</span>،<br />به نخلستان خودت خوش آمدی</>
+                        : <>نخل بکارید، <span className="text-gradient-gold">اثر بگذارید</span>،<br />جاودانه شوید</>}
                 </h1>
-                
-                <p className="text-lg md:text-2xl mb-10 max-w-3xl text-gray-200 font-light leading-relaxed" style={{ textShadow: '1px 1px 4px rgba(0,0,0,0.8)' }}>
-                    {user 
-                        ? `مسیر معنای شما ادامه دارد. امروز چه میراثی را رشد خواهیم داد؟` 
+
+                <p className="text-xl md:text-2xl mb-12 max-w-3xl text-gray-400 font-light leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+                    {user
+                        ? `مسیر معنای شما ادامه دارد. امروز چه میراثی را رشد خواهیم داد؟`
                         : 'ما به شما کمک می‌کنیم با کاشت نخل‌های واقعی در جنوب ایران، هم به محیط زیست کمک کنید، هم اشتغال‌زایی کنید و هم یک یادگاری ابدی بسازید.'}
                 </p>
-                
-                <div className="flex flex-col sm:flex-row gap-4">
-                     <button onClick={onStartJourneyClick} className="bg-green-600 hover:bg-green-500 text-white font-bold py-4 px-10 rounded-full text-xl transition-all duration-300 transform hover:scale-105 shadow-[0_0_20px_rgba(74,222,128,0.6)] border-2 border-green-400">
-                        {user ? 'ادامه سفر قهرمانی' : 'همین حالا نخل خود را بکارید'}
+
+                <div className="flex flex-col sm:flex-row gap-6 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
+                    <button onClick={onStartJourneyClick} className="glass-panel hover:bg-mana-primary/20 text-white font-bold py-5 px-12 rounded-2xl text-xl transition-all duration-500 transform hover:scale-105 hover:shadow-mana-primary/20 border-mana-primary/30 group">
+                        <span className="flex items-center gap-3">
+                            {user ? 'ادامه سفر قهرمانی' : 'همین حالا نخل خود را بکارید'}
+                            <ArrowLeftIcon className="w-6 h-6 transform group-hover:-translate-x-2 transition-transform" />
+                        </span>
                     </button>
                     {!user && (
-                        <button className="bg-transparent hover:bg-white/10 text-white font-semibold py-4 px-8 rounded-full text-lg transition-all border-2 border-white/30 backdrop-blur-sm">
-                            بیشتر بدانید
+                        <button className="bg-white/5 hover:bg-white/10 text-white font-semibold py-5 px-10 rounded-2xl text-xl transition-all border border-white/10 backdrop-blur-md">
+                            داستان نخلستان
                         </button>
                     )}
                 </div>
             </div>
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 scroll-indicator"><svg className="w-6 h-6 text-white opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg></div>
+
+            {/* Scroll Indicator */}
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-30 opacity-50">
+                <div className="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center p-1">
+                    <div className="w-1 h-2 bg-mana-primary rounded-full animate-bounce"></div>
+                </div>
+            </div>
         </div>
     );
 };
 
 const HowItWorksSection: React.FC<{ onStartPlantingFlow: () => void }> = ({ onStartPlantingFlow }) => {
-    const [ref, isVisible] = useScrollAnimate();
+    const [ref, isVisible] = useScrollAnimate(0.2);
     const steps = [
         { icon: <SproutIcon className="w-10 h-10" />, title: "۱. نیت خود را انتخاب کنید", description: "میراث شما برای چیست؟ یادبود، تولد، یا یک تصمیم جدید؟" },
         { icon: <SparklesIcon className="w-10 h-10" />, title: "۲. سند را شخصی‌سازی کنید", description: "یک پیام ماندگار بنویسید. هوش مصنوعی ما آن را شاعرانه می‌کند." },
         { icon: <CheckCircleIcon className="w-10 h-10" />, title: "۳. نخل شما کاشته می‌شود", description: "کشاورزان ما نخل را می‌کارند و شما سند دیجیتال و گزارش رشد آن را دریافت می‌کنید." },
     ];
     return (
-        <section ref={ref} className="bg-gray-800 py-20">
-            <div className="container mx-auto px-6">
-                <div className={`text-center mb-12 transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-5'}`}>
-                    <h2 className="text-4xl font-bold mb-2">مسیر جاودانگی در ۳ قدم</h2>
-                    <p className="text-lg text-gray-400">ساده، شفاف و تاثیرگذار.</p>
+        <section ref={ref} className="bg-mana-bg py-32 relative">
+            <div className="container mx-auto px-6 relative z-10">
+                <div className={`text-center mb-20 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                    <h2 className="text-4xl md:text-6xl font-black mb-6">مسیر جاودانگی در <span className="text-gradient-gold">۳ قدم</span></h2>
+                    <p className="text-xl text-gray-400 font-light">ساده، شفاف و تاثیرگذار در مقیاس جهانی.</p>
                 </div>
-                <div className="flex flex-col md:flex-row items-center justify-between text-center max-w-5xl mx-auto gap-8 md:gap-0">
+
+                <div className="flex flex-col lg:flex-row items-center justify-between text-center max-w-6xl mx-auto gap-12 lg:gap-8">
                     {steps.map((step, index) => (
                         <React.Fragment key={index}>
-                            <div className={`flex flex-col items-center md:flex-1 opacity-0 ${isVisible ? 'scroll-animate scroll-sprout' : ''}`} style={{animationDelay: `${index * 200}ms`}}>
-                                <div className="text-green-400 mx-auto mb-4 bg-gray-700 p-4 rounded-full shadow-lg">{step.icon}</div>
-                                <h3 className="text-xl font-bold mb-2 text-white">{step.title}</h3>
-                                <p className="text-gray-400 text-sm leading-relaxed">{step.description}</p>
+                            <div className={`flex flex-col items-center lg:flex-1 p-8 rounded-3xl glass-panel border border-white/5 transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`} style={{ animationDelay: `${index * 200}ms` }}>
+                                <div className="text-mana-primary mx-auto mb-6 bg-mana-primary/10 p-5 rounded-2xl shadow-glow-green border border-mana-primary/20">{step.icon}</div>
+                                <h3 className="text-2xl font-bold mb-4 text-white tracking-tight">{step.title}</h3>
+                                <p className="text-gray-400 text-base leading-relaxed font-light">{step.description}</p>
                             </div>
                             {index < steps.length - 1 && (
-                                <>
-                                    <div className={`w-px h-12 border-l-2 border-dashed border-gray-600 md:hidden opacity-0 ${isVisible ? 'scroll-animate scroll-slide-up' : ''}`} style={{animationDelay: `${index * 200 + 300}ms`}}></div>
-                                    <div className={`hidden md:block flex-grow border-t-2 border-dashed border-gray-600 mx-4 opacity-0 ${isVisible ? 'scroll-animate scroll-draw-line' : ''}`} style={{animationDelay: `${index * 200 + 100}ms`}}></div>
-                                </>
+                                <div className={`hidden lg:block opacity-30 ${isVisible ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: `${index * 200 + 300}ms` }}>
+                                    <ArrowLeftIcon className="w-8 h-8 text-mana-primary" />
+                                </div>
                             )}
                         </React.Fragment>
                     ))}
                 </div>
-                <div className={`text-center mt-16 transition-all duration-700 delay-500 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-                    <button onClick={onStartPlantingFlow} className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-10 rounded-full text-lg transition-all duration-300 transform hover:scale-110 shadow-[0_5px_15px_rgba(74,222,128,0.4)] hover:shadow-[0_8px_25px_rgba(74,222,128,0.6)]">
+
+                <div className={`text-center mt-24 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+                    <button onClick={onStartPlantingFlow} className="bg-mana-primary hover:bg-mana-primary-dark text-white font-bold py-4 px-12 rounded-2xl text-xl transition-all duration-500 shadow-premium hover:shadow-glow-green hover:scale-105">
                         شروع میراث‌سازی
                     </button>
                 </div>
@@ -179,31 +248,31 @@ const TestimonialsSection: React.FC = () => (
                 <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 hover:border-green-500 transition-colors">
                     <p className="text-gray-300 italic mb-4">"کاشت نخل به یاد مادرم، بهترین تصمیمی بود که گرفتم. حالا هر بار که به آن فکر می‌کنم، حس می‌کنم ریشه‌هایش در قلب من هم رشد می‌کنند."</p>
                     <div className="flex items-center justify-center gap-3">
-                         <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">م</div>
-                         <div className="text-right">
-                             <p className="font-bold text-white text-sm">مریم کاویانی</p>
-                             <p className="text-xs text-gray-500">حامی سطح ۲</p>
-                         </div>
+                        <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">م</div>
+                        <div className="text-right">
+                            <p className="font-bold text-white text-sm">مریم کاویانی</p>
+                            <p className="text-xs text-gray-500">حامی سطح ۲</p>
+                        </div>
                     </div>
                 </div>
                 <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 hover:border-green-500 transition-colors">
                     <p className="text-gray-300 italic mb-4">"به عنوان مدیرعامل، دنبال راهی برای CSR واقعی بودم. نخلستان معنا هم شفاف بود و هم اثرگذار. تیم ما حالا احساس تعلق بیشتری دارد."</p>
                     <div className="flex items-center justify-center gap-3">
-                         <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">ع</div>
-                         <div className="text-right">
-                             <p className="font-bold text-white text-sm">علی رضایی</p>
-                             <p className="text-xs text-gray-500">مدیرعامل شرکت تکنو</p>
-                         </div>
+                        <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">ع</div>
+                        <div className="text-right">
+                            <p className="font-bold text-white text-sm">علی رضایی</p>
+                            <p className="text-xs text-gray-500">مدیرعامل شرکت تکنو</p>
+                        </div>
                     </div>
                 </div>
                 <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 hover:border-green-500 transition-colors">
                     <p className="text-gray-300 italic mb-4">"دوره کوچینگ زندگی من رو تغییر داد. فکر می‌کردم فقط دارم نخل می‌کارم، ولی خودم رو پیدا کردم."</p>
                     <div className="flex items-center justify-center gap-3">
-                         <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">س</div>
-                         <div className="text-right">
-                             <p className="font-bold text-white text-sm">سارا محمدی</p>
-                             <p className="text-xs text-gray-500">دانشجوی آکادمی</p>
-                         </div>
+                        <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">س</div>
+                        <div className="text-right">
+                            <p className="font-bold text-white text-sm">سارا محمدی</p>
+                            <p className="text-xs text-gray-500">دانشجوی آکادمی</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -215,10 +284,10 @@ const PartnersSection: React.FC = () => (
     <div className="py-16 bg-gray-900 text-center border-t border-gray-800">
         <h2 className="text-xl font-bold text-gray-500 mb-8 uppercase tracking-widest">همراهان سازمانی ما</h2>
         <div className="flex flex-wrap justify-center gap-12 opacity-40 grayscale hover:grayscale-0 transition-all duration-500">
-            <div className="text-2xl font-bold text-white flex items-center gap-2"><BriefcaseIcon className="w-6 h-6"/> شرکت نخل طلایی</div>
-            <div className="text-2xl font-bold text-white flex items-center gap-2"><HeartIcon className="w-6 h-6"/> بنیاد امید</div>
-            <div className="text-2xl font-bold text-white flex items-center gap-2"><LeafIcon className="w-6 h-6"/> استارتاپ سبز</div>
-            <div className="text-2xl font-bold text-white flex items-center gap-2"><BookOpenIcon className="w-6 h-6"/> آکادمی رشد</div>
+            <div className="text-2xl font-bold text-white flex items-center gap-2"><BriefcaseIcon className="w-6 h-6" /> شرکت نخل طلایی</div>
+            <div className="text-2xl font-bold text-white flex items-center gap-2"><HeartIcon className="w-6 h-6" /> بنیاد امید</div>
+            <div className="text-2xl font-bold text-white flex items-center gap-2"><LeafIcon className="w-6 h-6" /> استارتاپ سبز</div>
+            <div className="text-2xl font-bold text-white flex items-center gap-2"><BookOpenIcon className="w-6 h-6" /> آکادمی رشد</div>
         </div>
     </div>
 );
@@ -229,21 +298,21 @@ const CrossroadsOfMeaning: React.FC<{ onNavigate: (v: View) => void, onStartPlan
             <h2 className="text-4xl font-bold text-white mb-2">مسیر خود را انتخاب کنید</h2>
             <p className="text-gray-400 mb-10">هر قدم در نخلستان، داستانی جدید می‌سازد.</p>
             <div className="flex flex-wrap justify-center gap-6">
-                 <button onClick={onStartPlantingFlow} className="group bg-gray-800 border border-gray-700 p-8 rounded-2xl text-white hover:bg-gray-700 hover:border-green-500 transition-all w-72 flex flex-col items-center shadow-lg hover:shadow-green-900/20">
-                    <div className="bg-green-900/30 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform"><SproutIcon className="w-10 h-10 text-green-400"/></div>
+                <button onClick={onStartPlantingFlow} className="group bg-gray-800 border border-gray-700 p-8 rounded-2xl text-white hover:bg-gray-700 hover:border-green-500 transition-all w-72 flex flex-col items-center shadow-lg hover:shadow-green-900/20">
+                    <div className="bg-green-900/30 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform"><SproutIcon className="w-10 h-10 text-green-400" /></div>
                     <span className="text-xl font-bold">کاشت میراث</span>
                     <span className="text-sm text-gray-400 mt-2">ثبت یک نیت ماندگار</span>
-                 </button>
-                 <button onClick={() => onNavigate(View.HEROS_JOURNEY_INTRO)} className="group bg-gray-800 border border-gray-700 p-8 rounded-2xl text-white hover:bg-gray-700 hover:border-yellow-500 transition-all w-72 flex flex-col items-center shadow-lg hover:shadow-yellow-900/20">
-                    <div className="bg-yellow-900/30 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform"><CompassIcon className="w-10 h-10 text-yellow-400"/></div>
+                </button>
+                <button onClick={() => onNavigate(View.HEROS_JOURNEY_INTRO)} className="group bg-gray-800 border border-gray-700 p-8 rounded-2xl text-white hover:bg-gray-700 hover:border-yellow-500 transition-all w-72 flex flex-col items-center shadow-lg hover:shadow-yellow-900/20">
+                    <div className="bg-yellow-900/30 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform"><CompassIcon className="w-10 h-10 text-yellow-400" /></div>
                     <span className="text-xl font-bold">سفر قهرمانی</span>
                     <span className="text-sm text-gray-400 mt-2">کشف خود و رشد</span>
-                 </button>
-                 <button onClick={() => onNavigate(View.CommunityHub)} className="group bg-gray-800 border border-gray-700 p-8 rounded-2xl text-white hover:bg-gray-700 hover:border-blue-500 transition-all w-72 flex flex-col items-center shadow-lg hover:shadow-blue-900/20">
-                    <div className="bg-blue-900/30 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform"><UsersIcon className="w-10 h-10 text-blue-400"/></div>
+                </button>
+                <button onClick={() => onNavigate(View.CommunityHub)} className="group bg-gray-800 border border-gray-700 p-8 rounded-2xl text-white hover:bg-gray-700 hover:border-blue-500 transition-all w-72 flex flex-col items-center shadow-lg hover:shadow-blue-900/20">
+                    <div className="bg-blue-900/30 p-4 rounded-full mb-4 group-hover:scale-110 transition-transform"><UsersIcon className="w-10 h-10 text-blue-400" /></div>
                     <span className="text-xl font-bold">کانون جامعه</span>
                     <span className="text-sm text-gray-400 mt-2">همدلی و مشارکت</span>
-                 </button>
+                </button>
             </div>
         </div>
     </section>
@@ -251,17 +320,17 @@ const CrossroadsOfMeaning: React.FC<{ onNavigate: (v: View) => void, onStartPlan
 
 const FirstHeritagePrompt: React.FC<{ setPage: (page: View) => void }> = ({ setPage }) => {
     return (
-       <div className="p-8 rounded-2xl shadow-lg border-2 border-dashed border-amber-300/50 dark:border-amber-700/50 bg-gradient-to-br from-white to-amber-50 dark:from-stone-800/50 dark:to-stone-900/10 text-center">
-           <div className="w-40 h-56 border-2 border-stone-300 dark:border-stone-600 rounded-lg flex items-center justify-center mx-auto mb-4">
-               <LeafIcon className="w-16 h-16 text-stone-300 dark:text-stone-600" />
-           </div>
-           <h3 className="text-xl font-bold text-stone-800 dark:text-stone-100">جای اولین شناسنامه شما اینجاست</h3>
-           <p className="text-stone-600 dark:text-stone-300 mt-2 mb-6">با کاشتن اولین میراث، سفر خود را معنادارتر کنید.</p>
-           <button onClick={() => setPage(View.HallOfHeritage)} className="bg-amber-500 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-amber-600 transition-colors shadow">
-               اولین میراثم را می‌کارم
-           </button>
-       </div>
-   );
+        <div className="p-8 rounded-2xl shadow-lg border-2 border-dashed border-amber-300/50 dark:border-amber-700/50 bg-gradient-to-br from-white to-amber-50 dark:from-stone-800/50 dark:to-stone-900/10 text-center">
+            <div className="w-40 h-56 border-2 border-stone-300 dark:border-stone-600 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <LeafIcon className="w-16 h-16 text-stone-300 dark:text-stone-600" />
+            </div>
+            <h3 className="text-xl font-bold text-stone-800 dark:text-stone-100">جای اولین شناسنامه شما اینجاست</h3>
+            <p className="text-stone-600 dark:text-stone-300 mt-2 mb-6">با کاشتن اولین میراث، سفر خود را معنادارتر کنید.</p>
+            <button onClick={() => setPage(View.HallOfHeritage)} className="bg-amber-500 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-amber-600 transition-colors shadow">
+                اولین میراثم را می‌کارم
+            </button>
+        </div>
+    );
 }
 
 // --- Specialized Consulting Section (New) ---
@@ -271,10 +340,10 @@ const SpecializedConsultingSection: React.FC<{ onNavigate: (v: View) => void }> 
         <div className="container mx-auto px-6 relative z-10">
             <h2 className="text-4xl font-bold text-white mb-4">دستیار هوشمند و تخصصی</h2>
             <p className="text-gray-400 mb-12 max-w-2xl mx-auto">برای چالش‌های زندگی و کسب‌وکار خود، راهکارهای عمیق و شخصی‌سازی شده دریافت کنید.</p>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
                 {/* Life Coach Card */}
-                <div 
+                <div
                     onClick={() => onNavigate(View.SMART_CONSULTANT)}
                     className="group cursor-pointer bg-gradient-to-br from-indigo-900/50 to-purple-900/50 p-8 rounded-3xl border border-indigo-500/30 hover:border-indigo-400 transition-all duration-300 hover:scale-[1.02] relative overflow-hidden shadow-xl"
                 >
@@ -294,7 +363,7 @@ const SpecializedConsultingSection: React.FC<{ onNavigate: (v: View) => void }> 
                 </div>
 
                 {/* Business Mentor Card */}
-                <div 
+                <div
                     onClick={() => onNavigate(View.BUSINESS_MENTOR)}
                     className="group cursor-pointer bg-gradient-to-br from-slate-800 to-slate-900 p-8 rounded-3xl border border-slate-600 hover:border-blue-400 transition-all duration-300 hover:scale-[1.02] relative overflow-hidden shadow-xl"
                 >
@@ -336,32 +405,33 @@ const HomeView: React.FC = () => {
     const onNavigate = (v: View) => dispatch({ type: 'SET_VIEW', payload: v });
     const handleSetPage = (page: View) => dispatch({ type: 'SET_VIEW', payload: page });
     const handleAppreciateUser = (userId: string, userName: string) => {
-         console.log(`Appreciating user ${userId}`);
-         setAppreciatedHeroIds([...appreciatedHeroIds, userId]);
+        console.log(`Appreciating user ${userId}`);
+        setAppreciatedHeroIds([...appreciatedHeroIds, userId]);
     }
-    
+
     const handleWelcomeIntent = (intent: 'gift' | 'memory' | 'impact') => {
         setShowWelcomeMat(false);
         sessionStorage.setItem('hasSeenWelcomeMat', 'true');
-        
+
         // Based on intent, we can customize the next view or show a specific modal
         if (intent === 'gift') {
-             dispatch({ type: 'SET_VIEW', payload: View.GiftConcierge });
+            dispatch({ type: 'SET_VIEW', payload: View.GiftConcierge });
         } else if (intent === 'memory') {
-             dispatch({ type: 'SET_VIEW', payload: View.HallOfHeritage });
+            dispatch({ type: 'SET_VIEW', payload: View.HallOfHeritage });
         } else {
-             dispatch({ type: 'SET_VIEW', payload: View.TransparencyDashboard });
+            dispatch({ type: 'SET_VIEW', payload: View.TransparencyDashboard });
         }
     };
-    
+
     const handleCloseWelcome = () => {
         setShowWelcomeMat(false);
         sessionStorage.setItem('hasSeenWelcomeMat', 'true');
     };
-    
+
     // Logic for heroes of the week
     const heroesOfWeek = useMemo(() => {
-        const oneWeekAgo = new Date().getTime() - 7 * 24 * 60 * 60 * 1000;
+        const referenceTime = new Date(REFERENCE_DATE_STR).getTime();
+        const oneWeekAgo = referenceTime - 7 * 24 * 60 * 60 * 1000;
         const pointValues: { [key: string]: number } = {
             palm_planted: 50,
             course_completed: 100,
@@ -383,19 +453,19 @@ const HomeView: React.FC = () => {
             }, 0) || 0;
             return { user, weeklyPoints };
         })
-        .filter(item => item.weeklyPoints > 0)
-        .sort((a, b) => b.weeklyPoints - a.weeklyPoints)
-        .slice(0, 3);
+            .filter(item => item.weeklyPoints > 0)
+            .sort((a, b) => b.weeklyPoints - a.weeklyPoints)
+            .slice(0, 3);
     }, [allUsers]);
-    
+
     const displayedHeroes = useMemo(() => {
         if (heroesOfWeek.length > 0) {
-          return heroesOfWeek;
+            return heroesOfWeek;
         }
-    
+
         const exampleUserIds = ['admin_user_01', 'user_gen_1', 'user_gen_2'];
         const exampleUsers = exampleUserIds.map(id => allUsers.find(u => u.id === id)).filter(Boolean) as User[];
-        
+
         while (exampleUsers.length < 3 && exampleUsers.length < allUsers.length) {
             const nextUser = allUsers.find(u => !exampleUsers.some(ex => ex.id === u.id));
             if (nextUser) {
@@ -404,23 +474,23 @@ const HomeView: React.FC = () => {
                 break;
             }
         }
-        
+
         if (exampleUsers.length === 0) return [];
 
         return [
-          { user: exampleUsers[0], weeklyPoints: 720 },
-          { user: exampleUsers[1 % exampleUsers.length], weeklyPoints: 550 },
-          { user: exampleUsers[2 % exampleUsers.length], weeklyPoints: 480 },
+            { user: exampleUsers[0], weeklyPoints: 720 },
+            { user: exampleUsers[1 % exampleUsers.length], weeklyPoints: 550 },
+            { user: exampleUsers[2 % exampleUsers.length], weeklyPoints: 480 },
         ].slice(0, exampleUsers.length).sort((a, b) => b.weeklyPoints - a.weeklyPoints);
     }, [heroesOfWeek, allUsers]);
-    
+
     const lastPlantedPalm = useMemo(() => {
         if (!user) return null;
         return [...(user.timeline || [])]
             .filter(e => e.type === 'palm_planted')
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0] || null;
     }, [user]);
-    
+
     const guides = [
         { icon: HandshakeIcon, title: 'میراث خود را بکارید', description: 'لحظات مهم زندگی خود را با کاشتن یک نخل نمادین، جاودانه کنید.', cta: { text: 'مشاهده میراث‌ها', page: View.HallOfHeritage }, color: 'amber' },
         { icon: BookOpenIcon, title: 'در آکادمی معنا بیاموزید', description: 'با شرکت در دوره‌های آموزشی، دانش خود را برای خلق تأثیری عمیق‌تر افزایش دهید.', cta: { text: 'مشاهده دوره‌ها', page: View.Courses }, color: 'sky' },
@@ -440,7 +510,7 @@ const HomeView: React.FC = () => {
             <OrganizationSchema />
             <LocalBusinessSchema />
             <FAQSchema items={FAQ_DATA} />
-            
+
             {showWelcomeMat && (
                 <WelcomeMat onEnter={handleCloseWelcome} onSelectIntent={handleWelcomeIntent} />
             )}
@@ -448,13 +518,13 @@ const HomeView: React.FC = () => {
             <CollectiveImpactSection />
             <HowItWorksSection onStartPlantingFlow={onStartPlantingFlow} />
             <CampaignSection campaign={campaign} onCTAClick={onStartPlantingFlow} />
-            
+
             <SpringOfMeaning allUsers={allUsers} allInsights={user ? user.timeline || [] : []} setPage={handleSetPage} />
-            
+
             <CrossroadsOfMeaning onNavigate={onNavigate} onStartPlantingFlow={onStartPlantingFlow} />
-            
+
             <SpecializedConsultingSection onNavigate={onNavigate} />
-            
+
             {/* Quick Access Section */}
             <section className="container mx-auto px-4 pt-16 pb-8">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -465,20 +535,20 @@ const HomeView: React.FC = () => {
                         <h3 className="text-xl font-bold text-stone-800 dark:text-stone-100">کانون جامعه</h3>
                         <p className="text-stone-600 dark:text-stone-400 mt-2 text-sm">به گفتگوها بپیوندید و از آخرین اخبار مطلع شوید.</p>
                     </div>
-                     <div className="bg-white dark:bg-stone-800 p-6 rounded-2xl shadow-lg border border-stone-200 dark:border-stone-700 hover:border-green-500 transition-all cursor-pointer" onClick={() => handleSetPage(View.PathOfMeaning)}>
+                    <div className="bg-white dark:bg-stone-800 p-6 rounded-2xl shadow-lg border border-stone-200 dark:border-stone-700 hover:border-green-500 transition-all cursor-pointer" onClick={() => handleSetPage(View.PathOfMeaning)}>
                         <div className="bg-green-100 dark:bg-green-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-4">
                             <CompassIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
                         </div>
                         <h3 className="text-xl font-bold text-stone-800 dark:text-stone-100">مسیر معنا</h3>
                         <p className="text-stone-600 dark:text-stone-400 mt-2 text-sm">سفر قهرمانی خود را ادامه دهید و ماموریت‌های جدید را کشف کنید.</p>
                     </div>
-                     <div className="bg-white dark:bg-stone-800 p-6 rounded-2xl shadow-lg border border-stone-200 dark:border-stone-700 hover:border-blue-500 transition-all cursor-pointer" onClick={() => {
+                    <div className="bg-white dark:bg-stone-800 p-6 rounded-2xl shadow-lg border border-stone-200 dark:border-stone-700 hover:border-blue-500 transition-all cursor-pointer" onClick={() => {
                         if (user) {
                             handleSetPage(View['ai-tools']);
                         } else {
                             dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true });
                         }
-                     }}>
+                    }}>
                         <div className="bg-blue-100 dark:bg-blue-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-4">
                             <SparklesIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                         </div>
@@ -490,9 +560,9 @@ const HomeView: React.FC = () => {
 
             {/* --- Personalized Path Section --- */}
             <section className="container mx-auto px-4 animate-on-scroll">
-                 <div className="max-w-4xl mx-auto">
+                <div className="max-w-4xl mx-auto">
                     {!user ? (
-                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             {guides.map(guide => <ManaGuideCard key={guide.title} {...guide} setPage={handleSetPage} />)}
                         </div>
                     ) : !user.profileCompletion.extra ? (
@@ -502,7 +572,7 @@ const HomeView: React.FC = () => {
                     ) : (
                         <FirstHeritagePrompt setPage={handleSetPage} />
                     )}
-                 </div>
+                </div>
             </section>
 
             {/* --- Heroes of the Week --- */}
@@ -518,13 +588,13 @@ const HomeView: React.FC = () => {
                                 const rankOrder = [2, 1, 3];
                                 const rank = rankOrder[index];
                                 const heroToShow = displayedHeroes[rank - 1];
-                                
+
                                 if (!heroToShow) return <div key={index}></div>;
-                                
+
                                 return (
-                                    <HeroCard 
-                                        key={heroToShow.user.id} 
-                                        hero={heroToShow} 
+                                    <HeroCard
+                                        key={heroToShow.user.id}
+                                        hero={heroToShow}
                                         rank={rank}
                                         currentUser={user}
                                         onAppreciate={handleAppreciateUser}
@@ -540,7 +610,7 @@ const HomeView: React.FC = () => {
             )}
 
             <TestimonialsSection />
-            
+
             <FAQ user={user} />
             <PartnersSection />
         </main>

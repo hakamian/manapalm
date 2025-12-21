@@ -254,11 +254,11 @@ function appReducer(state: AppState, action: Action): AppState {
 
             let unlockUpdates: Partial<User> = {};
             let newUnlockedTools = state.user?.unlockedTools || [];
-            if (newOrder.items.some(item => item.id === 'p_heritage_language' || item.productId === 'p_heritage_language')) { unlockUpdates = { ...unlockUpdates, hasUnlockedEnglishTest: true }; }
-            if (newOrder.items.some(item => item.id === 'p_companion_unlock' || item.productId === 'p_companion_unlock')) { unlockUpdates = { ...unlockUpdates, hasUnlockedCompanion: true }; }
-            if (newOrder.items.some(item => item.id === 'p_reflection_unlock' || item.productId === 'p_reflection_unlock')) { const currentUses = state.user?.reflectionAnalysesRemaining || 0; unlockUpdates = { ...unlockUpdates, reflectionAnalysesRemaining: currentUses + 1 }; }
-            if (newOrder.items.some(item => item.id === 'p_coaching_lab_access' || item.productId === 'p_coaching_lab_access' || item.id === 'p_hoshmana_live_weekly' || item.productId === 'p_hoshmana_live_weekly')) { const expiresAt = new Date(); expiresAt.setDate(expiresAt.getDate() + 7); unlockUpdates = { ...unlockUpdates, coachingLabAccess: { expiresAt: expiresAt.toISOString() }, hoshmanaLiveAccess: { expiresAt: expiresAt.toISOString(), remainingSeconds: 3600 } }; }
-            newOrder.items.forEach(item => { if (item.item?.unlocksFeatureId) { const featureId = item.item.unlocksFeatureId; if (!newUnlockedTools.includes(featureId)) { newUnlockedTools = [...newUnlockedTools, featureId]; } } });
+            if (newOrder.items.some(item => item.id === 'p_heritage_language')) { unlockUpdates = { ...unlockUpdates, hasUnlockedEnglishTest: true }; }
+            if (newOrder.items.some(item => item.id === 'p_companion_unlock')) { unlockUpdates = { ...unlockUpdates, hasUnlockedCompanion: true }; }
+            if (newOrder.items.some(item => item.id === 'p_reflection_unlock')) { const currentUses = state.user?.reflectionAnalysesRemaining || 0; unlockUpdates = { ...unlockUpdates, reflectionAnalysesRemaining: currentUses + 1 }; }
+            if (newOrder.items.some(item => item.id === 'p_coaching_lab_access' || item.id === 'p_hoshmana_live_weekly')) { const expiresAt = new Date(); expiresAt.setDate(expiresAt.getDate() + 7); unlockUpdates = { ...unlockUpdates, coachingLabAccess: { expiresAt: expiresAt.toISOString() }, hoshmanaLiveAccess: { expiresAt: expiresAt.toISOString(), remainingSeconds: 3600 } }; }
+            newOrder.items.forEach(item => { if (item.unlocksFeatureId) { const featureId = item.unlocksFeatureId; if (!newUnlockedTools.includes(featureId)) { newUnlockedTools = [...newUnlockedTools, featureId]; } } });
             if (newUnlockedTools.length > (state.user?.unlockedTools?.length || 0)) { unlockUpdates = { ...unlockUpdates, unlockedTools: newUnlockedTools }; }
             let webProjectUpdate = {};
             const webDevItem = newOrder.items.find(item => item.webDevDetails);
@@ -360,7 +360,7 @@ function appReducer(state: AppState, action: Action): AppState {
             const { palm: qpPalm, quantity: qpQuantity, deedDetails: qpDeedDetails, selectedPlan: qpSelectedPlan } = action.payload;
             const qpTotal = qpPalm.price * qpQuantity;
             const qpDeed: Deed = { id: `deed-${Date.now()}`, productId: qpPalm.id, intention: qpDeedDetails.intention, name: qpDeedDetails.name, date: new Date().toISOString(), palmType: qpPalm.name, message: qpDeedDetails.message, fromName: qpDeedDetails.fromName, groveKeeperId: qpDeedDetails.groveKeeperId, isPlanted: false };
-            const qpOrder: Order = { id: `order-${Date.now()}`, userId: state.user?.id || 'guest', date: new Date().toISOString(), items: [{ id: `${qpPalm.id}-${Date.now()}`, productId: qpPalm.id, name: qpPalm.name, price: qpPalm.price, quantity: qpQuantity, image: `https://picsum.photos/seed/${qpPalm.id}/400/400`, stock: 999, type: 'heritage', points: qpPalm.points, popularity: 100, dateAdded: new Date().toISOString(), deedDetails: qpDeedDetails, paymentPlan: qpSelectedPlan > 1 ? { installments: qpSelectedPlan } : undefined }], total: qpTotal, status: 'ثبت شده', statusHistory: [{ status: 'ثبت شده', date: new Date().toISOString() }], deeds: [qpDeed] };
+            const qpOrder: Order = { id: `order-${Date.now()}`, userId: state.user?.id || 'guest', status: 'pending', totalAmount: qpTotal, createdAt: new Date().toISOString(), items: [{ ...qpPalm, id: `${qpPalm.id}-${Date.now()}`, quantity: qpQuantity, image: `https://picsum.photos/seed/${qpPalm.id}/400/400`, paymentPlan: qpSelectedPlan > 1 ? { installments: qpSelectedPlan } : undefined }], statusHistory: [{ status: 'pending', date: new Date().toISOString() }], deeds: [qpDeed] };
             const qpPointsEarned = Math.min((qpPalm.points || 0) * qpQuantity, 20000);
             const qpTimelineEvents = [createTimelineEventFromDeed(qpDeed)];
             let qpUnlockUpdates = {};

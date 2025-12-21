@@ -220,7 +220,7 @@ const Header: React.FC = () => {
 
     return (
         <>
-            <header className={`sticky ${hasBanner ? 'top-8' : 'top-0'} left-0 right-0 z-50 transition-all duration-300 h-14 ${isScrolled ? 'bg-black bg-opacity-70 backdrop-blur-sm' : 'bg-transparent'}`}>
+            <header className={`fixed ${hasBanner ? 'top-10' : 'top-4'} left-1/2 -translate-x-1/2 z-50 transition-all duration-500 w-[95%] max-w-7xl rounded-2xl border border-white/5 ${isScrolled ? 'glass-panel h-16 py-2' : 'bg-white/5 backdrop-blur-md h-20 py-4'} flex items-center shadow-2xl`}>
                 <div className="container mx-auto px-6 h-full flex items-center">
                     <div className="flex items-center justify-between w-full">
                         <div className="flex items-center">
