@@ -102,31 +102,165 @@ const ModernShopManagement: React.FC<ModernShopManagementProps> = ({
         setEditForm({ ...product });
     };
 
+    const handleAddClick = () => {
+        // Create a blank product template
+        const newProduct: Product = {
+            id: `p_new_${Date.now()}`,
+            name: '',
+            price: 0,
+            category: 'محصولات خرما',
+            image: '',
+            stock: 0,
+            description: '',
+            points: 0,
+            popularity: 0,
+            type: 'physical',
+            dateAdded: new Date().toISOString(),
+            isActive: true
+        };
+        setEditingProduct(newProduct);
+        setEditForm(newProduct);
+    };
+
     const handleSaveEdit = () => {
-        if (editingProduct && onUpdateProduct) {
+        if (!editingProduct) return;
+
+        // Check if it's a new product (by checking if it exists in current products list)
+        const isNew = !products.find(p => p.id === editingProduct.id);
+
+        if (isNew && onCreateProduct) {
+            onCreateProduct(editForm);
+        } else if (!isNew && onUpdateProduct) {
             onUpdateProduct(editingProduct.id, editForm);
+        } else {
+            // Fallback if handlers are missing (e.g. just logging)
+            console.log(isNew ? 'Creating:' : 'Updating:', editForm);
         }
+
         setEditingProduct(null);
         // Show success/toast (omitted for brevity)
     };
 
     return (
         <div className="admin-container" style={{ padding: '2rem' }}>
-            {/* ... Existing header and stats ... */}
+            {/* Header */}
             <div className="admin-animate-fade-in" style={{ marginBottom: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                     <div>
                         <h1 className="admin-heading-1" style={{ marginBottom: '0.5rem' }}>
                             مدیریت محصولات
                         </h1>
-                        {/* ... */}
+                        <p className="admin-body" style={{ color: 'var(--admin-text-tertiary)' }}>
+                            مدیریت و نظارت بر محصولات فروشگاه
+                        </p>
                     </div>
-                    {/* ... */}
+                    <button
+                        onClick={handleAddClick}
+                        className="admin-btn admin-btn-success"
+                    >
+                        <PlusIcon className="w-5 h-5" />
+                        افزودن محصول جدید
+                    </button>
                 </div>
-                {/* ... Stats ... */}
+                {/* ... existing stats ... */}
+                <div
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                        gap: '1rem',
+                        marginTop: '1.5rem'
+                    }}
+                >
+                    <div className="admin-card" style={{ padding: '1rem' }}>
+                        <p className="admin-label" style={{ marginBottom: '0.5rem' }}>کل محصولات</p>
+                        <h3 className="admin-heading-2" style={{ fontSize: '1.5rem' }}>
+                            {stats.total.toLocaleString('fa-IR')}
+                        </h3>
+                    </div>
+                    <div className="admin-card" style={{ padding: '1rem' }}>
+                        <p className="admin-label" style={{ marginBottom: '0.5rem' }}>موجود در انبار</p>
+                        <h3 className="admin-heading-2" style={{ fontSize: '1.5rem' }}>
+                            {stats.inStock.toLocaleString('fa-IR')}
+                        </h3>
+                    </div>
+                    <div className="admin-card" style={{ padding: '1rem' }}>
+                        <p className="admin-label" style={{ marginBottom: '0.5rem' }}>کمبود موجودی</p>
+                        <h3 className="admin-heading-2" style={{ fontSize: '1.5rem' }}>
+                            {stats.lowStock.toLocaleString('fa-IR')}
+                        </h3>
+                    </div>
+                    <div className="admin-card" style={{ padding: '1rem' }}>
+                        <p className="admin-label" style={{ marginBottom: '0.5rem' }}>ناموجود</p>
+                        <h3 className="admin-heading-2" style={{ fontSize: '1.5rem' }}>
+                            {stats.outOfStock.toLocaleString('fa-IR')}
+                        </h3>
+                    </div>
+                </div>
             </div>
 
-            {/* ... Filters ... */}
+            {/* Filters */}
+            <div className="admin-animate-fade-in" style={{ marginBottom: '2rem' }}>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
+                    {/* Search */}
+                    <div className="admin-input-group" style={{ flex: 1, minWidth: '200px' }}>
+                        <MagnifyingGlassIcon className="admin-input-icon" />
+                        <input
+                            type="text"
+                            placeholder="جستجوی محصول..."
+                            className="admin-input"
+                            value={searchQuery}
+                            onChange={e => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+
+                    {/* Category Filter */}
+                    <div className="admin-input-group" style={{ minWidth: '150px' }}>
+                        <FunnelIcon className="admin-input-icon" />
+                        <select
+                            className="admin-input"
+                            value={filterCategory}
+                            onChange={e => setFilterCategory(e.target.value)}
+                        >
+                            {categories.map(cat => (
+                                <option key={cat} value={cat}>
+                                    {cat === 'all' ? 'همه دسته‌بندی‌ها' : cat}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    {/* View Mode Toggle */}
+                    <div className="admin-toggle-group">
+                        <button
+                            className={`admin-toggle-btn ${viewMode === 'grid' ? 'admin-toggle-btn-active' : ''}`}
+                            onClick={() => setViewMode('grid')}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25h-2.25a2.25 2.25 0 01-2.25-2.25v-2.25z" />
+                            </svg>
+                            گرید
+                        </button>
+                        <button
+                            className={`admin-toggle-btn ${viewMode === 'list' ? 'admin-toggle-btn-active' : ''}`}
+                            onClick={() => setViewMode('list')}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75a1.875 1.875 0 010 3.75H5.625a1.875 1.875 0 010-3.75z" />
+                            </svg>
+                            لیست
+                        </button>
+                    </div>
+
+                    {/* Export Button */}
+                    <button
+                        onClick={handleExportProducts}
+                        className="admin-btn admin-btn-secondary"
+                    >
+                        <ArrowDownTrayIcon className="w-5 h-5" />
+                        خروجی CSV
+                    </button>
+                </div>
+            </div>
 
             {/* Products Grid */}
             <div
