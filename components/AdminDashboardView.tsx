@@ -60,6 +60,7 @@ import ModernCommunityDashboard from './admin/ModernCommunityDashboard';
 import ModernMentorshipDashboard from './admin/ModernMentorshipDashboard';
 import ModernCampaignsDashboard from './admin/ModernCampaignsDashboard';
 import ModernContentFactoryDashboard from './admin/ModernContentFactoryDashboard';
+import ModernAcademiesDashboard from './admin/ModernAcademiesDashboard';
 import { timeAgo } from '../utils/time';
 
 interface AdminDashboardViewProps {
@@ -217,7 +218,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                     )}
                     {activeTab === 'shop_manager' && <ModernShopManagement products={[]} />}
                     {activeTab === 'economy' && <UnitEconomicsDashboard />}
-                    {activeTab === 'academies' && <AcademiesDashboard />}
+                    {activeTab === 'academies' && <ModernAcademiesDashboard />}
                     {activeTab === 'community' && <ModernCommunityDashboard posts={posts} />}
                     {activeTab === 'growth' && <ModernAnalyticsDashboard users={users} orders={orders} />}
                     {activeTab === 'gamification' && <ModernGamificationDashboard allUsers={users} />}
