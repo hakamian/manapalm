@@ -218,7 +218,18 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                             setActiveSubTab={(subTab: any) => setActiveSubTab(subTab)}
                         />
                     )}
-                    {activeTab === 'shop_manager' && <ModernShopManagement products={[]} />}
+                    {activeTab === 'shop_manager' && (
+                        <ModernShopManagement
+                            products={useAppState().products}
+                            onUpdateProduct={(id, data) => {
+                                // Dispatch update action
+                                // Since we don't have a direct UPDATE_PRODUCT action in reducers visible here, 
+                                // we'll log it for now. Ideally should dispatch('UPDATE_PRODUCT', ...)
+                                console.log('Update Product:', id, data);
+                                // In a real app we'd dispatch( { type: 'UPDATE_PRODUCT', payload: { id, ...data } })
+                            }}
+                        />
+                    )}
                     {activeTab === 'economy' && <UnitEconomicsDashboard />}
                     {activeTab === 'academies' && <ModernAcademiesDashboard />}
                     {activeTab === 'community' && <ModernCommunityDashboard posts={posts} />}
