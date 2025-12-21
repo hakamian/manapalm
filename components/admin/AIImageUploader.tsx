@@ -11,6 +11,7 @@ const AIImageUploader: React.FC<AIImageUploaderProps> = ({ onImageReady, default
     const [productName, setProductName] = useState(defaultProductName);
     const [description, setDescription] = useState('');
     const [style, setStyle] = useState<'realistic' | 'artistic' | 'minimalist' | 'professional'>('professional');
+    const [provider, setProvider] = useState<'free-pollinations' | 'openai'>('free-pollinations');
     const [existingUrl, setExistingUrl] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [result, setResult] = useState<{ url: string; source: string } | null>(null);
@@ -27,6 +28,7 @@ const AIImageUploader: React.FC<AIImageUploaderProps> = ({ onImageReady, default
                 productName: productName || 'Unnamed Product',
                 description,
                 style,
+                provider, // Send provider choice
                 existingImageUrl: mode === 'upload' ? existingUrl : undefined,
                 folder: 'products'
             };
@@ -116,6 +118,20 @@ const AIImageUploader: React.FC<AIImageUploaderProps> = ({ onImageReady, default
                                 <option value="artistic">هنری و خلاقانه (Artistic)</option>
                             </select>
                         </div>
+                        <div>
+                            <label className="block text-xs text-gray-400 mb-1">موتور هوش مصنوعی</label>
+                            <select
+                                className="w-full bg-gray-700 border border-gray-600 rounded-lg p-2 text-white text-sm focus:border-green-500 focus:outline-none"
+                                value={provider}
+                                onChange={(e) => setProvider(e.target.value as any)}
+                            >
+                                <option value="free-pollinations">مدل رایگان و سریع (Pollinations) - Free</option>
+                                <option value="openai">مدل پیشرفته (DALL-E 3) - High Quality (Cost)</option>
+                            </select>
+                            <p className="text-[10px] text-gray-500 mt-1">
+                                حالت رایگان برای تست عالی است. حالت پیشرفته نیاز به کلید OpenAI دارد.
+                            </p>
+                        </div>
                     </>
                 ) : (
                     <div>
@@ -134,10 +150,10 @@ const AIImageUploader: React.FC<AIImageUploaderProps> = ({ onImageReady, default
                     onClick={handleProcess}
                     disabled={isLoading || !productName}
                     className={`w-full py-2.5 rounded-lg font-bold flex items-center justify-center gap-2 transition-all ${isLoading
-                            ? 'bg-gray-600 cursor-not-allowed'
-                            : mode === 'generate'
-                                ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-900/20'
-                                : 'bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/20'
+                        ? 'bg-gray-600 cursor-not-allowed'
+                        : mode === 'generate'
+                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 shadow-lg shadow-purple-900/20'
+                            : 'bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-900/20'
                         }`}
                 >
                     {isLoading ? (

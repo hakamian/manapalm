@@ -163,7 +163,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
         <div className="bg-gray-900 text-white">
             <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
             <div className="relative container mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="pt-22 pb-8">
+                <div className="pt-32 pb-8">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
                             <h1 className="text-4xl font-extrabold text-white tracking-tight flex items-center gap-4">
