@@ -74,8 +74,8 @@ export async function POST(req: NextRequest) {
         const { action, model, data, provider } = body;
         let targetModel = model || 'google/gemini-2.0-flash-exp:free';
 
-        // Determine initial provider
-        let activeProvider = provider || (targetModel.includes('/') ? 'openrouter' : 'google');
+        // Determine initial provider: if model starts with 'models/' it's Gemini, otherwise check for openrouter format
+        let activeProvider = provider || (targetModel.startsWith('models/') ? 'google' : (targetModel.includes('/') ? 'openrouter' : 'google'));
 
         // ---------------------------------------------------------
         // STRATEGY: TRY PRIMARY PROVIDER -> IF 429 -> TRY SECONDARY
@@ -121,9 +121,9 @@ export async function POST(req: NextRequest) {
             let lastErr: any;
             for (let i = 0; i < 2; i++) {
                 try {
-                    const modelInstance = genAI.getGenerativeModel({
-                        model: m.includes('/') ? 'gemini-1.5-flash' : m
-                    });
+                    // Ensure model name is in correct format (models/xxx)
+                    const modelName = m.startsWith('models/') ? m : `models/${m}`;
+                    const modelInstance = genAI.getGenerativeModel({ model: modelName });
                     const result = await modelInstance.generateContent({ contents: data.contents });
                     const response = await result.response;
                     return response.text();
@@ -152,7 +152,7 @@ export async function POST(req: NextRequest) {
                 // Swap Provider
                 if (activeProvider === 'openrouter') {
                     finalProvider = 'google';
-                    finalModel = 'gemini-1.5-flash'; // Fallback to a stable direct model
+                    finalModel = 'models/gemini-2.0-flash'; // Fallback to a stable direct model
                     resultText = await tryGemini(finalModel);
                 } else {
                     finalProvider = 'openrouter';

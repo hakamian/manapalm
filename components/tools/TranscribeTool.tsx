@@ -77,7 +77,7 @@ const TranscribeTool: React.FC<{ user: User }> = ({ user }) => {
         try {
             const base64Audio = await fileToBase64(audioFile);
 
-            const response = await callProxy('generateContent', 'gemini-1.5-flash', {
+            const response = await callProxy('generateContent', 'models/gemini-2.0-flash', {
                 contents: [{
                     role: 'user',
                     parts: [

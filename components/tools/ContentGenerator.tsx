@@ -82,7 +82,7 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfi
 
         try {
             // Use secure proxy with stable Gemini model
-            const response = await callProxy('generateContent', 'gemini-1.5-flash', {
+            const response = await callProxy('generateContent', 'models/gemini-2.0-flash', {
                 contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
                 config: { temperature: 0.7 }
             });
@@ -162,8 +162,8 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfi
                                 key={ct.id}
                                 onClick={() => setContentType(ct.id)}
                                 className={`p-3 rounded-lg border-2 text-sm font-semibold transition-colors ${contentType === ct.id
-                                        ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/30'
-                                        : 'border-stone-200 dark:border-stone-600 hover:bg-stone-50'
+                                    ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/30'
+                                    : 'border-stone-200 dark:border-stone-600 hover:bg-stone-50'
                                     }`}
                             >
                                 {ct.label}

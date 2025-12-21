@@ -61,7 +61,7 @@ const PlantingModal: React.FC<PlantingModalProps> = ({ isOpen, onClose, user, pa
                     : `یک جمله بسیار کوتاه (حداکثر ۱۰ کلمه)، شاعرانه و ماندگار برای شناسنامه '${palmType.title}' که به '${recipientName || 'عزیز'}' تقدیم می‌شود بنویس. متن باید آماده چاپ و بدون توضیحات اضافه باشد.`;
             }
 
-            const response = await callProxy('generateContent', 'gemini-1.5-flash', {
+            const response = await callProxy('generateContent', 'models/gemini-2.0-flash', {
                 contents: [{ role: 'user', parts: [{ text: prompt }] }],
                 config: { temperature: 0.7 }
             });

@@ -38,8 +38,9 @@ export const getFallbackMessage = (type: string): string => {
 };
 
 
-// Changed to Gemini as default since OpenRouter API key is invalid
-export const DEFAULT_FREE_MODEL = 'gemini-1.5-flash';
+// Using OpenRouter free tier as default (valid API key confirmed)
+// Falls back to Gemini if OpenRouter has issues
+export const DEFAULT_FREE_MODEL = 'google/gemini-2.0-flash-exp:free';
 
 export async function callProxy(
     action: 'generateContent' | 'generateImages' | 'generateVideos' | 'getVideosOperation',
