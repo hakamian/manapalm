@@ -158,16 +158,24 @@ const Header: React.FC = () => {
     const desktopSearchRef = useRef<HTMLDivElement>(null);
     const desktopInputRef = useRef<HTMLInputElement>(null);
 
-    // Use dynamic navigation from siteConfig
+    // Use dynamic navigation from siteConfig and filter for Admin
     const megaNavItems: NavCategory[] = useMemo(() => {
-        return siteConfig.navigation.map(cat => ({
-            ...cat,
-            children: cat.children.map(item => ({
-                ...item,
-                title: item.title.replace('{{userName}}', user?.name || '')
-            }))
-        }));
-    }, [siteConfig.navigation, user?.name]);
+        return siteConfig.navigation
+            .filter(cat => {
+                // HIDE MANAGEMENT FOR NON-ADMINS
+                if (cat.category === 'مدیریت' || cat.category === 'Management') {
+                    return user && user.isAdmin;
+                }
+                return true;
+            })
+            .map(cat => ({
+                ...cat,
+                children: cat.children.map(item => ({
+                    ...item,
+                    title: item.title.replace('{{userName}}', user?.name || '')
+                }))
+            }));
+    }, [siteConfig.navigation, user?.name, user?.isAdmin]);
 
 
     const cartItemCount = cartItems.length;
