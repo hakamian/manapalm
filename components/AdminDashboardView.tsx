@@ -61,6 +61,7 @@ import ModernMentorshipDashboard from './admin/ModernMentorshipDashboard';
 import ModernCampaignsDashboard from './admin/ModernCampaignsDashboard';
 import ModernContentFactoryDashboard from './admin/ModernContentFactoryDashboard';
 import ModernAcademiesDashboard from './admin/ModernAcademiesDashboard';
+import AiArtStudioDashboard from './admin/AiArtStudioDashboard';
 import { timeAgo } from '../utils/time';
 
 interface AdminDashboardViewProps {
@@ -154,7 +155,8 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
         { id: 'api_management', label: 'مدیریت API', icon: <CpuChipIcon className="w-5 h-5" /> },
         { id: 'ai_reports', label: 'گزارش‌های هوشمند', icon: <SparklesIcon className="w-5 h-5" /> },
         { id: 'settings', label: 'تنظیمات', icon: <CogIcon className="w-5 h-5" /> },
-        { id: 'auto_ceo', label: 'مدیر عامل خودکار', icon: <BoltIcon className="w-5 h-5" /> }
+        { id: 'auto_ceo', label: 'مدیر عامل خودکار', icon: <BoltIcon className="w-5 h-5" /> },
+        { id: 'art_studio', label: 'استودیو هنری AI', icon: <PhotoIcon className="w-5 h-5" /> }
     ];
 
     return (
@@ -224,6 +226,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                     {activeTab === 'gamification' && <ModernGamificationDashboard allUsers={users} />}
                     {activeTab === 'campaigns' && <ModernCampaignsDashboard campaign={campaign} platformData={platformData} />}
                     {activeTab === 'content_factory' && <ModernContentFactoryDashboard posts={posts} />}
+                    {activeTab === 'art_studio' && <AiArtStudioDashboard />}
                     {activeTab === 'ai_think_tank' && (
                         <AdminAICoach
                             allUsers={users}

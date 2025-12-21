@@ -227,6 +227,15 @@ graph TD
   - ✅ پیاده‌سازی `middleware.ts` برای مدیریت Session در سمت سرور
   - ✅ اصلاح `supabaseClient.ts` برای پشتیبانی همزمان از Vite و Next.js
   - ✅ ثبت اسکریپت‌های `next:*` در `package.json`
+#### 18. AI Image Agent Implementation ✅
+- **تاریخ:** 2025-12-21
+- **جزئیات:**
+  - ✅ پیاده‌سازی `aiImageAgent.ts` برای مدیریت هوشمند تصاویر (DALL-E + Cloudinary)
+  - ✅ ایجاد API Endpoint `/api/ai-image-agent` با قابلیت Batch Processing
+  - ✅ طراحی و پیاده‌سازی `AIImageUploader` و `AiArtStudioDashboard`
+  - ✅ اضافه کردن تب "استودیو هنری AI" به داشبورد ادمین
+- **نتیجه:** مدیر سیستم اکنون می‌تواند تصاویر محصولات را با هوش مصنوعی تولید و مستقیماً آپلود کند.
+
 #### 17. OpenRouter Integration & Zero-Cost Strategy ✅
 - **تاریخ:** 2025-12-21
 - **جزئیات:**
@@ -316,6 +325,21 @@ graph TD
   1. ارسال یک درخواست تستی به `/api/proxy`
   2. بررسی دریافت پاسخ از Gemini
   3. بررسی Console برای Errors
+
+#### Task 2.3: تنظیم AI Image Agent Keys ❌
+- **ارزش کسب‌وکار:** فعال‌سازی قابلیت تولید تصویر هوشمند
+- **تخمین زمان:** 10 دقیقه
+- **متغیرهای مورد نیاز:**
+  ```env
+  NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=<your_cloud_name>
+  CLOUDINARY_API_KEY=<your_api_key>
+  CLOUDINARY_API_SECRET=<your_api_secret>
+  OPENAI_API_KEY=<your_openai_key>
+  ```
+- **اقدامات:**
+  1. ساخت اکانت Cloudinary (Free Tier)
+  2. دریافت کلیدها از Dashboard
+  3. اضافه کردن به Vercel Environment Variables
 
 ---
 
