@@ -227,15 +227,23 @@ graph TD
   - ✅ پیاده‌سازی `middleware.ts` برای مدیریت Session در سمت سرور
   - ✅ اصلاح `supabaseClient.ts` برای پشتیبانی همزمان از Vite و Next.js
   - ✅ ثبت اسکریپت‌های `next:*` در `package.json`
-#### 18. AI Image Agent Implementation ✅
+#### 18. AI Image Agent Implementation (V2 - Refined) ✅
 - **تاریخ:** 2025-12-21
 - **جزئیات:**
-  - ✅ پیاده‌سازی `aiImageAgent.ts` برای مدیریت هوشمند تصاویر (DALL-E + Cloudinary)
-  - ✅ ایجاد API Endpoint `/api/ai-image-agent` با قابلیت Batch Processing
-  - ✅ طراحی و پیاده‌سازی `AIImageUploader` و `AiArtStudioDashboard`
-  - ✅ اضافه کردن تب "استودیو هنری AI" به داشبورد ادمین
-- **نتیجه:** مدیر سیستم اکنون می‌تواند تصاویر محصولات را با هوش مصنوعی تولید و مستقیماً آپلود کند.
+  - ✅ پیاده‌سازی `aiImageAgent.ts` با پشتیبانی دوگانه (DALL-E + Pollinations).
+  - ✅ هوشمندسازی ترجمه پرامپت: تفکیک منطق برای محصولات کشاورزی ("خرما" = "Date Fruit") و غیره ("کودک" = "Child").
+  - ✅ رفع ابهام کلمات فارسی در تولید تصویر.
+  - ✅ ایجاد `AIImageUploader` و `AiArtStudioDashboard` با UX بهبود یافته و راهنما.
+- **نتیجه:** مدیر سیستم اکنون می‌تواند تصاویر دقیق و مرتبط (چه محصول و چه عمومی) تولید کند و مستقیماً آپلود نماید.
 
+#### 19. Security Hardening & UX Overhaul ✅
+- **تاریخ:** 2025-12-21
+- **جزئیات:**
+  - ✅ **امنیت:** مخفی‌سازی کامل منوی "مدیریت" در هدر برای کاربران غیر ادمین.
+  - ✅ **امنیت:** افزودن Route Guard در `MainContent.tsx` برای جلوگیری از دسترسی مستقیم به `/admin`.
+  - ✅ **فروشگاه:** ارتقای `ModernShopManagement` با قابلیت **ویرایش و افزودن محصول** واقعی (شامل فیلد Image URL).
+  - ✅ **تجربه کاربری:** بازطراحی کامل `WelcomeTour` با استایل Glassmorphism و رفتار Bottom Sheet در موبایل.
+- **نتیجه:** سیستم اکنون امن، زیبا و کاربردی‌تر است و چرخه تولید تا استفاده از تصویر کامل شد.
 #### 17. OpenRouter Integration & Zero-Cost Strategy ✅
 - **تاریخ:** 2025-12-21
 - **جزئیات:**
