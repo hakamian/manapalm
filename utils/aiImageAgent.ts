@@ -125,11 +125,18 @@ async function buildImagePrompt(options: ImageAgentOptions): Promise<string> {
 
         if (isPersian) {
             console.log('🌍 Translating prompt from Persian to English...');
-            const translationPrompt = `Translate the following product information to English for an image generation prompt. Keep it concise/descriptive.
-          Product Name: "${productName}"
-          Description: "${description || ''}"
-          Category: "${category || ''}"
-          Output strictly in JSON format: {"productName": "...", "description": "..."}`;
+            const translationPrompt = `Translate the following product information to English specifically for an AI Image Generator (DALL-E/Flux).
+          
+            CRITICAL CONTEXT: The products are agricultural goods (specifically Date Fruits/Palms), natural foods, or local crafts.
+            - If the word is "خرما" (Khorma) or similar, translate it strictly as "Date Fruit" or "Fresh Dates", NEVER just "Date" (to avoid confusion with calendar date/social date).
+            - If it is abstract, describe the visual appearance.
+            
+            Input:
+            Product Name: "${productName}"
+            Description: "${description || ''}"
+            Category: "${category || ''}"
+            
+            Output strictly in JSON format: {"productName": "...", "description": "..."}`;
 
             const result = await generateText(translationPrompt);
             // Simple JSON parsing attempt (Gemini usually returns code blocks or plain JSON)
