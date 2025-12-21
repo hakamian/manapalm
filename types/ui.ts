@@ -136,9 +136,9 @@ export interface InvitationContent {
 }
 
 export interface AdminKPIs {
-    userGrowth: { value: number; trend: 'rising' | 'stable' | 'falling' };
-    engagementScore: { value: number; trend: 'rising' | 'stable' | 'falling' };
-    investmentFlow: { value: number; trend: 'rising' | 'stable' | 'falling' };
+    userGrowth: { value: number; trend: 'rising' | 'stable' | 'falling'; change?: number };
+    engagementScore: { value: number; trend: 'rising' | 'stable' | 'falling'; change?: number };
+    investmentFlow: { value: number; trend: 'rising' | 'stable' | 'falling'; change?: number };
 }
 
 export interface AdminReport {

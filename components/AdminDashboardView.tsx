@@ -53,6 +53,7 @@ import ModernUserManagement from './admin/ModernUserManagement';
 import ModernShopManagement from './admin/ModernShopManagement';
 import ModernAnalyticsDashboard from './admin/ModernAnalyticsDashboard';
 import ModernSettingsDashboard from './admin/ModernSettingsDashboard';
+import ModernExecutiveDashboard from './admin/ModernExecutiveDashboard';
 import { timeAgo } from '../utils/time';
 
 interface AdminDashboardViewProps {
@@ -199,7 +200,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                         </div>
                     )}
                     {activeTab === 'pulse' && (
-                        <ExecutiveDashboard
+                        <ModernExecutiveDashboard
                             allUsers={users}
                             allProjects={allProjects}
                             allInsights={allInsights}
