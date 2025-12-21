@@ -38,7 +38,7 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfi
             .slice(0, 3)
             .map(event => `- ${event.title} (on ${new Date(event.date).toLocaleDateString()})`)
             .join('\n');
-        
+
         return `
         User Profile Summary:
         - Name: ${user.name}
@@ -81,13 +81,13 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfi
         `;
 
         try {
-            // Use secure proxy
-            const response = await callProxy('generateContent', 'gemini-2.5-flash', {
+            // Use secure proxy with stable Gemini model
+            const response = await callProxy('generateContent', 'gemini-1.5-flash', {
                 contents: [{ role: 'user', parts: [{ text: fullPrompt }] }],
                 config: { temperature: 0.7 }
             });
             setGeneratedText(response.text);
-            
+
             // Increment guest usage
             if (!user) {
                 const currentUsage = parseInt(localStorage.getItem('guest_usage_text') || '0');
@@ -132,11 +132,11 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfi
                 notes: generatedText
             }
         };
-        
+
         // FIX: Correctly structure update object
         const updatedTimeline = [newEvent, ...(user.timeline || [])];
         onUpdateProfile({ timeline: updatedTimeline });
-        
+
         setIsSaveModalOpen(false);
         setGeneratedText(null); // Clear after saving
     };
@@ -147,12 +147,12 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfi
                 <h3 className="font-bold text-xl text-stone-800 dark:text-stone-100">دستیار نویسنده معنا</h3>
                 <p className="text-sm text-stone-500 dark:text-stone-400">بر اساس سفر و دستاوردهای شما، محتوای الهام‌بخش خلق کنید.</p>
                 {!user && (
-                     <div className="bg-blue-900/20 text-blue-300 text-xs px-2 py-1 rounded mt-2 inline-block">
+                    <div className="bg-blue-900/20 text-blue-300 text-xs px-2 py-1 rounded mt-2 inline-block">
                         حالت مهمان: ۱ بار استفاده رایگان
                     </div>
                 )}
             </div>
-            
+
             <div className="flex-1 p-4 md:p-6 flex flex-col gap-6">
                 <div>
                     <label className="font-semibold block mb-2">۱. نوع محتوا را انتخاب کنید:</label>
@@ -161,11 +161,10 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfi
                             <button
                                 key={ct.id}
                                 onClick={() => setContentType(ct.id)}
-                                className={`p-3 rounded-lg border-2 text-sm font-semibold transition-colors ${
-                                    contentType === ct.id
+                                className={`p-3 rounded-lg border-2 text-sm font-semibold transition-colors ${contentType === ct.id
                                         ? 'border-amber-500 bg-amber-50 dark:bg-amber-900/30'
                                         : 'border-stone-200 dark:border-stone-600 hover:bg-stone-50'
-                                }`}
+                                    }`}
                             >
                                 {ct.label}
                             </button>
@@ -173,20 +172,20 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfi
                     </div>
                 </div>
                 <div className="text-center">
-                    <button 
-                        onClick={handleGenerate} 
+                    <button
+                        onClick={handleGenerate}
                         disabled={isLoading}
                         className="bg-amber-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-amber-600 transition-colors disabled:bg-amber-300 flex items-center justify-center gap-2 mx-auto"
                     >
-                         <SparklesIcon className="w-5 h-5"/>
-                         {isLoading ? 'در حال نوشتن...' : 'خلق کن'}
+                        <SparklesIcon className="w-5 h-5" />
+                        {isLoading ? 'در حال نوشتن...' : 'خلق کن'}
                     </button>
                 </div>
                 <div className="flex-grow flex flex-col">
                     <label className="font-semibold block mb-2">۲. نتیجه:</label>
                     <div className="flex-grow bg-stone-50 dark:bg-stone-800 rounded-lg p-4 border dark:border-stone-700 min-h-[200px] whitespace-pre-wrap">
                         {isLoading ? (
-                             <div className="animate-pulse space-y-2">
+                            <div className="animate-pulse space-y-2">
                                 <div className="h-4 bg-stone-200 dark:bg-stone-700 rounded w-5/6"></div>
                                 <div className="h-4 bg-stone-200 dark:bg-stone-700 rounded w-full"></div>
                                 <div className="h-4 bg-stone-200 dark:bg-stone-700 rounded w-3/4"></div>
@@ -213,7 +212,7 @@ const ContentGenerator: React.FC<ContentGeneratorProps> = ({ user, onUpdateProfi
                 <div className="p-4 text-center max-w-sm">
                     <h3 className="text-lg font-bold">ثبت تامل در گاهشمار</h3>
                     <p className="my-2 text-sm text-stone-600 dark:text-stone-300">
-                       آیا مایلید این متن را به عنوان یک «تامل» در باغ زنده خود ثبت کنید؟
+                        آیا مایلید این متن را به عنوان یک «تامل» در باغ زنده خود ثبت کنید؟
                     </p>
                     <div className="flex justify-center gap-4 mt-6">
                         <button onClick={() => setIsSaveModalOpen(false)} className="px-6 py-2 rounded-lg bg-stone-100 dark:bg-stone-600">انصراف</button>

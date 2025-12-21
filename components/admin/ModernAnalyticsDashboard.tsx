@@ -6,9 +6,7 @@ import {
     ShoppingCartIcon,
     BanknotesIcon,
     ArrowUpIcon,
-    ArrowDownIcon,
-    CalendarIcon,
-    TrendingUpIcon
+    ArrowDownIcon
 } from '../icons';
 import '../../styles/admin-dashboard.css';
 
@@ -44,18 +42,6 @@ const ModernAnalyticsDashboard: React.FC<ModernAnalyticsDashboardProps> = ({
         const revenueGrowth = 15.7;
         const avgOrderGrowth = 5.2;
 
-        // Top products
-        const productSales: Record<string, number> = {};
-        orders.forEach(order => {
-            order.items.forEach(item => {
-                productSales[item.productId] = (productSales[item.productId] || 0) + item.quantity;
-            });
-        });
-
-        const topProducts = Object.entries(productSales)
-            .sort((a, b) => b[1] - a[1])
-            .slice(0, 5);
-
         // Revenue by month (mock data)
         const monthlyRevenue = [
             { month: 'فروردین', revenue: 12500000 },
@@ -75,7 +61,6 @@ const ModernAnalyticsDashboard: React.FC<ModernAnalyticsDashboardProps> = ({
             orderGrowth,
             revenueGrowth,
             avgOrderGrowth,
-            topProducts,
             monthlyRevenue
         };
     }, [users, orders]);
@@ -110,7 +95,7 @@ const ModernAnalyticsDashboard: React.FC<ModernAnalyticsDashboardProps> = ({
             value: `${(analytics.avgOrderValue / 1000).toFixed(0)}K`,
             change: analytics.avgOrderGrowth,
             trend: 'up',
-            icon: TrendingUpIcon,
+            icon: ChartBarIcon,
             gradient: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)'
         }
     ];
@@ -189,113 +174,59 @@ const ModernAnalyticsDashboard: React.FC<ModernAnalyticsDashboardProps> = ({
                 ))}
             </div>
 
-            {/* Charts Section */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
-                {/* Monthly Revenue Chart */}
-                <div className="admin-card admin-animate-slide-in" style={{ padding: '1.5rem' }}>
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <h2 className="admin-heading-3" style={{ marginBottom: '0.25rem' }}>درآمد ماهانه</h2>
-                        <p className="admin-caption">روند درآمد در 6 ماه اخیر</p>
-                    </div>
-
-                    {/* Simple Bar Chart */}
-                    <div style={{ display: 'flex', alignItems: 'flex-end', gap: '1rem', height: '200px' }}>
-                        {analytics.monthlyRevenue.map((data, index) => {
-                            const maxRevenue = Math.max(...analytics.monthlyRevenue.map(m => m.revenue));
-                            const height = (data.revenue / maxRevenue) * 100;
-
-                            return (
-                                <div key={index} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
-                                    <div
-                                        style={{
-                                            width: '100%',
-                                            height: `${height}%`,
-                                            background: 'var(--admin-gradient-success)',
-                                            borderRadius: 'var(--admin-radius-md)',
-                                            transition: 'all 0.3s ease',
-                                            cursor: 'pointer',
-                                            position: 'relative'
-                                        }}
-                                        onMouseEnter={(e) => {
-                                            e.currentTarget.style.transform = 'translateY(-4px)';
-                                            e.currentTarget.style.boxShadow = '0 10px 20px rgba(16, 185, 129, 0.3)';
-                                        }}
-                                        onMouseLeave={(e) => {
-                                            e.currentTarget.style.transform = 'translateY(0)';
-                                            e.currentTarget.style.boxShadow = 'none';
-                                        }}
-                                    >
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: '-2rem',
-                                            left: '50%',
-                                            transform: 'translateX(-50%)',
-                                            fontSize: '0.75rem',
-                                            fontWeight: 600,
-                                            color: 'var(--admin-text-secondary)',
-                                            whiteSpace: 'nowrap'
-                                        }}>
-                                            {formatCurrency(data.revenue)}
-                                        </div>
-                                    </div>
-                                    <span className="admin-caption" style={{ fontSize: '0.75rem' }}>
-                                        {data.month}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                    </div>
+            {/* Monthly Revenue Chart */}
+            <div className="admin-card admin-animate-slide-in" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
+                <div style={{ marginBottom: '1.5rem' }}>
+                    <h2 className="admin-heading-3" style={{ marginBottom: '0.25rem' }}>درآمد ماهانه</h2>
+                    <p className="admin-caption">روند درآمد در 6 ماه اخیر</p>
                 </div>
 
-                {/* Top Products */}
-                <div className="admin-card admin-animate-slide-in" style={{ padding: '1.5rem', animationDelay: '100ms' }}>
-                    <div style={{ marginBottom: '1.5rem' }}>
-                        <h2 className="admin-heading-3" style={{ marginBottom: '0.25rem' }}>محصولات پرفروش</h2>
-                        <p className="admin-caption">5 محصول برتر بر اساس تعداد فروش</p>
-                    </div>
+                {/* Simple Bar Chart */}
+                <div style={{ display: 'flex', alignItems: 'flex-end', gap: '1rem', height: '200px' }}>
+                    {analytics.monthlyRevenue.map((data, index) => {
+                        const maxRevenue = Math.max(...analytics.monthlyRevenue.map(m => m.revenue));
+                        const height = (data.revenue / maxRevenue) * 100;
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        {analytics.topProducts.length === 0 ? (
-                            <p className="admin-body" style={{ color: 'var(--admin-text-muted)', textAlign: 'center', padding: '2rem' }}>
-                                داده‌ای برای نمایش وجود ندارد
-                            </p>
-                        ) : (
-                            analytics.topProducts.map(([productId, sales], index) => {
-                                const maxSales = analytics.topProducts[0][1];
-                                const percentage = (sales / maxSales) * 100;
-
-                                return (
-                                    <div key={productId}>
-                                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                            <span className="admin-caption" style={{ fontWeight: 600 }}>
-                                                محصول #{productId.slice(0, 8)}
-                                            </span>
-                                            <span className="admin-caption" style={{ color: 'var(--admin-green)' }}>
-                                                {sales.toLocaleString('fa-IR')} فروش
-                                            </span>
-                                        </div>
-                                        <div style={{
-                                            width: '100%',
-                                            height: '8px',
-                                            background: 'var(--admin-bg-tertiary)',
-                                            borderRadius: '9999px',
-                                            overflow: 'hidden'
-                                        }}>
-                                            <div
-                                                style={{
-                                                    width: `${percentage}%`,
-                                                    height: '100%',
-                                                    background: `linear-gradient(90deg, var(--admin-purple) 0%, var(--admin-pink) 100%)`,
-                                                    transition: 'width 0.5s ease',
-                                                    borderRadius: '9999px'
-                                                }}
-                                            />
-                                        </div>
+                        return (
+                            <div key={index} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.5rem' }}>
+                                <div
+                                    style={{
+                                        width: '100%',
+                                        height: `${height}%`,
+                                        background: 'var(--admin-gradient-success)',
+                                        borderRadius: 'var(--admin-radius-md)',
+                                        transition: 'all 0.3s ease',
+                                        cursor: 'pointer',
+                                        position: 'relative'
+                                    }}
+                                    onMouseEnter={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(-4px)';
+                                        e.currentTarget.style.boxShadow = '0 10px 20px rgba(16, 185, 129, 0.3)';
+                                    }}
+                                    onMouseLeave={(e) => {
+                                        e.currentTarget.style.transform = 'translateY(0)';
+                                        e.currentTarget.style.boxShadow = 'none';
+                                    }}
+                                >
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '-2rem',
+                                        left: '50%',
+                                        transform: 'translateX(-50%)',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 600,
+                                        color: 'var(--admin-text-secondary)',
+                                        whiteSpace: 'nowrap'
+                                    }}>
+                                        {formatCurrency(data.revenue)}
                                     </div>
-                                );
-                            })
-                        )}
-                    </div>
+                                </div>
+                                <span className="admin-caption" style={{ fontSize: '0.75rem' }}>
+                                    {data.month}
+                                </span>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 

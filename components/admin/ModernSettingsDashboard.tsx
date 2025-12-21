@@ -3,9 +3,7 @@ import {
     CogIcon,
     BellIcon,
     ShieldCheckIcon,
-    PaintBrushIcon,
-    GlobeAltIcon,
-    CurrencyDollarIcon,
+    GlobeIcon,
     EnvelopeIcon,
     KeyIcon,
     CheckCircleIcon
@@ -62,31 +60,16 @@ const ModernSettingsDashboard: React.FC = () => {
             gradient: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)'
         },
         {
-            id: 'appearance',
-            title: 'ظاهر',
-            description: 'تم و رنگ‌بندی سایت',
-            icon: PaintBrushIcon,
-            gradient: 'linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%)'
-        },
-        {
             id: 'localization',
             title: 'محلی‌سازی',
             description: 'زبان، ارز و منطقه زمانی',
-            icon: GlobeAltIcon,
+            icon: GlobeIcon,
             gradient: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)'
-        },
-        {
-            id: 'payment',
-            title: 'پرداخت',
-            description: 'درگاه‌های پرداخت و تنظیمات مالی',
-            icon: CurrencyDollarIcon,
-            gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)'
         }
     ];
 
     const handleSave = () => {
         console.log('Saving settings:', settings);
-        // Show success message
         alert('تنظیمات با موفقیت ذخیره شد!');
     };
 
@@ -167,7 +150,6 @@ const ModernSettingsDashboard: React.FC = () => {
                 />
                 <div style={{ flex: 1 }}>
                     <label htmlFor="email-notif" className="admin-body" style={{ cursor: 'pointer', fontWeight: 600 }}>
-                        <EnvelopeIcon className="w-5 h-5" style={{ display: 'inline', marginLeft: '0.5rem' }} />
                         اعلان‌های ایمیل
                     </label>
                     <p className="admin-caption" style={{ marginTop: '0.25rem' }}>
@@ -270,79 +252,6 @@ const ModernSettingsDashboard: React.FC = () => {
         </div>
     );
 
-    const renderAppearanceSettings = () => (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div>
-                <label className="admin-label" style={{ display: 'block', marginBottom: '0.5rem' }}>
-                    تم پیش‌فرض
-                </label>
-                <select
-                    value={settings.theme}
-                    onChange={(e) => setSettings({ ...settings, theme: e.target.value })}
-                    className="admin-select"
-                >
-                    <option value="light">روشن</option>
-                    <option value="dark">تیره</option>
-                    <option value="auto">خودکار</option>
-                </select>
-            </div>
-
-            <div>
-                <label className="admin-label" style={{ display: 'block', marginBottom: '0.5rem' }}>
-                    رنگ اصلی
-                </label>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <input
-                        type="color"
-                        value={settings.primaryColor}
-                        onChange={(e) => setSettings({ ...settings, primaryColor: e.target.value })}
-                        style={{
-                            width: '60px',
-                            height: '40px',
-                            border: 'none',
-                            borderRadius: 'var(--admin-radius-md)',
-                            cursor: 'pointer'
-                        }}
-                    />
-                    <input
-                        type="text"
-                        value={settings.primaryColor}
-                        onChange={(e) => setSettings({ ...settings, primaryColor: e.target.value })}
-                        className="admin-input"
-                        style={{ flex: 1 }}
-                    />
-                </div>
-            </div>
-
-            <div>
-                <label className="admin-label" style={{ display: 'block', marginBottom: '0.5rem' }}>
-                    رنگ تاکیدی
-                </label>
-                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    <input
-                        type="color"
-                        value={settings.accentColor}
-                        onChange={(e) => setSettings({ ...settings, accentColor: e.target.value })}
-                        style={{
-                            width: '60px',
-                            height: '40px',
-                            border: 'none',
-                            borderRadius: 'var(--admin-radius-md)',
-                            cursor: 'pointer'
-                        }}
-                    />
-                    <input
-                        type="text"
-                        value={settings.accentColor}
-                        onChange={(e) => setSettings({ ...settings, accentColor: e.target.value })}
-                        className="admin-input"
-                        style={{ flex: 1 }}
-                    />
-                </div>
-            </div>
-        </div>
-    );
-
     const renderLocalizationSettings = () => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <div>
@@ -400,19 +309,8 @@ const ModernSettingsDashboard: React.FC = () => {
                 return renderNotificationSettings();
             case 'security':
                 return renderSecuritySettings();
-            case 'appearance':
-                return renderAppearanceSettings();
             case 'localization':
                 return renderLocalizationSettings();
-            case 'payment':
-                return (
-                    <div className="admin-card" style={{ padding: '3rem', textAlign: 'center' }}>
-                        <CurrencyDollarIcon className="w-12 h-12" style={{ margin: '0 auto 1rem', color: 'var(--admin-text-muted)' }} />
-                        <p className="admin-body" style={{ color: 'var(--admin-text-muted)' }}>
-                            تنظیمات پرداخت به زودی اضافه می‌شود
-                        </p>
-                    </div>
-                );
             default:
                 return null;
         }

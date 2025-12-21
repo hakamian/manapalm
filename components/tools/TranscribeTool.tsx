@@ -35,7 +35,7 @@ const TranscribeTool: React.FC<{ user: User }> = ({ user }) => {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
             const file = e.target.files[0];
-            
+
             // Client-side size validation for proxy safety
             if (file.size > MAX_FILE_SIZE) {
                 setError(`حجم فایل برای پردازش ابری نباید بیشتر از ۱۰ مگابایت باشد.`);
@@ -77,16 +77,16 @@ const TranscribeTool: React.FC<{ user: User }> = ({ user }) => {
         try {
             const base64Audio = await fileToBase64(audioFile);
 
-            const response = await callProxy('generateContent', 'gemini-2.5-flash', {
-                contents: [{ 
-                    role: 'user', 
+            const response = await callProxy('generateContent', 'gemini-1.5-flash', {
+                contents: [{
+                    role: 'user',
                     parts: [
                         { inlineData: { mimeType: audioFile.type, data: base64Audio } },
                         { text: "Transcribe this audio to Persian text accurately. Provide ONLY the transcribed text without any introduction or explanation." }
-                    ] 
+                    ]
                 }],
             });
-            
+
             setTranscription(response.text || "متنی یافت نشد.");
 
         } catch (err: any) {
@@ -104,12 +104,12 @@ const TranscribeTool: React.FC<{ user: User }> = ({ user }) => {
                 <h3 className="font-bold text-xl text-stone-800 dark:text-stone-100">رونویسی صدا (Flash)</h3>
                 <p className="text-sm text-stone-500 dark:text-stone-400">تبدیل فایل‌های صوتی به متن. (زیر ۵ مگابایت رایگان)</p>
             </div>
-            
+
             <div className="flex-1 p-4 md:p-6 flex flex-col gap-6">
                 <div className="flex flex-col sm:flex-row items-center gap-4">
                     <div className="flex-grow w-full">
-                        <label 
-                            htmlFor="audio-upload" 
+                        <label
+                            htmlFor="audio-upload"
                             className={`w-full flex items-center justify-center px-4 py-6 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${isLargeFile ? 'bg-amber-50 dark:bg-amber-900/10 border-amber-500' : 'bg-stone-50 dark:bg-stone-800 border-stone-300 dark:border-stone-600 hover:bg-stone-100 dark:hover:bg-stone-700/50'}`}
                         >
                             <div className="text-center">
@@ -125,16 +125,16 @@ const TranscribeTool: React.FC<{ user: User }> = ({ user }) => {
                             <input id="audio-upload" type="file" className="hidden" accept="audio/*" ref={fileInputRef} onChange={handleFileChange} />
                         </label>
                     </div>
-                    <button 
+                    <button
                         onClick={handleTranscribe}
                         disabled={isLoading || !audioFile}
                         className={`w-full sm:w-auto font-bold py-3 px-8 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 h-full ${isLargeFile ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white' : 'bg-amber-500 hover:bg-amber-600 text-white'}`}
                     >
                         {isLoading ? (
-                             <>
+                            <>
                                 <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                                 <span>در حال پردازش...</span>
-                             </>
+                            </>
                         ) : isLargeFile ? (
                             <>
                                 <BanknotesIcon className="w-5 h-5" />
