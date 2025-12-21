@@ -50,6 +50,9 @@ import AcademiesDashboard from './admin/AcademiesDashboard';
 import ShopManagement from './admin/ShopManagement';
 import ModernDashboardOverview from './admin/ModernDashboardOverview';
 import ModernUserManagement from './admin/ModernUserManagement';
+import ModernShopManagement from './admin/ModernShopManagement';
+import ModernAnalyticsDashboard from './admin/ModernAnalyticsDashboard';
+import ModernSettingsDashboard from './admin/ModernSettingsDashboard';
 import { timeAgo } from '../utils/time';
 
 interface AdminDashboardViewProps {
@@ -205,11 +208,11 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                             setActiveSubTab={(subTab: any) => setActiveSubTab(subTab)}
                         />
                     )}
-                    {activeTab === 'shop_manager' && <ShopManagement />}
+                    {activeTab === 'shop_manager' && <ModernShopManagement products={[]} />}
                     {activeTab === 'economy' && <UnitEconomicsDashboard />}
                     {activeTab === 'academies' && <AcademiesDashboard />}
                     {activeTab === 'community' && <CommunityDashboard posts={posts} />}
-                    {activeTab === 'growth' && <GrowthAnalyticsDashboard allUsers={users} allInsights={allInsights} />}
+                    {activeTab === 'growth' && <ModernAnalyticsDashboard users={users} orders={orders} />}
                     {activeTab === 'gamification' && <GamificationDashboard allUsers={users} />}
                     {activeTab === 'campaigns' && <CampaignsDashboard campaign={campaign} platformData={platformData} />}
                     {activeTab === 'content_factory' && <ContentFactoryDashboard posts={posts} />}
@@ -237,7 +240,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                     {activeTab === 'management' && <ManagementDashboard users={users} orders={orders} coCreationOrders={coCreationOrders} />}
                     {activeTab === 'security' && <SecurityDashboard users={users} logs={[]} transactions={orders} />}
                     {activeTab === 'api_management' && <ApiManagementDashboard />}
-                    {activeTab === 'settings' && <SettingsDashboard />}
+                    {activeTab === 'settings' && <ModernSettingsDashboard />}
                     {activeTab === 'auto_ceo' && <AutoCEOView />}
                 </main>
             </div>

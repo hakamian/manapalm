@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تست اتصال هوش مصنوعی</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #667eea;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-right: 4px solid #667eea;
+        }
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: transform 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        .loading {
+            text-align: center;
+            color: #667eea;
+            font-weight: bold;
+        }
+        code {
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 تست اتصال هوش مصنوعی - نخلستان معنا</h1>
+        
+        <div class="test-section">
+            <h3>تست 1: بررسی دسترسی به API Endpoint</h3>
+            <p>این تست بررسی می‌کند که آیا <code>/api/proxy</code> در دسترس است یا نه.</p>
+            <button onclick="testEndpointAccess()">شروع تست</button>
+            <div id="test1-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>تست 2: تست OpenRouter API</h3>
+            <p>این تست یک درخواست ساده به OpenRouter ارسال می‌کند.</p>
+            <button onclick="testOpenRouter()">شروع تست</button>
+            <div id="test2-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>تست 3: تست Gemini API (Fallback)</h3>
+            <p>این تست بررسی می‌کند که آیا Gemini به عنوان fallback کار می‌کند.</p>
+            <button onclick="testGemini()">شروع تست</button>
+            <div id="test3-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>تست 4: تست مستقیم OpenRouter (بدون Proxy)</h3>
+            <p>این تست مستقیماً به OpenRouter متصل می‌شود تا ببینیم آیا مشکل از سمت OpenRouter است.</p>
+            <button onclick="testDirectOpenRouter()">شروع تست</button>
+            <div id="test4-result"></div>
+        </div>
+    </div>
+
+    <script>
+        async function testEndpointAccess() {
+            const resultDiv = document.getElementById('test1-result');
+            resultDiv.innerHTML = '<div class="loading">در حال بررسی...</div>';
+            
+            try {
+                const response = await fetch('/api/proxy', {
+                    method: 'OPTIONS'
+                });
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            ✅ موفق! API Endpoint در دسترس است.
+                            <br>Status: ${response.status}
+                            <br>Headers: ${JSON.stringify(Object.fromEntries(response.headers), null, 2)}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            ❌ خطا! Status Code: ${response.status}
+                            <br>Response: ${await response.text()}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        ❌ خطا در اتصال: ${error.message}
+                        <br>این احتمالاً به این معنی است که /api/proxy در دسترس نیست یا CORS مشکل دارد.
+                    </div>
+                `;
+            }
+        }
+
+        async function testOpenRouter() {
+            const resultDiv = document.getElementById('test2-result');
+            resultDiv.innerHTML = '<div class="loading">در حال ارسال درخواست به OpenRouter...</div>';
+            
+            try {
+                const response = await fetch('/api/proxy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'generateContent',
+                        model: 'google/gemini-2.0-flash-exp:free',
+                        provider: 'openrouter',
+                        data: {
+                            contents: [{
+                                role: 'user',
+                                parts: [{ text: 'سلام! فقط یک تست ساده است. لطفاً با یک جمله کوتاه پاسخ بده.' }]
+                            }],
+                            config: { temperature: 0.7 }
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.text) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            ✅ موفق! OpenRouter کار می‌کند.
+                            <br><strong>پاسخ AI:</strong> ${data.text}
+                            <br><strong>Provider:</strong> ${data.provider}
+                            <br><strong>Model:</strong> ${data.model}
+                            <br><strong>Fallback Used:</strong> ${data.isFallback ? 'بله' : 'خیر'}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            ❌ خطا! 
+                            <br>Status: ${response.status}
+                            <br>Response: ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        ❌ خطا: ${error.message}
+                        <br>Stack: ${error.stack}
+                    </div>
+                `;
+            }
+        }
+
+        async function testGemini() {
+            const resultDiv = document.getElementById('test3-result');
+            resultDiv.innerHTML = '<div class="loading">در حال ارسال درخواست به Gemini...</div>';
+            
+            try {
+                const response = await fetch('/api/proxy', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'generateContent',
+                        model: 'gemini-1.5-flash',
+                        provider: 'google',
+                        data: {
+                            contents: [{
+                                role: 'user',
+                                parts: [{ text: 'سلام! فقط یک تست ساده است. لطفاً با یک جمله کوتاه پاسخ بده.' }]
+                            }],
+                            config: { temperature: 0.7 }
+                        }
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.text) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            ✅ موفق! Gemini کار می‌کند.
+                            <br><strong>پاسخ AI:</strong> ${data.text}
+                            <br><strong>Provider:</strong> ${data.provider}
+                            <br><strong>Model:</strong> ${data.model}
+                            <br><strong>Fallback Used:</strong> ${data.isFallback ? 'بله' : 'خیر'}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            ❌ خطا! 
+                            <br>Status: ${response.status}
+                            <br>Response: ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result error">
+                        ❌ خطا: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        async function testDirectOpenRouter() {
+            const resultDiv = document.getElementById('test4-result');
+            resultDiv.innerHTML = '<div class="loading">در حال اتصال مستقیم به OpenRouter...</div>';
+            
+            try {
+                // Note: This will likely fail due to CORS, but it's worth testing
+                const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer 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',
+                        'HTTP-Referer': 'https://manapalm.com',
+                        'X-Title': 'Nakhlestan Mana Test'
+                    },
+                    body: JSON.stringify({
+                        model: 'google/gemini-2.0-flash-exp:free',
+                        messages: [{
+                            role: 'user',
+                            content: 'سلام! این یک تست است.'
+                        }]
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultDiv.innerHTML = `
+                        <div class="result success">
+                            ✅ موفق! OpenRouter مستقیماً کار می‌کند.
+                            <br><strong>پاسخ:</strong> ${data.choices[0].message.content}
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="result error">
+                            ❌ خطا از سمت OpenRouter
+                            <br>Status: ${response.status}
+                            <br>Response: ${JSON.stringify(data, null, 2)}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="result info">
+                        ℹ️ خطای CORS (این طبیعی است)
+                        <br>پیام: ${error.message}
+                        <br><br>این به این معنی است که OpenRouter از مرورگر قابل دسترسی نیست و باید از طریق Proxy استفاده شود.
+                    </div>
+                `;
+            }
+        }
+    </script>
+</body>
+</html>
