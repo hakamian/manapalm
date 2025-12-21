@@ -1,35 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
-
-// Allowed models whitelist for Gemini
-const GEMINI_MODELS = [
-    'gemini-2.1-flash',
-    'gemini-2.5-flash-lite',
-    'gemini-2.5-flash-preview-09-2025',
-    'gemini-2.0-flash',
-    'gemini-1.5-flash',
-    'gemini-1.5-pro',
-    'gemini-pro',
-    'gemini-pro-vision'
-];
 
 // Helper for delay
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Helper for fetching with retry and timeout
+// Helper for fetching with retry
 async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 2): Promise<Response> {
     let lastError: Error | null = null;
     for (let i = 0; i <= maxRetries; i++) {
         try {
-            if (i > 0) await delay(1000 * Math.pow(2, i)); // Exponential backoff
+            if (i > 0) await delay(1000 * Math.pow(2, i));
             const response = await fetch(url, options);
-
-            // If we get a 429 (Rate Limit), we only retry if we haven't exhausted retries
             if (response.status === 429 && i < maxRetries) {
                 console.warn(`Rate limited (429). Retry attempt ${i + 1}...`);
                 continue;
             }
-
             return response;
         } catch (error) {
             lastError = error as Error;
@@ -41,21 +25,21 @@ async function fetchWithRetry(url: string, options: RequestInit, maxRetries = 2)
 
 // CORS headers
 function getCorsHeaders(origin: string | null) {
-    const allowedOrigins = ['https://manapalm.com', 'http://localhost:3000', 'https://nakhlestan-mana.com'];
+    const allowedOrigins = ['https://manapalm.com', 'http://localhost:3000', 'http://localhost:3001', 'https://nakhlestan-mana.com'];
 
-    if (origin && allowedOrigins.includes(origin)) {
-        return {
-            'Access-Control-Allow-Origin': origin,
-            'Access-Control-Allow-Methods': 'POST, OPTIONS',
-            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-            'Access-Control-Allow-Credentials': 'true',
-        };
-    }
-
-    return {
+    const headers: Record<string, string> = {
         'Access-Control-Allow-Methods': 'POST, OPTIONS',
         'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Credentials': 'true',
     };
+
+    if (origin && allowedOrigins.includes(origin)) {
+        headers['Access-Control-Allow-Origin'] = origin;
+    } else {
+        headers['Access-Control-Allow-Origin'] = '*';
+    }
+
+    return headers;
 }
 
 export async function OPTIONS(req: NextRequest) {
@@ -72,22 +56,24 @@ export async function POST(req: NextRequest) {
     try {
         const body = await req.json();
         const { action, model, data, provider } = body;
+
+        // Default to OpenRouter free tier
         let targetModel = model || 'google/gemini-2.0-flash-exp:free';
 
-        // Determine initial provider: if model starts with 'models/' it's Gemini, otherwise check for openrouter format
+        // Determine provider
         let activeProvider = provider || (targetModel.startsWith('models/') ? 'google' : (targetModel.includes('/') ? 'openrouter' : 'google'));
-
-        // ---------------------------------------------------------
-        // STRATEGY: TRY PRIMARY PROVIDER -> IF 429 -> TRY SECONDARY
-        // ---------------------------------------------------------
 
         let resultText: string | null = null;
         let finalProvider = activeProvider;
         let finalModel = targetModel;
 
+        // Try OpenRouter
         const tryOpenRouter = async (m: string): Promise<string> => {
             const openRouterKey = process.env.OPENROUTER_API_KEY;
-            if (!openRouterKey) throw new Error('OpenRouter Key Missing');
+
+            if (!openRouterKey) {
+                throw new Error('OpenRouter API Key not found in environment variables');
+            }
 
             const response = await fetchWithRetry("https://openrouter.ai/api/v1/chat/completions", {
                 method: "POST",
@@ -107,39 +93,58 @@ export async function POST(req: NextRequest) {
                 })
             });
 
-            if (response.status === 429) throw { status: 429, message: 'OpenRouter Rate Limit' };
+            if (response.status === 429) {
+                throw { status: 429, message: 'OpenRouter Rate Limit' };
+            }
+
             const resData = await response.json();
-            if (resData.error) throw new Error(resData.error.message || 'OpenRouter Error');
+
+            if (resData.error) {
+                throw new Error(resData.error.message || 'OpenRouter Error');
+            }
+
             return resData.choices[0].message.content;
         };
 
+        // Try Gemini via direct API call (not SDK)
         const tryGemini = async (m: string): Promise<string> => {
             const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
-            if (!apiKey) throw new Error('Gemini Key Missing');
 
-            const genAI = new GoogleGenerativeAI(apiKey);
-            let lastErr: any;
-            for (let i = 0; i < 2; i++) {
-                try {
-                    // Ensure model name is in correct format (models/xxx)
-                    const modelName = m.startsWith('models/') ? m : `models/${m}`;
-                    const modelInstance = genAI.getGenerativeModel({ model: modelName });
-                    const result = await modelInstance.generateContent({ contents: data.contents });
-                    const response = await result.response;
-                    return response.text();
-                } catch (err) {
-                    lastErr = err;
-                    if ((err as any).message?.includes('429') && i < 1) {
-                        await delay(2000);
-                        continue;
-                    }
-                    throw err;
-                }
+            if (!apiKey) {
+                throw new Error('Gemini API Key not found in environment variables');
             }
-            throw lastErr;
+
+            // Ensure model name is in correct format
+            const modelName = m.startsWith('models/') ? m.replace('models/', '') : m;
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+
+            const response = await fetchWithRetry(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    contents: data.contents,
+                    generationConfig: {
+                        temperature: data.config?.temperature || 0.7,
+                    }
+                })
+            });
+
+            if (response.status === 429) {
+                throw { status: 429, message: 'Gemini Rate Limit' };
+            }
+
+            const resData = await response.json();
+
+            if (resData.error) {
+                throw new Error(resData.error.message || 'Gemini Error');
+            }
+
+            return resData.candidates?.[0]?.content?.parts?.[0]?.text || '';
         };
 
-        // EXECUTION WITH FALLBACK
+        // Execute with fallback
         try {
             if (activeProvider === 'openrouter') {
                 resultText = await tryOpenRouter(targetModel);
@@ -147,12 +152,14 @@ export async function POST(req: NextRequest) {
                 resultText = await tryGemini(targetModel);
             }
         } catch (err: any) {
+            console.warn("Primary provider failed:", err.message);
+
             if (err.status === 429 || err.message?.includes('429')) {
-                console.warn("Primary Provider Rate Limited. Attempting Fallback Hopping...");
-                // Swap Provider
+                console.warn("Rate limited. Attempting fallback...");
+                // Swap provider
                 if (activeProvider === 'openrouter') {
                     finalProvider = 'google';
-                    finalModel = 'models/gemini-2.0-flash'; // Fallback to a stable direct model
+                    finalModel = 'gemini-2.0-flash';
                     resultText = await tryGemini(finalModel);
                 } else {
                     finalProvider = 'openrouter';
@@ -160,7 +167,17 @@ export async function POST(req: NextRequest) {
                     resultText = await tryOpenRouter(finalModel);
                 }
             } else {
-                throw err;
+                // Try the other provider as fallback
+                console.warn("Trying alternative provider as fallback...");
+                if (activeProvider === 'openrouter') {
+                    finalProvider = 'google';
+                    finalModel = 'gemini-2.0-flash';
+                    resultText = await tryGemini(finalModel);
+                } else {
+                    finalProvider = 'openrouter';
+                    finalModel = 'google/gemini-2.0-flash-exp:free';
+                    resultText = await tryOpenRouter(finalModel);
+                }
             }
         }
 
@@ -180,7 +197,7 @@ export async function POST(req: NextRequest) {
             error: error.message || 'AI Service Exhausted',
             suggestion: 'سیستم در حال حاضر بیش از حد مشغول است. لطفا ۶۰ ثانیه دیگر تلاش کنید.'
         }, {
-            status: error.status || 500,
+            status: 500,
             headers: getCorsHeaders(origin)
         });
     }

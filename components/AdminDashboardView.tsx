@@ -55,6 +55,9 @@ import ModernAnalyticsDashboard from './admin/ModernAnalyticsDashboard';
 import ModernSettingsDashboard from './admin/ModernSettingsDashboard';
 import ModernExecutiveDashboard from './admin/ModernExecutiveDashboard';
 import ModernGamificationDashboard from './admin/ModernGamificationDashboard';
+import ModernSecurityDashboard from './admin/ModernSecurityDashboard';
+import ModernCommunityDashboard from './admin/ModernCommunityDashboard';
+import ModernMentorshipDashboard from './admin/ModernMentorshipDashboard';
 import { timeAgo } from '../utils/time';
 
 interface AdminDashboardViewProps {
@@ -213,7 +216,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                     {activeTab === 'shop_manager' && <ModernShopManagement products={[]} />}
                     {activeTab === 'economy' && <UnitEconomicsDashboard />}
                     {activeTab === 'academies' && <AcademiesDashboard />}
-                    {activeTab === 'community' && <CommunityDashboard posts={posts} />}
+                    {activeTab === 'community' && <ModernCommunityDashboard posts={posts} />}
                     {activeTab === 'growth' && <ModernAnalyticsDashboard users={users} orders={orders} />}
                     {activeTab === 'gamification' && <ModernGamificationDashboard allUsers={users} />}
                     {activeTab === 'campaigns' && <CampaignsDashboard campaign={campaign} platformData={platformData} />}
@@ -240,7 +243,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                     )}
                     {activeTab === 'personal_journey' && <PersonalJourneyDashboard />}
                     {activeTab === 'management' && <ManagementDashboard users={users} orders={orders} coCreationOrders={coCreationOrders} />}
-                    {activeTab === 'security' && <SecurityDashboard users={users} logs={[]} transactions={orders} />}
+                    {activeTab === 'security' && <ModernSecurityDashboard users={users} logs={[]} transactions={orders} />}
                     {activeTab === 'api_management' && <ApiManagementDashboard />}
                     {activeTab === 'settings' && <ModernSettingsDashboard />}
                     {activeTab === 'auto_ceo' && <AutoCEOView />}
