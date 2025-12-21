@@ -54,6 +54,7 @@ import ModernShopManagement from './admin/ModernShopManagement';
 import ModernAnalyticsDashboard from './admin/ModernAnalyticsDashboard';
 import ModernSettingsDashboard from './admin/ModernSettingsDashboard';
 import ModernExecutiveDashboard from './admin/ModernExecutiveDashboard';
+import ModernGamificationDashboard from './admin/ModernGamificationDashboard';
 import { timeAgo } from '../utils/time';
 
 interface AdminDashboardViewProps {
@@ -214,7 +215,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                     {activeTab === 'academies' && <AcademiesDashboard />}
                     {activeTab === 'community' && <CommunityDashboard posts={posts} />}
                     {activeTab === 'growth' && <ModernAnalyticsDashboard users={users} orders={orders} />}
-                    {activeTab === 'gamification' && <GamificationDashboard allUsers={users} />}
+                    {activeTab === 'gamification' && <ModernGamificationDashboard allUsers={users} />}
                     {activeTab === 'campaigns' && <CampaignsDashboard campaign={campaign} platformData={platformData} />}
                     {activeTab === 'content_factory' && <ContentFactoryDashboard posts={posts} />}
                     {activeTab === 'ai_think_tank' && (
