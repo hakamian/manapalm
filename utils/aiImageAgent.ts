@@ -125,11 +125,12 @@ async function buildImagePrompt(options: ImageAgentOptions): Promise<string> {
 
         if (isPersian) {
             console.log('🌍 Translating prompt from Persian to English...');
-            const translationPrompt = `Translate the following product information to English specifically for an AI Image Generator (DALL-E/Flux).
-          
-            CRITICAL CONTEXT: The products are agricultural goods (specifically Date Fruits/Palms), natural foods, or local crafts.
-            - If the word is "خرما" (Khorma) or similar, translate it strictly as "Date Fruit" or "Fresh Dates", NEVER just "Date" (to avoid confusion with calendar date/social date).
-            - If it is abstract, describe the visual appearance.
+            const translationPrompt = `Translate the following input to English specifically for an AI Image Generator prompt.
+            
+            RULES:
+            1. If the input contains "خرما" (Khorma), translate it as "Date Fruit" or "Fresh Dates".
+            2. If the input is about food/agriculture, enhance it with "high quality, delicious".
+            3. If the input is NOT food (e.g., "a child painting", "a futuristic city"), translate it LITERALLY and IGNORE food context.
             
             Input:
             Product Name: "${productName}"

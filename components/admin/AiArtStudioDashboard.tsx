@@ -80,7 +80,10 @@ const AiArtStudioDashboard: React.FC = () => {
                                 <PhotoIcon className="w-6 h-6 text-pink-400" />
                                 گالری آثار اخیر
                             </h3>
-                            <span className="text-xs bg-gray-700 text-gray-300 px-3 py-1 rounded-full">{gallery.length} مورد</span>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-gray-400 hidden md:inline">برای استفاده در محصول: لینک را کپی کنید و در فرم محصول قرار دهید.</span>
+                                <span className="text-xs bg-gray-700 text-gray-300 px-3 py-1 rounded-full">{gallery.length} مورد</span>
+                            </div>
                         </div>
 
                         {gallery.length === 0 ? (
