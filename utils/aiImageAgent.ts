@@ -1,6 +1,7 @@
 // utils/aiImageAgent.ts
 import { v2 as cloudinary } from 'cloudinary';
 import OpenAI from 'openai';
+import { generateText } from '../services/geminiService';
 
 // تنظیمات Cloudinary
 cloudinary.config({
@@ -84,68 +85,6 @@ async function uploadToCloudinary(imageUrl: string, publicId: string, folder: st
     });
 }
 
-/**
- * تولید با OpenAI DALL-E 3 (کیفیت عالی - هزینه دار)
- */
-async function generateWithDalle(options: ImageAgentOptions): Promise<ImageAgentResult> {
-    if (!openai) throw new Error("OpenAI API Key not found");
-
-    const prompt = buildImagePrompt(options);
-    const response = await openai.images.generate({
-        model: 'dall-e-3',
-        prompt: prompt,
-        n: 1,
-        size: '1024x1024',
-        quality: 'standard', // 'hd' is more expensive
-        style: options.style === 'artistic' ? 'vivid' : 'natural',
-    });
-
-    const imageUrl = response.data[0].url;
-    if (!imageUrl) throw new Error('No image URL returned from DALL-E');
-
-    const publicId = `ai_dalle_${sanitizeFileName(options.productName)}_${Date.now()}`;
-    const result = await uploadToCloudinary(imageUrl, publicId, options.folder || 'products/ai-dalle');
-
-    return {
-        success: true,
-        cloudinaryUrl: result.secure_url,
-        publicId: result.public_id,
-        source: 'ai-generated',
-        prompt: prompt,
-    };
-}
-
-/**
- * تولید با Pollinations (کیفیت خوب - کاملا رایگان)
- */
-async function generateWithPollinations(options: ImageAgentOptions): Promise<ImageAgentResult> {
-    const prompt = buildImagePrompt(options);
-    // Pollinations URL format: https://image.pollinations.ai/prompt/{prompt}
-    // We encode the prompt to ensure URL safety
-    const encodedPrompt = encodeURIComponent(prompt);
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${Math.floor(Math.random() * 1000)}&nologo=true&model=flux`;
-
-    console.log('🌐 Fetching from Pollinations:', imageUrl);
-
-    // We fetch the image first to ensure it generates before sending URL to Cloudinary
-    // Cloudinary sometimes times out on slow generations, so fetching buffer first is safer
-    const response = await fetch(imageUrl);
-    if (!response.ok) throw new Error("Failed to generate image via Free Provider");
-
-    // Cloudinary can upload efficiently from a remote URL usually, but let's pass the URL directly
-    // Pollinations is fast enough.
-    const publicId = `ai_free_${sanitizeFileName(options.productName)}_${Date.now()}`;
-    const result = await uploadToCloudinary(imageUrl, publicId, options.folder || 'products/ai-free');
-
-    return {
-        success: true,
-        cloudinaryUrl: result.secure_url,
-        publicId: result.public_id,
-        source: 'ai-generated',
-        prompt: prompt,
-    };
-}
-
 // ... (Helper functions remain the same)
 async function uploadExistingImage(options: ImageAgentOptions): Promise<ImageAgentResult> {
     try {
@@ -173,8 +112,41 @@ async function uploadExistingImage(options: ImageAgentOptions): Promise<ImageAge
     }
 }
 
-function buildImagePrompt(options: ImageAgentOptions): string {
+async function buildImagePrompt(options: ImageAgentOptions): Promise<string> {
     const { productName, description, category, style = 'professional' } = options;
+
+    // Translation Step: Use Gemini to translate Persian inputs to English
+    let translatedProduct = productName;
+    let translatedDesc = description || '';
+
+    try {
+        // Check if input has Persian characters
+        const isPersian = /[\u0600-\u06FF]/.test(productName + (description || ''));
+
+        if (isPersian) {
+            console.log('🌍 Translating prompt from Persian to English...');
+            const translationPrompt = `Translate the following product information to English for an image generation prompt. Keep it concise/descriptive.
+          Product Name: "${productName}"
+          Description: "${description || ''}"
+          Category: "${category || ''}"
+          Output strictly in JSON format: {"productName": "...", "description": "..."}`;
+
+            const result = await generateText(translationPrompt);
+            // Simple JSON parsing attempt (Gemini usually returns code blocks or plain JSON)
+            const jsonMatch = result.text.match(/\{[\s\S]*\}/);
+            if (jsonMatch) {
+                const parsed = JSON.parse(jsonMatch[0]);
+                translatedProduct = parsed.productName;
+                translatedDesc = parsed.description;
+            } else {
+                // Fallback: simple text usage if JSON fails
+                translatedProduct = result.text;
+            }
+            console.log(`✅ Translated: "${translatedProduct}"`);
+        }
+    } catch (e) {
+        console.warn('Translation failed, using original text:', e);
+    }
 
     const styleGuides = {
         realistic: 'photorealistic, high quality product photography, studio lighting, white background',
@@ -183,12 +155,71 @@ function buildImagePrompt(options: ImageAgentOptions): string {
         professional: 'professional product photography, e-commerce style, clean background, high resolution',
     };
 
-    let prompt = `A ${styleGuides[style]} image of ${productName}`;
-    if (description) prompt += `, ${description}`;
+    let prompt = `A ${styleGuides[style]} image of ${translatedProduct}`;
+    if (translatedDesc) prompt += `, ${translatedDesc}`;
     if (category) prompt += `, suitable for ${category} category`;
     prompt += ', high quality, detailed, professional lighting, sharp focus';
 
     return prompt;
+}
+
+// Update callers to await buildImagePrompt
+async function generateWithDalle(options: ImageAgentOptions): Promise<ImageAgentResult> {
+    if (!openai) throw new Error("OpenAI API Key not found");
+
+    const prompt = await buildImagePrompt(options); // Await here
+    const response = await openai.images.generate({
+        // ... rest matches previous implementation
+        model: 'dall-e-3',
+        prompt: prompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'standard', // 'hd' is more expensive
+        style: options.style === 'artistic' ? 'vivid' : 'natural',
+    });
+
+    const imageUrl = response.data[0].url;
+    if (!imageUrl) throw new Error('No image URL returned from DALL-E');
+
+    const publicId = `ai_dalle_${sanitizeFileName(options.productName)}_${Date.now()}`;
+    const result = await uploadToCloudinary(imageUrl, publicId, options.folder || 'products/ai-dalle');
+
+    return {
+        success: true,
+        cloudinaryUrl: result.secure_url,
+        publicId: result.public_id,
+        source: 'ai-generated',
+        prompt: prompt,
+    };
+}
+
+async function generateWithPollinations(options: ImageAgentOptions): Promise<ImageAgentResult> {
+    const prompt = await buildImagePrompt(options); // Await here
+    // Pollinations URL format: https://image.pollinations.ai/prompt/{prompt}
+    // We encode the prompt to ensure URL safety
+    const encodedPrompt = encodeURIComponent(prompt);
+    // ... rest matches previous implementation
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=1024&height=1024&seed=${Math.floor(Math.random() * 1000)}&nologo=true&model=flux`;
+
+    console.log('🌐 Fetching from Pollinations:', imageUrl);
+
+    // We fetch the image first to ensure it generates before sending URL to Cloudinary
+    // Cloudinary sometimes times out on slow generations, so fetching buffer first is safer
+    const response = await fetch(imageUrl);
+    if (!response.ok) throw new Error("Failed to generate image via Free Provider");
+
+    // Cloudinary can upload efficiently from a remote URL usually, but let's pass the URL directly
+    // Pollinations is fast enough.
+    const publicId = `ai_free_${sanitizeFileName(options.productName)}_${Date.now()}`;
+    const result = await uploadToCloudinary(imageUrl, publicId, options.folder || 'products/ai-free');
+
+    return {
+        success: true,
+        cloudinaryUrl: result.secure_url,
+        publicId: result.public_id,
+        source: 'ai-generated',
+        prompt: prompt,
+    };
 }
 
 function sanitizeFileName(name: string): string {
