@@ -91,6 +91,12 @@ const MainContent: React.FC = () => {
             case View.PathOfMeaning: return <PathOfMeaningView />;
             case View.CommunityHub: return <CommunityHubView />;
             case View.AdminDashboard:
+                // SECURITY GUARD: Only render for admins
+                if (!user || !user.isAdmin) {
+                    // Redirect to home or show denied message
+                    // Ideally we should dispatch SET_VIEW to Home, but returning HomeView works for now
+                    return <HomeView />;
+                }
                 return <AdminDashboardView
                     users={allUsers}
                     orders={orders}
@@ -105,7 +111,10 @@ const MainContent: React.FC = () => {
             case View.TransparencyDashboard: return <TransparencyDashboardView />;
             case View.AIPortal:
             case View.AI_CREATION_STUDIO: return <AIStudioView />;
-            case View.AutoCEO: return <AutoCEOView />;
+            case View.AutoCEO:
+                // SECURITY GUARD
+                if (!user || !user.isAdmin) return <HomeView />;
+                return <AutoCEOView />;
             case View.AI_ACADEMY: return <AICreationStudio initialTab="academy" />;
             case View.MeaningCompanion: return <MeaningCompanionView />;
             case View.ENGLISH_ACADEMY: return <EnglishAcademyView />;
