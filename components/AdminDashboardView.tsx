@@ -58,6 +58,8 @@ import ModernGamificationDashboard from './admin/ModernGamificationDashboard';
 import ModernSecurityDashboard from './admin/ModernSecurityDashboard';
 import ModernCommunityDashboard from './admin/ModernCommunityDashboard';
 import ModernMentorshipDashboard from './admin/ModernMentorshipDashboard';
+import ModernCampaignsDashboard from './admin/ModernCampaignsDashboard';
+import ModernContentFactoryDashboard from './admin/ModernContentFactoryDashboard';
 import { timeAgo } from '../utils/time';
 
 interface AdminDashboardViewProps {
@@ -219,8 +221,8 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                     {activeTab === 'community' && <ModernCommunityDashboard posts={posts} />}
                     {activeTab === 'growth' && <ModernAnalyticsDashboard users={users} orders={orders} />}
                     {activeTab === 'gamification' && <ModernGamificationDashboard allUsers={users} />}
-                    {activeTab === 'campaigns' && <CampaignsDashboard campaign={campaign} platformData={platformData} />}
-                    {activeTab === 'content_factory' && <ContentFactoryDashboard posts={posts} />}
+                    {activeTab === 'campaigns' && <ModernCampaignsDashboard campaign={campaign} platformData={platformData} />}
+                    {activeTab === 'content_factory' && <ModernContentFactoryDashboard posts={posts} />}
                     {activeTab === 'ai_think_tank' && (
                         <AdminAICoach
                             allUsers={users}
