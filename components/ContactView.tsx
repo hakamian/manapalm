@@ -62,11 +62,11 @@ const ContactView: React.FC = () => {
     };
 
     return (
-        <div className="bg-gray-900 text-white pt-22 pb-24">
+        <div className="bg-gray-900 text-white pb-24">
             {/* Hero Section */}
             <div className="relative pb-20 bg-cover bg-center" style={{ backgroundImage: "url('https://picsum.photos/seed/contact-us-bg/1920/1080')" }}>
                 <div className="absolute inset-0 bg-black bg-opacity-70"></div>
-                <div className="relative container mx-auto px-6 text-center z-10">
+                <div className="relative container mx-auto px-6 text-center z-10 hero-header-clearance">
                     <h1 className="text-5xl font-bold mb-4">در ارتباط باشید</h1>
                     <p className="text-xl max-w-3xl mx-auto">
                         ما همیشه برای شنیدن نظرات، پیشنهادات و سوالات شما آماده‌ایم. از یکی از راه‌های زیر با ما در تماس باشید.

@@ -42,19 +42,19 @@ const HerosJourneyIntroView: React.FC = () => {
     };
 
     return (
-        <div className="bg-gray-900 text-white pt-22 pb-24">
+        <div className="bg-gray-900 text-white pt-32 pb-24">
             {/* Hero */}
             <div className="relative text-center py-20 px-6 bg-gray-800 rounded-b-3xl">
-                 <h1 className="text-4xl md:text-5xl font-bold mb-4">ماجراجویی بزرگ شما در شرف آغاز است</h1>
-                 <p className="text-xl max-w-3xl mx-auto text-gray-300">
+                <h1 className="text-4xl md:text-5xl font-bold mb-4">ماجراجویی بزرگ شما در شرف آغاز است</h1>
+                <p className="text-xl max-w-3xl mx-auto text-gray-300">
                     این فقط یک ویژگی نیست؛ یک سفر هدایت‌شده برای کشف عمیق‌ترین ارزش‌ها، استعدادها و رسالت شخصی شماست.
-                 </p>
+                </p>
             </div>
 
             <div className="container mx-auto px-6 py-16 max-w-4xl">
                 {/* Benefits */}
                 <div className="grid md:grid-cols-2 gap-12 items-center mb-20" ref={benefitsRef}>
-                     <div className="flex justify-center">
+                    <div className="flex justify-center">
                         <div className="relative w-80 h-80">
                             <div
                                 className="absolute -inset-2 rounded-full"
@@ -84,7 +84,7 @@ const HerosJourneyIntroView: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
                         {/* Connecting line */}
                         <div className="absolute top-10 left-0 w-full h-0.5 bg-gray-700 hidden md:block"></div>
-                        
+
                         <div className="relative z-10 flex flex-col items-center">
                             <div className="w-20 h-20 rounded-full bg-gray-800 border-4 border-green-500 flex items-center justify-center mb-4"><BrainCircuitIcon className="w-10 h-10 text-green-400" /></div>
                             <h3 className="text-xl font-semibold mb-2">۱. گفتگوی کشف</h3>

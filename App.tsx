@@ -1,7 +1,7 @@
 
 'use client';
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo, Suspense } from 'react';
 import dynamic from 'next/dynamic';
 import { View, DailyChestReward, PointLog } from './types';
 import { useAppState, useAppDispatch } from './AppContext';
@@ -18,6 +18,11 @@ import WhatsNewModal from './components/WhatsNewModal';
 import { supabase } from './services/supabaseClient';
 import { useRouteSync } from './hooks/useRouteSync';
 import SEOIndex from './components/seo/SEOIndex';
+
+// Lazy Load UI Components
+const Header = React.lazy(() => import('./components/Header'));
+const Footer = React.lazy(() => import('./components/Footer'));
+const LiveActivityBanner = React.lazy(() => import('./components/LiveActivityBanner'));
 
 const BottomNavBar = dynamic(() => import('./components/BottomNavBar'), { ssr: false });
 
@@ -218,8 +223,20 @@ const App: React.FC = () => {
             <WhatsNewModal />
             <CommandPalette />
 
-            <div className="relative z-10">
-                <MainContent />
+            <div className="relative min-h-screen text-white overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-100">
+                <div className="aurora-bg">
+                    <div className="aurora-blob blob-1"></div>
+                    <div className="aurora-blob blob-2"></div>
+                    <div className="aurora-blob blob-3"></div>
+                </div>
+                <div className="noise-overlay"></div>
+
+                <Suspense fallback={null}><LiveActivityBanner /></Suspense>
+                <Suspense fallback={<div className="h-20" />}><Header /></Suspense>
+
+                <div className="relative z-10">
+                    <MainContent />
+                </div>
             </div>
 
             {mounted && user && canClaimChest && (
@@ -232,6 +249,8 @@ const App: React.FC = () => {
             {mounted && <AIChatWidget />}
             {mounted && user && <MeaningCompanionWidget />}
             <BottomNavBar />
+
+            <Suspense fallback={null}><Footer /></Suspense>
 
             <GlobalModals onLoginSuccess={handleLoginSuccess} />
         </>

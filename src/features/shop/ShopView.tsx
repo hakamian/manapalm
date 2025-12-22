@@ -164,7 +164,7 @@ const ShopView: React.FC = () => {
                 mode: 'improve',
                 type: 'product_description',
                 text: selectedProduct.description,
-                context: selectedProduct.name,
+                context: selectedProduct.name || '',
             });
             setSelectedProduct(prev => prev ? { ...prev, description: newDesc } : null);
         } catch (e) {
@@ -175,7 +175,7 @@ const ShopView: React.FC = () => {
     };
 
     return (
-        <div className="pt-22 pb-24 min-h-screen bg-gray-900 text-white">
+        <div className="header-clearance pb-24 min-h-screen bg-gray-900 text-white">
             <SEOHead
                 title="فروشگاه"
                 description="خرید نخل، محصولات ارگانیک خرما، صنایع دستی و محصولات دیجیتال با تاثیر اجتماعی."

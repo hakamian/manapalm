@@ -35,19 +35,19 @@ const PathOfMeaningView: React.FC = () => {
 
     const handleCtaClick = () => {
         if (!dailyChallenge) return;
-        
+
         if (dailyChallenge.ctaView) {
-             // Check if we need to navigate to a profile tab
-             if (dailyChallenge.ctaView === View.UserProfile) {
-                 // Assuming 'profile' tab as default for UserProfile view, or specific tabs can be handled if needed
-                 onNavigateToProfileTab('profile');
-             } else {
-                 onNavigate(dailyChallenge.ctaView);
-             }
+            // Check if we need to navigate to a profile tab
+            if (dailyChallenge.ctaView === View.UserProfile) {
+                // Assuming 'profile' tab as default for UserProfile view, or specific tabs can be handled if needed
+                onNavigateToProfileTab('profile');
+            } else {
+                onNavigate(dailyChallenge.ctaView);
+            }
         } else {
             // Default action if no view is specified but button is clicked (e.g. just complete)
-             // In a real app, this might mark the challenge as complete
-             alert('ماموریت انجام شد!');
+            // In a real app, this might mark the challenge as complete
+            alert('ماموریت انجام شد!');
         }
     };
 
@@ -62,15 +62,15 @@ const PathOfMeaningView: React.FC = () => {
                 // Assuming orders are accessible or user.timeline has this info.
                 return user.timeline?.some(e => e.type === 'palm_planted') || false;
             case 'write_memory':
-                 return user.timeline?.some(e => e.type === 'palm_planted' && !!e.memoryText) || false;
+                return user.timeline?.some(e => e.type === 'palm_planted' && !!e.memoryText) || false;
             case 'use_ai_chat':
-                 return !!user.meaningCoachHistory && user.meaningCoachHistory.length > 0;
+                return !!user.meaningCoachHistory && user.meaningCoachHistory.length > 0;
             case 'plant_three_palms':
-                 const palmCount = user.timeline?.filter(e => e.type === 'palm_planted').length || 0;
-                 return palmCount >= 3;
+                const palmCount = user.timeline?.filter(e => e.type === 'palm_planted').length || 0;
+                return palmCount >= 3;
             case 'reach_sapling':
                 return (user.points || 0) >= 500;
-             case 'explore_ai_portal':
+            case 'explore_ai_portal':
                 return (user.points || 0) >= 500; // Simplified logic
             default:
                 return false;
@@ -128,7 +128,7 @@ const PathOfMeaningView: React.FC = () => {
     const TrialItem: React.FC<{ trial: any, isLocked: boolean }> = ({ trial, isLocked }) => (
         <div className={`flex items-center p-3 rounded-lg transition-all duration-300 ${trial.isCompleted ? 'bg-green-800/30' : 'bg-gray-800'} ${isLocked && !trial.isCompleted ? 'opacity-50' : ''}`}>
             <div className={`flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full mr-4 ${trial.isCompleted ? 'bg-green-500 text-white' : 'bg-gray-600 text-gray-400'}`}>
-                {trial.isCompleted ? <CheckCircleIcon className="w-5 h-5"/> : <div className="w-2 h-2 rounded-full bg-gray-400"></div>}
+                {trial.isCompleted ? <CheckCircleIcon className="w-5 h-5" /> : <div className="w-2 h-2 rounded-full bg-gray-400"></div>}
             </div>
             <div className="flex-grow">
                 <p className={`${trial.isCompleted ? 'text-gray-400 line-through' : 'text-white'}`}>{trial.text}</p>
@@ -140,15 +140,15 @@ const PathOfMeaningView: React.FC = () => {
             )}
         </div>
     );
-    
+
     return (
-         <div className="pt-24 min-h-screen bg-gray-900 text-white">
+        <div className="pt-32 min-h-screen bg-gray-900 text-white">
             <div className="container mx-auto px-4 py-12">
                 <header className="text-center mb-16">
                     <TrophyIcon className="w-16 h-16 mx-auto text-yellow-300 mb-4" />
                     <h1 className="text-5xl font-bold mb-4">مسیر معنا</h1>
                     <p className="text-lg text-gray-400 max-w-3xl mx-auto">
-                       یک راهنمای قدم به قدم برای قهرمانانی که می‌خواهند تاثیر عمیق‌تری در نخلستان معنا بگذارند.
+                        یک راهنمای قدم به قدم برای قهرمانانی که می‌خواهند تاثیر عمیق‌تری در نخلستان معنا بگذارند.
                     </p>
                 </header>
 
@@ -170,7 +170,7 @@ const PathOfMeaningView: React.FC = () => {
                                     </button>
                                 )}
                             </div>
-                            
+
                             {!user ? (
                                 // Guest View
                                 <div>
@@ -183,7 +183,7 @@ const PathOfMeaningView: React.FC = () => {
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-bold text-green-400">پاداش: ۵۰ امتیاز ورود</span>
-                                        <button 
+                                        <button
                                             onClick={() => dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })}
                                             className="bg-white text-indigo-900 font-bold py-2 px-6 rounded-md hover:bg-indigo-100 transition-colors text-sm shadow-md"
                                         >
@@ -206,7 +206,7 @@ const PathOfMeaningView: React.FC = () => {
                                     </div>
                                     <div className="flex justify-between items-center">
                                         <span className="text-sm font-bold text-green-400">پاداش: {dailyChallenge.xp} امتیاز</span>
-                                        <button 
+                                        <button
                                             onClick={handleCtaClick}
                                             className="bg-white text-indigo-900 font-bold py-2 px-4 rounded-md hover:bg-indigo-100 transition-colors text-sm"
                                         >
@@ -223,7 +223,7 @@ const PathOfMeaningView: React.FC = () => {
                         </div>
                     </div>
                 </div>
-                
+
                 {user && (
                     <div className="max-w-3xl mx-auto">
                         {/* The Path Line */}

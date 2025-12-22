@@ -42,7 +42,7 @@ async function fetchWithRetry(url, options, maxRetries = 2) {
 export default async function handler(req, res) {
   // 1. CORS & Security Headers
   res.setHeader('Access-Control-Allow-Credentials', true);
-  const allowedOrigins = ['https://manapalm.com', 'http://localhost:3000', 'https://nakhlestan-mana.com'];
+  const allowedOrigins = ['https://manapalm.com', 'http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'https://nakhlestan-mana.com'];
   const origin = req.headers.origin;
 
   if (allowedOrigins.includes(origin)) {
@@ -80,6 +80,22 @@ export default async function handler(req, res) {
       const openRouterKey = process.env.OPENROUTER_API_KEY;
       if (!openRouterKey) throw new Error('OpenRouter Key Missing');
 
+      // Construct Messages
+      let messages = [];
+
+      // Add System Prompt if exists
+      if (data.config && data.config.systemInstruction) {
+        messages.push({ role: "system", content: data.config.systemInstruction });
+      }
+
+      // Add Conversation History
+      const userMessages = data.contents.map(c => ({
+        role: c.role === 'model' ? 'assistant' : c.role,
+        content: typeof c.parts[0].text === 'string' ? c.parts[0].text : JSON.stringify(c.parts[0])
+      }));
+
+      messages = messages.concat(userMessages);
+
       const response = await fetchWithRetry("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -90,10 +106,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           "model": m,
-          "messages": data.contents.map(c => ({
-            role: c.role === 'model' ? 'assistant' : c.role,
-            content: typeof c.parts[0].text === 'string' ? c.parts[0].text : JSON.stringify(c.parts[0])
-          })),
+          "messages": messages,
           "temperature": data.config?.temperature || 0.7,
         })
       });

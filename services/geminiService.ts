@@ -143,8 +143,13 @@ export const generateText = async (
             }
         });
         return { text: result.text || '' };
-    } catch (error) {
+    } catch (error: any) {
         console.error("generateText error:", error);
+        // Propagate the actual error message if it's user-friendly or technical enough
+        // Otherwise, use the fallback. 
+        if (error.message && (error.message.includes("Proxy") || error.message.includes("ارتباط") || error.message.includes("کلید"))) {
+            throw error;
+        }
         throw new Error(getFallbackMessage('chat'));
     }
 };

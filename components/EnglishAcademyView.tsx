@@ -19,7 +19,7 @@ type AcademyMode = 'gatekeeper' | 'onboarding' | 'roadmap_preview' | 'dashboard'
 const EnglishAcademyView: React.FC = () => {
     const dispatch = useAppDispatch();
     const { user, products, selectedLanguage } = useAppState();
-    
+
     const [mode, setMode] = useState<AcademyMode>('gatekeeper');
     const [userConfig, setUserConfig] = useState<{ goal: UserGoal; barrier: UserBarrier; interest: UserInterest | string; timeCommitment: TimeCommitment | string } | null>(null);
     const [activeLesson, setActiveLesson] = useState<LMSLesson | null>(null);
@@ -74,11 +74,11 @@ const EnglishAcademyView: React.FC = () => {
             // Priority 1: If user has unlocked the academy, send them straight to dashboard.
             if (user.hasUnlockedEnglishTest) {
                 setMode('dashboard');
-                
+
                 // If target language is missing (maybe paid via direct link), try to recover or set default
                 if (!user.languageConfig?.targetLanguage) {
-                     const langToSet = selectedLanguage || 'English';
-                     dispatch({
+                    const langToSet = selectedLanguage || 'English';
+                    dispatch({
                         type: 'UPDATE_USER',
                         payload: {
                             languageConfig: { ...user.languageConfig, targetLanguage: langToSet }
@@ -90,7 +90,7 @@ const EnglishAcademyView: React.FC = () => {
                 if (!user.languageConfig?.syllabus && !isSyllabusGenerating) {
                     generateAndSaveSyllabus();
                 }
-            } 
+            }
             // Priority 2: If user is logged in but NOT unlocked, we let them stay in their current flow 
             // (onboarding/roadmap). We ONLY redirect to gatekeeper if they are in 'dashboard' or 'classroom'
             // illegally (e.g. session expired or manual navigation).
@@ -102,10 +102,10 @@ const EnglishAcademyView: React.FC = () => {
                 setMode('onboarding');
             }
         } else {
-             // Not logged in always goes to gatekeeper
-             if (mode !== 'kids_mode' && mode !== 'onboarding' && mode !== 'roadmap_preview') {
-                 setMode('gatekeeper');
-             }
+            // Not logged in always goes to gatekeeper
+            if (mode !== 'kids_mode' && mode !== 'onboarding' && mode !== 'roadmap_preview') {
+                setMode('gatekeeper');
+            }
         }
     }, [user?.hasUnlockedEnglishTest, user?.languageConfig?.targetLanguage, user?.id, user?.languageConfig?.syllabus]);
 
@@ -122,7 +122,7 @@ const EnglishAcademyView: React.FC = () => {
                 user.languageConfig.goal || 'connection',
                 user.languageConfig.interest || 'general'
             );
-            
+
             dispatch({
                 type: 'UPDATE_USER',
                 payload: {
@@ -140,21 +140,21 @@ const EnglishAcademyView: React.FC = () => {
     };
 
     const handleLanguageSelect = (lang: TargetLanguage) => {
-         dispatch({ type: 'SET_SELECTED_LANGUAGE', payload: lang });
-         // Force mode update to trigger persistence
-         setMode('onboarding');
-         if (!user) {
-              dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true });
-         }
+        dispatch({ type: 'SET_SELECTED_LANGUAGE', payload: lang });
+        // Force mode update to trigger persistence
+        setMode('onboarding');
+        if (!user) {
+            dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true });
+        }
     };
 
     const handleOnboardingComplete = (config: { goal: UserGoal; barrier: UserBarrier; interest: UserInterest | string; timeCommitment: TimeCommitment | string }) => {
         setUserConfig(config);
         setMode('roadmap_preview');
-        
+
         // Crucial: Persist the config immediately so it's ready when payment completes
         if (user) {
-             dispatch({
+            dispatch({
                 type: 'UPDATE_USER',
                 payload: {
                     languageConfig: {
@@ -168,7 +168,7 @@ const EnglishAcademyView: React.FC = () => {
                 }
             });
         }
-        
+
         const goalTitle = GOAL_CONFIG[config.goal].title;
         dispatch({ type: 'SET_ENGLISH_SCENARIO', payload: goalTitle });
     };
@@ -185,18 +185,18 @@ const EnglishAcademyView: React.FC = () => {
 
     const handleStartDemo = () => {
         if (!userConfig) return;
-        
+
         let scenario = 'Free Talk';
         const interest = userConfig.interest;
-        
+
         if (interest === 'tech') scenario = 'Talking about AI trends';
         else if (interest === 'art') scenario = 'Discussing a favorite movie';
         else scenario = `Discussing ${interest}`;
-        
+
         dispatch({ type: 'SET_ENGLISH_SCENARIO', payload: scenario });
         dispatch({ type: 'SET_VIEW', payload: View.AI_CONVERSATION_PARTNER });
     };
-    
+
     const handleStartPlacementTest = () => {
         dispatch({ type: 'SET_VIEW', payload: View.ENGLISH_PLACEMENT_TEST });
     };
@@ -212,23 +212,23 @@ const EnglishAcademyView: React.FC = () => {
         const userProgress = user.englishAcademyProgress || {};
         const newProgress = { ...userProgress, [activeLesson.id]: true };
         const pointsToAdd = activeLesson.xp;
-        
-        const pointLog: PointLog = { 
-            action: `تکمیل درس: ${activeLesson.title}`, 
-            points: pointsToAdd, 
-            type: 'mana', 
-            date: new Date().toISOString() 
+
+        const pointLog: PointLog = {
+            action: `تکمیل درس: ${activeLesson.title}`,
+            points: pointsToAdd,
+            type: 'mana',
+            date: new Date().toISOString()
         };
 
-        dispatch({ 
-            type: 'UPDATE_USER', 
-            payload: { 
+        dispatch({
+            type: 'UPDATE_USER',
+            payload: {
                 englishAcademyProgress: newProgress,
                 points: user.points + pointsToAdd,
                 pointsHistory: [...(user.pointsHistory || []), pointLog]
-            } 
+            }
         });
-        
+
         setMode('dashboard');
         setActiveLesson(null);
     };
@@ -239,32 +239,32 @@ const EnglishAcademyView: React.FC = () => {
                 return (
                     <>
                         <div className="max-w-6xl mx-auto pt-6 px-4">
-                             <AcademyLandingHero content={ACADEMY_CONTENTS['english_academy']} />
+                            <AcademyLandingHero content={ACADEMY_CONTENTS['english_academy']} />
                         </div>
-                        <AcademyGatekeeper 
-                            isLoggedIn={!!user} 
-                            onLogin={() => dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })} 
-                            onLanguageSelect={handleLanguageSelect} 
+                        <AcademyGatekeeper
+                            isLoggedIn={!!user}
+                            onLogin={() => dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })}
+                            onLanguageSelect={handleLanguageSelect}
                         />
                     </>
                 );
             case 'onboarding':
                 return <AcademyOnboarding onComplete={handleOnboardingComplete} />;
             case 'roadmap_preview':
-                return <AcademyRoadmapPreview 
-                    config={userConfig!} 
-                    onUnlock={handlePlantPalm} 
+                return <AcademyRoadmapPreview
+                    config={userConfig!}
+                    onUnlock={handlePlantPalm}
                     onDemo={handleStartDemo}
                 />;
             case 'dashboard':
-                return <AcademyDashboard 
-                    user={user!} 
+                return <AcademyDashboard
+                    user={user!}
                     onStartPlacementTest={handleStartPlacementTest}
                     onLessonSelect={handleLessonSelect}
                 />;
             case 'classroom':
                 if (!activeLesson) return null;
-                return <AcademyClassroom 
+                return <AcademyClassroom
                     activeLesson={activeLesson}
                     userProgress={user?.englishAcademyProgress || {}}
                     onCompleteLesson={handleCompleteLesson}
@@ -281,7 +281,7 @@ const EnglishAcademyView: React.FC = () => {
     };
 
     return (
-        <div className="bg-gray-900 text-white min-h-screen pt-16">
+        <div className="bg-gray-900 text-white min-h-screen pt-32">
             {renderContent()}
         </div>
     );

@@ -32,10 +32,10 @@ const LifeMasteryAcademyView: React.FC<LifeMasteryAcademyViewProps> = ({ user })
     const lifeMasteryCourses = useMemo(() => {
         return bookJourneys.filter(course => {
             const c = course as any;
-            return c.id === 'new-world-skills' || 
-            c.id === 'deep-work-mastery' ||
-            c.tags?.includes('توسعه فردی') ||
-            c.tags?.includes('روانشناسی');
+            return c.id === 'new-world-skills' ||
+                c.id === 'deep-work-mastery' ||
+                c.tags?.includes('توسعه فردی') ||
+                c.tags?.includes('روانشناسی');
         });
     }, []);
 
@@ -66,9 +66,9 @@ const LifeMasteryAcademyView: React.FC<LifeMasteryAcademyViewProps> = ({ user })
     const handleChooseStandard = () => {
         if (selectedCourse) {
             const standardPersona: CoursePersonalization = { role: 'General', industry: 'General', challenge: 'None', goal: 'Standard Learning' };
-            dispatch({ 
-                type: 'SAVE_COURSE_PERSONALIZATION', 
-                payload: { courseId: selectedCourse.id, personalization: standardPersona } 
+            dispatch({
+                type: 'SAVE_COURSE_PERSONALIZATION',
+                payload: { courseId: selectedCourse.id, personalization: standardPersona }
             });
         }
         setIsChoiceModalOpen(false);
@@ -82,7 +82,7 @@ const LifeMasteryAcademyView: React.FC<LifeMasteryAcademyViewProps> = ({ user })
         if (user && user.manaPoints >= 500) {
             dispatch({ type: 'SPEND_MANA_POINTS', payload: { points: 500, action: 'شخصی‌سازی دوره توسعه فردی' } });
             setIsChoiceModalOpen(false);
-            setIsPersonalizationModalOpen(true); 
+            setIsPersonalizationModalOpen(true);
         } else {
             alert("امتیاز معنا کافی نیست! (۵۰۰ امتیاز مورد نیاز است)");
         }
@@ -90,9 +90,9 @@ const LifeMasteryAcademyView: React.FC<LifeMasteryAcademyViewProps> = ({ user })
 
     const handlePersonalizationComplete = (persona: CoursePersonalization) => {
         if (selectedCourse) {
-            dispatch({ 
-                type: 'SAVE_COURSE_PERSONALIZATION', 
-                payload: { courseId: selectedCourse.id, personalization: persona } 
+            dispatch({
+                type: 'SAVE_COURSE_PERSONALIZATION',
+                payload: { courseId: selectedCourse.id, personalization: persona }
             });
             setIsPersonalizationModalOpen(false);
             if (pendingModule) {
@@ -101,15 +101,15 @@ const LifeMasteryAcademyView: React.FC<LifeMasteryAcademyViewProps> = ({ user })
             }
         }
     };
-    
+
     const handleRepersonalize = () => {
         if (user && user.manaPoints >= 500 && selectedCourse) {
-             if (window.confirm("تغییر تنظیمات پرسونا ۵۰۰ امتیاز معنا هزینه دارد. آیا ادامه می‌دهید؟")) {
-                  dispatch({ type: 'SPEND_MANA_POINTS', payload: { points: 500, action: 'به‌روزرسانی پرسونای دوره' } });
-                  setIsPersonalizationModalOpen(true);
-             }
+            if (window.confirm("تغییر تنظیمات پرسونا ۵۰۰ امتیاز معنا هزینه دارد. آیا ادامه می‌دهید؟")) {
+                dispatch({ type: 'SPEND_MANA_POINTS', payload: { points: 500, action: 'به‌روزرسانی پرسونای دوره' } });
+                setIsPersonalizationModalOpen(true);
+            }
         } else {
-             alert("امتیاز معنای کافی ندارید (۵۰۰ امتیاز نیاز است).");
+            alert("امتیاز معنای کافی ندارید (۵۰۰ امتیاز نیاز است).");
         }
     };
 
@@ -129,14 +129,14 @@ const LifeMasteryAcademyView: React.FC<LifeMasteryAcademyViewProps> = ({ user })
 
     if (viewMode === 'reading' && selectedModule && selectedCourse) {
         return (
-            <DeepReadingStep 
+            <DeepReadingStep
                 module={selectedModule}
                 bookTitle={selectedCourse.title}
                 courseId={selectedCourse.id}
                 onStartPractice={() => {
                     alert("تبریک! این بخش را با موفقیت به پایان رساندید.");
                     setViewMode('detail');
-                }} 
+                }}
                 onClose={() => setViewMode('detail')}
             />
         );
@@ -145,12 +145,12 @@ const LifeMasteryAcademyView: React.FC<LifeMasteryAcademyViewProps> = ({ user })
     if (viewMode === 'detail' && selectedCourse && user) {
         return (
             <>
-                <div className="bg-gray-900 text-white pt-22 pb-24 min-h-screen">
+                <div className="bg-gray-900 text-white pt-32 pb-24 min-h-screen">
                     <div className="container mx-auto px-6 max-w-6xl animate-fade-in-up">
-                        
+
                         {hasPersonalization && (
                             <div className="flex justify-end mb-4">
-                                <button 
+                                <button
                                     onClick={handleRepersonalize}
                                     className="flex items-center gap-2 text-xs bg-teal-900/30 text-teal-300 border border-teal-500/30 px-3 py-1.5 rounded-full hover:bg-teal-900/50 transition-colors"
                                 >
@@ -160,8 +160,8 @@ const LifeMasteryAcademyView: React.FC<LifeMasteryAcademyViewProps> = ({ user })
                             </div>
                         )}
 
-                        <BookDetailView 
-                            book={selectedCourse} 
+                        <BookDetailView
+                            book={selectedCourse}
                             user={user}
                             onBack={handleBack}
                             onStartJourney={() => {
@@ -173,13 +173,13 @@ const LifeMasteryAcademyView: React.FC<LifeMasteryAcademyViewProps> = ({ user })
                     </div>
                 </div>
                 {selectedModule && (
-                     <ModuleBriefingModal
+                    <ModuleBriefingModal
                         isOpen={isBriefingOpen}
                         onClose={() => setIsBriefingOpen(false)}
                         onStart={handleStartReading}
                         module={selectedModule}
                         bookTitle={selectedCourse.title}
-                        isUnlocked={true} 
+                        isUnlocked={true}
                     />
                 )}
 
@@ -197,10 +197,10 @@ const LifeMasteryAcademyView: React.FC<LifeMasteryAcademyViewProps> = ({ user })
                             <h2 className="text-2xl font-bold text-white">انتخاب سبک یادگیری</h2>
                             <p className="text-stone-400 mt-2 text-sm">چگونه می‌خواهید این مهارت‌ها را یاد بگیرید؟</p>
                         </div>
-                        
+
                         <div className="grid grid-cols-1 gap-4">
                             {/* Option A: Personalized */}
-                            <button 
+                            <button
                                 onClick={handleChoosePersonalized}
                                 className="group relative p-5 rounded-xl bg-gradient-to-r from-teal-900/50 to-emerald-900/50 border-2 border-teal-500/50 hover:border-teal-400 transition-all text-right overflow-hidden shadow-lg"
                             >
@@ -222,7 +222,7 @@ const LifeMasteryAcademyView: React.FC<LifeMasteryAcademyViewProps> = ({ user })
                             </button>
 
                             {/* Option B: Standard */}
-                            <button 
+                            <button
                                 onClick={handleChooseStandard}
                                 className="p-5 rounded-xl bg-stone-800 hover:bg-stone-700 border-2 border-stone-600 hover:border-stone-500 transition-all text-right group"
                             >
@@ -249,16 +249,16 @@ const LifeMasteryAcademyView: React.FC<LifeMasteryAcademyViewProps> = ({ user })
     }
 
     return (
-        <div className="bg-gray-900 text-white pt-22 pb-24 min-h-screen">
+        <div className="bg-gray-900 text-white pt-32 pb-24 min-h-screen">
             <div className="container mx-auto px-6 max-w-6xl animate-fade-in-up">
-                
+
                 {/* New Landing Hero Integration */}
                 <AcademyLandingHero content={ACADEMY_CONTENTS['life_mastery_academy']} />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {lifeMasteryCourses.map(course => (
-                        <div 
-                            key={course.id} 
+                        <div
+                            key={course.id}
                             onClick={() => handleCourseSelect(course)}
                             className="group bg-gray-800 rounded-2xl overflow-hidden border border-gray-700 hover:border-teal-500 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer flex flex-col"
                         >
@@ -267,25 +267,25 @@ const LifeMasteryAcademyView: React.FC<LifeMasteryAcademyViewProps> = ({ user })
                                     {course.totalSessions} جلسه
                                 </div>
                                 <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-gray-900 to-transparent">
-                                     <h3 className="text-xl font-bold text-white group-hover:text-teal-300 transition-colors">{course.title}</h3>
+                                    <h3 className="text-xl font-bold text-white group-hover:text-teal-300 transition-colors">{course.title}</h3>
                                 </div>
                             </div>
                             <div className="p-6 flex flex-col flex-grow">
                                 <p className="text-gray-400 text-sm mb-4 line-clamp-3 flex-grow">{course.description}</p>
-                                
+
                                 <div className="flex flex-wrap gap-2 mb-4">
                                     {(course as any).tags?.map((tag: string) => (
                                         <span key={tag} className="text-xs bg-gray-700 text-gray-300 px-2 py-1 rounded-md border border-gray-600">#{tag}</span>
                                     ))}
                                 </div>
-                                
+
                                 <div className="flex justify-between items-center border-t border-gray-700 pt-4 mt-auto">
                                     <div className="flex items-center gap-1 text-yellow-400 text-xs font-bold">
                                         <TrophyIcon className="w-4 h-4" />
                                         <span>{course.xpReward} XP</span>
                                     </div>
                                     <button className="text-sm font-bold text-teal-400 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
-                                        مشاهده دوره <ArrowLeftIcon className="w-4 h-4"/>
+                                        مشاهده دوره <ArrowLeftIcon className="w-4 h-4" />
                                     </button>
                                 </div>
                             </div>

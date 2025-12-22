@@ -34,7 +34,7 @@ const GiftPointsCard: React.FC = () => {
         const lowercasedTerm = searchTerm.toLowerCase();
         return allUsers.filter(
             u => u.id !== user?.id &&
-            (u.fullName?.toLowerCase().includes(lowercasedTerm) || u.phone.includes(lowercasedTerm))
+                (u.fullName?.toLowerCase().includes(lowercasedTerm) || u.phone.includes(lowercasedTerm))
         ).slice(0, 5);
     }, [searchTerm, allUsers, user]);
 
@@ -74,7 +74,7 @@ const GiftPointsCard: React.FC = () => {
             </div>
             <div className="bg-gray-800 p-5 rounded-lg border border-gray-700">
                 {success && <div className="mb-4 p-3 bg-green-900/50 text-green-300 rounded-md text-center">{success}</div>}
-                
+
                 {!selectedUser ? (
                     <div className="relative">
                         <p className="text-sm text-gray-300 mb-2">با هدیه دادن امتیاز، از دیگران قدردانی کنید.</p>
@@ -101,15 +101,15 @@ const GiftPointsCard: React.FC = () => {
                 ) : (
                     <div>
                         <div className="flex items-center gap-3 mb-4">
-                             <img src={selectedUser.avatar || `https://i.pravatar.cc/150?u=${selectedUser.id}`} alt={selectedUser.fullName} className="w-10 h-10 rounded-full" />
-                             <div>
+                            <img src={selectedUser.avatar || `https://i.pravatar.cc/150?u=${selectedUser.id}`} alt={selectedUser.fullName} className="w-10 h-10 rounded-full" />
+                            <div>
                                 <p className="text-sm text-gray-400">هدیه به:</p>
                                 <p className="font-bold">{selectedUser.fullName}</p>
-                             </div>
+                            </div>
                         </div>
                         <div>
                             <label className="text-sm">مقدار امتیاز:</label>
-                             <input type="range" min="50" max={user.points} step="50" value={amount} onChange={e => setAmount(Number(e.target.value))} className="w-full my-2 accent-green-500" />
+                            <input type="range" min="50" max={user.points} step="50" value={amount} onChange={e => setAmount(Number(e.target.value))} className="w-full my-2 accent-green-500" />
                             <div className="flex items-center gap-2">
                                 <input type="number" value={amount} onChange={e => setAmount(Number(e.target.value))} className="w-full bg-gray-700 p-2 rounded-md" />
                                 <span className="text-lg font-bold">{amount.toLocaleString('fa-IR')}</span>
@@ -165,19 +165,19 @@ const CommunityHubView: React.FC = () => {
     const onStartConversation = (targetUserId: string) => {
         dispatch({ type: 'SET_VIEW', payload: View.DIRECT_MESSAGES });
     };
-    
+
     const filteredPosts = useMemo(() => {
         let filtered = [...posts];
-        
+
         // Search filter
         if (postSearch) {
             const lowerSearch = postSearch.toLowerCase();
-            filtered = filtered.filter(p => 
-                p.text.toLowerCase().includes(lowerSearch) || 
+            filtered = filtered.filter(p =>
+                p.text.toLowerCase().includes(lowerSearch) ||
                 p.authorName.toLowerCase().includes(lowerSearch)
             );
         }
-        
+
         // Tag filter (mock implementation, assuming hashtags in text)
         if (selectedTag) {
             filtered = filtered.filter(p => p.text.includes(selectedTag));
@@ -189,7 +189,7 @@ const CommunityHubView: React.FC = () => {
         } else {
             filtered.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
         }
-        
+
         return filtered;
     }, [posts, postSearch, sortOrder, selectedTag]);
 
@@ -198,7 +198,7 @@ const CommunityHubView: React.FC = () => {
     const progress = Math.min((stats.totalPalmsPlanted / goal) * 100, 100);
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white pt-22 pb-24">
+        <div className="min-h-screen bg-gray-900 text-white pt-32 pb-24">
             {/* Hero Section */}
             <div className="relative pb-20 bg-cover bg-center" style={{ backgroundImage: "url('https://picsum.photos/seed/community-gathering/1920/1080')" }}>
                 <div className="absolute inset-0 bg-black bg-opacity-75"></div>
@@ -232,29 +232,29 @@ const CommunityHubView: React.FC = () => {
                         <section>
                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
                                 <h2 className="text-3xl font-bold">دیوار کانون</h2>
-                                
+
                                 {/* Advanced Search & Filters */}
                                 <div className="flex flex-wrap gap-3 items-center bg-gray-800 p-2 rounded-lg border border-gray-700 w-full md:w-auto">
                                     <div className="relative flex-grow">
-                                        <input 
-                                            type="text" 
-                                            placeholder="جستجو..." 
+                                        <input
+                                            type="text"
+                                            placeholder="جستجو..."
                                             value={postSearch}
                                             onChange={(e) => setPostSearch(e.target.value)}
                                             className="bg-gray-700 border border-gray-600 text-white text-sm rounded-md px-3 py-1.5 pl-8 focus:ring-1 focus:ring-green-500 outline-none w-full"
                                         />
                                         <MagnifyingGlassIcon className="absolute left-2 top-2 w-4 h-4 text-gray-400" />
                                     </div>
-                                    
+
                                     <div className="flex bg-gray-700 rounded-md p-1">
-                                        <button 
+                                        <button
                                             onClick={() => setSortOrder('newest')}
                                             className={`p-1.5 rounded ${sortOrder === 'newest' ? 'bg-gray-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}
                                             title="جدیدترین"
                                         >
                                             <ClockIcon className="w-4 h-4" />
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={() => setSortOrder('popular')}
                                             className={`p-1.5 rounded ${sortOrder === 'popular' ? 'bg-gray-600 text-white shadow' : 'text-gray-400 hover:text-gray-200'}`}
                                             title="محبوب‌ترین"
@@ -264,8 +264,8 @@ const CommunityHubView: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                            
-                             {/* New Post Area */}
+
+                            {/* New Post Area */}
                             <div className="mb-8">
                                 {user ? (
                                     <PostCreator user={user} onPost={onAddNewPost} />
@@ -284,12 +284,12 @@ const CommunityHubView: React.FC = () => {
                             <div className="space-y-6">
                                 {filteredPosts.length > 0 ? (
                                     filteredPosts.map(post => (
-                                        <PostCard 
-                                            key={post.id} 
-                                            post={post} 
-                                            currentUser={user} 
-                                            onToggleFollow={onToggleFollow} 
-                                            onStartConversation={onStartConversation} 
+                                        <PostCard
+                                            key={post.id}
+                                            post={post}
+                                            currentUser={user}
+                                            onToggleFollow={onToggleFollow}
+                                            onStartConversation={onStartConversation}
                                         />
                                     ))
                                 ) : (
@@ -315,16 +315,16 @@ const CommunityHubView: React.FC = () => {
                                 {events.map(event => <EventCard key={event.id} event={event} />)}
                             </div>
                         </section>
-                        
+
                         {/* Featured Members */}
                         <section>
-                             <div className="flex items-center mb-6">
+                            <div className="flex items-center mb-6">
                                 <UsersIcon className="w-7 h-7 text-green-400" />
                                 <h2 className="text-2xl font-bold mr-3">اعضای ویژه</h2>
-                             </div>
-                             <div className="space-y-3">
+                            </div>
+                            <div className="space-y-3">
                                 <p className="text-gray-500">به زودی در این بخش اعضای فعال و تاثیرگذار جامعه معرفی خواهند شد.</p>
-                             </div>
+                            </div>
                         </section>
                     </aside>
                 </div>

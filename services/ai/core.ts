@@ -76,15 +76,22 @@ export async function callProxy(
 
         return await response.json();
     } catch (proxyError: any) {
-        console.warn("Backend Proxy failed/unavailable, switching to Client-Side Fallback (Dev Only).", proxyError.name === 'AbortError' ? 'Request Timed Out' : proxyError.message);
+        // Warning: Proxy failed
+        console.warn("Backend Proxy failed:", proxyError.message);
 
-        // 2. Fallback to Direct Client-Side Call (Only for Local Development / Demo)
-        // Note: OpenRouter doesn't have a direct client SDK here, so we only fallback for Gemini
+        // CHECK: If model is OpenRouter (contains '/'), we CANNOT fallback to GoogleGenAI Client SDK.
+        if (model && model.includes('/')) {
+            throw new Error(`خطا در ارتباط با سرور (Proxy Error). لطفا اینترنت خود را چک کنید. (${proxyError.message})`);
+        }
+
+        console.warn("Attempting Client-Side Fallback (Gemini Only)...");
+
+        // 2. Fallback to Direct Client-Side Call (Gemini Only)
         const apiKey = getGeminiApiKey();
 
         if (!apiKey) {
-            console.error("API Key missing. Ensure VITE_GEMINI_API_KEY is set in .env file.");
-            throw new Error("خطا: ارتباط با سرور هوش مصنوعی برقرار نشد. لطفا تنظیمات اینترنت یا کلیدهای خود را بررسی کنید.");
+            console.error("API Key missing.");
+            throw new Error("خطا: ارتباط با سرور هوش مصنوعی برقرار نشد. (کلید یافت نشد)");
         }
 
         const ai = new GoogleGenAI({ apiKey });
@@ -92,7 +99,7 @@ export async function callProxy(
         try {
             if (action === 'generateContent') {
                 const response = await ai.models.generateContent({
-                    model: model?.includes('/') ? 'gemini-1.5-flash' : (model || 'gemini-1.5-flash'), // Map back if needed
+                    model: model || 'gemini-1.5-flash',
                     contents: data.contents,
                     config: data.config
                 });
@@ -102,7 +109,6 @@ export async function callProxy(
                     functionCalls: response.functionCalls
                 };
             }
-            // Add other fallbacks if needed
             throw new Error(`Fallback not fully implemented for action: ${action}`);
         } catch (clientError: any) {
             console.error("Client-side AI Error:", clientError);

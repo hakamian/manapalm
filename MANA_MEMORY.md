@@ -264,6 +264,20 @@ graph TD
   - ✅ رفع خطاهای تایپی (productId) و لایبری‌های مفقود (AICreationStudio) در مسیر مهاجرت.
 - **نتیجه:** سایت اکنون یک برنامه چندصفحه‌ای مدرن (MPA) با حفظ ویژگی‌های اینتراکتیو SPA است. سئو برای تمام صفحات اصلی فعال شد.
 
+#### 20. AI Chat Widget Comprehensive Fix & Enhancement ✅
+- **تاریخ:** 2025-12-22
+- **مشکل:** خطای "Connection Failed" در لوکال (Port 3002) و عدم رعایت System Prompt توسط OpenRouter.
+- **ریشه یابی:**
+  1. **CORS:** فایل `api/proxy.js` فقط پورت 3000 را مجاز می‌دانست.
+  2. **Vite Proxy:** ویت به پورت 3001 پروکسی می‌کرد که خالی بود (چون API Server ران نبود).
+  3. **System Prompt:** لاجیک OpenRouter پرامپت سیستم را نادیده می‌گرفت.
+- **راه حل:**
+  - ✅ **Local API Server:** ایجاد `local-api-server.js` برای شبیه‌سازی کامل Vercel Function در پورت 3001.
+  - ✅ **Script Update:** اضافه کردن دستور `npm run dev:full` برای اجرای همزمان کلاینت (3002) و سرور (3001).
+  - ✅ **Proxy Logic:** اصلاح `api/proxy.js` برای ارسال صحیح `systemInstruction` به OpenRouter.
+  - ✅ **AI Features:** اعمال قوانین "خلاصه نویسی"، "لینک‌دهی" و "3 گزینه پیشنهادی" در `AIChatWidget`.
+- **نتیجه:** هوش مصنوعی اکنون در محیط لوکال کاملاً فعال است، پاسخ‌های کوتاه و لینک‌دار می‌دهد و ۳ گزینه دقیق پیشنهاد می‌کند.
+
 
 ---
 
@@ -523,6 +537,7 @@ graph TD
 
 | تاریخ | تغییر | توسط |
 |-------|-------|------|
+| 2025-12-22 17:45 | **UI/UX Refinement**: Fix Header Overlap & Crash Handler (pt-32, process.env polyfill) | Mana (Unified OS) |
 | 2025-12-15 17:45 | **PRODUCTION LAUNCH**: نخلستان معنا با موفقیت لانچ شد (V5.1) | Mana (Unified OS) |
 | 2025-12-15 17:28 | Vercel Fix: تنظیم دقیق vite.config.ts برای رفع خطای Build | Mana (Unified OS) |
 | 2025-12-15 16:35 | Security Hardening: حذف کلیدهای هاردکد، Refactor کامل Auth Flow برای رفع Race Condition | Mana (CTO) |
@@ -537,3 +552,21 @@ graph TD
 ---
 
 **🌴 این حافظه زنده است و با هر پیشرفت به‌روزرسانی می‌شود.**
+
+---
+
+### 🏛️ Grandmaster Architect Audit (V5.3)
+
+**Current System Status:**
+- **Core Stability**: ✅ High. The application loads reliably on port 3001.
+- **UI Architecture**: ⚠️ **Hybrid**. We are bypassing the Next.js build pipeline for CSS in favor of a runtime CDN.
+    - *Pro*: Zero build time for styles, instant feedback, no config hell.
+    - *Con*: Larger value payload (downloading full Tailwind engine), no tree-shaking (unused styles included).
+- **UX Integrity**: ✅ **Restored**. The "Portal Strategy" for `WelcomeTour` guarantees visibility over all z-index layers.
+- **Code Hygiene**: ⚠️ **Mixed**. We have `type: module` in `package.json` but some tools expect CommonJS. Thread carefully with new dependencies.
+
+**Strategic Recommendations:**
+1.  **Accept the Hybrid State**: Do not attempt to revert to local Tailwind build until the project is ready for production optimization. The current velocity is more valuable than CSS bundle size.
+2.  **Portal Everything**: Use the `WelcomeTour` pattern (React Portal) for all future Modals, Toasts, and Overlays to avoid stacking context wars.
+3.  **Cleanup Debt**: In the next sprint, remove `postcss.config.mjs` and related failed build artifacts to verify no "dead code" confusion remains.
+

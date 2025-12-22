@@ -6,10 +6,10 @@ import { useAppState, useAppDispatch } from '../AppContext';
 const HerosJourneyView: React.FC = () => {
     const { user } = useAppState();
     const dispatch = useAppDispatch();
-    
+
     const onNavigate = (view: View) => dispatch({ type: 'SET_VIEW', payload: view });
     const onNavigateToProfileTab = (tab: string) => dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: tab });
-    
+
     if (!user) {
         return (
             <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center">
@@ -39,7 +39,7 @@ const HerosJourneyView: React.FC = () => {
             </div>
         );
     }
-    
+
     const journeyCards = [
         {
             icon: <TrophyIcon className="w-12 h-12" />,
@@ -104,7 +104,7 @@ const HerosJourneyView: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-900 text-white pt-22 pb-24">
+        <div className="min-h-screen bg-gray-900 text-white pt-32 pb-24">
             <div className="container mx-auto px-6">
                 <header className="text-center mb-16">
                     <CompassIcon className="w-20 h-20 mx-auto text-green-400 mb-4" />

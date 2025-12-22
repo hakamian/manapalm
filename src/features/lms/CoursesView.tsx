@@ -61,7 +61,7 @@ const CoursesView: React.FC = () => {
     }
 
     return (
-        <div className="min-h-screen bg-gray-950 text-white pt-24 pb-24">
+        <div className="min-h-screen bg-gray-950 text-white header-clearance pb-24">
             <div className="container mx-auto px-6">
                 <div className="mb-12 text-center">
                     <h1 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-teal-400 to-emerald-500">

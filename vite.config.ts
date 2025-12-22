@@ -39,6 +39,9 @@ export default defineConfig(({ mode }) => {
         '@': __dirname,
       }
     },
+    define: {
+      'process.env': {}
+    },
     build: {
       outDir: 'dist',
       assetsDir: 'assets',

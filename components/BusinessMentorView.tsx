@@ -36,8 +36,8 @@ const BusinessMentorView: React.FC = () => {
         const isRealSession = true;
         const topic = selectedTopic || 'استراتژی عمومی';
 
-        dispatch({ 
-            type: 'START_COACHING_SESSION', 
+        dispatch({
+            type: 'START_COACHING_SESSION',
             payload: {
                 role,
                 topic,
@@ -59,7 +59,7 @@ const BusinessMentorView: React.FC = () => {
     };
 
     return (
-        <div className="bg-gray-900 text-white pt-22 pb-24 min-h-screen">
+        <div className="bg-gray-900 text-white pt-32 pb-24 min-h-screen">
             <div className="container mx-auto px-6 max-w-4xl animate-fade-in-up">
                 <header className="text-center mb-12">
                     <div className="inline-block p-4 bg-blue-900/30 rounded-full mb-6 border border-blue-500/30 shadow-[0_0_30px_rgba(59,130,246,0.3)]">
@@ -70,13 +70,13 @@ const BusinessMentorView: React.FC = () => {
                     </h1>
                     <p className="text-lg text-blue-200 max-w-2xl mx-auto font-medium">
                         استراتژی، رشد و حل چالش‌های کسب‌وکار
-                        <br/>
+                        <br />
                         <span className="text-sm opacity-80">(تحلیل داده‌محور و مشاوره اجرایی)</span>
                     </p>
                 </header>
 
                 <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl border border-slate-600 overflow-hidden shadow-2xl relative">
-                     <div className="absolute top-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -ml-16 -mt-16 z-0"></div>
+                    <div className="absolute top-0 left-0 w-64 h-64 bg-blue-500/10 rounded-full blur-3xl -ml-16 -mt-16 z-0"></div>
 
                     <div className="relative z-10 p-8 md:p-12 space-y-10">
                         <div className="space-y-6 text-center">
@@ -91,21 +91,21 @@ const BusinessMentorView: React.FC = () => {
                         <div className="grid md:grid-cols-3 gap-6">
                             <div className="bg-slate-700/30 p-6 rounded-2xl border border-slate-600/50 flex flex-col items-center text-center hover:bg-slate-700/50 transition-colors">
                                 <div className="bg-blue-500/20 p-3 rounded-full mb-3">
-                                     <TargetIcon className="w-6 h-6 text-blue-400"/>
+                                    <TargetIcon className="w-6 h-6 text-blue-400" />
                                 </div>
                                 <h4 className="font-bold text-white mb-1">هدف‌گذاری دقیق</h4>
                                 <p className="text-xs text-gray-400">تعیین KPIs و اهداف قابل سنجش.</p>
                             </div>
                             <div className="bg-slate-700/30 p-6 rounded-2xl border border-slate-600/50 flex flex-col items-center text-center hover:bg-slate-700/50 transition-colors">
                                 <div className="bg-green-500/20 p-3 rounded-full mb-3">
-                                    <TrendingUpIcon className="w-6 h-6 text-green-400"/>
+                                    <TrendingUpIcon className="w-6 h-6 text-green-400" />
                                 </div>
                                 <h4 className="font-bold text-white mb-1">رشد و توسعه</h4>
                                 <p className="text-xs text-gray-400">استراتژی‌های افزایش درآمد.</p>
                             </div>
                             <div className="bg-slate-700/30 p-6 rounded-2xl border border-slate-600/50 flex flex-col items-center text-center hover:bg-slate-700/50 transition-colors">
                                 <div className="bg-amber-500/20 p-3 rounded-full mb-3">
-                                    <ChartBarIcon className="w-6 h-6 text-amber-400"/>
+                                    <ChartBarIcon className="w-6 h-6 text-amber-400" />
                                 </div>
                                 <h4 className="font-bold text-white mb-1">تحلیل چالش‌ها</h4>
                                 <p className="text-xs text-gray-400">یافتن گلوگاه‌های سیستم.</p>
@@ -115,9 +115,9 @@ const BusinessMentorView: React.FC = () => {
                         <div className="bg-slate-800 p-8 rounded-2xl border border-slate-600">
                             <label className="block text-sm font-semibold text-gray-300 mb-4 text-center">در حال حاضر با چه چالش تجاری روبرو هستید؟</label>
                             <div className="relative">
-                                <select 
-                                    value={selectedTopic} 
-                                    onChange={(e) => setSelectedTopic(e.target.value)} 
+                                <select
+                                    value={selectedTopic}
+                                    onChange={(e) => setSelectedTopic(e.target.value)}
                                     className="w-full bg-slate-900 border border-slate-500 text-white rounded-xl focus:ring-blue-500 focus:border-blue-500 block p-4 pr-10 text-lg appearance-none cursor-pointer hover:border-blue-400 transition-colors"
                                 >
                                     <option value="">انتخاب موضوع مشاوره</option>
@@ -130,8 +130,8 @@ const BusinessMentorView: React.FC = () => {
                         </div>
 
                         <div className="text-center">
-                             <button 
-                                onClick={handleStartClick} 
+                            <button
+                                onClick={handleStartClick}
                                 className="w-full md:w-auto px-12 py-5 rounded-full font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 transition-all transform hover:scale-105 shadow-xl shadow-blue-900/50 flex items-center justify-center gap-3 mx-auto text-xl"
                             >
                                 <RocketLaunchIcon className="w-6 h-6 text-white" />
@@ -146,9 +146,9 @@ const BusinessMentorView: React.FC = () => {
                 </div>
 
                 {/* Social Proof / Reviews */}
-                <CourseReviews 
-                    courseId="service-business-mentor" 
-                    onAddReviewClick={() => setIsReviewFormOpen(true)} 
+                <CourseReviews
+                    courseId="service-business-mentor"
+                    onAddReviewClick={() => setIsReviewFormOpen(true)}
                 />
             </div>
 
@@ -164,8 +164,8 @@ const BusinessMentorView: React.FC = () => {
                 productId="p_business_mentor_session"
                 icon={BriefcaseIcon}
             />
-            
-            <AddReviewForm 
+
+            <AddReviewForm
                 isOpen={isReviewFormOpen}
                 onClose={() => setIsReviewFormOpen(false)}
                 courseId="service-business-mentor"

@@ -11,11 +11,11 @@ const AboutView: React.FC = () => {
     const onStartPlantingFlow = () => dispatch({ type: 'START_PLANTING_FLOW' });
 
     return (
-        <div className="bg-gray-900 text-white pt-22 pb-24">
+        <div className="bg-gray-900 text-white pb-24">
             {/* Hero Section */}
             <div className="relative pb-20 bg-cover bg-center" style={{ backgroundImage: "url('https://picsum.photos/seed/palm-grove-sun/1920/1080')" }}>
                 <div className="absolute inset-0 bg-black bg-opacity-70"></div>
-                <div className="relative container mx-auto px-6 text-center">
+                <div className="relative container mx-auto px-6 text-center hero-header-clearance">
                     <h1 className="text-5xl font-bold mb-4">داستان ما: ریشه‌ها در خاک، نگاه به آینده</h1>
                     <p className="text-xl max-w-3xl mx-auto mb-12">
                         ما باور داریم که هر دانه می‌تواند جنگلی را بسازد و هر انسان می‌تواند معنایی عمیق در زندگی خود و دیگران بکارد.

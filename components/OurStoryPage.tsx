@@ -33,9 +33,9 @@ const ImpactStatCard: React.FC<{
             setPage(ctaPage);
         }
     }
-    
+
     return (
-        <div 
+        <div
             className="bg-white dark:bg-stone-800/50 p-8 rounded-2xl shadow-lg text-center relative overflow-hidden"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
@@ -70,14 +70,14 @@ const ImpactStatCard: React.FC<{
 };
 
 const OurStoryPage: React.FC<OurStoryPageProps> = ({ setPage, currentUser, onLoginClick }) => {
-    
+
     const totalPalms = 1250;
     const totalJobs = 45;
     const totalMembers = 2800;
 
     const userPalms = useMemo(() => currentUser?.timeline?.filter(e => e.type === 'palm_planted').length ?? null, [currentUser]);
     const userJobsContribution = useMemo(() => currentUser?.contributions?.length ?? 0 > 0 ? 1 : 0, [currentUser]);
-    
+
     const timelineEvents = [
         { year: '۱۳۹۵', title: 'جرقه ایده', description: 'ایده اولیه نخلستان معنا در ذهن دکتر حمید حکیمیان شکل گرفت: پیوند دادن معنای شخصی با یک حرکت اجتماعی پایدار.' },
         { year: '۱۳۹۷', title: 'تحقیقات و برنامه‌ریزی', description: 'دو سال صرف تحقیقات میدانی، امکان‌سنجی و طراحی مدل کسب‌وکار اجتماعی پروژه شد.' },
@@ -85,16 +85,16 @@ const OurStoryPage: React.FC<OurStoryPageProps> = ({ setPage, currentUser, onLog
         { year: '۱۴۰۱', title: 'شروع تأثیرگذاری', description: 'با مشارکت همراهان، اولین پروژه‌های اشتغال‌زایی محلی کلید خورد و تأثیرات اجتماعی نمایان شد.' },
         { year: '۱۴۰۳', title: 'راه‌اندازی پلتفرم آنلاین', description: 'برای گسترش جنبش و دعوت از افراد بیشتر، وب‌سایت نخلستان معنا به عنوان یک پلتفرم دیجیتال راه‌اندازی شد.' },
     ];
-    
+
     return (
-         <div className="space-y-20 md:space-y-32 pb-16 animate-fade-in">
-            <section className="relative text-center py-24 md:py-32 overflow-hidden bg-stone-800 text-white rounded-3xl">
-                 <div 
+        <div className="header-clearance space-y-20 md:space-y-32 pb-16 animate-fade-in">
+            <section className="relative text-center py-12 md:py-20 overflow-hidden bg-stone-800 text-white rounded-3xl">
+                <div
                     className="absolute inset-0 bg-cover bg-center opacity-20"
-                    style={{backgroundImage: "url('https://images.unsplash.com/photo-1516633630671-d65b75b0660a?q=80&w=2940&auto=format&fit=crop')"}}
+                    style={{ backgroundImage: "url('https://images.unsplash.com/photo-1516633630671-d65b75b0660a?q=80&w=2940&auto=format&fit=crop')" }}
                 ></div>
-                 <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent"></div>
-                
+                <div className="absolute inset-0 bg-gradient-to-t from-stone-900/80 to-transparent"></div>
+
                 <div className="relative container mx-auto px-4 z-10">
                     <QuoteIcon className="w-16 h-16 text-amber-400 mx-auto mb-4" />
                     <blockquote className="text-xl md:text-2xl lg:text-3xl text-stone-100 max-w-4xl mx-auto italic leading-relaxed md:leading-loose">
@@ -103,29 +103,29 @@ const OurStoryPage: React.FC<OurStoryPageProps> = ({ setPage, currentUser, onLog
                     <p className="mt-6 text-lg font-semibold text-amber-300">- دکتر حمید حکیمیان، بنیان‌گذار نخلستان معنا</p>
                 </div>
             </section>
-            
+
             <section className="container mx-auto px-4">
-                 <div className="text-center">
+                <div className="text-center">
                     <h2 className="text-3xl md:text-4xl font-bold text-stone-800 dark:text-stone-100">رسالت ما در سه کلمه</h2>
                 </div>
                 <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div className="text-center p-8 bg-white dark:bg-stone-800/50 rounded-2xl shadow-lg border border-stone-200/50 dark:border-stone-700/50">
                         <div className="inline-block p-4 bg-red-100 dark:bg-red-900/20 rounded-full mb-4">
-                           <HeartIcon className="w-10 h-10 text-red-500 dark:text-red-400"/>
+                            <HeartIcon className="w-10 h-10 text-red-500 dark:text-red-400" />
                         </div>
                         <h3 className="text-xl font-bold mb-2 dark:text-white">معنا</h3>
                         <p className="text-stone-600 dark:text-stone-300">ما به افراد کمک می‌کنیم تا با نمادگرایی و ثبت لحظات مهم، به زندگی خود عمق و معنای بیشتری ببخشند.</p>
                     </div>
-                     <div className="text-center p-8 bg-white dark:bg-stone-800/50 rounded-2xl shadow-lg border border-stone-200/50 dark:border-stone-700/50">
+                    <div className="text-center p-8 bg-white dark:bg-stone-800/50 rounded-2xl shadow-lg border border-stone-200/50 dark:border-stone-700/50">
                         <div className="inline-block p-4 bg-green-100 dark:bg-green-900/20 rounded-full mb-4">
-                            <LeafIcon className="w-10 h-10 text-green-500 dark:text-green-400"/>
+                            <LeafIcon className="w-10 h-10 text-green-500 dark:text-green-400" />
                         </div>
                         <h3 className="text-xl font-bold mb-2 dark:text-white">جنبش</h3>
                         <p className="text-stone-600 dark:text-stone-300">ما یک کسب‌وکار اجتماعی هستیم که سود حاصل از آن را برای اشتغال‌زایی و توانمندسازی جوامع محلی سرمایه‌گذاری می‌کنیم.</p>
                     </div>
-                     <div className="text-center p-8 bg-white dark:bg-stone-800/50 rounded-2xl shadow-lg border border-stone-200/50 dark:border-stone-700/50">
+                    <div className="text-center p-8 bg-white dark:bg-stone-800/50 rounded-2xl shadow-lg border border-stone-200/50 dark:border-stone-700/50">
                         <div className="inline-block p-4 bg-sky-100 dark:bg-sky-900/20 rounded-full mb-4">
-                           <GlobeIcon className="w-10 h-10 text-sky-500 dark:text-sky-400"/>
+                            <GlobeIcon className="w-10 h-10 text-sky-500 dark:text-sky-400" />
                         </div>
                         <h3 className="text-xl font-bold mb-2 dark:text-white">میراث</h3>
                         <p className="text-stone-600 dark:text-stone-300">با هر نخل، میراثی زنده برای نسل‌های آینده و گامی مثبت برای حفاظت از محیط زیست و آبادانی کشور برمی‌داریم.</p>
@@ -160,71 +160,71 @@ const OurStoryPage: React.FC<OurStoryPageProps> = ({ setPage, currentUser, onLog
                     ))}
                 </div>
             </section>
-            
+
             <section className="bg-amber-50 dark:bg-amber-900/10 py-20">
                 <div className="container mx-auto px-4 text-center">
-                     <h2 className="text-3xl md:text-4xl font-bold text-stone-800 dark:text-stone-100">تأثیر ما در یک نگاه</h2>
-                     <p className="text-lg text-stone-600 dark:text-stone-300 mt-3 max-w-2xl mx-auto">اعدادی که داستان تلاش‌ها و همراهی شما را روایت می‌کنند.</p>
-                     <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <ImpactStatCard 
-                           icon={LeafIcon}
-                           color="green"
-                           endValue={totalPalms}
-                           label="نخل کاشته شده"
-                           userStat={userPalms}
-                           userLabel="اصله از این نخل‌ها را کاشته‌اید."
-                           ctaText="تأثیرت را بیشتر کن"
-                           // FIX: Replace string literal with View enum
-                           ctaPage={View.HallOfHeritage}
-                           currentUser={currentUser}
-                           onLoginClick={onLoginClick}
-                           setPage={setPage}
+                    <h2 className="text-3xl md:text-4xl font-bold text-stone-800 dark:text-stone-100">تأثیر ما در یک نگاه</h2>
+                    <p className="text-lg text-stone-600 dark:text-stone-300 mt-3 max-w-2xl mx-auto">اعدادی که داستان تلاش‌ها و همراهی شما را روایت می‌کنند.</p>
+                    <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <ImpactStatCard
+                            icon={LeafIcon}
+                            color="green"
+                            endValue={totalPalms}
+                            label="نخل کاشته شده"
+                            userStat={userPalms}
+                            userLabel="اصله از این نخل‌ها را کاشته‌اید."
+                            ctaText="تأثیرت را بیشتر کن"
+                            // FIX: Replace string literal with View enum
+                            ctaPage={View.HallOfHeritage}
+                            currentUser={currentUser}
+                            onLoginClick={onLoginClick}
+                            setPage={setPage}
                         />
-                        <ImpactStatCard 
-                           icon={BuildingOfficeIcon}
-                           color="sky"
-                           endValue={totalJobs}
-                           label="شغل ایجاد شده"
-                           userStat={userJobsContribution ? 1 : 0}
-                           userLabel="شغل با مشارکت شما ایجاد شده."
-                           ctaText="در پروژه‌ها سهیم شو"
-                           // FIX: Replace string literal with View enum
-                           ctaPage={View['community-projects']}
-                           currentUser={currentUser}
-                           onLoginClick={onLoginClick}
-                           setPage={setPage}
+                        <ImpactStatCard
+                            icon={BuildingOfficeIcon}
+                            color="sky"
+                            endValue={totalJobs}
+                            label="شغل ایجاد شده"
+                            userStat={userJobsContribution ? 1 : 0}
+                            userLabel="شغل با مشارکت شما ایجاد شده."
+                            ctaText="در پروژه‌ها سهیم شو"
+                            // FIX: Replace string literal with View enum
+                            ctaPage={View['community-projects']}
+                            currentUser={currentUser}
+                            onLoginClick={onLoginClick}
+                            setPage={setPage}
                         />
-                         <ImpactStatCard 
-                           icon={UserPlusIcon}
-                           color="purple"
-                           endValue={totalMembers}
-                           label="عضو خانواده نخلستان"
-                           userStat={currentUser ? 1 : null} // User is always 1 member if logged in
-                           userLabel="نفر از این خانواده بزرگ هستید."
-                           ctaText="باغ خود را ببین"
-                           // FIX: Replace string literal with View enum
-                           ctaPage={View.UserProfile}
-                           currentUser={currentUser}
-                           onLoginClick={onLoginClick}
-                           setPage={setPage}
+                        <ImpactStatCard
+                            icon={UserPlusIcon}
+                            color="purple"
+                            endValue={totalMembers}
+                            label="عضو خانواده نخلستان"
+                            userStat={currentUser ? 1 : null} // User is always 1 member if logged in
+                            userLabel="نفر از این خانواده بزرگ هستید."
+                            ctaText="باغ خود را ببین"
+                            // FIX: Replace string literal with View enum
+                            ctaPage={View.UserProfile}
+                            currentUser={currentUser}
+                            onLoginClick={onLoginClick}
+                            setPage={setPage}
                         />
-                     </div>
+                    </div>
                 </div>
             </section>
 
             <section className="container mx-auto px-4">
                 <div className="relative bg-gradient-to-r from-stone-800 to-stone-900 dark:from-stone-800/80 dark:to-stone-900/90 text-white rounded-3xl p-12 text-center shadow-2xl overflow-hidden">
-                     <div className="relative z-10">
+                    <div className="relative z-10">
                         <h2 className="text-3xl md:text-4xl font-bold">شما فصل بعدی این داستان هستید</h2>
                         <p className="mt-4 max-w-xl mx-auto text-stone-300">با کاشتن اولین میراث خود، نه تنها زندگی خود را معنادارتر می‌کنید، بلکه به رشد این جنبش و ساختن آینده‌ای بهتر برای همه ما کمک می‌کنید.</p>
-                         <button onClick={() => setPage(View.HallOfHeritage)} className="mt-8 bg-amber-500 text-white font-bold px-8 py-3 rounded-xl hover:bg-amber-600 transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 mx-auto">
+                        <button onClick={() => setPage(View.HallOfHeritage)} className="mt-8 bg-amber-500 text-white font-bold px-8 py-3 rounded-xl hover:bg-amber-600 transition-all transform hover:scale-105 shadow-lg flex items-center gap-2 mx-auto">
                             <span>بخشی از داستان ما شوید</span>
-                            <ArrowLeftIcon className="w-5 h-5"/>
+                            <ArrowLeftIcon className="w-5 h-5" />
                         </button>
                     </div>
                 </div>
             </section>
-             <style>{`
+            <style>{`
                 @keyframes fade-in {
                     from { opacity: 0; }
                     to { opacity: 1; }

@@ -54,46 +54,44 @@ const AIChatWidget: React.FC = () => {
         setIsLoading(true);
 
         try {
-            const systemInstruction = `You are a friendly and wise AI support agent for "Nakhlestan Ma'na". 
-            Your goal is to guide users through the platform (Heritage, Shop, Academy, Community).
-            Output format: Use Markdown. Use bold for key terms. Keep answers concise (under 3 paragraphs).
-            If listing items, use bullet points.
-            Tone: Helpful, warm, spiritual yet professional.
-            Language: Persian.
+            const systemInstruction = `You are "HoshMana" (هوشمانا), the wise AI guide of "Nakhlestan Ma'na".
             
-            [VISUAL:SYSTEM] You can use visual tags like [VISUAL:TRUST_TRIANGLE] if explaining concepts like trust.
-
-            OPTIONS: At the end, suggest 2-3 follow-up options in format: [OPTIONS: A | B].
-            `;
+            **Directives:**
+            1. **Conciseness**: Answers must be SHORT (max 2-3 sentences). No fluff.
+            2. **Links**: You MUST include Markdown links to sections when relevant:
+               - Shop: [فروشگاه](/shop)
+               - Courses: [آکادمی](/courses)
+               - Profile: [پروفایل](/profile)
+               - Contact: [تماس](/contact)
+            3. **Structure**: Use bullet points for lists. Bold key terms.
+            4. **Tone**: Warm, spiritual, yet efficient. (Persian language).
+            
+            **Mandatory Ending:**
+            At the very end, generate exactly 3 short follow-up options in this format:
+            [OPTIONS: Option 1 | Option 2 | Option 3]`;
 
             const response = await generateText(messageText, false, false, false, systemInstruction);
 
             let text = response.text;
             const optionsMatch = text.match(/\[OPTIONS:(.*?)\]/);
+
             if (optionsMatch) {
                 const opts = optionsMatch[1].split('|').map(s => s.trim());
-                setSuggestions(opts);
+                setSuggestions(opts.slice(0, 3)); // Ensure max 3
                 text = text.replace(/\[OPTIONS:.*?\]/, '').trim();
             } else {
-                // Fallback suggestions logic
-                const lowerText = text.toLowerCase();
-                if (lowerText.includes('نخل') || lowerText.includes('کاشت')) {
-                    setSuggestions(["انواع نخل‌ها", "هزینه کاشت"]);
-                } else if (lowerText.includes('دوره')) {
-                    setSuggestions(["لیست دوره‌ها", "کوچینگ چیست؟"]);
-                } else {
-                    setSuggestions(["بیشتر توضیح بده", "بازگشت به منوی اصلی"]);
-                }
+                // Smart Fallback if AI forgets options
+                setSuggestions(["ورود به فروشگاه", "لیست دوره‌ها", "تماس با ما"]);
             }
 
             const modelMessage: ChatMessage = { role: 'model', text: text };
             setMessages(prev => [...prev, modelMessage]);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("AI chat widget error:", error);
             const errorMessage: ChatMessage = {
                 role: 'model',
-                text: "متاسفانه در حال حاضر ارتباط با سرور برقرار نشد. لطفاً اتصال اینترنت خود را بررسی کنید و دوباره تلاش کنید."
+                text: "متاسفانه ارتباط با دستیار برقرار نشد. لطفاً چند لحظه دیگر تلاش کنید."
             };
             setMessages(prev => [...prev, errorMessage]);
             setSuggestions(["تلاش مجدد"]);
