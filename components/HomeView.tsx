@@ -161,13 +161,13 @@ const HeroSection: React.FC<{ onStartJourneyClick: () => void, user: User | null
                 </div>
 
                 <h1 className="text-5xl md:text-8xl font-bold mb-8 leading-[1.15] text-white animate-fade-in-up">
-                    {user
+                    {mounted && user
                         ? <>سلام <span className="text-gradient-green">{user.name}</span>،<br />به نخلستان خودت خوش آمدی</>
                         : <>نخل بکارید، <span className="text-gradient-gold">اثر بگذارید</span>،<br />جاودانه شوید</>}
                 </h1>
 
                 <p className="text-xl md:text-2xl mb-12 max-w-3xl text-gray-400 font-light leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-                    {user
+                    {mounted && user
                         ? `مسیر معنای شما ادامه دارد. امروز چه میراثی را رشد خواهیم داد؟`
                         : 'ما به شما کمک می‌کنیم با کاشت نخل‌های واقعی در جنوب ایران، هم به محیط زیست کمک کنید، هم اشتغال‌زایی کنید و هم یک یادگاری ابدی بسازید.'}
                 </p>
@@ -175,11 +175,11 @@ const HeroSection: React.FC<{ onStartJourneyClick: () => void, user: User | null
                 <div className="flex flex-col sm:flex-row gap-6 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
                     <button onClick={onStartJourneyClick} className="glass-panel hover:bg-mana-primary/20 text-white font-bold py-5 px-12 rounded-2xl text-xl transition-all duration-500 transform hover:scale-105 hover:shadow-mana-primary/20 border-mana-primary/30 group">
                         <span className="flex items-center gap-3">
-                            {user ? 'ادامه سفر قهرمانی' : 'همین حالا نخل خود را بکارید'}
+                            {mounted && user ? 'ادامه سفر قهرمانی' : 'همین حالا نخل خود را بکارید'}
                             <ArrowLeftIcon className="w-6 h-6 transform group-hover:-translate-x-2 transition-transform" />
                         </span>
                     </button>
-                    {!user && (
+                    {!(mounted && user) && (
                         <button className="bg-white/5 hover:bg-white/10 text-white font-semibold py-5 px-10 rounded-2xl text-xl transition-all border border-white/10 backdrop-blur-md">
                             داستان نخلستان
                         </button>

@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useAppState, useAppDispatch } from '../AppContext';
 import { XMarkIcon, ArrowLeftIcon, ArrowRightIcon } from './icons';
 import { View } from '../types';
@@ -62,8 +63,10 @@ const WelcomeTour: React.FC = () => {
     const [isVisible, setIsVisible] = useState(false);
     const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
     const [isMobile, setIsMobile] = useState(false);
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
+        setMounted(true);
         // Check if tour has been seen
         const hasSeenTour = localStorage.getItem('has_seen_onboarding_tour_v2'); // Increment version to force re-show
 
@@ -142,7 +145,7 @@ const WelcomeTour: React.FC = () => {
         localStorage.setItem('has_seen_onboarding_tour_v2', 'true');
     };
 
-    if (!isVisible) return null;
+    if (!mounted || !isVisible) return null;
 
     // --- Styles ---
 
@@ -153,7 +156,7 @@ const WelcomeTour: React.FC = () => {
         left: 0,
         width: '100vw',
         height: '100vh',
-        zIndex: 100,
+        zIndex: 9999, // Ultra high z-index
         // If not mobile and we have a target, use the hole effect.
         // Otherwise (mobile or no target), just dark overlay.
         backgroundColor: (!isMobile && targetRect) ? 'transparent' : 'rgba(0,0,0,0.7)',
@@ -173,7 +176,7 @@ const WelcomeTour: React.FC = () => {
     // 2. Card Position
     let cardStyle: React.CSSProperties = {
         position: 'fixed',
-        zIndex: 101,
+        zIndex: 10000, // Higher than overlay
         transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
     };
 
@@ -221,11 +224,11 @@ const WelcomeTour: React.FC = () => {
         };
     }
 
-    return (
+    const tourContent = (
         <>
             {/* Spotlight Hole / Dark Overlay */}
             <div style={overlayStyle} className="hidden md:block" />
-            <div className={`fixed inset-0 bg-black/80 z-[99] md:hidden transition-opacity duration-500`} />
+            <div className={`fixed inset-0 bg-black/80 z-[9999] md:hidden transition-opacity duration-500`} />
 
             {/* Content Card */}
             <div
@@ -295,6 +298,9 @@ const WelcomeTour: React.FC = () => {
             `}</style>
         </>
     );
+
+    return createPortal(tourContent, document.body);
 };
+
 
 export default WelcomeTour;

@@ -81,6 +81,11 @@ const CollectiveImpactSection: React.FC = () => {
     const { user, communityStats, personalStats } = useAppState();
     const dispatch = useAppDispatch();
     const [sectionRef, isSectionVisible] = useScrollAnimate(0.3);
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     const onAuthClick = () => dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true });
     const onNavigate = (view: View) => dispatch({ type: 'SET_VIEW', payload: view });
@@ -115,8 +120,8 @@ const CollectiveImpactSection: React.FC = () => {
                             label={stat.label}
                             communityValue={stat.communityValue}
                             personalValue={stat.personalValue}
-                            isLoggedIn={!!user}
-                            hasPlanted={hasPlanted}
+                            isLoggedIn={mounted && !!user}
+                            hasPlanted={mounted && hasPlanted}
                             onLoginClick={onAuthClick}
                             onNavigateToProfileTab={onNavigateToProfileTab}
                             onStartPlantingFlow={onStartPlantingFlow}

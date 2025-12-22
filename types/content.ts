@@ -1,25 +1,25 @@
 
-import { View } from './ui';
+import { View } from './views';
 
 export type TimelineEventType = 'palm_planted' | 'creative_act' | 'reflection' | 'decision' | 'success' | 'memory' | 'community_contribution' | 'course_completed' | 'account_created' | 'appreciation' | 'level_up' | 'mention';
 
 export interface TimelineEvent {
-  id: string;
-  date: string;
-  type: string; 
-  title: string;
-  description: string;
-  details: any;
-  deedId?: string;
-  deedIntention?: string; 
-  userReflection?: {
-      notes: string;
-  };
-  aiReflection?: string;
-  isSharedAnonymously?: boolean;
-  status?: 'pending' | 'approved' | 'rejected';
-  memoryText?: string;
-  memoryImage?: string;
+    id: string;
+    date: string;
+    type: string;
+    title: string;
+    description: string;
+    details: any;
+    deedId?: string;
+    deedIntention?: string;
+    userReflection?: {
+        notes: string;
+    };
+    aiReflection?: string;
+    isSharedAnonymously?: boolean;
+    status?: 'pending' | 'approved' | 'rejected';
+    memoryText?: string;
+    memoryImage?: string;
 }
 
 export interface Deed {
@@ -133,7 +133,7 @@ export interface Notification {
     title: string;
     description: string;
     text: string;
-    date: string; 
+    date: string;
     timestamp: string;
     read: boolean;
     isRead: boolean;

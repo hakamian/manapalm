@@ -1,5 +1,5 @@
 
-import React, { Suspense, useEffect } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { View } from '../../types';
 import { useAppState, useAppDispatch } from '../../AppContext';
 import LoadingSpinner from '../LoadingSpinner'; // Ensure this component exists
@@ -61,6 +61,11 @@ const MainContent: React.FC = () => {
     } = useAppState();
 
     const dispatch = useAppDispatch();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
 
     // Check for payment callback in URL
     useEffect(() => {
@@ -151,7 +156,7 @@ const MainContent: React.FC = () => {
 
     return (
         <Suspense fallback={<div className="min-h-screen pt-20 flex items-center justify-center bg-gray-900"><LoadingSpinner /></div>}>
-            {renderView()}
+            {mounted ? renderView() : <HomeView />}
         </Suspense>
     );
 };

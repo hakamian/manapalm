@@ -1,16 +1,13 @@
 import React from 'react';
 import { Providers } from './providers';
 import Script from 'next/script';
-import '../index.css';
+import './globals.css';
+import ClientWrapper from '../components/ClientWrapper';
 
 export const metadata = {
     title: 'نخلستان معنا | Nakhlestan Ma\'na',
     description: 'پلتفرم جامع معنا، کسب‌و‌کار و زندگی، مسئولیت اجتماعی و کاشت نخل',
 };
-
-import Header from '../components/Header';
-import Footer from '../components/Footer';
-import LiveActivityBanner from '../components/LiveActivityBanner';
 
 export default function RootLayout({
     children,
@@ -24,6 +21,23 @@ export default function RootLayout({
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
                 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet" />
                 <link rel="icon" href="https://picsum.photos/seed/nakhlestan-logo/32/32" />
+                <script src="https://cdn.tailwindcss.com"></script>
+                <script dangerouslySetInnerHTML={{
+                    __html: `
+                    tailwind.config = {
+                        theme: {
+                            extend: {
+                                colors: {
+                                    'mana-primary': '#10b981',
+                                    'mana-primary-dark': '#065f46',
+                                    'mana-accent': '#fbbf24',
+                                    'mana-bg': '#050505',
+                                }
+                            }
+                        }
+                    }
+                    `
+                }} />
 
                 <style dangerouslySetInnerHTML={{
                     __html: `
@@ -67,28 +81,12 @@ export default function RootLayout({
             </head>
             <body>
                 <Providers>
-                    <div className="relative min-h-screen text-white overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-100">
-                        {/* 1. Atmospheric Background */}
-                        <div className="aurora-bg">
-                            <div className="aurora-blob blob-1"></div>
-                            <div className="aurora-blob blob-2"></div>
-                            <div className="aurora-blob blob-3"></div>
-                        </div>
-                        <div className="noise-overlay"></div>
-
-                        <LiveActivityBanner />
-                        <Header />
-
-                        <div className="relative z-10">
-                            {children}
-                        </div>
-
-                        <Footer />
-                    </div>
+                    <ClientWrapper>
+                        {children}
+                    </ClientWrapper>
                 </Providers>
 
                 {/* External External Scripts (Boring Solution - Keep legacy JS) */}
-                <Script src="https://cdn.tailwindcss.com" strategy="beforeInteractive" />
                 <Script src="https://upload-widget.cloudinary.com/global/all.js" strategy="lazyOnload" />
                 <Script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js" strategy="lazyOnload" />
             </body>

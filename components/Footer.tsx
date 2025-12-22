@@ -116,7 +116,7 @@ const Footer: React.FC = () => {
                 </div>
 
                 <div className="mt-12 border-t border-gray-700 pt-6 text-center text-sm">
-                    <p>&copy; {new Date().getFullYear()} نخلستان معنا. تمام حقوق محفوظ است.</p>
+                    <p>&copy; 2025 نخلستان معنا. تمام حقوق محفوظ است.</p>
                 </div>
             </div>
         </footer>

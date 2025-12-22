@@ -1,5 +1,6 @@
 
 export * from './ui';
+export * from './views';
 export * from './user';
 export * from './commerce';
 export * from './content';
@@ -8,7 +9,8 @@ export * from './education';
 export * from './ai';
 
 import { User, PointLog, Contribution } from './user';
-import { View, AppSettings, SiteConfig, CoachingRole, NavCategory, Achievement, CommunityProject, AdminKPIs, FunnelStep, DailyChestReward, LiveActivity } from './ui';
+import { View, Page } from './views';
+import { AppSettings, SiteConfig, CoachingRole, NavCategory, Achievement, CommunityProject, AdminKPIs, FunnelStep, DailyChestReward, LiveActivity } from './ui';
 import { Order, CartItem, Product, Campaign, PalmType, MicrofinanceProject, HeritageItem, OrderStatus, ImpactCategory } from './commerce';
 import { Notification, CommunityEvent, CommunityPost, Deed, DeedUpdate, ProjectProposal, TimelineEvent, Review } from './content';
 import { Course, CoursePersonalization, WebDevProject, LMSLesson, TargetLanguage, MentorshipRequest } from './education';

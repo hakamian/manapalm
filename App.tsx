@@ -1,27 +1,37 @@
 
+'use client';
+
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { View, DailyChestReward, PointLog } from './types';
 import { useAppState, useAppDispatch } from './AppContext';
-import Header from './components/Header';
-import Footer from './components/Footer';
+import { REFERENCE_DATE_STR } from './utils/dummyData';
 import AuthModal from './src/features/auth/AuthModal';
 import DailyMysteryChest from './components/DailyMysteryChest';
 import MainContent from './components/layout/MainContent';
 import GlobalModals from './components/layout/GlobalModals';
 import WelcomeTour from './components/WelcomeTour';
-import LiveActivityBanner from './components/LiveActivityBanner';
 import AIChatWidget from './components/AIChatWidget';
 import MeaningCompanionWidget from './components/MeaningCompanionWidget';
-import BottomNavBar from './components/BottomNavBar';
 import CommandPalette from './components/CommandPalette';
-import WhatsNewModal from './components/WhatsNewModal'; // New Import
+import WhatsNewModal from './components/WhatsNewModal';
 import { supabase } from './services/supabaseClient';
 import { useRouteSync } from './hooks/useRouteSync';
 import SEOIndex from './components/seo/SEOIndex';
 
+const BottomNavBar = dynamic(() => import('./components/BottomNavBar'), { ssr: false });
+
 const App: React.FC = () => {
     const state = useAppState();
     const dispatch = useAppDispatch();
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+        console.log('✅ App.tsx mounted');
+        console.log('Current view:', state.currentView);
+        console.log('User:', state.user);
+    }, []);
 
     useRouteSync();
 
@@ -29,7 +39,7 @@ const App: React.FC = () => {
 
     const canClaimChest = useMemo(() => {
         if (!user) return false;
-        const today = new Date().toISOString().split('T')[0];
+        const today = (typeof window === 'undefined' ? REFERENCE_DATE_STR : new Date().toISOString()).split('T')[0];
         return user.lastDailyChestClaimed !== today;
     }, [user]);
 
@@ -212,15 +222,15 @@ const App: React.FC = () => {
                 <MainContent />
             </div>
 
-            {user && canClaimChest && (
+            {mounted && user && canClaimChest && (
                 <DailyMysteryChest
                     streak={user.dailyStreak || 0}
                     onClaim={handleClaimDailyReward}
                 />
             )}
 
-            <AIChatWidget />
-            {user && <MeaningCompanionWidget />}
+            {mounted && <AIChatWidget />}
+            {mounted && user && <MeaningCompanionWidget />}
             <BottomNavBar />
 
             <GlobalModals onLoginSuccess={handleLoginSuccess} />

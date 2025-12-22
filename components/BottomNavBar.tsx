@@ -60,14 +60,6 @@ const BottomNavBar: React.FC = () => {
         { page: View.PathOfMeaning, label: 'مسیر', icon: CompassIcon },
     ];
 
-    const [mounted, setMounted] = useState(false);
-
-    useEffect(() => {
-        setMounted(true);
-    }, []);
-
-    if (!mounted) return null;
-
     return (
         <div className={`fixed bottom-0 left-0 right-0 h-20 bg-gray-900/80 backdrop-blur-lg border-t border-gray-700/50 z-40 transition-transform duration-300 ease-in-out md:hidden ${isBottomNavVisible ? 'translate-y-0' : 'translate-y-full'}`}>
             <style>{`

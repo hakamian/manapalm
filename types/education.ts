@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { View } from './ui';
+import { View } from './views';
 
 export interface Course {
     id: string;
@@ -20,7 +20,7 @@ export interface Course {
     coverGradient?: string;
     icon?: React.FC<any>;
     targetAudience?: string;
-    syllabus?: string[]; 
+    syllabus?: string[];
 }
 
 export interface BusinessModule {
@@ -41,8 +41,8 @@ export interface LMSModule {
     description: string;
     lessons: LMSLesson[];
     quiz?: { question: string; options: string[]; correctAnswer: number }[];
-    summary?: string; 
-    keyConcepts?: string[]; 
+    summary?: string;
+    keyConcepts?: string[];
 }
 
 export interface LMSLesson {
@@ -96,8 +96,8 @@ export interface WebDevProject {
         keyFeatures: string;
     };
     prototype?: {
-        colors: {hex: string; name: string}[];
-        fonts: {name: string; type: string}[];
+        colors: { hex: string; name: string }[];
+        fonts: { name: string; type: string }[];
         tagline: string;
         layout: string[];
         imageUrl: string;
