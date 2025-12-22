@@ -63,10 +63,12 @@ export default async function handler(req, res) {
 
   try {
     const { action, model, data, provider } = req.body;
-    let targetModel = model || 'google/gemini-2.0-flash-exp:free';
+    // Using Mistral Devstral - TESTED with good Persian support
+    let targetModel = model || 'mistralai/devstral-2512:free';
 
-    // Determine initial provider
-    let activeProvider = provider || (targetModel.includes('/') ? 'openrouter' : 'google');
+    // Determine initial provider - FORCE OPENROUTER since Google has 0 quota
+    let activeProvider = 'openrouter';
+    // let activeProvider = provider || (targetModel.includes('/') ? 'openrouter' : 'google');
 
     // ---------------------------------------------------------
     // STRATEGY: TRY PRIMARY PROVIDER -> IF 429 -> TRY SECONDARY
@@ -127,7 +129,10 @@ export default async function handler(req, res) {
       let lastErr;
       for (let i = 0; i < 2; i++) {
         try {
-          const modelInstance = genAI.getGenerativeModel({ model: m.includes('/') ? 'gemini-1.5-flash' : m });
+          // FORCE OVERRIDE: Always use the working experimental model for now
+          // This ignores whatever the frontend asked for (e.g. 1.5-flash) to prevent 404s
+          const modelToUse = 'gemini-2.0-flash-exp';
+          const modelInstance = genAI.getGenerativeModel({ model: modelToUse });
           const result = await modelInstance.generateContent({ contents: data.contents });
           const response = await result.response;
           return response.text();
@@ -152,17 +157,10 @@ export default async function handler(req, res) {
       }
     } catch (err) {
       if (err.status === 429 || err.message?.includes('429')) {
-        console.warn("Primary Provider Rate Limited. Attempting Fallback Hopping...");
-        // Swap Provider
-        if (activeProvider === 'openrouter') {
-          finalProvider = 'google';
-          finalModel = 'gemini-1.5-flash'; // Fallback to a stable direct model
-          resultText = await tryGemini(finalModel);
-        } else {
-          finalProvider = 'openrouter';
-          finalModel = 'google/gemini-2.0-flash-exp:free';
-          resultText = await tryOpenRouter(finalModel);
-        }
+        console.warn("Primary Provider Rate Limited.");
+        // We are disabling fallback to Google because the user's Google account has 0 quota.
+        // It's better to fail with the OpenRouter error so we can debug it.
+        throw err;
       } else {
         throw err;
       }

@@ -1,44 +1,45 @@
-// List available models from Gemini API
-const apiKey = 'AIzaSyCtTfiS2C9wFSrt0ZoHklmPSm70pa8WYUk';
 
-async function listAvailableModels() {
-    console.log('🔍 Fetching list of available Gemini models...\n');
+import dotenv from 'dotenv';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-    const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`;
+dotenv.config();
+
+const key = process.env.GEMINI_API_KEY;
+
+async function listModels() {
+    if (!key) {
+        console.error("API Key missing");
+        return;
+    }
+
+    const genAI = new GoogleGenerativeAI(key);
 
     try {
-        const response = await fetch(url);
+        console.log("Fetching available models...");
+        // Use the model manager to list models
+        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+        // Note: The SDK doesn't expose listModels directly on the main instance in all versions, 
+        // but let's try a direct fetch if the SDK method isn't obvious, 
+        // strictly speaking usually it's passed to the constructor or via a specific manager.
+        // Actually, let's try a simple REST call to be sure, avoiding SDK version quirks.
+
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${key}`);
         const data = await response.json();
 
-        if (response.ok && data.models) {
-            console.log(`✅ Found ${data.models.length} models:\n`);
-
-            data.models.forEach((model, index) => {
-                console.log(`${index + 1}. ${model.name}`);
-                console.log(`   Display Name: ${model.displayName || 'N/A'}`);
-                console.log(`   Supported Methods: ${model.supportedGenerationMethods?.join(', ') || 'N/A'}`);
-                console.log('');
+        if (data.models) {
+            console.log("✅ Available Models:");
+            data.models.forEach(m => {
+                if (m.supportedGenerationMethods && m.supportedGenerationMethods.includes("generateContent")) {
+                    console.log(` - ${m.name.replace('models/', '')}`);
+                }
             });
-
-            // Find models that support generateContent
-            const contentModels = data.models.filter(m =>
-                m.supportedGenerationMethods?.includes('generateContent')
-            );
-
-            console.log('\n📝 Models that support generateContent:');
-            contentModels.forEach(m => {
-                console.log(`   - ${m.name}`);
-            });
-
         } else {
-            console.log('❌ FAILED!');
-            console.log('Status:', response.status);
-            console.log('Response:', JSON.stringify(data, null, 2));
+            console.error("❌ Failed to list models:", data);
         }
+
     } catch (error) {
-        console.log('\n❌ ERROR!');
-        console.log(error.message);
+        console.error("❌ Error listing models:", error.message);
     }
 }
 
-listAvailableModels();
+listModels();

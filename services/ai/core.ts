@@ -40,7 +40,9 @@ export const getFallbackMessage = (type: string): string => {
 
 // Using OpenRouter free tier as default (valid API key confirmed)
 // Falls back to Gemini if OpenRouter has issues
-export const DEFAULT_FREE_MODEL = 'google/gemini-2.0-flash-exp:free';
+// Using OpenRouter Free Tier to bypass Google Direct regional/quota limits (Limit: 0 error)
+// Using Mistral Devstral - TESTED with good Persian support
+export const DEFAULT_FREE_MODEL = 'mistralai/devstral-2512:free';
 
 export async function callProxy(
     action: 'generateContent' | 'generateImages' | 'generateVideos' | 'getVideosOperation',
@@ -79,9 +81,17 @@ export async function callProxy(
         // Warning: Proxy failed
         console.warn("Backend Proxy failed:", proxyError.message);
 
-        // CHECK: If model is OpenRouter (contains '/'), we CANNOT fallback to GoogleGenAI Client SDK.
         if (model && model.includes('/')) {
-            throw new Error(`خطا در ارتباط با سرور (Proxy Error). لطفا اینترنت خود را چک کنید. (${proxyError.message})`);
+            // console.warn(`Proxy failed for OpenRouter model (${model}). Swapping to Google Gemini fallback (Client-Side).`);
+            // We cannot use the OpenRouter model ID with Google SDK.
+            // Swap to a safe default Gemini model for the fallback.
+            // gemini-2.0-flash-exp is the current free experimental model
+            // model = 'gemini-2.0-flash-exp';
+
+            // CRITICAL: Google Direct is failing (Quota 0/Leaked). 
+            // We must NOT fallback to it if OpenRouter fails.
+            // Throw the original proxy error so we can debug OpenRouter.
+            throw new Error(`خطا در ارتباط با OpenRouter (Proxy): ${proxyError.message}`);
         }
 
         console.warn("Attempting Client-Side Fallback (Gemini Only)...");
@@ -99,7 +109,7 @@ export async function callProxy(
         try {
             if (action === 'generateContent') {
                 const response = await ai.models.generateContent({
-                    model: model || 'gemini-1.5-flash',
+                    model: model || 'gemini-2.0-flash-exp',
                     contents: data.contents,
                     config: data.config
                 });

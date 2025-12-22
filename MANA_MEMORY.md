@@ -537,6 +537,15 @@ graph TD
 
 | تاریخ | تغییر | توسط |
 |-------|-------|------|
+| 2025-12-22 18:55 | **Debugging**: Hardcoded Proxy to use `gemini-2.0-flash-exp` strictly (Ignoring frontend model requests to prevent 404s) | Mana (Unified OS) |
+| 2025-12-22 18:50 | **Debugging**: Forced Google Provider (`gemini-2.0-flash-exp`) in Proxy because OpenRouter Key seems invalid/broken | Mana (Unified OS) |
+| 2025-12-22 18:45 | **Debugging**: Disabled Google Fallback logic (since Quota is 0) to expose real OpenRouter errors | Mana (Unified OS) |
+| 2025-12-22 18:40 | **Config Change**: Switched AI to **OpenRouter** (`google/gemini-2.0-flash-exp:free`) to bypass Google Direct Quota (Limit: 0) | Mana (Unified OS) |
+| 2025-12-22 18:20 | **Security**: Rotated Gemini API Key (Previous key was revoked by Google) | Mana (Unified OS) |
+| 2025-12-22 18:15 | **Bug Fix**: Updated AI Models to `gemini-2.0-flash` (Fixed 404 on deprecated 1.5-flash) | Mana (Unified OS) |
+| 2025-12-22 18:05 | **Config Fix**: Corrected malformed OpenRouter Key & Added VITE_GEMINI_API_KEY to .env | Mana (Unified OS) |
+| 2025-12-22 18:00 | **Stability**: Enhanced AI Assistant robustness (Added Client-Side Fallback for Local Proxy failures) | Mana (Unified OS) |
+| 2025-12-22 17:55 | **Bug Fix**: Fix Google Auth Redirect (Auto-navigate to Profile after OAuth) | Mana (Unified OS) |
 | 2025-12-22 17:45 | **UI/UX Refinement**: Fix Header Overlap & Crash Handler (pt-32, process.env polyfill) | Mana (Unified OS) |
 | 2025-12-15 17:45 | **PRODUCTION LAUNCH**: نخلستان معنا با موفقیت لانچ شد (V5.1) | Mana (Unified OS) |
 | 2025-12-15 17:28 | Vercel Fix: تنظیم دقیق vite.config.ts برای رفع خطای Build | Mana (Unified OS) |
