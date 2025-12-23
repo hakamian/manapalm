@@ -218,12 +218,14 @@ export const dbAdapter = {
         return data.map((o: any) => ({
             id: o.id,
             userId: o.user_id,
-            total: o.total_amount,
+            totalAmount: o.total_amount,
+            total: o.total_amount, // compatibility
             status: o.status,
             items: safeParse(o.items, []),
-            date: o.created_at,
+            createdAt: o.created_at,
+            date: o.created_at, // compatibility
             statusHistory: safeParse(o.status_history, [{ status: o.status, date: o.created_at }]),
-            deeds: [] // Deeds usually fetched separately or joined
+            deeds: []
         }));
     },
 
@@ -310,7 +312,7 @@ export const dbAdapter = {
             name: p.name,
             price: p.price,
             category: p.category,
-            image: p.image_url, // Map from DB snake_case to App camelCase
+            image: p.image_url,
             description: p.description,
             type: p.type || 'physical',
             stock: p.stock,
@@ -319,7 +321,8 @@ export const dbAdapter = {
             dateAdded: p.created_at,
             tags: p.tags || [],
             downloadUrl: p.download_url,
-            fileType: p.file_type
+            fileType: p.file_type,
+            isActive: p.is_active ?? true
         }));
     },
 
