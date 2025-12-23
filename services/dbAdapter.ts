@@ -428,6 +428,33 @@ export const dbAdapter = {
         });
     },
 
+    async spendAICredits(seconds: number): Promise<boolean> {
+        if (!this.isLive()) return true;
+        const userId = this.getCurrentUserId();
+        if (!userId) return false;
+
+        const user = await this.getUserById(userId);
+        if (!user) return false;
+
+        const currentSeconds = user.hoshmanaLiveAccess?.remainingSeconds || 0;
+        const newSeconds = Math.max(0, currentSeconds - seconds);
+
+        const metadata = {
+            ...(user as any).metadata,
+            hoshmanaLiveAccess: {
+                ...(user.hoshmanaLiveAccess || {}),
+                remainingSeconds: newSeconds
+            }
+        };
+
+        const { error } = await supabase!.from('profiles').update({ metadata }).eq('id', userId);
+        if (error) {
+            console.error('Error deducting AI credits:', error.message);
+            return false;
+        }
+        return true;
+    },
+
     // --- LOCAL STORAGE HELPERS (Session Management) ---
     getCurrentUserId(): string | null {
         return localStorage.getItem('nakhlestan_current_user_id');

@@ -1,35 +1,30 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
+import OpenAI from 'openai';
+import { createClient } from '@supabase/supabase-js';
 
-// Allowed models whitelist for Gemini
+// --- CONFIGURATION ---
 const GEMINI_MODELS = [
-  'gemini-2.1-flash',
-  'gemini-2.5-flash-lite',
-  'gemini-2.5-flash-preview-09-2025',
-  'gemini-2.0-flash',
+  'gemini-2.0-flash-exp',
   'gemini-1.5-flash',
-  'gemini-1.5-pro',
-  'gemini-pro',
-  'gemini-pro-vision'
+  'gemini-1.5-pro'
 ];
 
+// Initialize Supabase Client (For server-side user verification)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.VITE_SUPABASE_ANON_KEY;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // Only if you have it in Vercel for bypassing RLS
 
-// Helper for delay
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Helper for fetching with retry and timeout
 async function fetchWithRetry(url, options, maxRetries = 2) {
   let lastError;
   for (let i = 0; i <= maxRetries; i++) {
     try {
-      if (i > 0) await delay(1000 * Math.pow(2, i)); // Exponential backoff
+      if (i > 0) await delay(1000 * Math.pow(2, i));
       const response = await fetch(url, options);
-
-      // If we get a 429 (Rate Limit), we only retry if we haven't exhausted retries
-      if (response.status === 429 && i < maxRetries) {
-        console.warn(`Rate limited (429). Retry attempt ${i + 1}...`);
-        continue;
-      }
-
+      if (response.status === 429 && i < maxRetries) continue;
       return response;
     } catch (error) {
       lastError = error;
@@ -40,127 +35,134 @@ async function fetchWithRetry(url, options, maxRetries = 2) {
 }
 
 export default async function handler(req, res) {
-  // 1. CORS & Security Headers
+  // 1. CORS & Security
   res.setHeader('Access-Control-Allow-Credentials', true);
   const allowedOrigins = ['https://manapalm.com', 'http://localhost:3000', 'http://localhost:3001', 'http://localhost:3002', 'https://nakhlestan-mana.com'];
   const origin = req.headers.origin;
-
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  }
-
+  if (allowedOrigins.includes(origin)) res.setHeader('Access-Control-Allow-Origin', origin);
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-user-id');
 
-  if (req.method === 'OPTIONS') {
-    res.status(200).end();
-    return;
-  }
-
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
     const { action, model, data, provider } = req.body;
-    // Using Mistral Devstral - TESTED with good Persian support
-    let targetModel = model || 'mistralai/devstral-2512:free';
+    const authHeader = req.headers.authorization;
+    const userIdHeader = req.headers['x-user-id'];
 
-    // Determine initial provider - FORCE OPENROUTER since Google has 0 quota
-    let activeProvider = 'openrouter';
-    // let activeProvider = provider || (targetModel.includes('/') ? 'openrouter' : 'google');
+    let userTier = 'free';
+    let remainingSeconds = 0;
+    let userId = userIdHeader;
 
-    // ---------------------------------------------------------
-    // STRATEGY: TRY PRIMARY PROVIDER -> IF 429 -> TRY SECONDARY
-    // ---------------------------------------------------------
+    // 2. IDENTITY & QUOTA CHECK
+    if (authHeader) {
+      // Extract Token (Bearer ...)
+      const token = authHeader.replace('Bearer ', '');
+      const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+      if (!authError && user) {
+        userId = user.id;
+        // Fetch remaining seconds from profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('metadata, is_admin')
+          .eq('id', user.id)
+          .single();
+
+        if (profile) {
+          const metadata = profile.metadata || {};
+          remainingSeconds = metadata.hoshmanaLiveAccess?.remainingSeconds || 0;
+          if (profile.is_admin || remainingSeconds > 0) {
+            userTier = 'premium';
+          }
+        }
+      }
+    }
+
+    // 3. PROVIDER SELECTION STRATEGY
+    let activeProvider = provider || (userTier === 'premium' ? 'openai' : 'openrouter');
+    let targetModel = model;
+
+    if (activeProvider === 'openai' && !targetModel) targetModel = 'gpt-4o-mini';
+    if (activeProvider === 'openrouter' && !targetModel) targetModel = 'mistralai/devstral-2512:free';
+    if (activeProvider === 'google' && !targetModel) targetModel = 'gemini-2.0-flash-exp';
 
     let resultText = null;
-    let finalProvider = activeProvider;
-    let finalModel = targetModel;
 
-    const tryOpenRouter = async (m) => {
-      const openRouterKey = process.env.OPENROUTER_API_KEY;
-      if (!openRouterKey) throw new Error('OpenRouter Key Missing');
+    // --- PROVIDER HANDLERS ---
 
-      // Construct Messages
-      let messages = [];
+    const tryOpenAI = async (m) => {
+      const openai = new OpenAI({ apiKey: process.env.OPEN_API_KEY || process.env.OPENAI_API_KEY });
 
-      // Add System Prompt if exists
-      if (data.config && data.config.systemInstruction) {
-        messages.push({ role: "system", content: data.config.systemInstruction });
-      }
-
-      // Add Conversation History
-      const userMessages = data.contents.map(c => ({
-        role: c.role === 'model' ? 'assistant' : c.role,
+      // Convert contents to OpenAI format
+      const messages = data.contents.map(c => ({
+        role: c.role === 'model' ? 'assistant' : 'user',
         content: typeof c.parts[0].text === 'string' ? c.parts[0].text : JSON.stringify(c.parts[0])
       }));
 
-      messages = messages.concat(userMessages);
+      if (data.config?.systemInstruction) {
+        messages.unshift({ role: 'system', content: data.config.systemInstruction });
+      }
+
+      const completion = await openai.chat.completions.create({
+        model: m,
+        messages: messages,
+        temperature: data.config?.temperature || 0.7,
+      });
+
+      // TODO: Deduct seconds from Supabase here (Optional: do it background/post-response)
+      return completion.choices[0].message.content;
+    };
+
+    const tryOpenRouter = async (m) => {
+      const openRouterKey = process.env.OPENROUTER_API_KEY;
+      const messages = data.contents.map(c => ({
+        role: c.role === 'model' ? 'assistant' : 'user',
+        content: typeof c.parts[0].text === 'string' ? c.parts[0].text : JSON.stringify(c.parts[0])
+      }));
 
       const response = await fetchWithRetry("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${openRouterKey}`,
-          "HTTP-Referer": "https://manapalm.com",
-          "X-Title": "Nakhlestan Mana",
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          "model": m,
-          "messages": messages,
-          "temperature": data.config?.temperature || 0.7,
+          model: m,
+          messages: messages,
+          temperature: data.config?.temperature || 0.7,
         })
       });
 
-      if (response.status === 429) throw { status: 429, message: 'OpenRouter Rate Limit' };
       const resData = await response.json();
-      if (resData.error) throw new Error(resData.error.message || 'OpenRouter Error');
       return resData.choices[0].message.content;
     };
 
     const tryGemini = async (m) => {
-      const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
-      if (!apiKey) throw new Error('Gemini Key Missing');
-
+      const apiKey = process.env.GEMINI_API_KEY || "AIzaSyAm0R_nTy51zh09seInVwYE0IY8He29VYY"; // Local/Production key
       const genAI = new GoogleGenerativeAI(apiKey);
-      // Note: SDK doesn't natively support easy retry on 429 without custom wrapper
-      // but we can wrap the call
-      let lastErr;
-      for (let i = 0; i < 2; i++) {
-        try {
-          // FORCE OVERRIDE: Always use the working experimental model for now
-          // This ignores whatever the frontend asked for (e.g. 1.5-flash) to prevent 404s
-          const modelToUse = 'gemini-2.0-flash-exp';
-          const modelInstance = genAI.getGenerativeModel({ model: modelToUse });
-          const result = await modelInstance.generateContent({ contents: data.contents });
-          const response = await result.response;
-          return response.text();
-        } catch (err) {
-          lastErr = err;
-          if (err.message?.includes('429') && i < 1) {
-            await delay(2000);
-            continue;
-          }
-          throw err;
-        }
-      }
-      throw lastErr;
+      const modelInstance = genAI.getGenerativeModel({ model: m || 'gemini-1.5-flash' });
+      const result = await modelInstance.generateContent({ contents: data.contents });
+      const response = await result.response;
+      return response.text();
     };
 
-    // EXECUTION WITH FALLBACK
+    // 4. EXECUTION
     try {
-      if (activeProvider === 'openrouter') {
-        resultText = await tryOpenRouter(targetModel);
-      } else {
+      if (activeProvider === 'openai') {
+        resultText = await tryOpenAI(targetModel);
+      } else if (activeProvider === 'google') {
         resultText = await tryGemini(targetModel);
+      } else {
+        resultText = await tryOpenRouter(targetModel);
       }
     } catch (err) {
-      if (err.status === 429 || err.message?.includes('429')) {
-        console.warn("Primary Provider Rate Limited.");
-        // We are disabling fallback to Google because the user's Google account has 0 quota.
-        // It's better to fail with the OpenRouter error so we can debug it.
-        throw err;
+      console.error(`Provider ${activeProvider} failed:`, err.message);
+      // Fallback to Free OpenRouter if premium fails
+      if (activeProvider !== 'openrouter') {
+        resultText = await tryOpenRouter('mistralai/devstral-2512:free');
+        activeProvider = 'openrouter (fallback)';
       } else {
         throw err;
       }
@@ -168,16 +170,16 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       text: resultText,
-      provider: finalProvider,
-      model: finalModel,
-      isFallback: finalProvider !== activeProvider
+      provider: activeProvider,
+      tier: userTier,
+      remainingSeconds
     });
 
   } catch (error) {
     console.error('Final Proxy Error:', error);
-    return res.status(error.status || 500).json({
-      error: error.message || 'AI Service Exhausted',
-      suggestion: 'سیستم در حال حاضر بیش از حد مشغول است. لطفا ۶۰ ثانیه دیگر تلاش کنید.'
+    return res.status(500).json({
+      error: error.message || 'AI Service Error',
+      suggestion: 'خطا در ارتباط با هوش مصنوعی. لطفا لحظاتی دیگر تلاش کنید.'
     });
   }
 }

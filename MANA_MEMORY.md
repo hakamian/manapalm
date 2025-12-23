@@ -537,6 +537,7 @@ graph TD
 
 | تاریخ | تغییر | توسط |
 |-------|-------|------|
+| 2025-12-22 19:30 | **✅ AI Fixed**: Switched to `mistralai/devstral-2512:free` via OpenRouter (Google quota=0, tested models) | Mana (Unified OS) |
 | 2025-12-22 18:55 | **Debugging**: Hardcoded Proxy to use `gemini-2.0-flash-exp` strictly (Ignoring frontend model requests to prevent 404s) | Mana (Unified OS) |
 | 2025-12-22 18:50 | **Debugging**: Forced Google Provider (`gemini-2.0-flash-exp`) in Proxy because OpenRouter Key seems invalid/broken | Mana (Unified OS) |
 | 2025-12-22 18:45 | **Debugging**: Disabled Google Fallback logic (since Quota is 0) to expose real OpenRouter errors | Mana (Unified OS) |
