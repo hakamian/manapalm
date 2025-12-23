@@ -95,7 +95,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                 });
 
                 const data = await response.json();
-                if (!response.ok) throw new Error(data.error || 'خطا در ارسال پیامک');
+                if (!response.ok) throw new Error(data.message || data.error || 'خطا در ارسال پیامک');
 
                 setStep(2);
 

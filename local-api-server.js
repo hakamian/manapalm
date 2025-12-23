@@ -19,6 +19,30 @@ app.use(cors({
 }));
 
 // Mock Vercel Request/Response if needed, but Express is close enough
+// --- OTP & SMS Endpoints for Local Dev ---
+app.post('/api/auth/otp', async (req, res) => {
+    console.log(`[Local API] Received POST /api/auth/otp`);
+    // Mocking the behavior for local-api-server (Express)
+    // In production/Next.js it uses the actual app/api/auth/otp/route.ts
+    const { action, mobile, code } = req.body;
+
+    // For local testing, we can just call a simple version or proxies to the logic
+    // But the best way is to use Port 3000 where Next.js handles this perfectly.
+    res.status(200).json({ success: true, message: "Please use Port 3000 for full OTP functionality." });
+});
+
+app.post('/api/sms', async (req, res) => {
+    const apiKey = process.env.SMS_IR_API_KEY;
+    const { mobile, templateId, parameters } = req.body;
+    const smsRes = await fetch('https://api.sms.ir/v1/send/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+        body: JSON.stringify({ mobile, templateId, parameters })
+    });
+    const data = await smsRes.json();
+    res.status(smsRes.status).json(data);
+});
+
 app.post('/api/proxy', async (req, res) => {
     console.log(`[Local API] Received POST /api/proxy`);
 
