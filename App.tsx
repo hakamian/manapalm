@@ -236,20 +236,8 @@ const App: React.FC = () => {
             <WhatsNewModal />
             <CommandPalette />
 
-            <div className="relative min-h-screen text-white overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-100">
-                <div className="aurora-bg">
-                    <div className="aurora-blob blob-1"></div>
-                    <div className="aurora-blob blob-2"></div>
-                    <div className="aurora-blob blob-3"></div>
-                </div>
-                <div className="noise-overlay"></div>
-
-                <Suspense fallback={null}><LiveActivityBanner /></Suspense>
-                <Suspense fallback={<div className="h-20" />}><Header /></Suspense>
-
-                <div className="relative z-10">
-                    <MainContent />
-                </div>
+            <div className="relative z-10">
+                <MainContent />
             </div>
 
             {mounted && user && canClaimChest && (
@@ -262,8 +250,6 @@ const App: React.FC = () => {
             {mounted && <AIChatWidget />}
             {mounted && user && <MeaningCompanionWidget />}
             <BottomNavBar />
-
-            <Suspense fallback={null}><Footer /></Suspense>
 
             <GlobalModals onLoginSuccess={handleLoginSuccess} />
         </>

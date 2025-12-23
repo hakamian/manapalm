@@ -12,21 +12,25 @@ import CrashFallback from './components/CrashFallback';
 const sentryDsn = (import.meta as any).env?.VITE_SENTRY_DSN;
 
 if (sentryDsn) {
-    Sentry.init({
-        dsn: sentryDsn,
-        integrations: [
-            Sentry.browserTracingIntegration(),
-            Sentry.replayIntegration(),
-        ],
-        // Performance Monitoring
-        tracesSampleRate: 1.0, 
-        // Session Replay
-        replaysSessionSampleRate: 0.1, 
-        replaysOnErrorSampleRate: 1.0, 
-    });
+  Sentry.init({
+    dsn: sentryDsn,
+    integrations: [
+      Sentry.browserTracingIntegration(),
+      Sentry.replayIntegration(),
+    ],
+    // Performance Monitoring
+    tracesSampleRate: 1.0,
+    // Session Replay
+    replaysSessionSampleRate: 0.1,
+    replaysOnErrorSampleRate: 1.0,
+  });
 } else {
-    console.warn("Sentry DSN not found. Error monitoring is disabled.");
+  console.warn("Sentry DSN not found. Error monitoring is disabled.");
 }
+
+const Header = React.lazy(() => import('./components/Header'));
+const Footer = React.lazy(() => import('./components/Footer'));
+const LiveActivityBanner = React.lazy(() => import('./components/LiveActivityBanner'));
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -37,11 +41,25 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <Sentry.ErrorBoundary fallback={({ error, resetErrorBoundary }) => <CrashFallback error={error} resetErrorBoundary={resetErrorBoundary} />}>
-        <HelmetProvider>
-          <AppProvider>
+      <HelmetProvider>
+        <AppProvider>
+          <div className="relative min-h-screen text-white overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-100">
+            <div className="aurora-bg">
+              <div className="aurora-blob blob-1"></div>
+              <div className="aurora-blob blob-2"></div>
+              <div className="aurora-blob blob-3"></div>
+            </div>
+            <div className="noise-overlay"></div>
+
+            <React.Suspense fallback={null}><LiveActivityBanner /></React.Suspense>
+            <React.Suspense fallback={<div className="h-20" />}><Header /></React.Suspense>
+
             <App />
-          </AppProvider>
-        </HelmetProvider>
+
+            <React.Suspense fallback={null}><Footer /></React.Suspense>
+          </div>
+        </AppProvider>
+      </HelmetProvider>
     </Sentry.ErrorBoundary>
   </React.StrictMode>
 );
