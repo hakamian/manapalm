@@ -87,14 +87,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
         try {
             if (loginMethod === 'otp') {
-                // Check if supabase is configured
-                if (!supabase) throw new Error("SupabaseNotConfigured");
-
-                const { error } = await supabase.auth.signInWithOtp({
-                    phone: '+98' + phoneNumber.substring(1),
+                // Call our secure OTP API
+                const response = await fetch('/api/auth/otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'send', mobile: phoneNumber })
                 });
 
-                if (error) throw error;
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.error || 'خطا در ارسال پیامک');
+
                 setStep(2);
 
             } else {
@@ -113,28 +115,10 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                 }
             }
         } catch (err: any) {
-            // Fallback Simulation for "Assume Backend Works"
-            console.warn("Backend auth failed, switching to simulation:", err);
-
-            if (loginMethod === 'otp') {
-                // Simulate OTP sent
-                setTimeout(() => {
-                    setIsLoading(false);
-                    setStep(2);
-                    alert("کد تایید آزمایشی: 123456"); // Hint for user
-                }, 1000);
-                return;
-            } else {
-                // Simulate Password login (accept anything for demo)
-                setTimeout(() => {
-                    onLoginSuccess({ phone: phoneNumber });
-                    onClose();
-                }, 1000);
-                return;
-            }
+            setError(err.message || 'خطا در برقراری ارتباط با سرور');
+            console.error("Auth submit error:", err);
         } finally {
-            // Only stop loading if we didn't divert to simulation flow above
-            if (supabase) setIsLoading(false);
+            setIsLoading(false);
         }
     };
 
@@ -147,35 +131,32 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         setError('');
 
         try {
-            if (!supabase) throw new Error("SimulationMode");
-
-            const { data, error } = await supabase.auth.verifyOtp({
-                phone: '+98' + phoneNumber.substring(1),
-                token: otp,
-                type: 'sms'
+            // Verify via our OTP API
+            const response = await fetch('/api/auth/otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'verify', mobile: phoneNumber, code: otp })
             });
 
-            if (error) throw error;
+            const data = await response.json();
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'کد وارد شده صحیح نمی‌باشد');
+            }
 
-            const userMetaData = data.user?.user_metadata;
-            const hasName = userMetaData?.full_name || userMetaData?.name;
+            // If success, check if user exists in our App State/DB
+            const existingUser = allUsers.find(u => u.phone === phoneNumber);
 
-            if (hasName) {
-                onLoginSuccess({ phone: phoneNumber });
+            if (existingUser) {
+                // Just log them in
+                onLoginSuccess({ phone: phoneNumber, fullName: existingUser.fullName });
                 onClose();
             } else {
+                // New user - go to profile setup
                 setStep(3);
             }
 
         } catch (err: any) {
-            // Fallback Simulation
-            console.warn("Backend verify failed, simulating success.");
-            if (otp === '123456') {
-                // Treat as new user for demo experience
-                setStep(3);
-            } else {
-                setError('کد وارد شده صحیح نمی‌باشد (کد آزمایشی: 123456)');
-            }
+            setError(err.message || 'خطا در تایید کد');
         } finally {
             setIsLoading(false);
         }
