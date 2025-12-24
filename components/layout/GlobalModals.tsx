@@ -1,5 +1,6 @@
 
-import React, { Suspense } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAppState, useAppDispatch } from '../../AppContext';
 import { View } from '../../types';
 import PalmSelectionModal from '../PalmSelectionModal';
@@ -63,8 +64,15 @@ const GlobalModals: React.FC<GlobalModalsProps> = ({ onLoginSuccess }) => {
     });
 
     const dispatch = useAppDispatch();
+    const [mounted, setMounted] = useState(false);
 
-    return (
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) return null;
+
+    return createPortal(
         <Suspense fallback={null}>
             {isAuthModalOpen && (
                 <AuthModal
@@ -73,7 +81,7 @@ const GlobalModals: React.FC<GlobalModalsProps> = ({ onLoginSuccess }) => {
                     onLoginSuccess={onLoginSuccess}
                 />
             )}
-            {/* ShoppingCart handles its own open state visibility internally, but we lazy load the component */}
+            {/* ShoppingCart handles its own open state visibility internally */}
             <ShoppingCart />
 
             {isOrderSuccessModalOpen && (
@@ -184,7 +192,8 @@ const GlobalModals: React.FC<GlobalModalsProps> = ({ onLoginSuccess }) => {
                 />
             )}
             <GamificationAlert />
-        </Suspense>
+        </Suspense>,
+        document.body
     );
 };
 
