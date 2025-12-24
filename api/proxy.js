@@ -112,7 +112,7 @@ export default async function handler(req, res) {
       });
 
       // TODO: Deduct seconds from Supabase here (Optional: do it background/post-response)
-      return completion.choices[0].message.content;
+      return completion.choices?.[0]?.message?.content || '';
     };
 
     const tryOpenRouter = async (m) => {
@@ -136,7 +136,7 @@ export default async function handler(req, res) {
       });
 
       const resData = await response.json();
-      return resData.choices[0].message.content;
+      return resData.choices?.[0]?.message?.content || '';
     };
 
     const tryGemini = async (m) => {

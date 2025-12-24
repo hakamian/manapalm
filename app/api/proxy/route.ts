@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
                 throw new Error(resData.error.message || 'OpenRouter Error');
             }
 
-            return resData.choices[0].message.content;
+            return resData.choices?.[0]?.message?.content || '';
         };
 
         // Try Gemini via direct API call (not SDK)
