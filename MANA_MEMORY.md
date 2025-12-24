@@ -537,6 +537,7 @@ graph TD
 
 | تاریخ | تغییر | توسط |
 |-------|-------|------|
+| 2025-12-24 20:00 | **Fix**: Removed duplicate `Header`, `Footer`, `LiveActivityBanner` from `App.tsx` (Legacy) -> Unified in `ClientWrapper` | Mana (Unified OS) |
 | 2025-12-22 19:30 | **✅ AI Fixed**: Switched to `mistralai/devstral-2512:free` via OpenRouter (Google quota=0, tested models) | Mana (Unified OS) |
 | 2025-12-22 18:55 | **Debugging**: Hardcoded Proxy to use `gemini-2.0-flash-exp` strictly (Ignoring frontend model requests to prevent 404s) | Mana (Unified OS) |
 | 2025-12-22 18:50 | **Debugging**: Forced Google Provider (`gemini-2.0-flash-exp`) in Proxy because OpenRouter Key seems invalid/broken | Mana (Unified OS) |
@@ -580,3 +581,19 @@ graph TD
 2.  **Portal Everything**: Use the `WelcomeTour` pattern (React Portal) for all future Modals, Toasts, and Overlays to avoid stacking context wars.
 3.  **Cleanup Debt**: In the next sprint, remove `postcss.config.mjs` and related failed build artifacts to verify no "dead code" confusion remains.
 
+
+| 2025-12-24 20:45 | **UI/UX Fix Attempt**: Converted `PalmSelectionModal` and `ShoppingCart` to static imports and wrapped `GlobalModals` in React Portal to fix z-index/visibility issues. (Status: Issue Persists) | Mana (Unified OS) |
+| 2025-12-24 20:15 | **Auth & UI**: Added SMS OTP (Set Password), fixed `reduce` crash in Header, fixed duplicate Header rendering. | Mana (Unified OS) |
+
+---
+
+### 🚨 Critical Blocking Issue (2025-12-24)
+- **Problem:** The "Planting Flow" (PalmSelectionModal) and "Shopping Cart" interactions are failing to show visible UI, despite the state (`isOpen`) theoretically changing.
+- **Attempts:**
+    1.  Switched from `React.lazy` to static imports (to rule out loading errors).
+    2.  Wrapped visual layer in `createPortal(..., document.body)` (to rule out z-index/stacking context).
+- **Hypothesis:** The issue might be related to:
+    -   `GlobalModals` component not re-rendering correctly on context updates.
+    -   A global CSS rule (e.g., in `globals.css` or `ClientWrapper`) inadvertently hiding the portal container.
+    -   The `AppContext` dispatch not correctly propagating to the `GlobalModals` consumer.
+- **Next Action:** Trace the `dispatch` event flow and inspecting the DOM for the existence of the Portal node.
