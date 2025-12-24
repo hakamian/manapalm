@@ -181,7 +181,7 @@ const Header: React.FC = () => {
     const cartItemCount = cartItems.length;
     const wishlistItemCount = wishlist.length;
     const unreadNotificationsCount = notifications.filter(n => !n.read).length;
-    const unreadMessagesCount = user?.conversations.reduce((acc, c) => acc + (c.unreadCount || 0), 0) || 0;
+    const unreadMessagesCount = user?.conversations?.reduce((acc, c) => acc + (c.unreadCount || 0), 0) || 0;
 
     useEffect(() => {
         if (isDesktopSearchOpen) {
