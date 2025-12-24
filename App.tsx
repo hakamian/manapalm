@@ -22,6 +22,8 @@ import SEOIndex from './components/seo/SEOIndex';
 // Lazy Load UI Components
 
 
+const Header = dynamic(() => import('./components/Header'), { ssr: false });
+const LiveActivityBanner = dynamic(() => import('./components/LiveActivityBanner'), { ssr: false });
 const BottomNavBar = dynamic(() => import('./components/BottomNavBar'), { ssr: false });
 
 const App: React.FC = () => {
@@ -38,7 +40,9 @@ const App: React.FC = () => {
 
     useRouteSync();
 
-    const { user, allUsers, products } = state;
+    const { user, allUsers, products, liveActivities } = state;
+    const hasBanner = liveActivities && liveActivities.length > 0;
+    const isAdminView = state.currentView === View.AdminDashboard || state.currentView === View.AutoCEO;
 
     const canClaimChest = useMemo(() => {
         if (!user) return false;
@@ -46,9 +50,11 @@ const App: React.FC = () => {
         return user.lastDailyChestClaimed !== today;
     }, [user]);
 
+    // ... (rest of methods) ...
+
     const handleClaimDailyReward = (reward: DailyChestReward) => {
         if (!user) return;
-
+        // ... (implementation)
         const today = new Date().toISOString().split('T')[0];
         const newPoints = user.points + (reward.type === 'barkat' || reward.type === 'epic' ? reward.amount : 0);
         const newMana = user.manaPoints + (reward.type === 'mana' ? reward.amount : 0);
@@ -87,6 +93,8 @@ const App: React.FC = () => {
             payload: { points: reward.amount, action: reward.message, type: reward.type === 'mana' ? 'mana' : 'barkat' }
         });
     };
+
+    // ... (rest of methods) ...
 
     const mapSupabaseUserToAppUser = (supabaseUser: any, existingAppUser?: any): any => {
         const isAdmin = supabaseUser.email === 'hhakamian@gmail.com' ||
@@ -227,8 +235,6 @@ const App: React.FC = () => {
         };
     }, [dispatch, allUsers, user]);
 
-    const isAdminView = state.currentView === View.AdminDashboard || state.currentView === View.AutoCEO;
-
     return (
         <>
             <SEOIndex products={products} />
@@ -236,9 +242,14 @@ const App: React.FC = () => {
             <WhatsNewModal />
             <CommandPalette />
 
+            {!isAdminView && (
+                <>
+                    {hasBanner && mounted && <LiveActivityBanner activities={liveActivities} />}
+                    <Suspense fallback={<div className="h-20" />}><Header /></Suspense>
+                </>
+            )}
 
-
-            <div className="relative z-10">
+            <div className={`relative z-10 ${!isAdminView ? (hasBanner ? 'pt-36' : 'pt-24') : ''}`}>
                 <MainContent />
             </div>
 
