@@ -96,9 +96,9 @@ export default async function handler(req, res) {
       const openai = new OpenAI({ apiKey: process.env.OPEN_API_KEY || process.env.OPENAI_API_KEY });
 
       // Convert contents to OpenAI format
-      const messages = data.contents.map(c => ({
+      const messages = (data?.contents || []).map(c => ({
         role: c.role === 'model' ? 'assistant' : 'user',
-        content: typeof c.parts[0].text === 'string' ? c.parts[0].text : JSON.stringify(c.parts[0])
+        content: typeof c.parts?.[0]?.text === 'string' ? c.parts[0].text : JSON.stringify(c.parts?.[0] || {})
       }));
 
       if (data.config?.systemInstruction) {
@@ -117,9 +117,9 @@ export default async function handler(req, res) {
 
     const tryOpenRouter = async (m) => {
       const openRouterKey = process.env.OPENROUTER_API_KEY;
-      const messages = data.contents.map(c => ({
+      const messages = (data?.contents || []).map(c => ({
         role: c.role === 'model' ? 'assistant' : 'user',
-        content: typeof c.parts[0].text === 'string' ? c.parts[0].text : JSON.stringify(c.parts[0])
+        content: typeof c.parts?.[0]?.text === 'string' ? c.parts[0].text : JSON.stringify(c.parts?.[0] || {})
       }));
 
       const response = await fetchWithRetry("https://openrouter.ai/api/v1/chat/completions", {
@@ -143,7 +143,7 @@ export default async function handler(req, res) {
       const apiKey = process.env.GEMINI_API_KEY || "AIzaSyAm0R_nTy51zh09seInVwYE0IY8He29VYY"; // Local/Production key
       const genAI = new GoogleGenerativeAI(apiKey);
       const modelInstance = genAI.getGenerativeModel({ model: m || 'gemini-1.5-flash' });
-      const result = await modelInstance.generateContent({ contents: data.contents });
+      const result = await modelInstance.generateContent({ contents: data?.contents || [] });
       const response = await result.response;
       return response.text();
     };

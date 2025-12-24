@@ -85,9 +85,9 @@ export async function POST(req: NextRequest) {
                 },
                 body: JSON.stringify({
                     "model": m,
-                    "messages": data.contents.map((c: any) => ({
+                    "messages": (data?.contents || []).map((c: any) => ({
                         role: c.role === 'model' ? 'assistant' : c.role,
-                        content: typeof c.parts[0].text === 'string' ? c.parts[0].text : JSON.stringify(c.parts[0])
+                        content: typeof c.parts?.[0]?.text === 'string' ? c.parts[0].text : JSON.stringify(c.parts?.[0] || {})
                     })),
                     "temperature": data.config?.temperature || 0.7,
                 })
@@ -124,7 +124,7 @@ export async function POST(req: NextRequest) {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    contents: data.contents,
+                    contents: data?.contents || [],
                     generationConfig: {
                         temperature: data.config?.temperature || 0.7,
                     }
