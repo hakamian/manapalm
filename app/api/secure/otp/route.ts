@@ -123,7 +123,7 @@ export async function POST(req: Request) {
             const e164Mobile = '+98' + mobile.substring(1);
 
             // Search for user
-            const { data: listData, error: listError } = await supabase.auth.admin.listUsers();
+            const { data: listData, error: listError } = await supabase.auth.admin.listUsers({ perPage: 1000 });
             if (listError) throw listError;
 
             const users = (listData?.users || []) as any[];
@@ -161,6 +161,10 @@ export async function POST(req: Request) {
         return NextResponse.json({ message: 'Action not valid' }, { status: 400 });
     } catch (error: any) {
         console.error('OTP Error:', error);
-        return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        return NextResponse.json({
+            success: false,
+            message: error.message || 'خطای ناشناخته در سرور',
+            error: error.message
+        }, { status: 500 });
     }
 }

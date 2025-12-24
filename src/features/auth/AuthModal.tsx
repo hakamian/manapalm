@@ -230,7 +230,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                     })
                 });
                 const passData = await passRes.json();
-                if (!passRes.ok) throw new Error(passData.message || 'خطا در تنظیم رمز عبور');
+                if (!passRes.ok) throw new Error(passData.message || passData.error || 'خطا در تنظیم رمز عبور');
             }
 
             // 2. Update Profile metadata if signed in (optional, session might not exist yet)
