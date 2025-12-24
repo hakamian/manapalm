@@ -101,14 +101,14 @@ export default async function handler(req, res) {
         content: typeof c.parts?.[0]?.text === 'string' ? c.parts[0].text : JSON.stringify(c.parts?.[0] || {})
       }));
 
-      if (data.config?.systemInstruction) {
+      if (data?.config?.systemInstruction) {
         messages.unshift({ role: 'system', content: data.config.systemInstruction });
       }
 
       const completion = await openai.chat.completions.create({
         model: m,
         messages: messages,
-        temperature: data.config?.temperature || 0.7,
+        temperature: data?.config?.temperature || 0.7,
       });
 
       // TODO: Deduct seconds from Supabase here (Optional: do it background/post-response)
@@ -131,7 +131,7 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           model: m,
           messages: messages,
-          temperature: data.config?.temperature || 0.7,
+          temperature: data?.config?.temperature || 0.7,
         })
       });
 

@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
                         role: c.role === 'model' ? 'assistant' : c.role,
                         content: typeof c.parts?.[0]?.text === 'string' ? c.parts[0].text : JSON.stringify(c.parts?.[0] || {})
                     })),
-                    "temperature": data.config?.temperature || 0.7,
+                    "temperature": data?.config?.temperature || 0.7,
                 })
             });
 
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
                 body: JSON.stringify({
                     contents: data?.contents || [],
                     generationConfig: {
-                        temperature: data.config?.temperature || 0.7,
+                        temperature: data?.config?.temperature || 0.7,
                     }
                 })
             });
