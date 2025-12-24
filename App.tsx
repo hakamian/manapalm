@@ -20,9 +20,7 @@ import { useRouteSync } from './hooks/useRouteSync';
 import SEOIndex from './components/seo/SEOIndex';
 
 // Lazy Load UI Components
-const Header = React.lazy(() => import('./components/Header'));
-const Footer = React.lazy(() => import('./components/Footer'));
-const LiveActivityBanner = React.lazy(() => import('./components/LiveActivityBanner'));
+
 
 const BottomNavBar = dynamic(() => import('./components/BottomNavBar'), { ssr: false });
 
@@ -238,12 +236,7 @@ const App: React.FC = () => {
             <WhatsNewModal />
             <CommandPalette />
 
-            {!isAdminView && (
-                <>
-                    <Suspense fallback={null}><LiveActivityBanner /></Suspense>
-                    <Suspense fallback={<div className="h-20" />}><Header /></Suspense>
-                </>
-            )}
+
 
             <div className="relative z-10">
                 <MainContent />
@@ -263,9 +256,7 @@ const App: React.FC = () => {
 
             <GlobalModals onLoginSuccess={handleLoginSuccess} />
 
-            {!isAdminView && (
-                <Suspense fallback={null}><Footer /></Suspense>
-            )}
+
         </>
     );
 };
