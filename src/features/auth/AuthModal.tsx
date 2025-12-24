@@ -89,7 +89,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         try {
             if (loginMethod === 'otp') {
                 // Call our secure OTP API
-                const response = await fetch('/api/auth/otp', {
+                const response = await fetch('/api/secure/otp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'send', mobile: phoneNumber })
@@ -133,7 +133,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
         try {
             // Verify via our OTP API
-            const response = await fetch('/api/auth/otp', {
+            const response = await fetch('/api/secure/otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ action: 'verify', mobile: phoneNumber, code: otp })
@@ -218,7 +218,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
 
             // 1. Set Password via secure backend if provided
             if (regPassword) {
-                const passRes = await fetch('/api/auth/otp', {
+                const passRes = await fetch('/api/secure/otp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
