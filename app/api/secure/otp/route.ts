@@ -71,12 +71,13 @@ export async function POST(req: Request) {
 
                 return NextResponse.json({
                     success: false,
-                    message: `خطا از سمت پنل پیامک: ${smsData.message || 'نامشخص'}`
+                    message: `خطا از سمت پنل پیامک: ${smsData.message || 'نامشخص'}`,
+                    debug: smsData // Return full debug info to client
                 }, { status: smsRes.status });
             }
 
             console.log('✅ SMS Sent Successfully:', smsData);
-            return NextResponse.json({ success: true });
+            return NextResponse.json({ success: true, debug: smsData }); // Return success debug info too
         }
 
         if (action === 'verify') {
