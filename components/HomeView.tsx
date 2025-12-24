@@ -74,7 +74,7 @@ const HeroSection: React.FC<{ onStartJourneyClick: () => void, user: User | null
     });
 
     return (
-        <div ref={sceneRef} className="relative min-h-[90dvh] w-full flex flex-col items-center justify-center overflow-hidden">
+        <div ref={sceneRef} className="relative min-h-[90dvh] w-full flex flex-col items-center justify-center overflow-hidden hero-header-clearance">
             <style>{`
                 @keyframes twinkle { 0%, 100% { opacity: 0.4; transform: scale(0.9); } 50% { opacity: 1; transform: scale(1); } }
                 .star { position: absolute; background-color: white; border-radius: 50%; animation: twinkle 4s infinite ease-in-out; }

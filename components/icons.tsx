@@ -11,66 +11,67 @@ export * from './icons/MeaningIcons';
 export * from './icons/SecurityIcons';
 
 // Import specific icons for aliases and iconMap
-import { 
-    HomeIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ArrowLeftIcon, 
-    ArrowRightIcon, ArrowUpIcon, ArrowDownIcon, ArrowPathIcon, ArrowDownTrayIcon, 
-    ArrowUpTrayIcon, MagnifyingGlassIcon, XMarkIcon, XIcon, PlusIcon, PlusCircleIcon, 
-    MinusIcon, CheckIcon, CheckCircleIcon, Bars3Icon, Squares2x2Icon, FunnelIcon, 
-    BellIcon, CogIcon, EyeIcon, LockClosedIcon, PencilIcon, PencilSquareIcon, 
-    TrashIcon, CameraIcon, ClockForwardIcon, PhotoIcon, ShoppingCartIcon, 
-    UserCircleIcon, PaperClipIcon, PlayIcon, PauseIcon, StopIcon, ExclamationCircleIcon, 
-    DocumentTextIcon, DoubleCheckIcon, ArrowTrendingUpIcon, KeyboardIcon
+import {
+    HomeIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, ArrowLeftIcon,
+    ArrowRightIcon, ArrowUpIcon, ArrowDownIcon, ArrowPathIcon, ArrowDownTrayIcon,
+    ArrowUpTrayIcon, MagnifyingGlassIcon, XMarkIcon, XIcon, PlusIcon, PlusCircleIcon,
+    MinusIcon, CheckIcon, CheckCircleIcon, Bars3Icon, Squares2x2Icon, FunnelIcon,
+    BellIcon, CogIcon, EyeIcon, LockClosedIcon, PencilIcon, PencilSquareIcon,
+    TrashIcon, CameraIcon, ClockForwardIcon, PhotoIcon, ShoppingCartIcon,
+    UserCircleIcon, PaperClipIcon, PlayIcon, PauseIcon, StopIcon, ExclamationCircleIcon,
+    DocumentTextIcon, DoubleCheckIcon, ArrowTrendingUpIcon, KeyboardIcon,
+    ArrowUpRightIcon
 } from './icons/BasicIcons';
 
-import { 
-    SproutIcon, SaplingIcon, TreeIcon, MatureTreeIcon, LeafIcon, PalmTreeIcon, 
-    PalmTreeSproutIcon 
+import {
+    SproutIcon, SaplingIcon, TreeIcon, MatureTreeIcon, LeafIcon, PalmTreeIcon,
+    PalmTreeSproutIcon
 } from './icons/NatureIcons';
 
-import { 
-    BriefcaseIcon, BuildingOfficeIcon, PresentationChartLineIcon, HandshakeIcon, 
-    BanknotesIcon, ChartBarIcon, ChartPieIcon, CalculatorIcon, HandCoinIcon, 
-    RocketLaunchIcon, PuzzlePieceIcon 
+import {
+    BriefcaseIcon, BuildingOfficeIcon, PresentationChartLineIcon, HandshakeIcon,
+    BanknotesIcon, ChartBarIcon, ChartPieIcon, CalculatorIcon, HandCoinIcon,
+    RocketLaunchIcon, PuzzlePieceIcon
 } from './icons/BusinessIcons';
 
-import { 
-    EnvelopeIcon, HeartIcon, FireIcon, PaperAirplaneIcon, UserPlusIcon, 
-    ChatBubbleOvalLeftEllipsisIcon, ChatBubbleLeftRightIcon, ChatBubbleBottomCenterTextIcon, 
-    GiftIcon, SparklesIcon, BoltIcon, YouTubeIcon, LinkedInIcon, TelegramIcon, 
-    WhatsAppIcon, EitaaIcon, BaleIcon, GoogleIcon, MegaphoneIcon, FlagIcon, 
-    KeyIcon, PhoneIcon, DashboardIcon, CreditCardIcon, TruckIcon, QuoteIcon, 
-    ShareIcon, BoxIcon, ContributionIcon, SpeakerWaveIcon, SpeakerXMarkIcon, 
-    InstagramIcon, GlobeIcon, UsersIcon 
+import {
+    EnvelopeIcon, HeartIcon, FireIcon, PaperAirplaneIcon, UserPlusIcon,
+    ChatBubbleOvalLeftEllipsisIcon, ChatBubbleLeftRightIcon, ChatBubbleBottomCenterTextIcon,
+    GiftIcon, SparklesIcon, BoltIcon, YouTubeIcon, LinkedInIcon, TelegramIcon,
+    WhatsAppIcon, EitaaIcon, BaleIcon, GoogleIcon, MegaphoneIcon, FlagIcon,
+    KeyIcon, PhoneIcon, DashboardIcon, CreditCardIcon, TruckIcon, QuoteIcon,
+    ShareIcon, BoxIcon, ContributionIcon, SpeakerWaveIcon, SpeakerXMarkIcon,
+    InstagramIcon, GlobeIcon, UsersIcon
 } from './icons/CommunicationIcons';
 
-import { 
-    TrophyIcon, AwardIcon, FirstPlaceIcon, SecondPlaceIcon, ThirdPlaceIcon, 
-    CommunityContributorBadgeIcon, PathfinderBadgeIcon, LoyalMemberBadgeIcon, 
-    FirstPalmBadgeIcon, BadgeCheckIcon, PartnerIcon1, PartnerIcon2, PartnerIcon3 
+import {
+    TrophyIcon, AwardIcon, FirstPlaceIcon, SecondPlaceIcon, ThirdPlaceIcon,
+    CommunityContributorBadgeIcon, PathfinderBadgeIcon, LoyalMemberBadgeIcon,
+    FirstPalmBadgeIcon, BadgeCheckIcon, PartnerIcon1, PartnerIcon2, PartnerIcon3
 } from './icons/BadgeIcons';
 
-import { 
-    BrainCircuitIcon, CompassIcon, MapIcon, MapPinIcon, BookOpenIcon, 
-    AcademicCapIcon, CpuChipIcon, CloudIcon, MicrophoneIcon, ClockIcon, 
-    VideoCameraIcon, PalmChatIcon, SunIcon, WandSparklesIcon, WifiSlashIcon, 
-    WavesIcon, WellIcon, CalendarDaysIcon, QrCodeIcon, ShieldKeyholeIcon, 
-    ShieldCheckIcon, RadarIcon, BullseyeIcon, UserFrownIcon, TargetIcon, 
-    LightBulbIcon, SitemapIcon, StarIcon 
+import {
+    BrainCircuitIcon, CompassIcon, MapIcon, MapPinIcon, BookOpenIcon,
+    AcademicCapIcon, CpuChipIcon, CloudIcon, MicrophoneIcon, ClockIcon,
+    VideoCameraIcon, PalmChatIcon, SunIcon, WandSparklesIcon, WifiSlashIcon,
+    WavesIcon, WellIcon, CalendarDaysIcon, QrCodeIcon, ShieldKeyholeIcon,
+    ShieldCheckIcon, RadarIcon, BullseyeIcon, UserFrownIcon, TargetIcon,
+    LightBulbIcon, SitemapIcon, StarIcon
 } from './icons/MeaningIcons';
 
-import { 
-    ShieldExclamationIcon, ExclamationTriangleIcon, EyeSlashIcon 
+import {
+    ShieldExclamationIcon, ExclamationTriangleIcon, EyeSlashIcon
 } from './icons/SecurityIcons';
 
 // Re-export aliases
-export const GlobeAltIcon = GlobeIcon; 
-export const UsersGroupIcon = UsersIcon; 
-export const UserGroupIcon = UsersIcon; 
-export const TrendingUpIcon = ArrowTrendingUpIcon; 
+export const GlobeAltIcon = GlobeIcon;
+export const UsersGroupIcon = UsersIcon;
+export const UserGroupIcon = UsersIcon;
+export const TrendingUpIcon = ArrowTrendingUpIcon;
 
 export const CubeTransparentIcon = React.memo(({ className = "w-6 h-6" }: { className?: string } = {}) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="m21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
     </svg>
 ));
 
@@ -110,7 +111,7 @@ export const iconMap = {
     'well': WellIcon,
     'birth': SproutIcon,
     'gratitude': HeartIcon,
-    'memory': QuoteIcon, 
+    'memory': QuoteIcon,
     'community': UsersIcon,
     'clock_forward': ClockForwardIcon,
 };

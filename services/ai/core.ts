@@ -1,5 +1,5 @@
 import { GoogleGenAI } from "@google/genai";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../infrastructure/supabase";
 
 export const getGeminiApiKey = (): string => {
     // Return the shared local key for local dev, or environment key if available
@@ -64,7 +64,7 @@ export async function callProxy(
         // Handle Premium Billing & Logging
         if (resData.tier === 'premium') {
             console.log(`🚀 Premium Resource Used: ${resData.provider}. Credits: ${resData.remainingSeconds}s remaining.`);
-            import('../dbAdapter').then(({ dbAdapter }) => {
+            import('../application/database').then(({ dbAdapter }) => {
                 dbAdapter.spendAICredits(10); // Deduct 10s per premium turn
             });
         } else if (resData.remainingSeconds !== undefined) {

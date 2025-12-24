@@ -229,12 +229,21 @@ const App: React.FC = () => {
         };
     }, [dispatch, allUsers, user]);
 
+    const isAdminView = state.currentView === View.AdminDashboard || state.currentView === View.AutoCEO;
+
     return (
         <>
             <SEOIndex products={products} />
             <WelcomeTour />
             <WhatsNewModal />
             <CommandPalette />
+
+            {!isAdminView && (
+                <>
+                    <Suspense fallback={null}><LiveActivityBanner /></Suspense>
+                    <Suspense fallback={<div className="h-20" />}><Header /></Suspense>
+                </>
+            )}
 
             <div className="relative z-10">
                 <MainContent />
@@ -249,9 +258,14 @@ const App: React.FC = () => {
 
             {mounted && <AIChatWidget />}
             {mounted && user && <MeaningCompanionWidget />}
-            <BottomNavBar />
+
+            {!isAdminView && <BottomNavBar />}
 
             <GlobalModals onLoginSuccess={handleLoginSuccess} />
+
+            {!isAdminView && (
+                <Suspense fallback={null}><Footer /></Suspense>
+            )}
         </>
     );
 };

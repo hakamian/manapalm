@@ -4,6 +4,9 @@ import { AppState, Action, View, Deed, TimelineEvent, Order, CartItem, WebDevPro
 import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS, INITIAL_DEEDS, PALM_TYPES_DATA, INITIAL_PROPOSALS, INITIAL_LIVE_ACTIVITIES, INITIAL_PRODUCTS, INITIAL_NOTIFICATIONS, INITIAL_MENTORSHIP_REQUESTS, INITIAL_MICROFINANCE_PROJECTS, INITIAL_REVIEWS } from './utils/dummyData';
 import { dbAdapter } from './services/dbAdapter';
 import { supabase, mapSupabaseUser } from './services/supabaseClient';
+import { orderService } from './services/application/orderService';
+import { userService } from './services/application/userService';
+import { communityService } from './services/application/communityService';
 
 const initialNavigation = [
     {
@@ -72,8 +75,8 @@ const DEFAULT_ALCHEMY_PROMPT = `
 
 const initialState: AppState = {
     user: null,
-    users: [],
-    allUsers: [],
+    users: INITIAL_USERS,
+    allUsers: INITIAL_USERS,
     orders: [],
     cartItems: [],
     wishlist: [],
@@ -123,6 +126,7 @@ const initialState: AppState = {
         rewardPoints: 1000
     },
     palmTypes: PALM_TYPES_DATA,
+    gamificationAlerts: [],
     products: INITIAL_PRODUCTS,
 
     mentorshipRequests: INITIAL_MENTORSHIP_REQUESTS,
@@ -170,54 +174,29 @@ const initialState: AppState = {
     selectedLanguage: undefined,
 };
 
-const createTimelineEventFromDeed = (deed: Deed): TimelineEvent => ({
-    id: `evt_plant_${deed.id}`,
-    date: deed.date,
-    type: 'palm_planted',
-    title: `کاشت نخل: ${deed.intention}`,
-    description: deed.message || 'یک نخل جدید کاشته شد.',
-    deedId: deed.id,
-    details: {
-        id: deed.productId,
-        title: deed.palmType,
-        recipient: deed.name,
-        plantedBy: deed.fromName,
-        message: deed.message,
-        certificateId: deed.id
-    },
-    userReflection: { notes: '' },
-    isSharedAnonymously: false,
-    status: 'approved'
-});
 
 function appReducer(state: AppState, action: Action): AppState {
     let newState = { ...state };
 
     switch (action.type) {
         case 'SET_USER':
-            newState = { ...state, user: action.payload };
-            if (action.payload) { dbAdapter.setCurrentUserId(action.payload.id); dbAdapter.saveUser(action.payload); } else { dbAdapter.setCurrentUserId(null); }
-            return newState;
+            return { ...state, user: action.payload };
         case 'UPDATE_USER':
             if (state.user) {
                 const updatedUser = { ...state.user, ...action.payload };
-                newState = { ...state, user: updatedUser };
-                dbAdapter.saveUser(updatedUser);
                 const updatedAllUsers = state.allUsers.map(u => u.id === updatedUser.id ? updatedUser : u);
-                newState.allUsers = updatedAllUsers;
+                return { ...state, user: updatedUser, allUsers: updatedAllUsers };
             }
-            return newState;
+            return state;
         case 'SAVE_COURSE_PERSONALIZATION':
             if (state.user) {
                 const { courseId, personalization } = action.payload;
                 const updatedPersonalizations = { ...(state.user.coursePersonalizations || {}), [courseId]: personalization };
                 const updatedUser = { ...state.user, coursePersonalizations: updatedPersonalizations };
-                newState = { ...state, user: updatedUser };
-                dbAdapter.saveUser(updatedUser);
                 const updatedAllUsers = state.allUsers.map(u => u.id === updatedUser.id ? updatedUser : u);
-                newState.allUsers = updatedAllUsers;
+                return { ...state, user: updatedUser, allUsers: updatedAllUsers };
             }
-            return newState;
+            return state;
         case 'SET_VIEW': return { ...state, currentView: action.payload };
         case 'TOGGLE_AUTH_MODAL': return { ...state, isAuthModalOpen: action.payload };
         case 'TOGGLE_CART': return { ...state, isCartOpen: action.payload };
@@ -231,51 +210,29 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'REMOVE_FROM_CART': return { ...state, cartItems: state.cartItems.filter(item => item.id !== action.payload) };
         case 'SET_CART_ITEMS': return { ...state, cartItems: action.payload };
         case 'PLACE_ORDER': {
-            const newOrder = action.payload;
-            const rawPointsEarned = newOrder.items.reduce((sum, item) => sum + (item.points || 0) * item.quantity, 0);
-            const pointsEarned = Math.min(rawPointsEarned, 20000);
-            const newTimelineEvents = (newOrder.deeds || []).map(createTimelineEventFromDeed);
-
-            // Create Notifications for Deeds
-            const newNotifications = (newOrder.deeds || []).map((deed, i) => ({
-                id: `notif-deed-${Date.now()}-${i}`,
-                title: 'نخل جدید کاشته شد!',
-                description: `نخل "${deed.intention}" با موفقیت ثبت شد.`,
-                text: `برای مشاهده سند و جزئیات نخل "${deed.intention}" کلیک کنید.`,
-                date: new Date().toISOString(),
-                timestamp: new Date().toISOString(),
-                read: false,
-                isRead: false,
-                type: 'success' as const,
-                icon: 'SproutIcon',
-                // Add direct link to heritage view or timeline
-                link: { view: View.HallOfHeritage }
-            }));
-
-            let unlockUpdates: Partial<User> = {};
-            let newUnlockedTools = state.user?.unlockedTools || [];
-            if (newOrder.items.some(item => item.id === 'p_heritage_language')) { unlockUpdates = { ...unlockUpdates, hasUnlockedEnglishTest: true }; }
-            if (newOrder.items.some(item => item.id === 'p_companion_unlock')) { unlockUpdates = { ...unlockUpdates, hasUnlockedCompanion: true }; }
-            if (newOrder.items.some(item => item.id === 'p_reflection_unlock')) { const currentUses = state.user?.reflectionAnalysesRemaining || 0; unlockUpdates = { ...unlockUpdates, reflectionAnalysesRemaining: currentUses + 1 }; }
-            if (newOrder.items.some(item => item.id === 'p_coaching_lab_access' || item.id === 'p_hoshmana_live_weekly')) { const expiresAt = new Date(); expiresAt.setDate(expiresAt.getDate() + 7); unlockUpdates = { ...unlockUpdates, coachingLabAccess: { expiresAt: expiresAt.toISOString() }, hoshmanaLiveAccess: { expiresAt: expiresAt.toISOString(), remainingSeconds: 3600 } }; }
-            newOrder.items.forEach(item => { if (item.unlocksFeatureId) { const featureId = item.unlocksFeatureId; if (!newUnlockedTools.includes(featureId)) { newUnlockedTools = [...newUnlockedTools, featureId]; } } });
-            if (newUnlockedTools.length > (state.user?.unlockedTools?.length || 0)) { unlockUpdates = { ...unlockUpdates, unlockedTools: newUnlockedTools }; }
-            let webProjectUpdate = {};
-            const webDevItem = newOrder.items.find(item => item.webDevDetails);
-            if (webDevItem && webDevItem.webDevDetails) {
-                const newProject: WebDevProject = { packageName: webDevItem.name.replace('معمار میراث دیجیتال: ', ''), packagePrice: webDevItem.price, status: 'requested', initialRequest: webDevItem.webDevDetails };
-                webProjectUpdate = { webDevProject: newProject };
-                newTimelineEvents.push({ id: `evt_project_start_${Date.now()}`, date: new Date().toISOString(), type: 'creative_act', title: 'آغاز پروژه میراث دیجیتال', description: `شروع ساخت ${webDevItem.name}`, details: { mediaType: 'image', imageUrl: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=400?q=80&w=400', prompt: webDevItem.name } });
-            }
-            // NOTE: Points are just updated in local state for UI responsiveness, but DB uses RPC elsewhere if needed.
-            // Ideally, order processing should trigger DB functions to award points.
-            const updatedUser = state.user ? { ...state.user, points: state.user.points + pointsEarned, pointsHistory: [...(state.user.pointsHistory || []), { action: 'خرید', points: pointsEarned, type: 'barkat' as const, date: new Date().toISOString() }], timeline: [...newTimelineEvents, ...(state.user.timeline || [])], ...webProjectUpdate, ...unlockUpdates, notifications: [...newNotifications, ...(state.user.notifications || [])] } : null;
-            dbAdapter.saveOrder(newOrder);
-            if (updatedUser) dbAdapter.saveUser(updatedUser);
-            return { ...state, orders: [...state.orders, newOrder], cartItems: [], isCartOpen: false, isOrderSuccessModalOpen: true, lastOrderDeeds: newOrder.deeds || [], lastOrderPointsEarned: pointsEarned, user: updatedUser, notifications: [...newNotifications, ...state.notifications] };
+            const { updatedUser, pointsEarned, newNotifications } = orderService.processOrderPlacement(state, action.payload);
+            return {
+                ...state,
+                orders: [...state.orders, action.payload],
+                cartItems: [],
+                isCartOpen: false,
+                isOrderSuccessModalOpen: true,
+                lastOrderDeeds: action.payload.deeds || [],
+                lastOrderPointsEarned: pointsEarned,
+                user: updatedUser,
+                notifications: [...newNotifications, ...state.notifications]
+            };
         }
-        case 'LOGIN_SUCCESS': const loggedInUser = action.payload.user; dbAdapter.setCurrentUserId(loggedInUser.id); dbAdapter.saveUser(loggedInUser); return { ...state, user: loggedInUser, orders: action.payload.orders, isAuthModalOpen: action.payload.keepOpen ? true : false };
-        case 'LOGOUT': dbAdapter.setCurrentUserId(null); return { ...state, user: null, orders: [], cartItems: [], currentView: View.Home };
+        case 'LOGIN_SUCCESS':
+            const loggedInUser = action.payload.user;
+            return {
+                ...state,
+                user: loggedInUser,
+                orders: action.payload.orders,
+                isAuthModalOpen: action.payload.keepOpen ? true : false
+            };
+        case 'LOGOUT':
+            return { ...state, user: null, orders: [], cartItems: [], currentView: View.Home };
         case 'SET_DAILY_CHALLENGE': return { ...state, dailyChallenge: action.payload };
         case 'SET_IS_GENERATING_CHALLENGE': return { ...state, isGeneratingChallenge: action.payload };
         case 'MARK_NOTIFICATION_READ': return { ...state, notifications: state.notifications.map(n => n.id === action.payload ? { ...n, read: true, isRead: true } : n) };
@@ -311,19 +268,7 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'SHOW_SOCIAL_POST_GENERATOR_MODAL': return { ...state, isSocialPostGeneratorModalOpen: action.payload.isOpen, socialPostGeneratorData: { deed: action.payload.deed } };
         case 'TOGGLE_MEANING_PALM_ACTIVATION_MODAL': return { ...state, isMeaningPalmActivationModalOpen: action.payload };
         case 'UNLOCK_MEANING_PALM':
-            if (state.user && state.user.manaPoints >= 15000) {
-                // SECURE CALL
-                dbAdapter.spendManaPoints(15000).then(success => {
-                    if (success) {
-                        const updatedUser = { ...state.user!, manaPoints: state.user!.manaPoints - 15000, hasUnlockedMeaningPalm: true };
-                        dbAdapter.saveUser(updatedUser);
-                    }
-                });
-                // Optimistic UI Update
-                const updatedUser = { ...state.user, manaPoints: state.user.manaPoints - 15000, hasUnlockedMeaningPalm: true };
-                return { ...state, user: updatedUser, isMeaningPalmActivationModalOpen: false };
-            }
-            return state;
+            return { ...state, isMeaningPalmActivationModalOpen: false };
         case 'OPEN_FUTURE_VISION_MODAL': return { ...state, isFutureVisionModalOpen: true, futureVisionDeed: action.payload };
         case 'CLOSE_FUTURE_VISION_MODAL': return { ...state, isFutureVisionModalOpen: false, futureVisionDeed: null };
         case 'OPEN_VOICE_OF_PALM_MODAL': return { ...state, isVoiceOfPalmModalOpen: true, voiceOfPalmDeed: action.payload };
@@ -337,17 +282,7 @@ function appReducer(state: AppState, action: Action): AppState {
             return state;
         case 'TOGGLE_WISHLIST': if (state.wishlist.includes(action.payload)) { return { ...state, wishlist: state.wishlist.filter(id => id !== action.payload) }; } else { return { ...state, wishlist: [...state.wishlist, action.payload] }; }
         case 'DONATE_POINTS':
-            if (state.user && state.user.points >= action.payload.amount) {
-                // SECURE CALL
-                dbAdapter.spendBarkatPoints(action.payload.amount).then(success => {
-                    if (success) console.log("Points donated");
-                });
-                // Optimistic UI
-                const updatedUser = { ...state.user, points: state.user.points - action.payload.amount, pointsHistory: [...(state.user.pointsHistory || []), { action: 'اهدای امتیاز', points: -action.payload.amount, type: 'barkat' as const, date: new Date().toISOString() }] };
-                dbAdapter.saveUser(updatedUser);
-                return { ...state, user: updatedUser };
-            }
-            return state;
+            return state; // Handling logic moved to components
         case 'ADD_POST': dbAdapter.savePost(action.payload); return { ...state, communityPosts: [action.payload, ...state.communityPosts] };
         case 'UPDATE_APP_SETTINGS': return { ...state, appSettings: { ...state.appSettings, ...action.payload } };
         case 'UPDATE_API_SETTINGS': const newHistory = [...state.apiSettingsHistory, { settings: state.apiSettings, timestamp: new Date().toISOString() }]; return { ...state, apiSettings: { ...state.apiSettings, ...action.payload }, apiSettingsHistory: newHistory };
@@ -356,35 +291,28 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'UPDATE_CAMPAIGN': return { ...state, campaign: action.payload };
         case 'UPDATE_PALM_TYPES': return { ...state, palmTypes: action.payload };
         case 'START_PLANTING_FLOW': return { ...state, isPalmSelectionModalOpen: true };
-        case 'QUICK_PAY':
-            const { palm: qpPalm, quantity: qpQuantity, deedDetails: qpDeedDetails, selectedPlan: qpSelectedPlan } = action.payload;
-            const qpTotal = qpPalm.price * qpQuantity;
-            const qpDeed: Deed = { id: `deed-${Date.now()}`, productId: qpPalm.id, intention: qpDeedDetails.intention, name: qpDeedDetails.name, date: new Date().toISOString(), palmType: qpPalm.name, message: qpDeedDetails.message, fromName: qpDeedDetails.fromName, groveKeeperId: qpDeedDetails.groveKeeperId, isPlanted: false };
-            const qpOrder: Order = { id: `order-${Date.now()}`, userId: state.user?.id || 'guest', status: 'pending', totalAmount: qpTotal, createdAt: new Date().toISOString(), items: [{ ...qpPalm, id: `${qpPalm.id}-${Date.now()}`, quantity: qpQuantity, image: `https://picsum.photos/seed/${qpPalm.id}/400/400`, paymentPlan: qpSelectedPlan > 1 ? { installments: qpSelectedPlan } : undefined }], statusHistory: [{ status: 'pending', date: new Date().toISOString() }], deeds: [qpDeed] };
-            const qpPointsEarned = Math.min((qpPalm.points || 0) * qpQuantity, 20000);
-            const qpTimelineEvents = [createTimelineEventFromDeed(qpDeed)];
-            let qpUnlockUpdates = {};
-            if (qpPalm.id === 'p_heritage_language') { qpUnlockUpdates = { hasUnlockedEnglishTest: true }; }
-            const qpUpdatedUser = state.user ? { ...state.user, points: state.user.points + qpPointsEarned, pointsHistory: [...(state.user.pointsHistory || []), { action: 'خرید سریع', points: qpPointsEarned, type: 'barkat' as const, date: new Date().toISOString() }], timeline: [...qpTimelineEvents, ...(state.user.timeline || [])], ...qpUnlockUpdates } : null;
-            dbAdapter.saveOrder(qpOrder);
-            if (qpUpdatedUser) dbAdapter.saveUser(qpUpdatedUser);
-            return { ...state, orders: [...state.orders, qpOrder], isOrderSuccessModalOpen: true, isDeedPersonalizationModalOpen: false, lastOrderDeeds: [qpDeed], lastOrderPointsEarned: qpPointsEarned, user: qpUpdatedUser };
+        case 'QUICK_PAY': {
+            const { palm, quantity, deedDetails, selectedPlan } = action.payload;
+            const qpOrder = orderService.createQuickOrder(state.user, palm, quantity, deedDetails, selectedPlan);
+            const { updatedUser, pointsEarned, newNotifications } = orderService.processOrderPlacement(state, qpOrder);
+
+            return {
+                ...state,
+                orders: [...state.orders, qpOrder],
+                isOrderSuccessModalOpen: true,
+                isDeedPersonalizationModalOpen: false,
+                lastOrderDeeds: qpOrder.deeds || [],
+                lastOrderPointsEarned: pointsEarned,
+                user: updatedUser,
+                notifications: [...newNotifications, ...state.notifications]
+            };
+        }
         case 'CONFIRM_PLANTING': const updatedDeeds = state.allDeeds.map(deed => deed.id === action.payload.deedId ? { ...deed, isPlanted: true, plantedPhotoUrl: `data:image/jpeg;base64,${action.payload.photoBase64}` } : deed); return { ...state, allDeeds: updatedDeeds };
         case 'ADD_DEED_UPDATE': const deedsWithUpdate = state.allDeeds.map(deed => deed.id === action.payload.deedId ? { ...deed, updates: [...(deed.updates || []), action.payload.update] } : deed); return { ...state, allDeeds: deedsWithUpdate };
         case 'ADD_PROPOSAL': return { ...state, proposals: [action.payload, ...state.proposals] };
         case 'UPDATE_PROPOSAL': return { ...state, proposals: state.proposals.map(p => p.id === action.payload.id ? { ...p, ...action.payload } : p) };
         case 'SPEND_MANA_POINTS':
-            if (state.user && state.user.manaPoints >= action.payload.points) {
-                // SECURE CALL
-                dbAdapter.spendManaPoints(action.payload.points).then(success => {
-                    // Handle failure if needed
-                });
-                // Optimistic UI Update
-                const updatedUser = { ...state.user, manaPoints: state.user.manaPoints - action.payload.points, pointsHistory: [...(state.user.pointsHistory || []), { action: action.payload.action, points: -action.payload.points, type: 'mana' as const, date: new Date().toISOString() }] };
-                dbAdapter.saveUser(updatedUser);
-                return { ...state, user: updatedUser };
-            }
-            return state;
+            return state; // Handling logic moved to components
         case 'SET_ENGLISH_SCENARIO': return { ...state, currentEnglishScenario: action.payload };
         case 'SET_CURRENT_VOCABULARY_TOPIC': return { ...state, currentVocabularyTopic: action.payload };
         case 'START_COACHING_SESSION': return { ...state, coachingSession: action.payload };
@@ -392,14 +320,18 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'CLAIM_GIFT_PALM': return { ...state, onboardingStep: 'certificate' };
         case 'END_TOUR': return { ...state, onboardingStep: 'none' };
         case 'SET_SELECTED_LANGUAGE': return { ...state, selectedLanguage: action.payload };
-        case 'INVEST_IN_PROJECT': { const { projectId, amount, method } = action.payload; if (!state.user) return state; const updatedProjects = state.microfinanceProjects.map(p => { if (p.id === projectId) { return { ...p, amountFunded: p.amountFunded + amount, backersCount: p.backersCount + 1 }; } return p; }); let updatedUser = { ...state.user }; const pointsCost = amount / 10; if (method === 'points') { if (updatedUser.points < pointsCost) return state; updatedUser.points -= pointsCost; updatedUser.pointsHistory = [...(updatedUser.pointsHistory || []), { action: 'سرمایه‌گذاری در صندوق رویش', points: -pointsCost, type: 'barkat', date: new Date().toISOString() }]; } updatedUser.impactPortfolio = [...(updatedUser.impactPortfolio || []), { projectId, amountLent: amount, dateLent: new Date().toISOString(), status: 'active' }]; dbAdapter.saveUser(updatedUser); return { ...state, microfinanceProjects: updatedProjects, user: updatedUser }; }
-        case 'ADD_REVIEW': { const { review } = action.payload; if (!state.user) return state; const pointsAwarded = 50; const updatedUser = { ...state.user, points: state.user.points + pointsAwarded, pointsHistory: [...(state.user.pointsHistory || []), { action: 'ثبت تجربه و نظر', points: pointsAwarded, type: 'barkat' as const, date: new Date().toISOString() }] }; const reviewWithStatus = { ...review, status: 'pending' as const }; const updatedReviews = [reviewWithStatus, ...state.reviews]; dbAdapter.saveUser(updatedUser); return { ...state, reviews: updatedReviews, user: updatedUser, pointsToast: { points: pointsAwarded, action: 'ثبت بازتاب تجربه' } }; }
+        case 'INVEST_IN_PROJECT':
+            return state; // Handling logic moved to components
+        case 'ADD_REVIEW':
+            return state; // Handling logic moved to components
         case 'LIKE_REVIEW': { const { reviewId } = action.payload; const updatedReviews = state.reviews.map(r => r.id === reviewId ? { ...r, helpfulCount: r.helpfulCount + 1 } : r); return { ...state, reviews: updatedReviews }; }
         case 'UPDATE_REVIEW_STATUS': { const { reviewId, status } = action.payload; const updatedReviews = state.reviews.map(r => r.id === reviewId ? { ...r, status: status as 'approved' | 'rejected' | 'pending' } : r); return { ...state, reviews: updatedReviews }; }
         case 'DELETE_REVIEW': { const { reviewId } = action.payload; const updatedReviews = state.reviews.filter(r => r.id !== reviewId); return { ...state, reviews: updatedReviews }; }
         case 'ADD_GENERATED_COURSE': { const newCourse = action.payload; return { ...state, generatedCourses: [...(state.generatedCourses || []), newCourse] }; }
         case 'SET_BOTTOM_NAV_VISIBLE': return { ...state, isBottomNavVisible: action.payload };
         case 'LOAD_INITIAL_DATA': return { ...state, ...action.payload };
+        case 'ADD_GAMIFICATION_ALERT': return { ...state, gamificationAlerts: [...state.gamificationAlerts, action.payload] };
+        case 'DISMISS_GAMIFICATION_ALERT': return { ...state, gamificationAlerts: state.gamificationAlerts.slice(1) };
         case 'SET_PENDING_REDIRECT': return { ...state, pendingRedirectView: action.payload };
 
         // --- NEW EXECUTIVE OS HANDLER ---
@@ -408,50 +340,11 @@ function appReducer(state: AppState, action: Action): AppState {
             const payload = actionData.payload;
 
             if (actionData.type === 'create_campaign') {
-                const newCampaign: Campaign = {
-                    id: `camp-${Date.now()}`,
-                    title: payload.title,
-                    description: payload.description,
-                    goal: payload.goal,
-                    current: 0,
-                    unit: payload.unit,
-                    ctaText: 'مشارکت در کمپین',
-                    rewardPoints: 500
-                };
+                const newCampaign = communityService.createCampaign(payload);
                 return { ...state, campaign: newCampaign, pointsToast: { points: 0, action: `کمپین "${payload.title}" فعال شد` } };
             }
 
-            if (actionData.type === 'publish_announcement') {
-                const newPost: CommunityPost = {
-                    id: `post-exec-${Date.now()}`,
-                    authorId: 'admin-bot',
-                    authorName: 'دفتر استراتژی (هوشمانا)',
-                    authorAvatar: 'https://picsum.photos/seed/ai-strategy/100/100',
-                    timestamp: new Date().toISOString(),
-                    text: `# ${payload.title}\n\n${payload.text}`,
-                    likes: 0
-                };
-                dbAdapter.savePost(newPost);
-                return { ...state, communityPosts: [newPost, ...state.communityPosts], pointsToast: { points: 0, action: 'اطلاعیه منتشر شد' } };
-            }
-
-            if (actionData.type === 'grant_bonus') {
-                if (state.user) {
-                    const bonus = payload.amount;
-                    // SECURE CALL for Admin action
-                    // In real world this would be a bulk operation via API
-                    dbAdapter.spendBarkatPoints(-bonus); // Negative spend = Grant
-
-                    const updatedUser = {
-                        ...state.user,
-                        points: state.user.points + bonus,
-                        pointsHistory: [...(state.user.pointsHistory || []), { action: payload.reason, points: bonus, type: 'barkat' as const, date: new Date().toISOString() }]
-                    };
-                    dbAdapter.saveUser(updatedUser);
-                    return { ...state, user: updatedUser, pointsToast: { points: bonus, action: payload.reason } };
-                }
-            }
-
+            // Other admin actions moved to component or utility
             return state;
         }
 
@@ -518,6 +411,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                         await dbAdapter.saveUser(appUser);
                     }
 
+                    dbAdapter.setCurrentUserId(session.user.id);
                     dispatch({
                         type: 'LOGIN_SUCCESS',
                         payload: {
@@ -528,6 +422,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     });
                 }
                 else if (event === 'SIGNED_OUT') {
+                    dbAdapter.setCurrentUserId(null);
                     dispatch({ type: 'LOGOUT' });
                 }
             });

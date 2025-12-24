@@ -323,31 +323,6 @@ export const INITIAL_USERS: User[] = [
         reflectionAnalysesRemaining: 100,
         ambassadorPacksRemaining: 100,
         unlockedTools: ['imageGen', 'videoGen', 'thinking', 'codeGen']
-    },
-    // Custom Admin User
-    {
-        id: 'user_admin_custom',
-        name: 'Admin',
-        fullName: 'مدیر سیستم',
-        phone: '09222453571',
-        joinDate: REFERENCE_DATE_STR,
-        points: 999999,
-        manaPoints: 999999,
-        level: 'استاد کهنسال',
-        isAdmin: true,
-        isGuardian: true,
-        timeline: [],
-        achievements: ['profile_complete', 'guardian'],
-        profileCompletion: { initial: true, additional: true, extra: true },
-        creativeStorageCapacity: 1000,
-        purchasedCourseIds: ['all'],
-        profileImageUrl: 'https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff',
-        allowDirectMessages: true,
-        conversations: [],
-        notifications: [],
-        reflectionAnalysesRemaining: 100,
-        ambassadorPacksRemaining: 100,
-        unlockedTools: ['imageGen', 'videoGen', 'thinking', 'codeGen']
     }
 ];
 
@@ -420,11 +395,11 @@ export const INITIAL_MICROFINANCE_PROJECTS: MicrofinanceProject[] = [
 
 // FIX: Used React.createElement for icons as this is a .ts file, not .tsx
 export const INITIAL_LIVE_ACTIVITIES: LiveActivity[] = [
-    { id: 'act1', icon: React.createElement(SproutIcon, { className: "w-5 h-5 text-green-300" }), text: "سارا احمدی همین حالا یک نخل به یاد پدرش کاشت." },
-    { id: 'act2', icon: React.createElement(BookOpenIcon, { className: "w-5 h-5 text-blue-300" }), text: "علی رضایی در دوره «کسب‌وکار با AI» ثبت‌نام کرد." },
-    { id: 'act3', icon: React.createElement(UserPlusIcon, { className: "w-5 h-5 text-indigo-300" }), text: "مریم حسینی به جامعه نخلستان معنا پیوست." },
-    { id: 'act4', icon: React.createElement(SproutIcon, { className: "w-5 h-5 text-green-300" }), text: "یک شرکت همکار ۱۰ نخل برای کارمندانش کاشت." },
-    { id: 'act5', icon: React.createElement(BookOpenIcon, { className: "w-5 h-5 text-blue-300" }), text: "رضا قاسمی دوره «کوچینگ معنا» را به پایان رساند." },
+    { id: 'act1', icon: React.createElement(SproutIcon, { className: "w-5 h-5 text-green-300" } as any), text: "سارا احمدی همین حالا یک نخل به یاد پدرش کاشت." },
+    { id: 'act2', icon: React.createElement(BookOpenIcon, { className: "w-5 h-5 text-blue-300" } as any), text: "علی رضایی در دوره «کسب‌وکار با AI» ثبت‌نام کرد." },
+    { id: 'act3', icon: React.createElement(UserPlusIcon, { className: "w-5 h-5 text-indigo-300" } as any), text: "مریم حسینی به جامعه نخلستان معنا پیوست." },
+    { id: 'act4', icon: React.createElement(SproutIcon, { className: "w-5 h-5 text-green-300" } as any), text: "یک شرکت همکار ۱۰ نخل برای کارمندانش کاشت." },
+    { id: 'act5', icon: React.createElement(BookOpenIcon, { className: "w-5 h-5 text-blue-300" } as any), text: "رضا قاسمی دوره «کوچینگ معنا» را به پایان رساند." },
 ];
 
 export const INITIAL_MENTORSHIP_REQUESTS: MentorshipRequest[] = [

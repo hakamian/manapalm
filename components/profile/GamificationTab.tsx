@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { User, View } from '../../types';
 import { SproutIcon, LeafIcon, SunIcon, ArrowLeftIcon, CheckCircleIcon, FirstPalmBadgeIcon, CommunityContributorBadgeIcon, PathfinderBadgeIcon, LoyalMemberBadgeIcon, UserCircleIcon, SaplingIcon, SparklesIcon, TrophyIcon, StarIcon, HandshakeIcon, FireIcon, UsersIcon, GlobeIcon, BoltIcon } from '../icons';
 import { getNextLevelInfo, getLevelForPoints, POINT_ALLOCATIONS } from '../../services/gamificationService';
+import { ACHIEVEMENTS } from '../../services/domain/achievements';
 import { useAppDispatch } from '../../AppContext';
 
 interface GamificationTabProps {
@@ -13,16 +14,6 @@ interface GamificationTabProps {
     setActiveTab: (tab: string) => void;
     onStartPlantingFlow: () => void;
 }
-
-const allAchievements = [
-    { id: 'first_palm', name: 'اولین نخل', description: 'اولین نخل خود را در نخلستان معنا بکارید.', icon: <FirstPalmBadgeIcon />, points: 100 },
-    { id: 'community_contributor', name: 'مشارکت‌کننده فعال', description: 'اولین پست خود را در کانون جامعه منتشر کنید.', icon: <CommunityContributorBadgeIcon />, points: 50 },
-    { id: 'pathfinder', name: 'راه‌بلد', description: 'سفر معنای خود را در بخش کوچینگ آغاز کنید.', icon: <PathfinderBadgeIcon />, points: 200 },
-    { id: 'loyal_member', name: 'عضو وفادار', description: 'برای بیش از ۳ روز متوالی وارد سایت شوید.', icon: <LoyalMemberBadgeIcon />, points: 75 },
-    { id: 'profile_complete', name: 'پروفایل کامل', description: 'تمام بخش‌های پروفایل خود را تکمیل کنید.', icon: <UserCircleIcon />, points: 50 },
-    { id: 'reach_sapling', name: 'سطح نهال', description: 'به سطح "نهال" برسید.', icon: <SaplingIcon />, points: 0 },
-    { id: 'digital_cocreator', name: 'هم‌آفرین دیجیتال', description: 'با استفاده از استودیوی هم‌آفرینی، میراث دیجیتال خود را بسازید.', icon: <SparklesIcon />, points: 1000 },
-];
 
 const legendaryPerks = [
     { title: "دعوت به رویداد سالانه", desc: "حضور VIP در جشن برداشت خرما و دیدار با بنیان‌گذاران.", icon: <StarIcon />, minLevel: "درخت تنومند" },
@@ -52,7 +43,7 @@ const ActiveChallengeCard: React.FC<{
             <div className="p-6">
                 <h4 className="text-lg font-bold text-white mb-2 pr-10">{title}</h4>
                 <p className="text-sm text-stone-400 mb-4">{description}</p>
-                
+
                 <div className="flex justify-between text-xs text-stone-300 mb-1">
                     <span>پیشرفت جمعی</span>
                     <span>{current.toLocaleString('fa-IR')} / {target.toLocaleString('fa-IR')}</span>
@@ -60,7 +51,7 @@ const ActiveChallengeCard: React.FC<{
                 <div className="w-full bg-gray-700 rounded-full h-2 mb-4">
                     <div className={`bg-${color}-500 h-2 rounded-full transition-all duration-1000`} style={{ width: `${progress}%` }}></div>
                 </div>
-                
+
                 <div className="flex justify-between items-center mt-4 border-t border-gray-700 pt-4">
                     <div className="text-xs">
                         <span className="block text-stone-500">زمان باقی‌مانده:</span>
@@ -116,17 +107,17 @@ const GamificationTab: React.FC<GamificationTabProps> = ({ user, animatedBarkatP
             {/* Tab Switcher for Gamification sub-sections */}
             <div className="flex justify-center mb-6">
                 <div className="bg-gray-800 p-1 rounded-xl flex shadow-lg border border-gray-700">
-                    <button 
+                    <button
                         onClick={() => setActiveSection('status')}
                         className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeSection === 'status' ? 'bg-green-600 text-white shadow' : 'text-gray-400 hover:text-white'}`}
                     >
-                        <TrophyIcon className="w-4 h-4"/> وضعیت من
+                        <TrophyIcon className="w-4 h-4" /> وضعیت من
                     </button>
-                    <button 
+                    <button
                         onClick={() => setActiveSection('battles')}
                         className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeSection === 'battles' ? 'bg-red-600 text-white shadow' : 'text-gray-400 hover:text-white'}`}
                     >
-                        <FireIcon className="w-4 h-4"/> نبردها و چالش‌ها
+                        <FireIcon className="w-4 h-4" /> نبردها و چالش‌ها
                     </button>
                 </div>
             </div>
@@ -156,7 +147,7 @@ const GamificationTab: React.FC<GamificationTabProps> = ({ user, animatedBarkatP
 
                     <div className="bg-gray-800 p-6 rounded-lg">
                         <h3 className="text-xl font-semibold mb-4">سطح و پیشرفت شما</h3>
-                         <div className="flex justify-between items-center mb-4">
+                        <div className="flex justify-between items-center mb-4">
                             <div>
                                 <p className="text-sm text-gray-400">سطح فعلی</p>
                                 <p className="text-2xl font-bold text-green-400">{currentLevel.name}</p>
@@ -190,7 +181,7 @@ const GamificationTab: React.FC<GamificationTabProps> = ({ user, animatedBarkatP
                             </div>
                         </div>
                     </div>
-                    
+
                     <div className="bg-gradient-to-b from-amber-900/20 to-gray-800 border border-amber-500/30 p-6 rounded-xl relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
                         <h3 className="text-xl font-bold text-amber-400 mb-6 flex items-center gap-2">
@@ -250,17 +241,17 @@ const GamificationTab: React.FC<GamificationTabProps> = ({ user, animatedBarkatP
                         </div>
                         <div className="space-y-6">
                             <h3 className="text-xl font-semibold">نشان‌های افتخار</h3>
-                            {allAchievements.map(ach => {
+                            {ACHIEVEMENTS.map(ach => {
                                 const isUnlocked = user.unlockedAchievements?.includes(ach.id);
                                 const actionInfo = getActionForAchievement(ach.id);
                                 return (
                                     <div key={ach.id} className={`bg-gray-800 p-4 rounded-lg border flex flex-col gap-4 ${isUnlocked ? 'border-yellow-400/50' : 'border-gray-700 opacity-80'}`}>
                                         <div className="flex items-start gap-4">
-                                            <div className={`w-16 h-16 flex-shrink-0 ${isUnlocked ? 'text-yellow-400' : 'text-gray-500'}`}>
-                                                {React.cloneElement(ach.icon as React.ReactElement<{ className?: string }>, { className: 'w-16 h-16' })}
+                                            <div className={`w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-xl bg-gray-700 ${isUnlocked ? 'text-yellow-400 bg-yellow-400/10' : 'text-gray-500'}`}>
+                                                <TrophyIcon className="w-8 h-8" />
                                             </div>
                                             <div className="flex-grow">
-                                                <h4 className="font-bold text-white">{ach.name}</h4>
+                                                <h4 className="font-bold text-white">{ach.title}</h4>
                                                 <p className="text-sm text-gray-400 mt-1">{ach.description}</p>
                                             </div>
                                         </div>
@@ -268,7 +259,7 @@ const GamificationTab: React.FC<GamificationTabProps> = ({ user, animatedBarkatP
                                             {isUnlocked ? (
                                                 <div className="flex items-center justify-end gap-1 text-xs text-green-400 font-bold">
                                                     <CheckCircleIcon className="w-4 h-4" />
-                                                    <span>باز شده! (+{ach.points} امتیاز)</span>
+                                                    <span>باز شده! (+{ach.rewardBarkat || ach.rewardMana} امتیاز)</span>
                                                 </div>
                                             ) : (
                                                 actionInfo && (
@@ -317,7 +308,7 @@ const GamificationTab: React.FC<GamificationTabProps> = ({ user, animatedBarkatP
                             color="amber"
                             onJoin={() => onNavigate(View.DailyOasis)}
                         />
-                         <ActiveChallengeCard
+                        <ActiveChallengeCard
                             title="ماراتن یادگیری"
                             description="تکمیل ۳ درس از آکادمی زبان یا بیزینس در ۴۸ ساعت."
                             target={3}
@@ -328,7 +319,7 @@ const GamificationTab: React.FC<GamificationTabProps> = ({ user, animatedBarkatP
                             color="blue"
                             onJoin={() => onNavigate(View.Courses)}
                         />
-                         <ActiveChallengeCard
+                        <ActiveChallengeCard
                             title="دعوت دوستان"
                             description="دعوت از ۳ دوست جدید به پلتفرم."
                             target={3}

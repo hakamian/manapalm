@@ -28,10 +28,6 @@ if (sentryDsn) {
   console.warn("Sentry DSN not found. Error monitoring is disabled.");
 }
 
-const Header = React.lazy(() => import('./components/Header'));
-const Footer = React.lazy(() => import('./components/Footer'));
-const LiveActivityBanner = React.lazy(() => import('./components/LiveActivityBanner'));
-
 const rootElement = document.getElementById('root');
 if (!rootElement) {
   throw new Error("Could not find root element to mount to");
@@ -40,7 +36,7 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <Sentry.ErrorBoundary fallback={({ error, resetErrorBoundary }) => <CrashFallback error={error} resetErrorBoundary={resetErrorBoundary} />}>
+    <Sentry.ErrorBoundary fallback={({ error, resetError }) => <CrashFallback error={error} resetErrorBoundary={resetError} />}>
       <HelmetProvider>
         <AppProvider>
           <div className="relative min-h-screen text-white overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-100">
@@ -51,12 +47,7 @@ root.render(
             </div>
             <div className="noise-overlay"></div>
 
-            <React.Suspense fallback={null}><LiveActivityBanner /></React.Suspense>
-            <React.Suspense fallback={<div className="h-20" />}><Header /></React.Suspense>
-
             <App />
-
-            <React.Suspense fallback={null}><Footer /></React.Suspense>
           </div>
         </AppProvider>
       </HelmetProvider>

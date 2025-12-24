@@ -122,6 +122,7 @@ export interface AppState {
     currentEnglishScenario?: string;
     currentVocabularyTopic?: string;
     selectedLanguage?: TargetLanguage;
+    gamificationAlerts: { type: 'achievement' | 'level_up', data: any }[];
 }
 
 export type Action =
@@ -197,7 +198,9 @@ export type Action =
     | { type: 'SET_BOTTOM_NAV_VISIBLE'; payload: boolean }
     | { type: 'LOAD_INITIAL_DATA'; payload: Partial<AppState> }
     | { type: 'SET_PENDING_REDIRECT'; payload: View | undefined }
-    | { type: 'EXECUTE_SMART_ACTION'; payload: SmartAction }; // New Action
+    | { type: 'EXECUTE_SMART_ACTION'; payload: SmartAction }
+    | { type: 'ADD_GAMIFICATION_ALERT'; payload: { type: 'achievement' | 'level_up', data: any } }
+    | { type: 'DISMISS_GAMIFICATION_ALERT' };
 
 // Global Constants
 export const CREATIVE_ACT_STORAGE_LIMIT = 20;

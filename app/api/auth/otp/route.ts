@@ -95,8 +95,59 @@ export async function POST(req: Request) {
                 return NextResponse.json({ success: false, message: 'کد منقضی شده است' }, { status: 400 });
             }
 
-            await supabase.from('otps').delete().eq('mobile', mobile);
+            // We don't delete yet, because Step 3 might want to set a password using this same code
+            // But we should return success
             return NextResponse.json({ success: true });
+        }
+
+        if (action === 'set-password') {
+            const { password, code: verifyCode } = await req.json();
+
+            // 1. Double check the OTP one last time for security
+            const { data: otpData, error: otpError } = await supabase
+                .from('otps')
+                .select('*')
+                .eq('mobile', mobile)
+                .eq('code', verifyCode)
+                .single();
+
+            if (otpError || !otpData) {
+                return NextResponse.json({ success: false, message: 'زمان شما به پایان رسیده یا کد نامعتبر است. مجدداً تلاش کنید.' }, { status: 400 });
+            }
+
+            // 2. Check if user exists in Supabase Auth
+            // Note: phone in Supabase must be E.164
+            const e164Mobile = '+98' + mobile.substring(1);
+
+            // Search for user
+            const { data: listData, error: listError } = await supabase.auth.admin.listUsers();
+            if (listError) throw listError;
+
+            const users = (listData?.users || []) as any[];
+            const existingAuthUser = users.find((u: any) => u.phone === e164Mobile || u.email === mobile + "@mana.com");
+
+            if (existingAuthUser) {
+                // Update password
+                const { error: updateError } = await supabase.auth.admin.updateUserById(
+                    existingAuthUser.id,
+                    { password: password }
+                );
+                if (updateError) throw updateError;
+            } else {
+                // Create user
+                const { error: createError } = await supabase.auth.admin.createUser({
+                    phone: e164Mobile,
+                    password: password,
+                    phone_confirm: true,
+                    user_metadata: { full_name: mobile } // Temporary
+                });
+                if (createError) throw createError;
+            }
+
+            // 3. Cleanup OTP
+            await supabase.from('otps').delete().eq('mobile', mobile);
+
+            return NextResponse.json({ success: true, message: 'رمز عبور با موفقیت تنظیم شد.' });
         }
 
         return NextResponse.json({ message: 'Action not valid' }, { status: 400 });

@@ -33,6 +33,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     const [lastName, setLastName] = useState('');
     const [regPassword, setRegPassword] = useState('');
     const [regConfirmPassword, setRegConfirmPassword] = useState('');
+    const [verifiedCode, setVerifiedCode] = useState('');
 
     const otpInputsRef = useRef<Array<HTMLInputElement | null>>([]);
 
@@ -143,6 +144,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                 throw new Error(data.message || 'کد وارد شده صحیح نمی‌باشد');
             }
 
+            setVerifiedCode(otp);
+
             // If success, check if user exists in our App State/DB
             const existingUser = allUsers.find(u => u.phone === phoneNumber);
 
@@ -213,23 +216,37 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         try {
             const fullName = `${firstName.trim()} ${lastName.trim()}`;
 
+            // 1. Set Password via secure backend if provided
+            if (regPassword) {
+                const passRes = await fetch('/api/auth/otp', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'set-password',
+                        mobile: phoneNumber,
+                        code: verifiedCode,
+                        password: regPassword
+                    })
+                });
+                const passData = await passRes.json();
+                if (!passRes.ok) throw new Error(passData.message || 'خطا در تنظیم رمز عبور');
+            }
+
+            // 2. Update Profile metadata if signed in (optional, session might not exist yet)
             if (supabase) {
-                const updates: any = {
-                    data: { full_name: fullName, name: fullName }
-                };
-                if (regPassword) {
-                    updates.password = regPassword;
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session) {
+                    await supabase.auth.updateUser({
+                        data: { full_name: fullName, name: fullName }
+                    });
                 }
-                await supabase.auth.updateUser(updates);
             }
 
             onLoginSuccess({ phone: phoneNumber, fullName: fullName });
             setStep(4);
         } catch (err: any) {
-            // Even if update fails, proceed in simulation
-            const fullName = `${firstName.trim()} ${lastName.trim()}`;
-            onLoginSuccess({ phone: phoneNumber, fullName: fullName });
-            setStep(4);
+            console.error("Registration Finalization Error:", err);
+            setError(err.message || 'خطا در تکمیل ثبت‌نام');
         } finally {
             setIsLoading(false);
         }
