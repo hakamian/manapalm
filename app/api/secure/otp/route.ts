@@ -4,22 +4,24 @@ import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
     try {
-        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+        const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY; // Service key usually doesn't have VITE_ prefix as it's secret
         const smsApiKey = process.env.SMS_IR_API_KEY;
         const templateId = process.env.SMS_IR_TEMPLATE_ID;
 
         // Defensive check to prevent server crash (HTML response)
         if (!supabaseUrl || !supabaseServiceKey || !smsApiKey || !templateId) {
-            console.error('❌ Missing Environment Variables:', {
-                supabaseUrl: !!supabaseUrl,
-                supabaseServiceKey: !!supabaseServiceKey,
-                smsApiKey: !!smsApiKey,
-                templateId: !!templateId
-            });
+            const missingVars = {
+                supabaseUrl: !supabaseUrl,
+                supabaseServiceKey: !supabaseServiceKey,
+                smsApiKey: !smsApiKey,
+                templateId: !templateId
+            };
+            console.error('❌ Missing Environment Variables:', missingVars);
             return NextResponse.json({
                 success: false,
-                message: 'تنظیمات سرور (Environment Variables) ناقص است. لطفاً فایل .env را چک کنید.'
+                message: 'تنظیمات سرور (Environment Variables) ناقص است. لطفاً فایل .env را چک کنید.',
+                missing: Object.keys(missingVars).filter(k => (missingVars as any)[k])
             }, { status: 500 });
         }
 
