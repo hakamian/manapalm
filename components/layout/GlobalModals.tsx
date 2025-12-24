@@ -55,6 +55,13 @@ const GlobalModals: React.FC<GlobalModalsProps> = ({ onLoginSuccess }) => {
         voiceOfPalmDeed
     } = useAppState();
 
+    console.log('GlobalModals Render Debug:', {
+        isPalmSelectionModalOpen,
+        isCartOpen,
+        isDeedPersonalizationModalOpen,
+        palmTypesCount: palmTypes?.length
+    });
+
     const dispatch = useAppDispatch();
 
     return (
