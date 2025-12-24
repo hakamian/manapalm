@@ -3,6 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 
+import { useAppState } from '../AppContext';
+import { View } from '../types';
+
 interface ClientWrapperProps {
     children: React.ReactNode;
 }
@@ -33,6 +36,9 @@ export default function ClientWrapper({ children }: ClientWrapperProps) {
         console.log('✅ ClientWrapper mounted');
     }, []);
 
+    const { currentView } = useAppState();
+    const isAdminView = currentView === View.AdminDashboard || currentView === View.AutoCEO;
+
     return (
         <div className="relative min-h-screen text-white overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-100">
             {/* Debug indicator */}
@@ -51,14 +57,14 @@ export default function ClientWrapper({ children }: ClientWrapperProps) {
             <div className="noise-overlay"></div>
 
             {/* Client-only components loaded dynamically */}
-            <LiveActivityBanner />
-            <Header />
+            {!isAdminView && <LiveActivityBanner />}
+            {!isAdminView && <Header />}
 
-            <div className="relative z-10">
+            <div className={`relative z-10 ${!isAdminView ? 'pt-24 md:pt-32' : ''}`}>
                 {children}
             </div>
 
-            <Footer />
+            {!isAdminView && <Footer />}
         </div>
     );
 }

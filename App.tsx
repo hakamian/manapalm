@@ -242,14 +242,7 @@ const App: React.FC = () => {
             <WhatsNewModal />
             <CommandPalette />
 
-            {!isAdminView && (
-                <>
-                    {hasBanner && mounted && <LiveActivityBanner activities={liveActivities} />}
-                    <Suspense fallback={<div className="h-20" />}><Header /></Suspense>
-                </>
-            )}
-
-            <div className={`relative z-10 ${!isAdminView ? (hasBanner ? 'pt-36' : 'pt-24') : ''}`}>
+            <div className="relative z-10">
                 <MainContent />
             </div>
 
