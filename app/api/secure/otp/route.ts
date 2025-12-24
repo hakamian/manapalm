@@ -104,7 +104,7 @@ export async function POST(req: Request) {
         }
 
         if (action === 'set-password') {
-            const { password, code: verifyCode } = await req.json();
+            const { password, code: verifyCode, fullName } = await req.json();
 
             // 1. Double check the OTP one last time for security
             const { data: otpData, error: otpError } = await supabase
@@ -129,11 +129,16 @@ export async function POST(req: Request) {
             const users = (listData?.users || []) as any[];
             const existingAuthUser = users.find((u: any) => u.phone === e164Mobile || u.email === mobile + "@mana.com");
 
+            const finalMetadata = { full_name: fullName || mobile };
+
             if (existingAuthUser) {
-                // Update password
+                // Update password and metadata
                 const { error: updateError } = await supabase.auth.admin.updateUserById(
                     existingAuthUser.id,
-                    { password: password }
+                    {
+                        password: password,
+                        user_metadata: { ...existingAuthUser.user_metadata, ...finalMetadata }
+                    }
                 );
                 if (updateError) throw updateError;
             } else {
@@ -142,7 +147,7 @@ export async function POST(req: Request) {
                     phone: e164Mobile,
                     password: password,
                     phone_confirm: true,
-                    user_metadata: { full_name: mobile } // Temporary
+                    user_metadata: finalMetadata
                 });
                 if (createError) throw createError;
             }

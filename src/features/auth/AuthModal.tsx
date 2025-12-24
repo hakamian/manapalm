@@ -225,7 +225,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                         action: 'set-password',
                         mobile: phoneNumber,
                         code: verifiedCode,
-                        password: regPassword
+                        password: regPassword,
+                        fullName: fullName
                     })
                 });
                 const passData = await passRes.json();
