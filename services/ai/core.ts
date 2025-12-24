@@ -40,15 +40,25 @@ export async function callProxy(
             headers['x-user-id'] = session.user.id;
         }
 
+        const requestData: any = { ...data };
+        if (action === 'generateContent' && !requestData.contents) {
+            requestData.contents = data?.contents || [];
+        }
+        if (!requestData.prompt && data?.prompt) {
+            requestData.prompt = data.prompt;
+        }
+
+        const requestBody = {
+            action,
+            model: model || DEFAULT_FREE_MODEL,
+            data: requestData,
+            provider
+        };
+
         const response = await fetch('/api/proxy', {
             method: 'POST',
             headers,
-            body: JSON.stringify({
-                action,
-                model: model || DEFAULT_FREE_MODEL,
-                data,
-                provider
-            }),
+            body: JSON.stringify(requestBody),
             signal: controller.signal
         });
         clearTimeout(timeoutId);
