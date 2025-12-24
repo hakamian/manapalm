@@ -3,15 +3,17 @@ import React, { Suspense } from 'react';
 import { useAppState, useAppDispatch } from '../../AppContext';
 import { View } from '../../types';
 import PalmSelectionModal from '../PalmSelectionModal';
+import ShoppingCart from '../../src/features/shop/ShoppingCart';
+import DeedPersonalizationModal from '../DeedPersonalizationModal';
 
 // Lazy Import Modals
 const AuthModal = React.lazy(() => import('../../src/features/auth/AuthModal'));
-const ShoppingCart = React.lazy(() => import('../../src/features/shop/ShoppingCart'));
+// ShoppingCart is now static
 const OrderSuccessModal = React.lazy(() => import('../OrderSuccessModal'));
 const WelcomeModal = React.lazy(() => import('../WelcomeModal'));
 const PointsAwardedToast = React.lazy(() => import('../PointsAwardedToast'));
 // PalmSelectionModal is now static
-const DeedPersonalizationModal = React.lazy(() => import('../DeedPersonalizationModal'));
+// DeedPersonalizationModal is now static
 const CompanionUnlockModal = React.lazy(() => import('../CompanionUnlockModal'));
 const CompanionTrialModal = React.lazy(() => import('../CompanionTrialModal'));
 const ReflectionAnalysisUnlockModal = React.lazy(() => import('../ReflectionAnalysisUnlockModal'));
