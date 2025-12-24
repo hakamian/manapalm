@@ -2,6 +2,7 @@
 import React, { Suspense } from 'react';
 import { useAppState, useAppDispatch } from '../../AppContext';
 import { View } from '../../types';
+import PalmSelectionModal from '../PalmSelectionModal';
 
 // Lazy Import Modals
 const AuthModal = React.lazy(() => import('../../src/features/auth/AuthModal'));
@@ -9,7 +10,7 @@ const ShoppingCart = React.lazy(() => import('../../src/features/shop/ShoppingCa
 const OrderSuccessModal = React.lazy(() => import('../OrderSuccessModal'));
 const WelcomeModal = React.lazy(() => import('../WelcomeModal'));
 const PointsAwardedToast = React.lazy(() => import('../PointsAwardedToast'));
-const PalmSelectionModal = React.lazy(() => import('../PalmSelectionModal'));
+// PalmSelectionModal is now static
 const DeedPersonalizationModal = React.lazy(() => import('../DeedPersonalizationModal'));
 const CompanionUnlockModal = React.lazy(() => import('../CompanionUnlockModal'));
 const CompanionTrialModal = React.lazy(() => import('../CompanionTrialModal'));
