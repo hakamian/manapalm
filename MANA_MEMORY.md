@@ -576,6 +576,7 @@ graph TD
 
 | تاریخ | تغییر | توسط |
 |-------|-------|------|
+| 2025-12-25 17:00 | **Auth Cleanup**: Removed "Test Login", enabled real Google OAuth, verified SMS login locally, configured Vercel Env Vars. | Mana (Unified OS) |
 | 2025-12-24 20:00 | **Fix**: Removed duplicate `Header`, `Footer`, `LiveActivityBanner` from `App.tsx` (Legacy) -> Unified in `ClientWrapper` | Mana (Unified OS) |
 | 2025-12-22 19:30 | **✅ AI Fixed**: Switched to `mistralai/devstral-2512:free` via OpenRouter (Google quota=0, tested models) | Mana (Unified OS) |
 | 2025-12-22 18:55 | **Debugging**: Hardcoded Proxy to use `gemini-2.0-flash-exp` strictly (Ignoring frontend model requests to prevent 404s) | Mana (Unified OS) |
