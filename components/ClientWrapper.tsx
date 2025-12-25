@@ -95,7 +95,7 @@ export default function ClientWrapper({ children }: ClientWrapperProps) {
 
             {/* Client-only components loaded dynamically */}
             {!isAdminView && <LiveActivityBanner />}
-            {!isAdminView && <Header />}
+            <Header />
 
             <div className={`relative z-10 ${!isAdminView ? 'pt-24 md:pt-32' : ''}`}>
                 {children}
