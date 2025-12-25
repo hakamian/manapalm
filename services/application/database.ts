@@ -49,7 +49,8 @@ export const dbAdapter = {
             return { status: 'Local Mock Mode', scalabilityScore: 0, issues: ['Running on local dummy data (No DB connection).'] };
         }
         try {
-            const { error } = await supabase!.from('profiles').select('id', { count: 'exact', head: true });
+            // Optimization: Just check for connectivity, don't count all rows.
+            const { error } = await supabase!.from('products').select('id').limit(1).maybeSingle();
             if (error) throw error;
             return { status: 'Healthy (Connected)', scalabilityScore: 95, issues: [] };
         } catch (e: any) {

@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 
-import { useAppState } from '../AppContext';
+import { useAppState, useAppDispatch } from '../AppContext';
 import { View } from '../types';
+import GlobalModals from './layout/GlobalModals';
 
 interface ClientWrapperProps {
     children: React.ReactNode;
@@ -30,13 +31,49 @@ const LiveActivityBanner = dynamic(() => import('./LiveActivityBanner'), {
  */
 export default function ClientWrapper({ children }: ClientWrapperProps) {
     const [mounted, setMounted] = useState(false);
+    const { currentView, allUsers } = useAppState();
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         setMounted(true);
         console.log('✅ ClientWrapper mounted');
     }, []);
 
-    const { currentView } = useAppState();
+    const handleLoginSuccess = useCallback((loginData: { phone?: string; email?: string; fullName?: string }) => {
+        const existingUser = allUsers.find(u =>
+            (loginData.phone && u.phone === loginData.phone) ||
+            (loginData.email && u.email === loginData.email)
+        );
+
+        const isAdminLogin = loginData.email === 'hhakamian@gmail.com' ||
+            loginData.email === 'admin@nakhlestanmana.com' ||
+            loginData.phone === '09222453571';
+
+        if (existingUser) {
+            const updatedUser = isAdminLogin ? { ...existingUser, isAdmin: true } : existingUser;
+            dispatch({ type: 'LOGIN_SUCCESS', payload: { user: updatedUser, orders: [], keepOpen: false } });
+        } else {
+            const newUser = {
+                id: isAdminLogin ? 'user_admin_custom' : `user_${Date.now()}`,
+                name: loginData.fullName || 'کاربر جدید',
+                fullName: loginData.fullName,
+                phone: loginData.phone || '',
+                email: loginData.email,
+                points: isAdminLogin ? 50000 : 100,
+                manaPoints: isAdminLogin ? 10000 : 500,
+                level: isAdminLogin ? 'استاد کهنسال' : 'جوانه',
+                isAdmin: isAdminLogin,
+                joinDate: new Date().toISOString(),
+                profileCompletion: { initial: false, additional: false, extra: false },
+                conversations: [],
+                notifications: [],
+                reflectionAnalysesRemaining: 0,
+                ambassadorPacksRemaining: 0
+            };
+            dispatch({ type: 'LOGIN_SUCCESS', payload: { user: newUser as any, orders: [], keepOpen: true } });
+        }
+    }, [allUsers, dispatch]);
+
     const isAdminView = currentView === View.AdminDashboard || currentView === View.AutoCEO;
 
     return (
@@ -65,6 +102,8 @@ export default function ClientWrapper({ children }: ClientWrapperProps) {
             </div>
 
             {!isAdminView && <Footer />}
+
+            <GlobalModals onLoginSuccess={handleLoginSuccess} />
         </div>
     );
 }

@@ -21,23 +21,7 @@ export default function RootLayout({
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
                 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@100..900&display=swap" rel="stylesheet" />
                 <link rel="icon" href="https://picsum.photos/seed/nakhlestan-logo/32/32" />
-                <script src="https://cdn.tailwindcss.com"></script>
-                <script dangerouslySetInnerHTML={{
-                    __html: `
-                    tailwind.config = {
-                        theme: {
-                            extend: {
-                                colors: {
-                                    'mana-primary': '#10b981',
-                                    'mana-primary-dark': '#065f46',
-                                    'mana-accent': '#fbbf24',
-                                    'mana-bg': '#050505',
-                                }
-                            }
-                        }
-                    }
-                    `
-                }} />
+
 
                 <style dangerouslySetInnerHTML={{
                     __html: `

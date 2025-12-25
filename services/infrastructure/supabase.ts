@@ -21,8 +21,8 @@ const getEnv = (key: string) => {
 };
 
 const DEFAULT_URL = 'https://sbjrayzghjfsmmuygwbw.supabase.co';
-const DEFAULT_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNianJheXpnaGpmc21tdXlnd2J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3MTY1NDQsImV4cCI6MjA4MDI5MjU0NH0.W7B-Dr1hiUNl9ok4_PUTPdJG8pJsBXtoOwWciItoF3Q';
-const BAD_URLS = ['https://sbjrayzghjfsmmuugwbw.supabase.co'];
+// SECURITY: Removed hardcoded API key. Must use Environment Variables.
+const DEFAULT_KEY = '';
 
 let supabaseUrl = getEnv('VITE_SUPABASE_URL') || DEFAULT_URL;
 let supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY') || DEFAULT_KEY;
@@ -30,16 +30,10 @@ let supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY') || DEFAULT_KEY;
 if (typeof window !== 'undefined') {
     const storedUrl = localStorage.getItem('VITE_SUPABASE_URL');
     const storedKey = localStorage.getItem('VITE_SUPABASE_ANON_KEY');
-    const isBadUrl = storedUrl && (BAD_URLS.includes(storedUrl) || storedUrl.includes('uugwbw'));
 
-    if (isBadUrl) {
-        localStorage.removeItem('VITE_SUPABASE_URL');
-        localStorage.removeItem('VITE_SUPABASE_ANON_KEY');
-        supabaseUrl = DEFAULT_URL;
-    } else {
-        if (storedUrl) supabaseUrl = storedUrl;
-        if (storedKey) supabaseAnonKey = storedKey;
-    }
+    // Prioritize localStorage if available to allow runtime configuration
+    if (storedUrl) supabaseUrl = storedUrl;
+    if (storedKey) supabaseAnonKey = storedKey;
 }
 
 const isConfigured = supabaseUrl && supabaseAnonKey && supabaseUrl.startsWith('http');

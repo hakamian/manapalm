@@ -1,16 +1,18 @@
 -- [SOURCE OF TRUTH] Based on User Report - 2025-12-10
+-- MODIFIED: 2025-12-25 (Safe Mode update)
 
--- 1. CLEANUP
-DROP TABLE IF EXISTS public.reviews;
-DROP TABLE IF EXISTS public.timeline_events;
-DROP TABLE IF EXISTS public.orders;
-DROP TABLE IF EXISTS public.posts;
-DROP TABLE IF EXISTS public.agent_tasks;
-DROP TABLE IF EXISTS public.products;
-DROP TABLE IF EXISTS public.profiles;
+-- 1. CLEANUP (COMMENTED OUT TO PREVENT DATA LOSS)
+-- WARNING: Uncomment these only if you want to WIPE all data and start fresh.
+-- DROP TABLE IF EXISTS public.reviews;
+-- DROP TABLE IF EXISTS public.timeline_events;
+-- DROP TABLE IF EXISTS public.orders;
+-- DROP TABLE IF EXISTS public.posts;
+-- DROP TABLE IF EXISTS public.agent_tasks;
+-- DROP TABLE IF EXISTS public.products CASCADE; -- Added CASCADE just in case
+-- DROP TABLE IF EXISTS public.profiles CASCADE;
 
 -- 2. PROFILES (Text ID for frontend compatibility)
-CREATE TABLE public.profiles (
+CREATE TABLE IF NOT EXISTS public.profiles (
     id TEXT PRIMARY KEY, 
     email TEXT,
     full_name TEXT,
@@ -27,73 +29,123 @@ CREATE TABLE public.profiles (
 );
 
 -- 3. PRODUCTS
-CREATE TABLE public.products (
-    id TEXT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS public.products (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     name TEXT NOT NULL,
-    price NUMERIC NOT NULL,
-    category TEXT,
+    price INTEGER NOT NULL,
+    category TEXT NOT NULL CHECK (category IN ('Date Syrup', 'Palm Handicrafts', 'Workshops', 'Tours', 'Adoption')),
     image_url TEXT,
     description TEXT,
-    type TEXT, -- 'physical', 'digital', 'service'
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    type TEXT DEFAULT 'physical',
     stock INTEGER DEFAULT 0,
     points INTEGER DEFAULT 0,
     popularity INTEGER DEFAULT 0,
-    tags TEXT[],
-    download_url TEXT,
-    file_type TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+    tags TEXT[] DEFAULT '{}'
 );
 
 -- 4. ORDERS
-CREATE TABLE public.orders (
-    id TEXT PRIMARY KEY,
-    user_id TEXT, 
-    total_amount NUMERIC NOT NULL,
-    status TEXT DEFAULT 'ثبت شده',
-    items JSONB DEFAULT '[]'::jsonb,
-    status_history JSONB DEFAULT '[]'::jsonb,
+CREATE TABLE IF NOT EXISTS public.orders (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    user_id TEXT REFERENCES public.profiles(id),
+    total_amount INTEGER NOT NULL,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'shipped', 'completed', 'cancelled')),
+    items JSONB NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- 5. POSTS
-CREATE TABLE public.posts (
-    id TEXT PRIMARY KEY,
+CREATE TABLE IF NOT EXISTS public.posts (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     author_id TEXT REFERENCES public.profiles(id),
-    content TEXT,
-    likes_count INTEGER DEFAULT 0,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    image_url TEXT,
+    type TEXT DEFAULT 'timeline' CHECK (type IN ('timeline', 'article', 'news', 'vision')),
+    likes INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL 
 );
 
 -- 6. AGENT TASKS
-CREATE TABLE public.agent_tasks (
-    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    type TEXT NOT NULL,
+CREATE TABLE IF NOT EXISTS public.agent_tasks (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    task_type TEXT NOT NULL,
     status TEXT DEFAULT 'pending',
-    payload JSONB,
     result TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- 7. SECURITY (RLS)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+
+-- Reset Profiles Policies
+DROP POLICY IF EXISTS "Public profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Insert profiles" ON public.profiles;
+DROP POLICY IF EXISTS "Update own profile" ON public.profiles;
+
 CREATE POLICY "Public profiles" ON public.profiles FOR SELECT USING (true);
 CREATE POLICY "Insert profiles" ON public.profiles FOR INSERT WITH CHECK (auth.uid()::text = id);
 CREATE POLICY "Update own profile" ON public.profiles FOR UPDATE USING (auth.uid()::text = id);
 
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
+
+-- Reset Products Policies
+DROP POLICY IF EXISTS "Public products" ON public.products;
+DROP POLICY IF EXISTS "Admin insert products" ON public.products;
+DROP POLICY IF EXISTS "Admin update products" ON public.products;
+DROP POLICY IF EXISTS "Admin delete products" ON public.products;
+
 CREATE POLICY "Public products" ON public.products FOR SELECT USING (true);
-CREATE POLICY "Admin insert products" ON public.products FOR INSERT WITH CHECK (true);
+CREATE POLICY "Admin insert products" ON public.products FOR INSERT WITH CHECK (
+  auth.uid()::text IN (SELECT id FROM public.profiles WHERE is_admin = true)
+);
+CREATE POLICY "Admin update products" ON public.products FOR UPDATE USING (
+  auth.uid()::text IN (SELECT id FROM public.profiles WHERE is_admin = true)
+);
+CREATE POLICY "Admin delete products" ON public.products FOR DELETE USING (
+  auth.uid()::text IN (SELECT id FROM public.profiles WHERE is_admin = true)
+);
 
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
+
+-- Reset Orders Policies
+DROP POLICY IF EXISTS "View own orders" ON public.orders;
+DROP POLICY IF EXISTS "Insert own orders" ON public.orders;
+DROP POLICY IF EXISTS "Admin view all orders" ON public.orders;
+
 CREATE POLICY "View own orders" ON public.orders FOR SELECT USING (auth.uid()::text = user_id);
 CREATE POLICY "Insert own orders" ON public.orders FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+CREATE POLICY "Admin view all orders" ON public.orders FOR SELECT USING (
+  auth.uid()::text IN (SELECT id FROM public.profiles WHERE is_admin = true)
+);
 
 ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
+
+-- Reset Posts Policies
+DROP POLICY IF EXISTS "Public posts" ON public.posts;
+DROP POLICY IF EXISTS "Insert posts" ON public.posts;
+DROP POLICY IF EXISTS "Author update posts" ON public.posts;
+
 CREATE POLICY "Public posts" ON public.posts FOR SELECT USING (true);
 CREATE POLICY "Insert posts" ON public.posts FOR INSERT WITH CHECK (auth.uid()::text = author_id);
+CREATE POLICY "Author update posts" ON public.posts FOR UPDATE USING (auth.uid()::text = author_id);
 
 ALTER TABLE public.agent_tasks ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Agent tasks public" ON public.agent_tasks FOR ALL USING (true);
+
+-- Reset Agent Tasks Policies (Critical Fix)
+DROP POLICY IF EXISTS "Agent tasks public" ON public.agent_tasks;
+DROP POLICY IF EXISTS "Admin only agent tasks" ON public.agent_tasks;
+
+CREATE POLICY "Admin only agent tasks" ON public.agent_tasks FOR ALL USING (
+  auth.uid()::text IN (SELECT id FROM public.profiles WHERE is_admin = true)
+);
+
+-- 7.1 PERFORMANCE INDEXES
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON public.orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_posts_author_id ON public.posts(author_id);
+CREATE INDEX IF NOT EXISTS idx_enrollments_user_id ON public.enrollments(user_id);
+CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(category);
+CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
 
 -- 8. INITIAL DATA
 INSERT INTO public.products (id, name, price, category, image_url, description, type, stock, points, popularity, tags)
@@ -102,7 +154,8 @@ VALUES
 ('p_heritage_meaning', 'نخل معنا', 30000000, 'نخل میراث', 'https://images.unsplash.com/photo-1512428559087-560fa5ce7d87?auto=format&fit=crop&w=1000&q=80', 'کاشت نخلی برای یافتن و بزرگداشت معنای شخصی زندگی.', 'physical', 10, 150000, 100, ARRAY['growth', 'self-discovery']),
 ('p_heritage_iran', 'نخل ایران', 9000000, 'نخل میراث', 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1765110314/aerial-view_vwdbw2.png', 'برای سربلندی و آبادانی ایران...', 'physical', 50, 45000, 95, ARRAY['community', 'patriotism']),
 ('p3', 'خرمای شکلاتی لوکس', 150000, 'محصولات خرما', 'https://images.unsplash.com/photo-1607361869848-6a56e2978370?auto=format&fit=crop&w=800&q=80', 'ترکیبی بی‌نظیر از خرمای شیرین و شکلات تلخ بلژیکی.', 'physical', 3, 300, 85, ARRAY['gratitude']),
-('p_ambassador_pack', 'بسته سفیر', 50000, 'ارتقا', 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800&auto=format&fit=crop', 'قابلیت «سفیر قصه‌گو» را فعال کنید.', 'service', 999, 100, 100, ARRAY['community', 'creativity']);
+('p_ambassador_pack', 'بسته سفیر', 50000, 'ارتقا', 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800&auto=format&fit=crop', 'قابلیت «سفیر قصه‌گو» را فعال کنید.', 'service', 999, 100, 100, ARRAY['community', 'creativity'])
+ON CONFLICT (id) DO NOTHING;
 
 
 -- === PART 2: ADVANCED FEATURES (LMS, Crowdfund) ===
