@@ -257,7 +257,36 @@ export const dbAdapter = {
     },
 
     async getAllProducts(): Promise<Product[]> {
-        if (!this.isLive()) return INITIAL_PRODUCTS;
+        if (!this.isLive()) {
+            if (typeof localStorage !== 'undefined') {
+                const stored = localStorage.getItem('nakhlestan_local_products');
+                if (stored) {
+                    try {
+                        const localProducts = JSON.parse(stored);
+                        // Merge initial products with local changes if needed, or just return local if it bootstraps from initial
+                        // Strategy: Local storage acts as the "live" DB in mock mode.
+                        // If local is empty, we initialize it? No, getAllProducts just returns what's there.
+                        // But we want to see INITIAL_PRODUCTS too.
+                        // Let's assume nakhlestan_local_products contains ALL products (initial + added).
+                        // If it doesn't exist, we return INITIAL_PRODUCTS.
+                        return localProducts;
+                    } catch (e) {
+                        console.error("Error parsing local products", e);
+                    }
+                }
+                // Initialize local storage with initial products for first run
+                const initial = INITIAL_PRODUCTS.map(p => ({
+                    ...p,
+                    isActive: p.isActive ?? true,
+                    description: p.description || '',
+                    stock: p.stock || 0
+                }));
+                // Don't write to localStorage here to avoid side-effects in getters, 
+                // but returning INITIAL_PRODUCTS is safe.
+                return initial as Product[];
+            }
+            return INITIAL_PRODUCTS;
+        }
 
         const { data, error } = await supabase!
             .from('products')
@@ -288,7 +317,25 @@ export const dbAdapter = {
     },
 
     async createProduct(product: Omit<Product, 'id' | 'dateAdded' | 'popularity'>): Promise<Product | null> {
-        if (!this.isLive()) return null;
+        if (!this.isLive()) {
+            // Local Storage Persistence
+            if (typeof localStorage === 'undefined') return null;
+
+            const allProducts = await this.getAllProducts();
+            const newId = `p_local_${Date.now()}`;
+            const newProduct: Product = {
+                ...product,
+                id: newId,
+                dateAdded: new Date().toISOString(),
+                popularity: 0,
+                isActive: true,
+                tags: product.tags || []
+            };
+
+            const updatedList = [newProduct, ...allProducts];
+            localStorage.setItem('nakhlestan_local_products', JSON.stringify(updatedList));
+            return newProduct;
+        }
 
         const newProduct = {
             name: product.name,
@@ -320,7 +367,13 @@ export const dbAdapter = {
     },
 
     async updateProduct(id: string, updates: Partial<Product>): Promise<void> {
-        if (!this.isLive()) return;
+        if (!this.isLive()) {
+            if (typeof localStorage === 'undefined') return;
+            const allProducts = await this.getAllProducts();
+            const updatedList = allProducts.map(p => p.id === id ? { ...p, ...updates } : p);
+            localStorage.setItem('nakhlestan_local_products', JSON.stringify(updatedList));
+            return;
+        }
         const dbUpdates: any = {};
         if (updates.name) dbUpdates.name = updates.name;
         if (updates.price !== undefined) dbUpdates.price = updates.price;
@@ -338,7 +391,13 @@ export const dbAdapter = {
     },
 
     async deleteProduct(id: string): Promise<void> {
-        if (!this.isLive()) return;
+        if (!this.isLive()) {
+            if (typeof localStorage === 'undefined') return;
+            const allProducts = await this.getAllProducts();
+            const updatedList = allProducts.filter(p => p.id !== id);
+            localStorage.setItem('nakhlestan_local_products', JSON.stringify(updatedList));
+            return;
+        }
         const { error } = await supabase!.from('products').delete().eq('id', id);
         if (error) throw error;
     },
