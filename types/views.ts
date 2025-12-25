@@ -50,7 +50,8 @@ export enum View {
     'ai-tools' = 'AI_TOOLS',
     PAYMENT_CALLBACK = 'PAYMENT_CALLBACK',
     PublicStory = 'PUBLIC_STORY',
-    AutoCEO = 'AUTO_CEO' // New View
+    AutoCEO = 'AUTO_CEO', // New View
+    CampaignLanding = 'CAMPAIGN_LANDING'
 }
 
 export type Page = View;
