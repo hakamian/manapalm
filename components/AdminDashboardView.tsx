@@ -235,7 +235,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                     {activeTab === 'community' && <ModernCommunityDashboard posts={posts} />}
                     {activeTab === 'growth' && <ModernAnalyticsDashboard users={users} orders={orders} />}
                     {activeTab === 'gamification' && <ModernGamificationDashboard allUsers={users} />}
-                    {activeTab === 'campaigns' && <ModernCampaignsDashboard campaign={campaign} platformData={platformData} />}
+                    {activeTab === 'campaigns' && <ModernCampaignsDashboard campaign={campaign} platformData={platformData} orders={orders} />}
                     {activeTab === 'content_factory' && <ModernContentFactoryDashboard posts={posts} />}
                     {activeTab === 'art_studio' && <AiArtStudioDashboard />}
                     {activeTab === 'ai_think_tank' && (

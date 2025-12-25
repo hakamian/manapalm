@@ -98,6 +98,7 @@ const MainContent: React.FC = () => {
             case View.CommunityHub: return <CommunityHubView />;
             case View.AdminDashboard:
                 // SECURITY GUARD: Only render for admins
+                console.log('🛡️ Admin Guard Check:', { user, isAdmin: user?.isAdmin });
                 if (!user || !user.isAdmin) {
                     // Redirect to home or show denied message
                     // Ideally we should dispatch SET_VIEW to Home, but returning HomeView works for now

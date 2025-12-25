@@ -104,21 +104,51 @@ export const INITIAL_PRODUCTS: Product[] = [
     { id: 'p_heritage_memory', name: 'نخل خاطره', price: 8500000, points: 42500, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1469122312224-c5846569feb1?q=80&w=800&auto=format&fit=crop', popularity: 91, dateAdded: getPastDate(18), stock: 25, description: 'ثبت یک خاطره خوش و ماندگار در دل طبیعت.', type: 'physical', isActive: true, tags: ['memory'] },
     { id: 'p_heritage_gift', name: 'نخل هدیه', price: 8500000, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=800&auto=format&fit=crop', popularity: 89, dateAdded: getPastDate(40), stock: 4, description: 'یک هدیه متفاوت و ماندگار برای کسانی که دوستشان دارید.', type: 'physical', isActive: true, points: 42500, tags: ['family', 'gratitude'] },
     // Products
+    // --- MANAPALM ORGANIC PRODUCTS ---
     {
-        id: 'p3',
-        name: 'خرمای شکلاتی لوکس',
-        price: 150000,
-        category: 'محصولات خرما',
-        // CHANGE: Updated image to chocolate dates
-        image: 'https://images.unsplash.com/photo-1607361869848-6a56e2978370?auto=format&fit=crop&w=800&q=80',
-        popularity: 85,
-        dateAdded: getPastDate(5),
-        stock: 3,
-        description: 'ترکیبی بی‌نظیر از خرمای شیرین و شکلات تلخ بلژیکی. یک هدیه لوکس و مقوی برای عزیزانتان یا یک پذیرایی خاص برای مهمانان ویژه. تهیه شده از بهترین مواد اولیه.',
+        id: 'mp_fig_powder',
+        name: 'پودر انجیر ارگانیک ماناپالم',
+        price: 120000,
+        category: 'صنایع دستی',
+        image: '/images/products/fig-powder.png',
+        popularity: 95,
+        dateAdded: getPastDate(2),
+        stock: 50,
+        description: 'پودر انجیر ۱۰۰٪ ارگانیک ماناپالم، بدون هیچ مواد افزودنی. سرشار از فیبر، آنتی‌اکسیدان و مواد معدنی. مناسب برای صبحانه، اسموتی و دسرها.',
         type: 'physical',
         isActive: true,
-        tags: ['gratitude'],
+        tags: ['organic', 'health'],
+        points: 240
+    },
+    {
+        id: 'mp_dates_simple',
+        name: 'خرمای مضافتی ماناپالم (۵۰۰ گرم)',
+        price: 150000,
+        category: 'محصولات خرما',
+        image: '/images/products/dates-simple.png',
+        popularity: 92,
+        dateAdded: getPastDate(3),
+        stock: 100,
+        description: 'خرمای مضافتی درجه یک از نخلستان‌های جنوب ایران. بسته‌بندی کرافت اکو-فرندلی با پنجره شفاف. یک انتخاب سالم و خوشمزه برای هر روز.',
+        type: 'physical',
+        isActive: true,
+        tags: ['organic', 'gratitude'],
         points: 300
+    },
+    {
+        id: 'mp_dates_luxury',
+        name: 'باکس هدیه خرمای درباری ماناپالم',
+        price: 450000,
+        category: 'محصولات خرما',
+        image: '/images/products/dates-luxury.png',
+        popularity: 88,
+        dateAdded: getPastDate(1),
+        stock: 25,
+        description: 'جعبه هدیه لاکچری خرمای درباری با بسته‌بندی مشکی مات و فویل طلایی. مناسب برای هدیه‌دادن در مناسبت‌های خاص، عید و جشن‌ها. یک هدیه به‌یادماندنی.',
+        type: 'physical',
+        isActive: true,
+        tags: ['gift', 'luxury', 'celebration'],
+        points: 900
     },
     {
         id: 'p4',
@@ -137,20 +167,19 @@ export const INITIAL_PRODUCTS: Product[] = [
         points: 440
     },
     {
-        id: 'p6',
-        name: 'شیره خرما خالص',
-        price: 85000,
+        id: 'mp_date_syrup',
+        name: 'شیره خرما ماناپالم (۵۰۰ml)',
+        price: 200000,
         category: 'محصولات خرما',
-        // CHANGE: Updated image to syrup/honey vibe
-        image: 'https://images.unsplash.com/photo-1587049359681-3676a82a35d6?auto=format&fit=crop&w=800&q=80',
-        popularity: 88,
-        dateAdded: getPastDate(12),
-        stock: 2,
-        description: 'شیره خرمای ۱۰۰٪ طبیعی و خالص، بدون هیچ‌گونه مواد افزودنی. یک منبع انرژی فوق‌العاده برای شروع روز و یک شیرین‌کننده سالم برای انواع غذاها و دسرها.',
+        image: '/images/products/date-syrup.png',
+        popularity: 90,
+        dateAdded: getPastDate(4),
+        stock: 40,
+        description: 'شیره خرمای ۱۰۰٪ طبیعی و خالص ماناپالم در بطری شیشه‌ای با درب چوبی. بدون هیچ‌گونه مواد افزودنی. یک شیرین‌کننده سالم و طبیعی جایگزین شکر.',
         type: 'physical',
         isActive: true,
-        tags: ['sustainability'],
-        points: 170
+        tags: ['organic', 'health'],
+        points: 400
     },
     {
         id: 'p7',

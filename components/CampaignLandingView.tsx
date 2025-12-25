@@ -1,10 +1,22 @@
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAppState, useAppDispatch } from '../AppContext';
 import { View } from '../types';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import PlantingRitualModal from './PlantingRitualModal';
-import { ArrowLeftIcon, SparklesIcon, ClockIcon, GlobeAltIcon, RocketLaunchIcon, CheckBadgeIcon } from './icons';
+import {
+    ArrowLeftIcon, SparklesIcon, ClockIcon, GlobeAltIcon, RocketLaunchIcon,
+    CheckBadgeIcon, PaperClipIcon, PhotoIcon, PhoneIcon, UserCircleIcon, BriefcaseIcon
+} from './icons';
+
+interface RequestFormData {
+    businessName: string;
+    industry: string;
+    socialLink: string;
+    phone: string;
+    description: string;
+    logo: string | null; // Base64
+}
 
 const CampaignLandingView: React.FC = () => {
     const { user, products } = useAppState();
@@ -12,6 +24,20 @@ const CampaignLandingView: React.FC = () => {
     const [isRitualOpen, setIsRitualOpen] = useState(false);
     const [hasPlanted, setHasPlanted] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [requestSubmitted, setRequestSubmitted] = useState(false);
+
+    // Form State
+    const [formData, setFormData] = useState<RequestFormData>({
+        businessName: '',
+        industry: '',
+        socialLink: '',
+        phone: user?.phone || '',
+        description: '',
+        logo: null
+    });
+
+    // File Input Ref
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handleStartFlow = () => {
         if (!user) {
@@ -26,7 +52,6 @@ const CampaignLandingView: React.FC = () => {
     const handleRitualComplete = () => {
         setIsRitualOpen(false);
         setHasPlanted(true);
-        // Optional: Trigger a small confetti or toast
         dispatch({ type: 'SHOW_POINTS_TOAST', payload: { points: 100, action: 'تعهد سبز', type: 'mana' } });
         setTimeout(() => {
             scrollToRequestForm();
@@ -37,29 +62,65 @@ const CampaignLandingView: React.FC = () => {
         document.getElementById('request-form')?.scrollIntoView({ behavior: 'smooth' });
     };
 
-    const handleSubmitRequest = () => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            if (file.size > 500 * 1024) {
+                alert('حجم فایل باید کمتر از ۵۰۰ کیلوبایت باشد.');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setFormData(prev => ({ ...prev, logo: reader.result as string }));
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSubmitRequest = (e: React.FormEvent) => {
+        e.preventDefault();
         setLoading(true);
-        // Find the campaign product
+
         const campaignProduct = products.find(p => p.id === 'campaign_website_service');
 
         if (campaignProduct) {
-            // Using ADD_TO_CART then PLACE_ORDER simulation or direct logic?
-            // Since we want a direct "Request" feel, we might assume the user 'buys' this 0-price item.
-            // For now, let's simulate adding to cart and opening checkout or direct success.
-            // Since price is 0, we can add to cart and maybe auto-checkout logic needs to exist.
-            // Simplified: Add to cart -> Open Cart. 
-            // Better: Add to cart -> Checkout View (User confirms).
+            // Construct Order Metadata/Details
+            const orderDetails = {
+                ...formData,
+                requestDate: new Date().toISOString(),
+                plan: '3-5 pages starter',
+                promise: 'Call by tomorrow'
+            };
 
-            // Dispatch action to add to cart
+            // Dispatch Order Logic
+            // We put the details in 'deedDetails' property of action as a carrier for metadata
             dispatch({
                 type: 'ADD_TO_CART',
-                payload: { product: campaignProduct, quantity: 1 }
+                payload: {
+                    product: campaignProduct,
+                    quantity: 1,
+                    deedDetails: orderDetails // Passing form data as metadata
+                }
             });
 
-            setTimeout(() => {
+            // Simulate API Call delay
+            setTimeout(async () => {
                 setLoading(false);
-                dispatch({ type: 'TOGGLE_CART', payload: true });
-            }, 800);
+                setRequestSubmitted(true);
+
+                // Send Confirmation SMS
+                try {
+                    const { smsService } = await import('../services/smsService');
+                    // Using the provided Template ID
+                    await smsService.sendTemplateSms(formData.phone, 738447, [
+                        { name: "Name", value: formData.businessName }
+                    ]);
+                    console.log("SMS Sent Successfully");
+                } catch (err) {
+                    console.error("Failed to send SMS:", err);
+                    // Don't block UI success
+                }
+            }, 1500);
         } else {
             console.error("Campaign product not found!");
             setLoading(false);
@@ -95,7 +156,7 @@ const CampaignLandingView: React.FC = () => {
                     <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto leading-relaxed">
                         ما کنارتان هستیم تا با ابزارهای مدرن، کارهای زمان‌بر را حذف کنیم.
                         <br />
-                        یک سایت حرفه‌ای تا آخر هفته داشته باشید و به آنچه واقعاً مهم است برسید.
+                        یک سایت حرفه‌ای <span className="text-white font-bold">۳ تا ۵ صفحه‌ای</span> تا آخر هفته تحویل بگیرید.
                     </p>
 
                     <button
@@ -121,12 +182,12 @@ const CampaignLandingView: React.FC = () => {
                         </div>
                         <h3 className="text-2xl font-bold mb-4">طراحی سایت حرفه‌ای</h3>
                         <p className="text-gray-400 mb-6">
-                            نیاز نیست ماه‌ها درگیر طراحی باشید. تیم متخصص ما با کمک AI، سایت شما را با استاندارد جهانی طراحی و تا پایان هفته تحویل می‌دهد.
+                            سایت ۳ تا ۵ صفحه‌ای شامل صفحه اصلی، درباره ما، خدمات و تماس. طراحی شده با اصول UI/UX مدرن.
                         </p>
                         <ul className="space-y-3 mb-8 text-gray-300">
-                            <li className="flex items-center gap-2"><CheckBadgeIcon className="w-5 h-5 text-green-500" /> طراحی واکنش‌گرا (ریسپانسیو)</li>
-                            <li className="flex items-center gap-2"><CheckBadgeIcon className="w-5 h-5 text-green-500" /> بهینه برای SEO</li>
-                            <li className="flex items-center gap-2"><CheckBadgeIcon className="w-5 h-5 text-green-500" /> اتصال به درگاه پرداخت</li>
+                            <li className="flex items-center gap-2"><CheckBadgeIcon className="w-5 h-5 text-green-500" /> شامل ۳ تا ۵ صفحه استاندارد</li>
+                            <li className="flex items-center gap-2"><CheckBadgeIcon className="w-5 h-5 text-green-500" /> ریسپانسیو و موبایل فرندلی</li>
+                            <li className="flex items-center gap-2"><CheckBadgeIcon className="w-5 h-5 text-green-500" /> تحویل فوری (تا پایان هفته)</li>
                         </ul>
                     </div>
 
@@ -140,7 +201,7 @@ const CampaignLandingView: React.FC = () => {
                         </div>
                         <h3 className="text-2xl font-bold mb-4">ایجنت‌های هوشمند (n8n)</h3>
                         <p className="text-gray-400 mb-6">
-                            کارهای تکراری را به ربات‌ها بسپارید. ایجنت‌های ما ایمیل‌ها را پاسخ می‌دهند، محتوا تولید می‌کنند و مشتریان را مدیریت می‌کنند.
+                            کارهای تکراری را به ربات‌ها بسپارید. ایجنت‌های ما ایمیل‌ها را پاسخ می‌دهند و مشتریان را مدیریت می‌کنند.
                         </p>
                         <ul className="space-y-3 mb-8 text-gray-300 opacity-60">
                             <li className="flex items-center gap-2"><ClockIcon className="w-5 h-5 text-gray-500" /> صرفه‌جویی ۲۰ ساعت در هفته</li>
@@ -152,53 +213,158 @@ const CampaignLandingView: React.FC = () => {
 
             {/* Request Form Area */}
             <section id="request-form" className="px-6 py-20 bg-black/20 mt-10">
-                <div className="container mx-auto max-w-3xl text-center">
-                    <h2 className="text-3xl font-bold mb-8">آماده‌اید بار اضافی را زمین بگذارید؟</h2>
+                <div className="container mx-auto max-w-3xl">
+                    <div className="text-center mb-10">
+                        <h2 className="text-3xl font-bold mb-4">اطلاعات کسب‌وکار شما</h2>
+                        <p className="text-gray-400">فرم زیر را پر کنید تا کارشناسان ما تا فردا با شما تماس بگیرند.</p>
+                    </div>
 
                     {hasPlanted ? (
                         <div className="bg-gradient-to-b from-gray-800 to-gray-900 border border-green-500/30 p-8 rounded-3xl shadow-2xl">
-                            <div className="flex flex-col items-center mb-8">
-                                <div className="w-16 h-16 bg-green-500 rounded-full flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(34,197,94,0.5)]">
-                                    <SparklesIcon className="w-8 h-8 text-white" />
+                            {requestSubmitted ? (
+                                <div className="text-center py-10">
+                                    <div className="inline-flex items-center justify-center w-20 h-20 bg-green-500/20 rounded-full mb-6 ring-2 ring-green-500 text-green-400">
+                                        <CheckBadgeIcon className="w-10 h-10" />
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-white mb-4">درخواست شما با موفقیت ثبت شد</h3>
+                                    <p className="text-lg text-gray-300 mb-8">
+                                        کارشناسان ما درخواست شما را بررسی کرده و <span className="text-amber-400 font-bold">تا فردا</span> با شما تماس خواهند گرفت.
+                                    </p>
+                                    <button
+                                        onClick={() => dispatch({ type: 'SET_VIEW', payload: View.UserProfile })} // Redirect to profile or home
+                                        className="text-gray-400 hover:text-white underline"
+                                    >
+                                        بازگشت به پروفایل
+                                    </button>
                                 </div>
-                                <h3 className="text-xl font-bold text-green-400">تعهد شما ثبت شد</h3>
-                                <p className="text-gray-400 mt-2">حالا نوبت ماست که به وعده خود عمل کنیم.</p>
-                            </div>
-
-                            <div className="text-right bg-gray-800/50 p-6 rounded-xl border border-gray-700 mb-8">
-                                <h4 className="font-bold mb-2 text-white">درخواست طراحی سایت</h4>
-                                <p className="text-sm text-gray-400 mb-4">با کلیک بر روی دکمه زیر، درخواست شما به سبد خرید اضافه می‌شود (هزینه: ۰ تومان). پس از نهایی کردن سفارش، کارشناسان ما با شما تماس خواهند گرفت.</p>
-                                <div className="flex justify-between items-center bg-gray-900 p-4 rounded-lg">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-12 h-12 bg-gray-800 rounded-md flex items-center justify-center">
-                                            <GlobeAltIcon className="w-6 h-6 text-blue-400" />
-                                        </div>
+                            ) : (
+                                <form onSubmit={handleSubmitRequest} className="space-y-6">
+                                    <div className="grid md:grid-cols-2 gap-6">
                                         <div>
-                                            <div className="font-bold text-white">پکیج طراحی سایت (کمپین معنا)</div>
-                                            <div className="text-xs text-blue-300">ویژه کارآفرینان</div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">نام کسب‌وکار / برند <span className="text-red-500">*</span></label>
+                                            <div className="relative">
+                                                <BriefcaseIcon className="absolute right-3 top-3.5 w-5 h-5 text-gray-500" />
+                                                <input
+                                                    type="text"
+                                                    required
+                                                    className="w-full bg-gray-900/50 border border-gray-700 rounded-lg py-3 pr-10 pl-4 text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                                                    placeholder="مثال: گالری هنر مدرن"
+                                                    value={formData.businessName}
+                                                    onChange={e => setFormData({ ...formData, businessName: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">حوزه فعالیت <span className="text-red-500">*</span></label>
+                                            <input
+                                                type="text"
+                                                required
+                                                className="w-full bg-gray-900/50 border border-gray-700 rounded-lg py-3 px-4 text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                                                placeholder="مثال: فروشگاه پوشاک، مشاوره..."
+                                                value={formData.industry}
+                                                onChange={e => setFormData({ ...formData, industry: e.target.value })}
+                                            />
                                         </div>
                                     </div>
-                                    <div className="text-green-400 font-bold">رایگان</div>
-                                </div>
-                            </div>
 
-                            <button
-                                onClick={handleSubmitRequest}
-                                disabled={loading}
-                                className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2"
-                            >
-                                {loading ? (
-                                    <span className="animate-pulse">در حال ثبت...</span>
-                                ) : (
-                                    <>
-                                        <span>ثبت درخواست نهایی</span>
-                                        <ArrowLeftIcon className="w-5 h-5" />
-                                    </>
-                                )}
-                            </button>
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">شماره تماس (برای هماهنگی) <span className="text-red-500">*</span></label>
+                                            <div className="relative">
+                                                <PhoneIcon className="absolute right-3 top-3.5 w-5 h-5 text-gray-500" />
+                                                <input
+                                                    type="tel"
+                                                    required
+                                                    dir="ltr"
+                                                    className="w-full bg-gray-900/50 border border-gray-700 rounded-lg py-3 pr-10 pl-4 text-white text-right focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                                                    placeholder="0912..."
+                                                    value={formData.phone}
+                                                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-300 mb-2">لینک شبکه‌های اجتماعی (اختیاری)</label>
+                                            <div className="relative">
+                                                <GlobeAltIcon className="absolute right-3 top-3.5 w-5 h-5 text-gray-500" />
+                                                <input
+                                                    type="text"
+                                                    dir="ltr"
+                                                    className="w-full bg-gray-900/50 border border-gray-700 rounded-lg py-3 pr-10 pl-4 text-white text-right focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                                                    placeholder="instagram.com/..."
+                                                    value={formData.socialLink}
+                                                    onChange={e => setFormData({ ...formData, socialLink: e.target.value })}
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">توضیحات / هدف اصلی سایت</label>
+                                        <textarea
+                                            rows={3}
+                                            className="w-full bg-gray-900/50 border border-gray-700 rounded-lg py-3 px-4 text-white focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+                                            placeholder="چه چیزی برایتان مهم است؟..."
+                                            value={formData.description}
+                                            onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-300 mb-2">آپلود لوگو (اختیاری)</label>
+                                        <div
+                                            onClick={() => fileInputRef.current?.click()}
+                                            className="border-2 border-dashed border-gray-700 rounded-lg p-6 flex flex-col items-center justify-center cursor-pointer hover:border-green-500 hover:bg-gray-800/30 transition-all text-center group"
+                                        >
+                                            <input
+                                                type="file"
+                                                ref={fileInputRef}
+                                                className="hidden"
+                                                accept="image/*"
+                                                onChange={handleFileChange}
+                                            />
+                                            {formData.logo ? (
+                                                <div className="relative">
+                                                    <img src={formData.logo} alt="Logo Preview" className="h-16 w-auto object-contain mb-2 mx-auto" />
+                                                    <span className="text-xs text-green-400">تصویر انتخاب شد (برای تغییر کلیک کنید)</span>
+                                                </div>
+                                            ) : (
+                                                <>
+                                                    <PhotoIcon className="w-8 h-8 text-gray-500 mb-3 group-hover:text-green-400 transition-colors" />
+                                                    <span className="text-sm text-gray-400">برای انتخاب لوگو کلیک کنید</span>
+                                                    <span className="text-xs text-gray-600 mt-1 max-w-[200px]">حداکثر ۵۰۰ کیلوبایت (JPG/PNG)</span>
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <button
+                                        type="submit"
+                                        disabled={loading}
+                                        className="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2 mt-4"
+                                    >
+                                        {loading ? (
+                                            <span className="animate-pulse">در حال ثبت اطلاعات...</span>
+                                        ) : (
+                                            <>
+                                                <span>ثبت و ارسال به کارشناسان</span>
+                                                <ArrowLeftIcon className="w-5 h-5" />
+                                            </>
+                                        )}
+                                    </button>
+                                </form>
+                            )}
                         </div>
                     ) : (
-                        <p className="text-gray-400 italic">برای ثبت درخواست، ابتدا باید «شروع سفر دیجیتال» را در بالای صفحه بزنید و تعهد خود را بکارید.</p>
+                        <div className="text-center py-10 bg-gray-800/20 rounded-3xl border border-gray-700 border-dashed">
+                            <SparklesIcon className="w-12 h-12 text-gray-600 mx-auto mb-4" />
+                            <p className="text-gray-400 italic mb-6">برای ثبت درخواست، ابتدا باید «شروع سفر دیجیتال» را در بالای صفحه بزنید و تعهد خود را بکارید.</p>
+                            <button onClick={handleStartFlow} className="text-green-400 hover:text-green-300 font-bold border-b border-green-500/30 hover:border-green-400 pb-1 transition-all">
+                                شروع سفر دیجیتال
+                            </button>
+                        </div>
                     )}
                 </div>
             </section>

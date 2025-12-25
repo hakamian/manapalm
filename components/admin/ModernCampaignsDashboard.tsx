@@ -1,21 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAppDispatch } from '../../AppContext';
-import { Campaign } from '../../types';
+import { Campaign, Order } from '../../types';
 import { generateCampaignIdea } from '../../services/geminiService';
-import { SparklesIcon, ArrowDownTrayIcon, CheckCircleIcon, ClockIcon, TrophyIcon } from '../icons';
+import { SparklesIcon, ArrowDownTrayIcon, CheckCircleIcon, ClockIcon, TrophyIcon, UserCircleIcon, PhoneIcon, BriefcaseIcon } from '../icons';
 import '../../styles/admin-dashboard.css';
 
 interface CampaignsDashboardProps {
     campaign: Campaign;
     platformData: any;
+    orders: Order[];
 }
 
-const ModernCampaignsDashboard: React.FC<CampaignsDashboardProps> = ({ campaign, platformData }) => {
+const ModernCampaignsDashboard: React.FC<CampaignsDashboardProps> = ({ campaign, platformData, orders = [] }) => {
     const dispatch = useAppDispatch();
     const [editableCampaign, setEditableCampaign] = useState<Campaign>(campaign);
     const [suggestedCampaign, setSuggestedCampaign] = useState<Campaign | null>(null);
     const [isGeneratingCampaign, setIsGeneratingCampaign] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // Filter Requests for Campaign
+    const campaignRequests = useMemo(() => {
+        return orders.filter(o =>
+            o.items.some(i => i.id === 'campaign_website_service')
+        ).map(o => {
+            const item = o.items.find(i => i.id === 'campaign_website_service');
+            return {
+                id: o.id,
+                user: o.userId,
+                date: o.date,
+                status: o.status,
+                details: item?.deedDetails || {} // Assuming we store form data in deedDetails
+            };
+        });
+    }, [orders]);
 
     useEffect(() => setEditableCampaign(campaign), [campaign]);
 
@@ -38,7 +55,7 @@ const ModernCampaignsDashboard: React.FC<CampaignsDashboardProps> = ({ campaign,
         const report = {
             generatedAt: new Date().toISOString(),
             currentCampaign: editableCampaign,
-            suggestedCampaign,
+            requests: campaignRequests,
             pastCampaigns
         };
 
@@ -68,7 +85,7 @@ const ModernCampaignsDashboard: React.FC<CampaignsDashboardProps> = ({ campaign,
                             مدیریت کمپین‌ها
                         </h1>
                         <p className="admin-body" style={{ color: 'var(--admin-text-tertiary)' }}>
-                            ایجاد و مدیریت کمپین‌های تبلیغاتی با کمک هوش مصنوعی
+                            ایجاد و مدیریت کمپین‌های تبلیغاتی و مشاهده درخواست‌های سایت
                         </p>
                     </div>
                     <button onClick={handleExport} className="admin-btn admin-btn-ghost">
@@ -91,22 +108,26 @@ const ModernCampaignsDashboard: React.FC<CampaignsDashboardProps> = ({ campaign,
                 <div className="admin-stat-card" style={{ '--gradient': 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)' } as React.CSSProperties}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
-                            <p className="admin-label">کمپین فعال</p>
-                            <h3 className="admin-heading-3" style={{ marginTop: '0.5rem' }}>{editableCampaign.title}</h3>
+                            <p className="admin-label">درخواست‌های سایت</p>
+                            <h3 className="admin-heading-3" style={{ marginTop: '0.5rem' }}>{campaignRequests.length}</h3>
                         </div>
-                        <SparklesIcon className="w-8 h-8" style={{ color: 'var(--admin-purple)' }} />
+                        <div style={{ color: 'var(--admin-purple)' }}>
+                            <SparklesIcon className="w-8 h-8" />
+                        </div>
                     </div>
                 </div>
 
                 <div className="admin-stat-card" style={{ '--gradient': 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)' } as React.CSSProperties}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
-                            <p className="admin-label">پیشرفت</p>
+                            <p className="admin-label">پیشرفت هدف</p>
                             <h3 className="admin-heading-2" style={{ marginTop: '0.5rem' }}>
                                 {progressPercentage.toFixed(0)}%
                             </h3>
                         </div>
-                        <CheckCircleIcon className="w-8 h-8" style={{ color: 'var(--admin-green)' }} />
+                        <div style={{ color: 'var(--admin-green)' }}>
+                            <CheckCircleIcon className="w-8 h-8" />
+                        </div>
                     </div>
                 </div>
 
@@ -118,9 +139,72 @@ const ModernCampaignsDashboard: React.FC<CampaignsDashboardProps> = ({ campaign,
                                 {pastCampaigns.length}
                             </h3>
                         </div>
-                        <ClockIcon className="w-8 h-8" style={{ color: 'var(--admin-amber)' }} />
+                        <div style={{ color: 'var(--admin-amber)' }}>
+                            <ClockIcon className="w-8 h-8" />
+                        </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Request List Section */}
+            <div className="admin-card admin-animate-fade-in" style={{ padding: '1.5rem', marginBottom: '2rem' }}>
+                <h3 className="admin-heading-3" style={{ marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--admin-border)' }}>
+                    لیست درخواست‌های طراحی سایت (کمپین معنا)
+                </h3>
+
+                {campaignRequests.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--admin-text-tertiary)' }}>
+                        <p>هنوز درخواستی ثبت نشده است.</p>
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+                            <thead>
+                                <tr style={{ borderBottom: '1px solid var(--admin-border)', color: 'var(--admin-text-secondary)', fontSize: '0.875rem' }}>
+                                    <th style={{ padding: '1rem' }}>تاریخ</th>
+                                    <th style={{ padding: '1rem' }}>نام کسب‌وکار</th>
+                                    <th style={{ padding: '1rem' }}>حوزه</th>
+                                    <th style={{ padding: '1rem' }}>شماره تماس</th>
+                                    <th style={{ padding: '1rem' }}>توضیحات</th>
+                                    <th style={{ padding: '1rem' }}>وضعیت</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {campaignRequests.map((req) => (
+                                    <tr key={req.id} style={{ borderBottom: '1px solid var(--admin-border)', color: 'var(--admin-text-primary)' }}>
+                                        <td style={{ padding: '1rem' }} className="text-sm font-mono text-gray-400">
+                                            {new Date(req.date || Date.now()).toLocaleDateString('fa-IR')}
+                                        </td>
+                                        <td style={{ padding: '1rem', fontWeight: 600 }}>
+                                            <div className="flex items-center gap-2">
+                                                <BriefcaseIcon className="w-4 h-4 text-blue-400" />
+                                                {req.details.businessName || '---'}
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>{req.details.industry || '---'}</td>
+                                        <td style={{ padding: '1rem' }} className="font-mono text-left" dir="ltr">
+                                            {req.details.phone || '---'}
+                                        </td>
+                                        <td style={{ padding: '1rem', maxWidth: '300px' }} className="truncate">
+                                            {req.details.description || '---'}
+                                        </td>
+                                        <td style={{ padding: '1rem' }}>
+                                            <span
+                                                className={`px-2 py-1 rounded text-xs ${req.status === 'shipped' ? 'bg-green-500/10 text-green-500' :
+                                                    req.status === 'paid' ? 'bg-blue-500/10 text-blue-500' :
+                                                        'bg-yellow-500/10 text-yellow-500'
+                                                    }`}
+                                            >
+                                                {req.status === 'shipped' ? 'تکمیل شده' :
+                                                    req.status === 'paid' ? 'در حال اجرا' : 'دریافت شده'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
@@ -144,7 +228,9 @@ const ModernCampaignsDashboard: React.FC<CampaignsDashboardProps> = ({ campaign,
                                 justifyContent: 'center'
                             }}
                         >
-                            <SparklesIcon className="w-6 h-6" style={{ color: 'white' }} />
+                            <span style={{ color: 'white' }}>
+                                <SparklesIcon className="w-6 h-6" />
+                            </span>
                         </div>
                         <div>
                             <h3 className="admin-heading-3">مولد کمپین هوشمند</h3>
@@ -315,7 +401,9 @@ const ModernCampaignsDashboard: React.FC<CampaignsDashboardProps> = ({ campaign,
             {/* Past Campaigns */}
             <div className="admin-card admin-animate-fade-in" style={{ padding: '1.5rem', animationDelay: '200ms' }}>
                 <h3 className="admin-heading-3" style={{ marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--admin-border)' }}>
-                    <TrophyIcon className="w-5 h-5" style={{ display: 'inline', marginLeft: '0.5rem', color: 'var(--admin-amber)' }} />
+                    <span style={{ display: 'inline-block', marginLeft: '0.5rem', color: 'var(--admin-amber)' }}>
+                        <TrophyIcon className="w-5 h-5" />
+                    </span>
                     تاریخچه کمپین‌ها
                 </h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
