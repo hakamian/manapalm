@@ -19,6 +19,20 @@ const nextConfig = {
       { protocol: 'https', hostname: 'sbjrayzghjfsmmuygwbw.supabase.co' },
     ],
   },
+  async redirects() {
+    return [
+      {
+        source: '/Dashboard',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/dashboard',
+        destination: '/',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
