@@ -4,6 +4,7 @@ import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { View, NavCategory } from '../types';
 import { useAppState, useAppDispatch } from '../AppContext';
 import SmartLink from './ui/SmartLink';
+import { supabase } from '../services/supabaseClient';
 import {
     ChevronDownIcon, ShoppingCartIcon, UserCircleIcon, HeartIcon, BellIcon, XMarkIcon, EnvelopeIcon,
     SproutIcon, TreeIcon, UsersIcon, CompassIcon, FlagIcon, BookOpenIcon, UserGroupIcon, PencilSquareIcon, SparklesIcon,
@@ -89,7 +90,21 @@ const UserMenu: React.FC = () => {
                         </li>
                     )}
                     <li>
-                        <a href="#" onClick={(e) => { e.preventDefault(); dispatch({ type: 'LOGOUT' }); setIsOpen(false); }} className="block px-4 py-2 hover:bg-green-800 transition-colors duration-200">
+                        <a href="#" onClick={async (e) => {
+                            e.preventDefault();
+                            try {
+                                // Clear local state immediately for responsiveness
+                                dispatch({ type: 'LOGOUT' });
+                                setIsOpen(false);
+
+                                // Sign out from Supabase to clear session (prevents auto-relogin)
+                                if (supabase) {
+                                    await supabase.auth.signOut();
+                                }
+                            } catch (error) {
+                                console.error("Logout error:", error);
+                            }
+                        }} className="block px-4 py-2 hover:bg-green-800 transition-colors duration-200">
                             خروج
                         </a>
                     </li>
