@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { User, PointLog } from '../../types';
 import { UserCircleIcon, CameraIcon, SparklesIcon, MapPinIcon } from '../icons';
 import ToggleSwitch from '../ToggleSwitch';
@@ -13,40 +13,29 @@ interface EditProfileTabProps {
 }
 
 const fileToBase64 = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = error => reject(error);
-  });
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+    });
 
 const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate }) => {
     const dispatch = useAppDispatch();
     const nameParts = user.fullName?.split(' ') || ['', ''];
-    
-    const [firstName, setFirstName] = useState(user.firstName || nameParts[0] || '');
-    const [lastName, setLastName] = useState(user.lastName || nameParts.slice(1).join(' ') || '');
-    const [email, setEmail] = useState(user.email || '');
-    const [description, setDescription] = useState(user.description || '');
-    const [avatar, setAvatar] = useState(user.avatar || '');
-    const [maritalStatus, setMaritalStatus] = useState(user.maritalStatus || 'مجرد');
-    const [childrenCount, setChildrenCount] = useState(user.childrenCount ?? '');
-    const [birthYear, setBirthYear] = useState(user.birthYear ?? '');
-    const [address, setAddress] = useState(user.address || '');
-    const [nationalId, setNationalId] = useState(user.nationalId || '');
-    const [fatherName, setFatherName] = useState(user.fatherName || '');
-    const [motherName, setMotherName] = useState(user.motherName || '');
-    const [occupation, setOccupation] = useState(user.occupation || '');
-    const [isGroveKeeper, setIsGroveKeeper] = useState(user.isGroveKeeper || false);
-    const [groveDescription, setGroveDescription] = useState(user.groveDescription || '');
-    const [isCoach, setIsCoach] = useState(user.isCoach || false);
 
-    const [isSaving, setIsSaving] = useState(false);
-    const [isBioAIAssistLoading, setIsBioAIAssistLoading] = useState(false);
-    const [successMessage, setSuccessMessage] = useState('');
-    const [error, setError] = useState('');
-    
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [activeSection, setActiveSection] = useState<'basic' | 'detailed'>('basic');
+
+    // Calculate completion percentage
+    const completionPercentage = useMemo(() => {
+        const fields = [
+            firstName, lastName, email, description, avatar, // Basic (5)
+            maritalStatus, childrenCount, birthYear, // Personal (3)
+            nationalId, fatherName, motherName, occupation, address // Identity & Address (5)
+        ];
+        const filled = fields.filter(f => f !== '' && f !== undefined && f !== null).length;
+        return Math.round((filled / fields.length) * 100);
+    }, [firstName, lastName, email, description, avatar, maritalStatus, childrenCount, birthYear, nationalId, fatherName, motherName, occupation, address]);
 
     const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -78,11 +67,11 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate }) => {
         setError('');
         setSuccessMessage('');
         setIsSaving(true);
-        
+
         let totalPointsToAdd = 0;
         const newPointsHistory: PointLog[] = [];
 
-        // Point logic
+        // Point logic (kept same as before)
         if ((!user.firstName || !user.email) && firstName && email) {
             if (!user.pointsHistory?.some(h => h.action === 'تکمیل اطلاعات اولیه پروفایل')) {
                 totalPointsToAdd += 30;
@@ -148,8 +137,8 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate }) => {
             setTimeout(() => setSuccessMessage(''), 3000);
 
             if (totalPointsToAdd > 0) {
-                const toastAction = newPointsHistory.length > 1 
-                    ? `تکمیل پروفایل` 
+                const toastAction = newPointsHistory.length > 1
+                    ? `تکمیل پروفایل`
                     : newPointsHistory[0].action;
                 dispatch({ type: 'SHOW_POINTS_TOAST', payload: { points: totalPointsToAdd, action: toastAction } });
             }
@@ -157,147 +146,270 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate }) => {
     };
 
     return (
-        <form onSubmit={handleProfileSave} className="bg-gray-800 p-6 sm:p-8 rounded-lg">
-            <h2 className="text-2xl font-bold mb-6 border-b border-gray-700 pb-4">ویرایش پروفایل</h2>
+        <div className="space-y-6">
+            {/* Header & Progress */}
+            <div className="glass-card p-6 rounded-2xl relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gray-700">
+                    <div
+                        className="h-full bg-gradient-to-r from-green-400 to-emerald-600 transition-all duration-1000 ease-out"
+                        style={{ width: `${completionPercentage}%` }}
+                    />
+                </div>
 
-            {successMessage && <div className="mb-4 p-3 bg-green-900/50 text-green-300 rounded-md">{successMessage}</div>}
-            {error && <div className="mb-4 p-3 bg-red-900/50 text-red-300 rounded-md">{error}</div>}
-
-            {/* Main Info */}
-            <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-4 text-green-400">اطلاعات اصلی</h3>
-                <div className="flex flex-col sm:flex-row items-center gap-6">
-                    <div className="relative">
-                        {avatar ? <img src={avatar} alt="Avatar" className="w-24 h-24 rounded-full object-cover" /> : <UserCircleIcon className="w-24 h-24 text-gray-500" />}
-                        <button type="button" onClick={() => fileInputRef.current?.click()} className="absolute bottom-0 left-0 bg-gray-900/70 p-1 rounded-full text-white hover:bg-gray-900">
-                            <CameraIcon className="w-5 h-5" />
-                        </button>
-                        <input type="file" ref={fileInputRef} onChange={handleAvatarChange} className="hidden" accept="image/*" />
+                <div className="flex flex-col md:flex-row justify-between items-center gap-4 mt-2">
+                    <div>
+                        <h2 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+                            ویرایش پروفایل
+                        </h2>
+                        <p className="text-sm text-gray-400 mt-1">
+                            اطلاعات خود را کامل کنید تا اعتبار بیشتری در نخلستان داشته باشید.
+                        </p>
                     </div>
-                    <div className="flex-grow w-full">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                            <div>
-                                <label htmlFor="firstName" className="block text-sm font-medium text-gray-300 mb-2">نام</label>
-                                <input type="text" id="firstName" value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2" />
-                            </div>
-                            <div>
-                                <label htmlFor="lastName" className="block text-sm font-medium text-gray-300 mb-2">نام خانوادگی</label>
-                                <input type="text" id="lastName" value={lastName} onChange={e => setLastName(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2" />
-                            </div>
-                        </div>
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">ایمیل</label>
-                            <input type="email" id="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2" />
-                        </div>
+                    <div className="flex items-center gap-2 bg-gray-800/50 px-4 py-2 rounded-full border border-gray-700">
+                        <span className="text-sm text-gray-300">تکمیل پروفایل:</span>
+                        <span className={`font-bold ${completionPercentage === 100 ? 'text-green-400' : 'text-amber-400'}`}>
+                            {completionPercentage}٪
+                        </span>
                     </div>
                 </div>
-                <div className="mt-4">
-                    <div className="flex justify-between items-center mb-2">
-                        <label htmlFor="description" className="block text-sm font-medium text-gray-300">درباره من (بیوگرافی)</label>
-                        <button 
-                            type="button" 
-                            onClick={() => handleBioAIAssist(description ? 'improve' : 'generate')} 
-                            disabled={isBioAIAssistLoading} 
-                            className="flex items-center gap-1 text-xs py-1 px-2 bg-blue-600 hover:bg-blue-700 rounded-full text-white disabled:bg-gray-500" title="کمک گرفتن از هوش مصنوعی">
-                            <SparklesIcon className="w-4 h-4"/>
-                            <span>{description ? 'بهبود با AI' : 'کمک از AI'}</span>
-                        </button>
-                    </div>
-                    <textarea id="description" value={description} onChange={e => setDescription(e.target.value)} rows={3} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2" />
-                </div>
-            </div>
 
-            {/* Personal Info */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div>
-                    <h3 className="text-xl font-semibold mb-4 text-green-400">اطلاعات شخصی</h3>
-                    <div className="space-y-4">
-                        <div>
-                            <label htmlFor="maritalStatus" className="block text-sm font-medium text-gray-300 mb-2">وضعیت تاهل</label>
-                            <select id="maritalStatus" value={maritalStatus} onChange={e => setMaritalStatus(e.target.value as 'مجرد' | 'متاهل')} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2">
-                                <option value="مجرد">مجرد</option>
-                                <option value="متاهل">متاهل</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label htmlFor="childrenCount" className="block text-sm font-medium text-gray-300 mb-2">تعداد فرزندان</label>
-                            <input type="number" id="childrenCount" value={childrenCount} onChange={e => setChildrenCount(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2" />
-                        </div>
-                        <div>
-                            <label htmlFor="birthYear" className="block text-sm font-medium text-gray-300 mb-2">سال تولد</label>
-                            <input type="number" id="birthYear" value={birthYear} onChange={e => setBirthYear(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2" />
-                        </div>
-                    </div>
-                </div>
-                <div>
-                    <h3 className="text-xl font-semibold mb-4 text-green-400">اطلاعات هویتی</h3>
-                    <div className="space-y-4">
-                        <div>
-                            <label htmlFor="nationalId" className="block text-sm font-medium text-gray-300 mb-2">کد ملی</label>
-                            <input type="text" id="nationalId" value={nationalId} onChange={e => setNationalId(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2" />
-                        </div>
-                        <div>
-                            <label htmlFor="fatherName" className="block text-sm font-medium text-gray-300 mb-2">نام پدر</label>
-                            <input type="text" id="fatherName" value={fatherName} onChange={e => setFatherName(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2" />
-                        </div>
-                            <div>
-                            <label htmlFor="motherName" className="block text-sm font-medium text-gray-300 mb-2">نام مادر</label>
-                            <input type="text" id="motherName" value={motherName} onChange={e => setMotherName(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2" />
-                        </div>
-                            <div>
-                            <label htmlFor="occupation" className="block text-sm font-medium text-gray-300 mb-2">شغل</label>
-                            <input type="text" id="occupation" value={occupation} onChange={e => setOccupation(e.target.value)} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2" />
-                        </div>
-                    </div>
+                {/* Tab Switcher */}
+                <div className="flex p-1 bg-gray-900/50 rounded-xl mt-6 border border-gray-700 w-full sm:w-fit mx-auto sm:mx-0">
+                    <button
+                        onClick={() => setActiveSection('basic')}
+                        className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${activeSection === 'basic'
+                            ? 'bg-gray-700 text-white shadow-lg'
+                            : 'text-gray-400 hover:text-gray-200'
+                            }`}
+                    >
+                        اطلاعات پایه
+                    </button>
+                    <button
+                        onClick={() => setActiveSection('detailed')}
+                        className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${activeSection === 'detailed'
+                            ? 'bg-gray-700 text-white shadow-lg'
+                            : 'text-gray-400 hover:text-gray-200'
+                            }`}
+                    >
+                        اطلاعات تکمیلی
+                    </button>
                 </div>
             </div>
 
-            <div className="mb-8">
-                <h3 className="text-xl font-semibold mb-4 text-green-400">نقش‌های اجتماعی</h3>
-                <div className="space-y-4 bg-gray-700/50 p-4 rounded-md">
-                    <ToggleSwitch checked={isCoach} onChange={setIsCoach}>
-                        من یک کوچ هستم
-                    </ToggleSwitch>
-                    {isCoach && (
-                        <p className="text-xs text-gray-400 mt-1">با فعال‌سازی این گزینه، به امکانات ویژه کوچینگ در آزمایشگاه معنا دسترسی خواهید داشت.</p>
-                    )}
-                    <div className="border-t border-gray-600 my-3"></div>
-                    <ToggleSwitch checked={isGroveKeeper} onChange={setIsGroveKeeper}>
-                        من یک نخلدار هستم
-                    </ToggleSwitch>
-                    {isGroveKeeper && (
-                        <div>
-                            <label htmlFor="groveDescription" className="block text-sm font-medium text-gray-300 mb-2">توضیحات نخلستان</label>
-                            <textarea 
-                                id="groveDescription" 
-                                value={groveDescription} 
-                                onChange={e => setGroveDescription(e.target.value)} 
-                                rows={3} 
-                                className="w-full bg-gray-700 border border-gray-600 rounded-md p-2"
-                                placeholder="در مورد نخلستان خود بنویسید (مکان، نوع نخل‌ها، داستان آن و ...)"
+            <form onSubmit={handleProfileSave} className="animate-in">
+                {successMessage && <div className="mb-4 p-4 bg-green-500/10 border border-green-500/30 text-green-400 rounded-xl flex items-center gap-2"><SparklesIcon className="w-5 h-5" />{successMessage}</div>}
+                {error && <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 text-red-400 rounded-xl">{error}</div>}
+
+                {activeSection === 'basic' && (
+                    <div className="space-y-6">
+                        {/* Avatar & Main Info */}
+                        <div className="glass-card p-6 sm:p-8 rounded-2xl">
+                            <div className="flex flex-col sm:flex-row items-start gap-8">
+                                <div className="relative group mx-auto sm:mx-0">
+                                    <div className="w-32 h-32 rounded-full ring-4 ring-gray-800 ring-offset-2 ring-offset-green-500/20 overflow-hidden shadow-2xl">
+                                        {avatar ? (
+                                            <img src={avatar} alt="Avatar" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                        ) : (
+                                            <UserCircleIcon className="w-full h-full text-gray-600 bg-gray-800 p-2" />
+                                        )}
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        className="absolute bottom-0 right-0 bg-green-600 p-2.5 rounded-full text-white hover:bg-green-500 transition-all shadow-lg hover:rotate-12"
+                                    >
+                                        <CameraIcon className="w-5 h-5" />
+                                    </button>
+                                    <input type="file" ref={fileInputRef} onChange={handleAvatarChange} className="hidden" accept="image/*" />
+                                </div>
+
+                                <div className="flex-grow w-full space-y-5">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                                        <div className="space-y-2">
+                                            <label className="text-sm text-gray-400 font-medium px-1">نام</label>
+                                            <input
+                                                type="text"
+                                                value={firstName}
+                                                onChange={e => setFirstName(e.target.value)}
+                                                className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500/50 focus:border-green-500 outline-none transition-all placeholder-gray-600"
+                                                placeholder="نام خود را وارد کنید"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm text-gray-400 font-medium px-1">نام خانوادگی</label>
+                                            <input
+                                                type="text"
+                                                value={lastName}
+                                                onChange={e => setLastName(e.target.value)}
+                                                className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500/50 focus:border-green-500 outline-none transition-all placeholder-gray-600"
+                                                placeholder="نام خانوادگی..."
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm text-gray-400 font-medium px-1">ایمیل</label>
+                                        <input
+                                            type="email"
+                                            value={email}
+                                            onChange={e => setEmail(e.target.value)}
+                                            className="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-3 focus:ring-2 focus:ring-green-500/50 focus:border-green-500 outline-none transition-all placeholder-gray-600 dir-ltr text-left"
+                                            placeholder="example@email.com"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Bio Section */}
+                        <div className="glass-card p-6 sm:p-8 rounded-2xl">
+                            <div className="flex justify-between items-center mb-4">
+                                <div>
+                                    <h3 className="text-lg font-semibold text-white">درباره من</h3>
+                                    <p className="text-sm text-gray-400">داستان کوتاه زندگی حرفه‌ای و شخصی شما</p>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => handleBioAIAssist(description ? 'improve' : 'generate')}
+                                    disabled={isBioAIAssistLoading}
+                                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 rounded-lg text-white text-sm font-medium transition-all shadow-lg shadow-blue-900/20 disabled:opacity-50 disabled:cursor-not-allowed group">
+                                    <SparklesIcon className={`w-4 h-4 ${isBioAIAssistLoading ? 'animate-spin' : 'group-hover:animate-pulse'}`} />
+                                    <span>{isBioAIAssistLoading ? 'در حال نوشتن...' : (description ? 'بهبود با هوش مصنوعی' : 'نوشتن با هوش مصنوعی')}</span>
+                                </button>
+                            </div>
+                            <textarea
+                                value={description}
+                                onChange={e => setDescription(e.target.value)}
+                                rows={4}
+                                className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-4 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all resize-none leading-relaxed text-gray-300 placeholder-gray-600"
+                                placeholder="من ..."
                             />
                         </div>
-                    )}
-                </div>
-            </div>
-
-            <div className="mb-8">
-                    <div className="flex justify-between items-center mb-2">
-                    <label htmlFor="address" className="block text-sm font-medium text-gray-300">آدرس</label>
-                    <button type="button" onClick={() => alert('انتخاب از روی نقشه به زودی اضافه خواهد شد!')} className="flex items-center text-xs text-green-400 hover:text-green-300">
-                        <MapPinIcon className="w-4 h-4 ml-1" />
-                        انتخاب از روی نقشه
-                    </button>
                     </div>
-                    <textarea id="address" value={address} onChange={e => setAddress(e.target.value)} rows={3} className="w-full bg-gray-700 border border-gray-600 rounded-md p-2" />
-            </div>
-            
-            <div className="mt-8 pt-6 border-t border-gray-700 text-left">
-                <button type="submit" disabled={isSaving} className="bg-green-600 hover:bg-green-700 disabled:bg-gray-500 text-white font-bold py-2 px-6 rounded-md transition-colors">
-                    {isSaving ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
-                </button>
-            </div>
-        </form>
+                )}
+
+                {activeSection === 'detailed' && (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Personal Details */}
+                            <div className="glass-card p-6 rounded-2xl space-y-5">
+                                <h3 className="text-lg font-semibold text-green-400 flex items-center gap-2">
+                                    <span className="w-1.5 h-6 bg-green-500 rounded-full"></span>
+                                    اطلاعات شخصی
+                                </h3>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm text-gray-400">سال تولد</label>
+                                            <input type="number" value={birthYear} onChange={e => setBirthYear(e.target.value)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm text-gray-400">وضعیت تاهل</label>
+                                            <select value={maritalStatus} onChange={e => setMaritalStatus(e.target.value as any)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none">
+                                                <option value="مجرد">مجرد</option>
+                                                <option value="متاهل">متاهل</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm text-gray-400">تعداد فرزندان</label>
+                                        <input type="number" value={childrenCount} onChange={e => setChildrenCount(e.target.value)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Identity Details */}
+                            <div className="glass-card p-6 rounded-2xl space-y-5">
+                                <h3 className="text-lg font-semibold text-green-400 flex items-center gap-2">
+                                    <span className="w-1.5 h-6 bg-green-500 rounded-full"></span>
+                                    اطلاعات هویتی
+                                </h3>
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm text-gray-400">کد ملی</label>
+                                        <input type="text" value={nationalId} onChange={e => setNationalId(e.target.value)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm text-gray-400">نام پدر</label>
+                                            <input type="text" value={fatherName} onChange={e => setFatherName(e.target.value)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm text-gray-400">شغل</label>
+                                            <input type="text" value={occupation} onChange={e => setOccupation(e.target.value)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Social Roles & Address */}
+                        <div className="glass-card p-6 rounded-2xl space-y-6">
+                            <div>
+                                <h3 className="text-lg font-semibold text-green-400 flex items-center gap-2 mb-4">
+                                    <span className="w-1.5 h-6 bg-green-500 rounded-full"></span>
+                                    نقش‌های اجتماعی
+                                </h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <div className={`p-4 rounded-xl border transition-all ${isCoach ? 'bg-blue-900/20 border-blue-500/50' : 'bg-gray-900/30 border-gray-700'}`}>
+                                        <ToggleSwitch checked={isCoach} onChange={setIsCoach}>
+                                            <span className={`${isCoach ? 'text-blue-300 font-semibold' : 'text-gray-400'}`}>من یک کوچ هستم</span>
+                                        </ToggleSwitch>
+                                    </div>
+                                    <div className={`p-4 rounded-xl border transition-all ${isGroveKeeper ? 'bg-amber-900/20 border-amber-500/50' : 'bg-gray-900/30 border-gray-700'}`}>
+                                        <ToggleSwitch checked={isGroveKeeper} onChange={setIsGroveKeeper}>
+                                            <span className={`${isGroveKeeper ? 'text-amber-300 font-semibold' : 'text-gray-400'}`}>من یک نخلدار هستم</span>
+                                        </ToggleSwitch>
+                                    </div>
+                                </div>
+
+                                {isGroveKeeper && (
+                                    <div className="mt-4 animate-in">
+                                        <label className="text-sm text-amber-500/80 mb-2 block">توضیحات نخلستان</label>
+                                        <textarea
+                                            value={groveDescription}
+                                            onChange={e => setGroveDescription(e.target.value)}
+                                            rows={3}
+                                            className="w-full bg-gray-900/50 border border-amber-900/50 rounded-xl p-3 focus:border-amber-500 outline-none text-amber-100 placeholder-amber-900/50"
+                                            placeholder="درباره نخلستان خود بنویسید..."
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="pt-6 border-t border-gray-700">
+                                <div className="flex justify-between items-center mb-4">
+                                    <label className="font-semibold text-gray-300">آدرس پستی</label>
+                                    <button type="button" onClick={() => alert('انتخاب از روی نقشه به زودی...')} className="text-xs flex items-center gap-1 text-green-400 hover:text-green-300">
+                                        <MapPinIcon className="w-4 h-4" /> انتخاب از نقشه
+                                    </button>
+                                </div>
+                                <textarea value={address} onChange={e => setAddress(e.target.value)} rows={2} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                <div className="sticky bottom-0 z-10 pt-4 pb-0 bg-transparent"> {/* Sticky save button container if page is long, though usually inline is fine */}
+                    <button
+                        type="submit"
+                        disabled={isSaving}
+                        className={`w-full py-4 rounded-xl font-bold text-lg shadow-xl transition-all transform hover:scale-[1.01] active:scale-[0.99] flex justify-center items-center gap-3 ${isSaving
+                            ? 'bg-gray-600 cursor-not-allowed text-gray-400'
+                            : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white shadow-green-900/30'
+                            }`}
+                    >
+                        {isSaving ? (
+                            <>
+                                <span className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></span>
+                                در حال ذخیره...
+                            </>
+                        ) : (
+                            'ذخیره تغییرات'
+                        )}
+                    </button>
+                </div>
+            </form>
+        </div>
     );
 };
 
