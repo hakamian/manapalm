@@ -392,7 +392,7 @@ const UserProfileView: React.FC = () => {
     const strokeDashoffset = circumference - (animatedBarkatProgress / 100) * circumference;
 
     return (
-        <div className="header-clearance pb-24 bg-gray-900 text-white">
+        <div className="pb-24 bg-gray-900 text-white">
             <div className="container mx-auto px-4 py-8">
 
                 {/* Profile Header */}
