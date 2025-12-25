@@ -39,16 +39,16 @@ const HeroCard: React.FC<{
             <img src={user.profileImageUrl || `https://ui-avatars.com/api/?name=${user.name}&background=random`} alt={user.name} className={`w-24 h-24 rounded-full object-cover ring-4 ${style.ring} ${style.glow} mb-4`} />
             <h4 className="font-bold text-lg text-white">{user.name}</h4>
             <p className="text-sm font-semibold text-amber-300 mb-4">{weeklyPoints.toLocaleString('fa-IR')} امتیاز</p>
-            
+
             <div className="flex gap-2">
-                 <button
+                <button
                     onClick={() => currentUser ? onAppreciate(user.id, user.name) : onLogin()}
                     disabled={isOwnCard || appreciated}
                     className={`p-2 rounded-full transition-all ${appreciated ? 'bg-red-500/20 text-red-400' : 'bg-white/10 hover:bg-white/20 text-white'}`}
                 >
                     <HeartIcon className={`w-5 h-5 ${appreciated ? 'fill-current' : ''}`} />
                 </button>
-                 <button
+                <button
                     onClick={() => currentUser ? onMessage(View.DIRECT_MESSAGES) : onLogin()}
                     className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all"
                 >
@@ -96,11 +96,11 @@ const DashboardPage: React.FC = () => {
             {/* --- Hero Section (Glassmorphism) --- */}
             <section className="relative text-center pt-24 pb-20 px-4">
                 <div className="max-w-4xl mx-auto relative z-10">
-                     <h1 className="text-4xl md:text-7xl font-extrabold mb-6 tracking-tight">
+                    <h1 className="text-4xl md:text-7xl font-extrabold mb-6 tracking-tight">
                         <span className="text-white">سلام، </span>
                         <span className="text-gradient-gold">{currentUser?.name || 'همسفر'}</span>
                     </h1>
-                    
+
                     {/* Dynamic AI Wisdom Card */}
                     <div className="glass-panel p-6 rounded-2xl max-w-2xl mx-auto mb-10 transform transition-all hover:scale-[1.01]">
                         <div className="flex items-start gap-4">
@@ -118,7 +118,7 @@ const DashboardPage: React.FC = () => {
                         </div>
                     </div>
 
-                     <div className="flex flex-wrap justify-center gap-4">
+                    <div className="flex flex-wrap justify-center gap-4">
                         <button onClick={handleStartPlantingFlow} className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-bold py-4 px-10 rounded-2xl transition-all shadow-[0_0_25px_rgba(74,222,128,0.4)] flex items-center gap-2 text-lg">
                             <PlusIcon className="w-6 h-6" />
                             <span>کاشت میراث جدید</span>
@@ -131,7 +131,7 @@ const DashboardPage: React.FC = () => {
                 </div>
             </section>
 
-             {/* --- Quick Access Grid (Floating Cards) --- */}
+            {/* --- Quick Access Grid (Floating Cards) --- */}
             <section className="container mx-auto px-4 relative z-20">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="glass-card p-8 rounded-3xl cursor-pointer group" onClick={() => handleSetPage(View.CommunityHub)}>
@@ -141,14 +141,14 @@ const DashboardPage: React.FC = () => {
                         <h3 className="text-2xl font-bold text-white mb-2">کانون جامعه</h3>
                         <p className="text-stone-400">به گفتگوها بپیوندید و از آخرین اخبار مطلع شوید.</p>
                     </div>
-                     <div className="glass-card p-8 rounded-3xl cursor-pointer group" onClick={() => handleSetPage(View.PathOfMeaning)}>
+                    <div className="glass-card p-8 rounded-3xl cursor-pointer group" onClick={() => handleSetPage(View.PathOfMeaning)}>
                         <div className="bg-green-500/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform text-green-400">
                             <CompassIcon className="w-7 h-7" />
                         </div>
                         <h3 className="text-2xl font-bold text-white mb-2">مسیر معنا</h3>
                         <p className="text-stone-400">سفر قهرمانی خود را ادامه دهید و ماموریت‌های جدید را کشف کنید.</p>
                     </div>
-                     <div className="glass-card p-8 rounded-3xl cursor-pointer group" onClick={() => handleSetPage(View['ai-tools'])}>
+                    <div className="glass-card p-8 rounded-3xl cursor-pointer group" onClick={() => handleSetPage(View['ai-tools'])}>
                         <div className="bg-purple-500/20 w-14 h-14 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform text-purple-400">
                             <SparklesIcon className="w-7 h-7" />
                         </div>
@@ -179,15 +179,20 @@ const DashboardPage: React.FC = () => {
                             </div>
                         ))}
                     </div>
-                     <div className="text-center mt-8">
+                    <div className="text-center mt-8">
                         <button onClick={() => dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'timeline' })} className="text-amber-400 font-bold hover:text-amber-300 transition-colors">
                             مشاهده تمام فعالیت‌ها &larr;
                         </button>
                     </div>
                 </section>
             )}
+
+            <div className="text-center text-xs text-stone-500 mt-10" dir="ltr">
+                Unified Meaning OS <span className="font-bold">v6.0</span> (Next.js Edition) | Live Check
+            </div>
         </div>
     );
 };
 
 export default DashboardPage;
+```
