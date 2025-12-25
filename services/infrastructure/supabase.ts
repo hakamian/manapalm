@@ -24,8 +24,12 @@ const DEFAULT_URL = 'https://sbjrayzghjfsmmuygwbw.supabase.co';
 // SECURITY: Removed hardcoded API key. Must use Environment Variables.
 const DEFAULT_KEY = '';
 
-let supabaseUrl = getEnv('VITE_SUPABASE_URL') || DEFAULT_URL;
-let supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY') || DEFAULT_KEY;
+// Explicitly check process.env.NEXT_PUBLIC_* for Next.js build-time replacement
+const NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+let supabaseUrl = NEXT_PUBLIC_SUPABASE_URL || getEnv('VITE_SUPABASE_URL') || DEFAULT_URL;
+let supabaseAnonKey = NEXT_PUBLIC_SUPABASE_ANON_KEY || getEnv('VITE_SUPABASE_ANON_KEY') || DEFAULT_KEY;
 
 if (typeof window !== 'undefined') {
     const storedUrl = localStorage.getItem('VITE_SUPABASE_URL');
