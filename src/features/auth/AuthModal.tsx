@@ -257,43 +257,6 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
         setIsLoading(true);
         setError('');
 
-        // LOCALHOST BYPASS: Log in as Admin automatically
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-            console.log("🛠 Localhost Detected: Bypassing Google Auth for Admin Access");
-            setTimeout(async () => {
-                // Use the existing Admin User from dummyData
-                const mockAdminUser = {
-                    id: 'user_admin_hh',
-                    fullName: 'H Hakamian (Admin)',
-                    phone: '09120000000',
-                    email: 'hhakamian@gmail.com',
-                    role: 'admin',
-                    isAdmin: true,
-                    points: 100000,
-                    joinedAt: new Date().toISOString(),
-                    // Include other fields to match User type if needed, but existing usage is mainly strict on isAdmin
-                } as any;
-
-                // 1. Dispatch to State
-                dispatch({
-                    type: 'LOGIN_SUCCESS',
-                    payload: {
-                        user: mockAdminUser,
-                        orders: []
-                    }
-                });
-
-                // 2. Persist to Mock DB Adapter (LocalStorage) so refresh works!
-                const { dbAdapter } = await import('../../../services/dbAdapter');
-                dbAdapter.setCurrentUserId('user_admin_hh');
-
-                onLoginSuccess({ phone: '09120000000', fullName: 'H Hakamian' });
-                onClose();
-                setIsLoading(false);
-            }, 1000); // Fake delay for realism
-            return;
-        }
-
         if (!supabase) {
             setError('سرویس احراز هویت در دسترس نیست.');
             setIsLoading(false);
@@ -610,34 +573,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                                 {isLoading ? 'در حال اتصال...' : 'ورود سریع با گوگل'}
                             </button>
 
-                            {/* DEV LOGIN BYPASS */}
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    // Mock Login
-                                    dispatch({
-                                        type: 'LOGIN_SUCCESS',
-                                        payload: {
-                                            user: {
-                                                id: 'dev_user_1',
-                                                fullName: 'کاربر تستی توسعه',
-                                                phone: '09129999999',
-                                                email: 'dev@manapalm.com',
-                                                role: 'admin', // Give admin access for testing
-                                                points: 5000,
-                                                joinedAt: new Date().toISOString(),
-                                                isAdmin: true
-                                            } as any,
-                                            orders: []
-                                        }
-                                    });
-                                    onLoginSuccess({ phone: '09129999999', fullName: 'کاربر تستی توسعه' });
-                                    onClose();
-                                }}
-                                className="w-full flex items-center justify-center bg-gray-700 hover:bg-gray-600 text-yellow-400 font-mono py-2 px-4 rounded-md transition-all duration-200 text-sm mt-4 border border-yellow-500/30 border-dashed"
-                            >
-                                <span>🛠 ورود تستی (Dev Only)</span>
-                            </button>
+
                         </>
                     )}
                 </>
