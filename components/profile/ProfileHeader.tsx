@@ -14,10 +14,10 @@ interface ProfileHeaderProps {
     tabs: { id: string; label: string; icon: React.ReactNode }[];
 }
 
-const ProfileHeader: React.FC<ProfileHeaderProps> = ({ 
-    user, 
-    animatedBarkatProgress, 
-    circumference, 
+const ProfileHeader: React.FC<ProfileHeaderProps> = ({
+    user,
+    animatedBarkatProgress,
+    circumference,
     strokeDashoffset,
     activeTab,
     setActiveTab,
@@ -26,7 +26,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
     const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
     const mobileNavRef = useRef<HTMLDivElement>(null);
     const [referralCopySuccess, setReferralCopySuccess] = useState('');
-    
+
     const activeTabLabel = tabs.find(t => t.id === activeTab)?.label;
 
     useEffect(() => {
@@ -71,8 +71,8 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
     return (
         <header className="relative bg-gray-800/50 rounded-lg border border-gray-700 mb-8 p-6 pt-12 md:pt-6 text-center md:text-right">
-            <img src="https://picsum.photos/seed/profile-bg-2/1000/300" alt="Profile background" className="absolute inset-0 w-full h-full object-cover opacity-20 z-0 rounded-lg"/>
-            
+            <img src="https://picsum.photos/seed/profile-bg-2/1000/300" alt="Profile background" className="absolute inset-0 w-full h-full object-cover opacity-20 z-0 rounded-lg" />
+
             <button onClick={handleShareProfile} className="absolute top-4 left-4 z-20 p-2 bg-gray-900/50 rounded-full text-white hover:bg-gray-900 transition-colors" title="اشتراک‌گذاری پروفایل">
                 <ShareIcon className="w-5 h-5" />
             </button>
@@ -102,17 +102,17 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                             }}
                         />
                     </svg>
-                    <img src={user.avatar || `https://i.pravatar.cc/150?u=${user.id}`} alt="User Avatar" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full object-cover border-4 border-gray-800" />
+                    <img src={user.avatar || (user.id.charCodeAt(0) % 2 === 0 ? '/images/avatar-female.png' : '/images/avatar-male.png')} alt="User Avatar" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full object-cover border-4 border-gray-800" />
                 </div>
 
                 <div className="flex-grow">
                     <h1 className="text-4xl font-bold">{user.fullName || 'کاربر مهمان'}</h1>
                     <div className="flex items-center justify-center md:justify-start gap-4 mt-2 font-semibold">
-                       <div className="flex items-center gap-2 text-green-300">
+                        <div className="flex items-center gap-2 text-green-300">
                             {getLevelIcon(user.level)}
                             <span>{user.level}</span>
-                       </div>
-                       <div className="flex items-center gap-2 text-indigo-300">
+                        </div>
+                        <div className="flex items-center gap-2 text-indigo-300">
                             <BrainCircuitIcon className="w-6 h-6" />
                             <span>{getGrowthLevel(user.manaPoints || 0).name}</span>
                         </div>
@@ -136,7 +136,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                     </div>
                 </div>
             </div>
-            
+
             <div className="md:hidden relative mt-6" ref={mobileNavRef}>
                 <button onClick={() => setIsMobileNavOpen(prev => !prev)} className="w-full flex justify-between items-center p-3 bg-gray-800 border border-gray-700 rounded-md">
                     <span>{activeTabLabel}</span>

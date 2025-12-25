@@ -26,7 +26,7 @@ const ProposalCard: React.FC<{
             </div>
             <h3 className="text-xl font-bold mb-2 text-green-300 flex-grow">{proposal.title}</h3>
             <p className="text-sm text-gray-300 mb-4 flex-grow">{proposal.description}</p>
-            
+
             <div className="flex justify-between items-center text-sm mb-4">
                 <div className="flex items-center gap-1 text-yellow-400">
                     <TrophyIcon className="w-5 h-5" />
@@ -83,7 +83,7 @@ const CoCreationView: React.FC<CoCreationViewProps> = ({ user, proposals }) => {
             setLoadingAnalysisId(null);
         }
     };
-    
+
     const handleDescriptionAIAssist = async (mode: 'generate' | 'improve') => {
         setIsAIAssistLoading(true);
         try {
@@ -100,7 +100,7 @@ const CoCreationView: React.FC<CoCreationViewProps> = ({ user, proposals }) => {
             setIsAIAssistLoading(false);
         }
     };
-    
+
     const handleSubmitProposal = (e: React.FormEvent) => {
         e.preventDefault();
         if (!user || !newProposalTitle.trim() || !newProposalDescription.trim()) return;
@@ -110,7 +110,7 @@ const CoCreationView: React.FC<CoCreationViewProps> = ({ user, proposals }) => {
             id: `prop-${Date.now()}`,
             proposerId: user.id,
             proposerName: user.fullName || user.name,
-            proposerAvatar: user.avatar || `https://i.pravatar.cc/150?u=${user.id}`,
+            proposerAvatar: user.avatar || (user.id.charCodeAt(0) % 2 === 0 ? '/images/avatar-female.png' : '/images/avatar-male.png'),
             title: newProposalTitle,
             description: newProposalDescription,
             dateSubmitted: new Date().toISOString(),
@@ -167,12 +167,12 @@ const CoCreationView: React.FC<CoCreationViewProps> = ({ user, proposals }) => {
                                     <div>
                                         <div className="flex justify-between items-center mb-2">
                                             <label htmlFor="proposalDescription" className="block text-sm font-medium text-gray-300">توضیحات کامل</label>
-                                             <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2">
                                                 <button type="button" onClick={() => handleDescriptionAIAssist('generate')} disabled={isAIAssistLoading || !newProposalTitle.trim()} className="flex items-center gap-1 text-xs py-1 px-2 bg-blue-600 hover:bg-blue-700 rounded-full text-white disabled:bg-gray-500 disabled:cursor-not-allowed">
-                                                    <SparklesIcon className="w-4 h-4"/> تولید از عنوان
+                                                    <SparklesIcon className="w-4 h-4" /> تولید از عنوان
                                                 </button>
                                                 <button type="button" onClick={() => handleDescriptionAIAssist('improve')} disabled={isAIAssistLoading || !newProposalDescription.trim()} className="flex items-center gap-1 text-xs py-1 px-2 bg-blue-600 hover:bg-blue-700 rounded-full text-white disabled:bg-gray-500 disabled:cursor-not-allowed">
-                                                    <SparklesIcon className="w-4 h-4"/> بهبود متن
+                                                    <SparklesIcon className="w-4 h-4" /> بهبود متن
                                                 </button>
                                             </div>
                                         </div>
@@ -208,7 +208,7 @@ const CoCreationView: React.FC<CoCreationViewProps> = ({ user, proposals }) => {
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {proposals.map(proposal => (
-                            <ProposalCard 
+                            <ProposalCard
                                 key={proposal.id}
                                 proposal={proposal}
                                 onAnalyze={handleAnalyze}

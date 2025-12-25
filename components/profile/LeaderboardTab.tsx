@@ -75,7 +75,7 @@ const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ user, allUsers }) => {
                                 </span>
                             </div>
                             <div className="flex items-center gap-4">
-                                <img src={user.avatar || `https://i.pravatar.cc/150?u=${user.id}`} alt={user.fullName} className="w-16 h-16 rounded-2xl object-cover border-2 border-gray-700" />
+                                <img src={user.avatar || (user.id.charCodeAt(0) % 2 === 0 ? '/images/avatar-female.png' : '/images/avatar-male.png')} alt={user.fullName} className="w-16 h-16 rounded-2xl object-cover border-2 border-gray-700" />
                                 <div>
                                     <h3 className="text-xl font-bold text-white">رتبه شما در {categories.find(c => c.id === category)?.label}</h3>
                                     <p className="text-gray-400 text-sm mt-1">{user.fullName}</p>
@@ -132,7 +132,7 @@ const LeaderboardTab: React.FC<LeaderboardTabProps> = ({ user, allUsers }) => {
 
                             <div className="relative ml-4">
                                 <img
-                                    src={member.avatar || `https://i.pravatar.cc/150?u=${member.id}`}
+                                    src={member.avatar || (member.id.charCodeAt(0) % 2 === 0 ? '/images/avatar-female.png' : '/images/avatar-male.png')}
                                     alt={member.fullName}
                                     className="w-14 h-14 rounded-2xl object-cover border-2 border-gray-700 group-hover:border-gray-500 transition-colors"
                                 />

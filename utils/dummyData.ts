@@ -6,6 +6,10 @@ import React from 'react';
 import { User, CommunityProject, TimelineEvent, MentorshipRequest, Conversation, CREATIVE_ACT_STORAGE_LIMIT, View, Order, Notification, CommunityEvent, CommunityPost, ProjectProposal, LiveActivity, Deed, DirectMessage, PalmType, Product, MicrofinanceProject, Review } from '../types.ts';
 import { SproutIcon, BookOpenIcon, UserPlusIcon } from '../components/icons';
 
+// Use local assets for a premium look
+const MALE_AVATAR = '/images/avatar-male.png';
+const FEMALE_AVATAR = '/images/avatar-female.png';
+
 // --- MOCK DATA GENERATION ---
 
 
@@ -264,7 +268,7 @@ const createRandomUser = (id: number, name: string, points: number, isGuardian =
         mentorName: hasMentor ? 'رضا قاسمی' : undefined,
         creativeStorageCapacity: CREATIVE_ACT_STORAGE_LIMIT,
         purchasedCourseIds: id % 4 === 0 ? ['1'] : [],
-        profileImageUrl: `https://i.pravatar.cc/150?u=user${id}`,
+        profileImageUrl: id % 2 === 0 ? FEMALE_AVATAR : MALE_AVATAR,
         allowDirectMessages: id % 2 === 0, // Deterministic alternative to random
         contributions: [],
         notifications: [],
@@ -419,8 +423,8 @@ export const INITIAL_CONVERSATIONS: Conversation[] = [
         id: 'conv1',
         participantIds: ['user_gen_1', 'user_gen_3'],
         participantDetails: {
-            'user_gen_1': { name: 'علی رضایی', avatar: `https://i.pravatar.cc/150?u=user1` },
-            'user_gen_3': { name: 'سارا رضایی', avatar: `https://i.pravatar.cc/150?u=user3` },
+            'user_gen_1': { name: 'علی رضایی', avatar: MALE_AVATAR },
+            'user_gen_3': { name: 'سارا رضایی', avatar: FEMALE_AVATAR },
         },
         messages: [
             { id: 'msg1', senderId: 'user_gen_3', text: 'سلام علی، وقت داری در مورد مسیر معنا صحبت کنیم؟', timestamp: getPastDate(1), status: 'read' },
@@ -454,7 +458,7 @@ export const INITIAL_REVIEWS: Review[] = [
         courseId: '1', // کوچینگ معنا
         userId: 'user_gen_3',
         userName: 'سارا رضایی',
-        userAvatar: 'https://i.pravatar.cc/150?u=user3',
+        userAvatar: FEMALE_AVATAR,
         rating: 5,
         text: 'این دوره زندگی من رو تغییر داد. دیدگاهم نسبت به شغلم کاملا عوض شد و حالا با انگیزه بیدار می‌شم.',
         date: getPastDate(5),
@@ -466,7 +470,7 @@ export const INITIAL_REVIEWS: Review[] = [
         courseId: '1',
         userId: 'user_gen_5',
         userName: 'محمد اکبری',
-        userAvatar: 'https://i.pravatar.cc/150?u=user5',
+        userAvatar: MALE_AVATAR,
         rating: 4,
         text: 'محتوای دوره عالیه، فقط ای کاش تمرینات عملی بیشتری داشت. ولی دکتر حکیمیان واقعا مسلط هستند.',
         date: getPastDate(12),
@@ -478,7 +482,7 @@ export const INITIAL_REVIEWS: Review[] = [
         courseId: '2', // کارآفرینی اجتماعی
         userId: 'user_gen_1',
         userName: 'علی رضایی',
-        userAvatar: 'https://i.pravatar.cc/150?u=user1',
+        userAvatar: MALE_AVATAR,
         rating: 5,
         text: 'اگر می‌خواید کسب‌وکاری بسازید که هم پولساز باشه و هم حالتون رو خوب کنه، این دوره رو از دست ندید.',
         date: getPastDate(20),
@@ -490,7 +494,7 @@ export const INITIAL_REVIEWS: Review[] = [
         courseId: 'income-alchemy', // دوره جدید
         userId: 'user_gen_4',
         userName: 'مریم حسینی',
-        userAvatar: 'https://i.pravatar.cc/150?u=user4',
+        userAvatar: FEMALE_AVATAR,
         rating: 5,
         text: 'فکر می‌کردم فروختن یعنی التماس کردن. این دوره به من یاد داد چطور ارزش خلق کنم تا مشتری خودش بیاد. فوق‌العاده بود!',
         date: getPastDate(2),

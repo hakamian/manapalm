@@ -20,7 +20,7 @@ const PostCreator: React.FC<PostCreatorProps> = ({ user, onPost }) => {
             promptForGeneration = window.prompt('درباره چه موضوعی می‌خواهید پست بنویسید؟ (یک عبارت کوتاه)') || '';
             if (!promptForGeneration) return;
         }
-    
+
         setIsAIAssistLoading(true);
         try {
             const response = await getAIAssistedText({
@@ -29,7 +29,7 @@ const PostCreator: React.FC<PostCreatorProps> = ({ user, onPost }) => {
                 text: mode === 'generate' ? promptForGeneration : postText,
             });
             setPostText(response);
-        } catch(e) {
+        } catch (e) {
             console.error(e);
         } finally {
             setIsAIAssistLoading(false);
@@ -45,20 +45,20 @@ const PostCreator: React.FC<PostCreatorProps> = ({ user, onPost }) => {
 
     return (
         <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 flex space-x-reverse space-x-3">
-            <img src={user.avatar || 'https://i.pravatar.cc/150?u=anonymous'} alt={user.fullName || 'User'} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+            <img src={user.avatar || '/images/avatar-male.png'} alt={user.fullName || 'User'} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
             <div className="flex-grow">
                 <div className="flex justify-between items-center mb-2">
                     <label htmlFor="postCreator" className="text-sm text-gray-400">چه چیزی در ذهن دارید؟</label>
-                     <button 
-                        type="button" 
-                        onClick={() => handleAIAssist(postText ? 'improve' : 'generate')} 
-                        disabled={isAIAssistLoading} 
+                    <button
+                        type="button"
+                        onClick={() => handleAIAssist(postText ? 'improve' : 'generate')}
+                        disabled={isAIAssistLoading}
                         className="flex items-center gap-1 text-xs py-1 px-2 bg-blue-600 hover:bg-blue-700 rounded-full text-white disabled:bg-gray-500"
                         title="کمک گرفتن از هوشمانا"
-                     >
-                        <SparklesIcon className="w-4 h-4"/>
+                    >
+                        <SparklesIcon className="w-4 h-4" />
                         <span>{postText ? 'بهبود با هوشمانا' : 'کمک از هوشمانا'}</span>
-                     </button>
+                    </button>
                 </div>
                 <textarea
                     id="postCreator"

@@ -13,16 +13,16 @@ interface CourseReviewsProps {
 const CourseReviews: React.FC<CourseReviewsProps> = ({ courseId, onAddReviewClick }) => {
     const { reviews, user } = useAppState();
     const dispatch = useAppDispatch();
-    
+
     // Filter reviews for this course
     const courseReviews = reviews.filter(r => r.courseId === courseId);
-    
+
     // Calculate Stats
     const totalReviews = courseReviews.length;
-    const averageRating = totalReviews > 0 
-        ? (courseReviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(1) 
+    const averageRating = totalReviews > 0
+        ? (courseReviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews).toFixed(1)
         : '0.0';
-    
+
     const ratingCounts = [5, 4, 3, 2, 1].map(stars => ({
         stars,
         count: courseReviews.filter(r => r.rating === stars).length,
@@ -62,8 +62,8 @@ const CourseReviews: React.FC<CourseReviewsProps> = ({ courseId, onAddReviewClic
                                     {item.stars} <StarIcon className="w-3 h-3" />
                                 </div>
                                 <div className="flex-grow bg-gray-700 rounded-full h-2 overflow-hidden">
-                                    <div 
-                                        className="bg-yellow-400 h-full rounded-full" 
+                                    <div
+                                        className="bg-yellow-400 h-full rounded-full"
                                         style={{ width: `${item.percent}%` }}
                                     ></div>
                                 </div>
@@ -104,7 +104,7 @@ const CourseReviews: React.FC<CourseReviewsProps> = ({ courseId, onAddReviewClic
                                 {review.text}
                             </p>
                             <div className="flex items-center gap-4 pt-4 border-t border-gray-700/50">
-                                <button 
+                                <button
                                     onClick={() => handleLike(review.id)}
                                     className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-400 transition-colors"
                                 >
@@ -120,10 +120,10 @@ const CourseReviews: React.FC<CourseReviewsProps> = ({ courseId, onAddReviewClic
                     </div>
                 )}
             </div>
-            
+
             {/* Add Review CTA */}
             <div className="mt-8 text-center">
-                <button 
+                <button
                     onClick={onAddReviewClick}
                     className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-8 rounded-xl shadow-lg transition-all transform hover:scale-105 flex items-center gap-2 mx-auto"
                 >
@@ -154,9 +154,9 @@ export const AddReviewForm: React.FC<AddReviewFormProps> = ({ isOpen, onClose, c
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (!text.trim()) return;
-        
+
         setIsSubmitting(true);
-        
+
         // Mock API Call delay
         setTimeout(() => {
             const newReview: Review = {
@@ -164,14 +164,14 @@ export const AddReviewForm: React.FC<AddReviewFormProps> = ({ isOpen, onClose, c
                 courseId: courseId,
                 userId: user?.id || 'guest',
                 userName: user?.fullName || 'کاربر مهمان',
-                userAvatar: user?.avatar || 'https://i.pravatar.cc/150?u=guest',
+                userAvatar: user?.avatar || '/images/avatar-male.png',
                 rating: rating,
                 text: text,
                 date: new Date().toISOString(),
                 helpfulCount: 0,
                 isVerifiedBuyer: true // Assume true for demo if they can access course
             };
-            
+
             dispatch({ type: 'ADD_REVIEW', payload: { review: newReview } });
             setIsSubmitting(false);
             setText('');
@@ -184,7 +184,7 @@ export const AddReviewForm: React.FC<AddReviewFormProps> = ({ isOpen, onClose, c
         <div className="fixed inset-0 bg-black/80 z-[80] flex items-center justify-center p-4" onClick={onClose}>
             <div className="bg-gray-800 w-full max-w-lg rounded-2xl p-6 border border-gray-700 shadow-2xl relative" onClick={e => e.stopPropagation()}>
                 <h3 className="text-xl font-bold text-white mb-6 text-center">ثبت تجربه دوره</h3>
-                
+
                 <form onSubmit={handleSubmit}>
                     <div className="mb-6 flex justify-center">
                         <div className="flex gap-2">
@@ -195,31 +195,31 @@ export const AddReviewForm: React.FC<AddReviewFormProps> = ({ isOpen, onClose, c
                                     onClick={() => setRating(star)}
                                     className="focus:outline-none transition-transform hover:scale-110"
                                 >
-                                    <StarIcon 
-                                        className={`w-10 h-10 ${star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-600'}`} 
+                                    <StarIcon
+                                        className={`w-10 h-10 ${star <= rating ? 'text-yellow-400 fill-current' : 'text-gray-600'}`}
                                     />
                                 </button>
                             ))}
                         </div>
                     </div>
-                    
+
                     <div className="mb-6">
                         <label className="block text-sm font-medium text-gray-300 mb-2">داستان تحول شما چیست؟</label>
-                        <textarea 
+                        <textarea
                             value={text}
                             onChange={(e) => setText(e.target.value)}
                             className="w-full bg-gray-900 border border-gray-600 rounded-xl p-4 text-white focus:ring-2 focus:ring-blue-500 outline-none h-32 resize-none"
                             placeholder="از تجربه خود در این دوره بنویسید. چه چیزی یاد گرفتید؟ چه تغییری کردید؟"
                         />
                     </div>
-                    
+
                     <div className="flex gap-3">
                         <button type="button" onClick={onClose} className="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-xl transition-colors">
                             انصراف
                         </button>
-                        <button 
-                            type="submit" 
-                            disabled={isSubmitting || !text.trim()} 
+                        <button
+                            type="submit"
+                            disabled={isSubmitting || !text.trim()}
                             className="flex-1 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-800 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
                         >
                             {isSubmitting ? 'در حال ثبت...' : 'ثبت دیدگاه'}

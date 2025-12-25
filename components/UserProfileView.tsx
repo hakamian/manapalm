@@ -353,7 +353,7 @@ const UserProfileView: React.FC = () => {
                                 {myMentees.map(mentee => (
                                     <div key={mentee.id} className="bg-gray-800 p-4 rounded-lg flex items-center justify-between border border-gray-700">
                                         <div className="flex items-center gap-4">
-                                            <img src={mentee.avatar || `https://i.pravatar.cc/150?u=${mentee.id}`} alt={mentee.fullName} className="w-12 h-12 rounded-full object-cover" />
+                                            <img src={mentee.avatar || (mentee.id.charCodeAt(0) % 2 === 0 ? '/images/avatar-female.png' : '/images/avatar-male.png')} alt={mentee.fullName} className="w-12 h-12 rounded-full object-cover" />
                                             <div>
                                                 <p className="font-bold">{mentee.fullName}</p>
                                                 <p className="text-sm text-gray-400">{mentee.level} - {mentee.points.toLocaleString('fa-IR')} امتیاز</p>
