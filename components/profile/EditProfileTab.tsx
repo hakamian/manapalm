@@ -26,6 +26,30 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate }) => {
 
     const [activeSection, setActiveSection] = useState<'basic' | 'detailed'>('basic');
 
+    const [firstName, setFirstName] = useState(user.firstName || nameParts[0] || '');
+    const [lastName, setLastName] = useState(user.lastName || nameParts.slice(1).join(' ') || '');
+    const [email, setEmail] = useState(user.email || '');
+    const [description, setDescription] = useState(user.description || '');
+    const [avatar, setAvatar] = useState(user.avatar || '');
+    const [maritalStatus, setMaritalStatus] = useState(user.maritalStatus || 'مجرد');
+    const [childrenCount, setChildrenCount] = useState(user.childrenCount ?? '');
+    const [birthYear, setBirthYear] = useState(user.birthYear ?? '');
+    const [address, setAddress] = useState(user.address || '');
+    const [nationalId, setNationalId] = useState(user.nationalId || '');
+    const [fatherName, setFatherName] = useState(user.fatherName || '');
+    const [motherName, setMotherName] = useState(user.motherName || '');
+    const [occupation, setOccupation] = useState(user.occupation || '');
+    const [isGroveKeeper, setIsGroveKeeper] = useState(user.isGroveKeeper || false);
+    const [groveDescription, setGroveDescription] = useState(user.groveDescription || '');
+    const [isCoach, setIsCoach] = useState(user.isCoach || false);
+
+    const [isSaving, setIsSaving] = useState(false);
+    const [isBioAIAssistLoading, setIsBioAIAssistLoading] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [error, setError] = useState('');
+
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
     // Calculate completion percentage
     const completionPercentage = useMemo(() => {
         const fields = [
