@@ -168,6 +168,7 @@ create table if not exists public.impact_categories (
   icon text
 );
 alter table impact_categories enable row level security;
+DROP POLICY IF EXISTS "Public Read IC" ON impact_categories;
 create policy "Public Read IC" on impact_categories for select using (true);
 
 -- 2. Smart Installments
@@ -180,6 +181,7 @@ create table if not exists public.payment_plans (
   is_active boolean default true
 );
 alter table payment_plans enable row level security;
+DROP POLICY IF EXISTS "Public Read PP" ON payment_plans;
 create policy "Public Read PP" on payment_plans for select using (true);
 
 -- 3. Crowdfunding (Using TEXT for creator_id and product_id)
@@ -194,6 +196,7 @@ create table if not exists public.crowdfunds (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 alter table crowdfunds enable row level security;
+DROP POLICY IF EXISTS "Public Read CF" ON crowdfunds;
 create policy "Public Read CF" on crowdfunds for select using (true);
 
 create table if not exists public.crowdfund_contributors (
@@ -206,6 +209,7 @@ create table if not exists public.crowdfund_contributors (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 alter table crowdfund_contributors enable row level security;
+DROP POLICY IF EXISTS "Public Read CFC" ON crowdfund_contributors;
 create policy "Public Read CFC" on crowdfund_contributors for select using (true);
 
 -- 4. LMS System (Hoshmana Academy)
@@ -223,6 +227,7 @@ create table if not exists public.courses (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 alter table courses enable row level security;
+DROP POLICY IF EXISTS "Public Read C" ON courses;
 create policy "Public Read C" on courses for select using (true);
 
 create table if not exists public.course_modules (
@@ -233,6 +238,7 @@ create table if not exists public.course_modules (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 alter table course_modules enable row level security;
+DROP POLICY IF EXISTS "Public Read CM" ON course_modules;
 create policy "Public Read CM" on course_modules for select using (true);
 
 create table if not exists public.lessons (
@@ -248,6 +254,7 @@ create table if not exists public.lessons (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 alter table lessons enable row level security;
+DROP POLICY IF EXISTS "Public Read L" ON lessons;
 create policy "Public Read L" on lessons for select using (true);
 
 create table if not exists public.enrollments (
@@ -261,6 +268,12 @@ create table if not exists public.enrollments (
   unique(user_id, course_id)
 );
 alter table enrollments enable row level security;
-create policy "User View Own E" on enrollments for select using (auth.uid()::text = user_id);
-create policy "User Insert Own E" on enrollments for insert with check (auth.uid()::text = user_id);
-create policy "User Update Own E" on enrollments for update using (auth.uid()::text = user_id);
+
+DROP POLICY IF EXISTS "User View Own E" ON enrollments;
+CREATE POLICY "User View Own E" ON enrollments FOR SELECT USING (auth.uid()::text = user_id);
+
+DROP POLICY IF EXISTS "User Insert Own E" ON enrollments;
+CREATE POLICY "User Insert Own E" ON enrollments FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+
+DROP POLICY IF EXISTS "User Update Own E" ON enrollments;
+CREATE POLICY "User Update Own E" ON enrollments FOR UPDATE USING (auth.uid()::text = user_id);

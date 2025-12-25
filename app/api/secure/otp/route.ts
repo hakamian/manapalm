@@ -26,7 +26,8 @@ export async function POST(req: Request) {
         }
 
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
-        const { action, mobile, code } = await req.json();
+        const jsonBody = await req.json();
+        const { action, mobile, code } = jsonBody;
 
         if (action === 'send') {
             const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -104,7 +105,8 @@ export async function POST(req: Request) {
         }
 
         if (action === 'set-password') {
-            const { password, code: verifyCode, fullName } = await req.json();
+            const { password, fullName } = jsonBody;
+            const verifyCode = code;
 
             // 1. Double check the OTP one last time for security
             const { data: otpData, error: otpError } = await supabase
