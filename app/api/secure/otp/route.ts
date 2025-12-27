@@ -39,6 +39,16 @@ export async function POST(req: Request) {
         const rawTemplateId = (process.env.SMS_IR_TEMPLATE_ID || '').trim();
         const finalTemplateId = parseInt(cleanNumber(rawTemplateId));
 
+        // Enhanced validation for templateId
+        if (!rawTemplateId || isNaN(finalTemplateId) || finalTemplateId <= 0) {
+            console.error('❌ Invalid Template ID:', { raw: rawTemplateId, parsed: finalTemplateId });
+            return NextResponse.json({
+                success: false,
+                message: `خطا: شناسه قالب پیامک (SMS_IR_TEMPLATE_ID) معتبر نیست. مقدار فعلی: "${rawTemplateId}"`,
+                debug: { rawTemplateId, finalTemplateId, isNaN: isNaN(finalTemplateId) }
+            }, { status: 500 });
+        }
+
         if (action === 'send') {
             const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
             const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
