@@ -1,8 +1,8 @@
 # Product Requirements Document (PRD)
 # نخلستان معنا (Manapalm) - Garden of Meaning
 
-**Version:** 1.0  
-**Date:** December 9, 2025  
+**Version:** 1.1  
+**Date:** December 27, 2025  
 **Status:** Production Ready (Phase 1)  
 **Project URL:** https://manapalm.com  
 **Repository:** https://github.com/hakamian/manapalm
@@ -98,21 +98,22 @@ Manapalm offers users a unique combination of:
 ### Technical Stack
 
 **Frontend:**
-- **Framework:** React 18.3.1 with TypeScript
-- **Build Tool:** Vite 6.2.0
+- **Framework:** Next.js 14.2.35 with React 18 and TypeScript
+- **Build Tool:** Next.js built-in bundler (Turbopack/Webpack)
 - **Styling:** TailwindCSS (via utility classes)
 - **State Management:** React Context API (AppContext)
-- **Routing:** Custom view-based routing system
+- **Routing:** Next.js App Router
 - **PWA:** Service Worker for offline support and installability
 
 **Backend & Services:**
 - **Database:** Supabase (PostgreSQL)
-- **Authentication:** Supabase Auth (Google OAuth, Phone/OTP)
+- **Authentication:** Supabase Auth (Google OAuth, Phone/OTP via SMS.ir)
+- **SMS Provider:** SMS.ir (OTP verification and notifications)
 - **AI Services:** Google Gemini API (gemini-2.5-flash, imagen-4.0)
 - **File Storage:** Cloudinary
 - **Payment Gateway:** ZarinPal (Iranian payment processor)
 - **Hosting:** Vercel
-- **API Proxy:** Serverless functions for API key security
+- **API Proxy:** Vercel Serverless Functions for API key security
 
 **AI Integration:**
 - **Primary Model:** Gemini 2.5 Flash for content generation and analysis
@@ -1436,6 +1437,7 @@ Target: 10,000 meaningful actions per month by end of Year 1
 - Google Imagen (AI image generation)
 - Cloudinary (media CDN)
 - ZarinPal (payment gateway)
+- SMS.ir (SMS OTP and notifications)
 - Vercel (hosting)
 
 **Planned:**
@@ -1443,10 +1445,9 @@ Target: 10,000 meaningful actions per month by end of Year 1
 - Google Analytics 4
 - Hotjar (user behavior)
 - Mailchimp/SendGrid (email marketing)
-- Twilio (SMS notifications)
 - Calendly (scheduling)
 - Zoom API (video calls)
-- Zarinpal/Stripe (international payments)
+- Stripe (international payments)
 
 ---
 
@@ -1815,6 +1816,7 @@ Target: 10,000 meaningful actions per month by end of Year 1
 (For Development Team Reference)
 
 - **Database Schema:** `supabase_schema.sql`
+- **SMS Integration:** `docs/SMS_INTEGRATION.md` ✅
 - **API Documentation:** `docs/API.md` (to be created)
 - **Component Library:** `docs/COMPONENTS.md` (to be created)
 - **Deployment Guide:** `docs/DEPLOYMENT.md` (to be created)
@@ -1830,6 +1832,7 @@ Target: 10,000 meaningful actions per month by end of Year 1
 **Reviewed by:** Product Team  
 **Approved by:** [Pending]  
 **Version History:**
+- v1.1 - December 27, 2025 - Technical Stack Update (Next.js, SMS.ir)
 - v1.0 - December 9, 2025 - Initial PRD Creation
 
 **Distribution:**
