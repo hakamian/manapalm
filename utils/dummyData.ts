@@ -412,6 +412,32 @@ export const INITIAL_USERS: User[] = [
         reflectionAnalysesRemaining: 100,
         ambassadorPacksRemaining: 100,
         unlockedTools: ['imageGen', 'videoGen', 'thinking', 'codeGen']
+    },
+    // Test User for USER
+    {
+        id: 'user_test_manapalm',
+        name: 'کاربر تست',
+        fullName: 'کاربر تست (توسعه)',
+        email: 'test@manapalm.com',
+        phone: '09222453571',
+        joinDate: REFERENCE_DATE_STR,
+        points: 5000,
+        manaPoints: 2500,
+        level: 'همراه',
+        isAdmin: true, // Making it admin so the user can test shop changes
+        isGuardian: false,
+        timeline: [],
+        achievements: [],
+        profileCompletion: { initial: true, additional: false, extra: false },
+        creativeStorageCapacity: 100,
+        purchasedCourseIds: [],
+        profileImageUrl: 'https://ui-avatars.com/api/?name=Test+User&background=F59E0B&color=fff',
+        allowDirectMessages: true,
+        conversations: [],
+        notifications: [],
+        reflectionAnalysesRemaining: 10,
+        ambassadorPacksRemaining: 0,
+        unlockedTools: ['thinking']
     }
 ];
 

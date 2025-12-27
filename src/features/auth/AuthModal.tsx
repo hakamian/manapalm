@@ -101,14 +101,38 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                 setStep(2);
 
             } else {
-                if (!supabase) throw new Error("SupabaseNotConfigured");
+                // 1. High Priority Dev Bypass (Even if Supabase is connected)
+                if (process.env.NODE_ENV === 'development' && phoneNumber === '09222453571' && password === '010263@Mm') {
+                    const testUser = allUsers.find(u => u.phone === phoneNumber);
+                    if (testUser) {
+                        console.log("🛠️ Dev Bypass Triggered for Test User");
+                        onLoginSuccess({
+                            phone: phoneNumber,
+                            fullName: testUser.fullName,
+                            email: testUser.email
+                        });
+                        onClose();
+                        return;
+                    }
+                }
+
+                // 2. Normal Auth Flow
+                if (!supabase) {
+                    throw new Error("سرویس احراز هویت در دسترس نیست. لطفا اتصالات خود را بررسی کنید.");
+                }
 
                 const { data, error } = await supabase.auth.signInWithPassword({
                     phone: '+98' + phoneNumber.substring(1),
                     password: password
                 });
 
-                if (error) throw error;
+                if (error) {
+                    // Friendly translation for specific Supabase errors
+                    if (error.message.includes('Phone logins are disabled')) {
+                        throw new Error("ورود با شماره موبایل در تنظیمات سرور غیرفعال است. لطفا از ورود با گوگل یا کد تایید استفاده کنید.");
+                    }
+                    throw error;
+                }
 
                 if (data.user) {
                     onLoginSuccess({ phone: phoneNumber });
