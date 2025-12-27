@@ -90,7 +90,7 @@ const GiftPointsCard: React.FC = () => {
                                 {searchResults.map(u => (
                                     <li key={u.id}>
                                         <button onClick={() => handleSelectUser(u)} className="w-full text-right p-2 hover:bg-gray-500 flex items-center gap-2">
-                                            <img src={u.avatar || (u.id.charCodeAt(0) % 2 === 0 ? '/images/avatar-female.png' : '/images/avatar-male.png')} alt={u.fullName} className="w-8 h-8 rounded-full" />
+                                            <img src={u.avatar || (u.id.charCodeAt(0) % 2 === 0 ? 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819369/manapalm/avatars/avatar-female.jpg' : 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819371/manapalm/avatars/avatar-male.jpg')} alt={u.fullName} className="w-8 h-8 rounded-full" />
                                             <span>{u.fullName}</span>
                                         </button>
                                     </li>
@@ -101,7 +101,7 @@ const GiftPointsCard: React.FC = () => {
                 ) : (
                     <div>
                         <div className="flex items-center gap-3 mb-4">
-                            <img src={selectedUser.avatar || (selectedUser.id.charCodeAt(0) % 2 === 0 ? '/images/avatar-female.png' : '/images/avatar-male.png')} alt={selectedUser.fullName} className="w-10 h-10 rounded-full" />
+                            <img src={selectedUser.avatar || (selectedUser.id.charCodeAt(0) % 2 === 0 ? 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819369/manapalm/avatars/avatar-female.jpg' : 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819371/manapalm/avatars/avatar-male.jpg')} alt={selectedUser.fullName} className="w-10 h-10 rounded-full" />
                             <div>
                                 <p className="text-sm text-gray-400">هدیه به:</p>
                                 <p className="font-bold">{selectedUser.fullName}</p>
@@ -157,7 +157,7 @@ const CommunityHubView: React.FC = () => {
         if (!user) return;
         const isFollowing = user.following?.includes(targetUserId);
         const newFollowing = isFollowing
-            ? user.following.filter(id => id !== targetUserId)
+            ? (user.following || []).filter(id => id !== targetUserId)
             : [...(user.following || []), targetUserId];
         dispatch({ type: 'UPDATE_USER', payload: { ...user, following: newFollowing } });
     };

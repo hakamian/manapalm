@@ -1,0 +1,66 @@
+🚀 Starting Cloudinary upload...
+
+📤 Uploading: public/images/avatar-female.png
+✅ Uploaded: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819369/manapalm/avatars/avatar-female.jpg
+
+📤 Uploading: public/images/avatar-male.png
+✅ Uploaded: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819371/manapalm/avatars/avatar-male.jpg
+
+📤 Uploading: public/images/palm-heritage-group.png
+✅ Uploaded: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819374/manapalm/heritage/palm-heritage-group.jpg
+
+📤 Uploading: public/images/palm-heritage-memorial.png
+✅ Uploaded: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819376/manapalm/heritage/palm-heritage-memorial.jpg
+
+📤 Uploading: public/images/service-coaching-lab.png
+✅ Uploaded: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819379/manapalm/services/service-coaching-lab.jpg
+
+📤 Uploading: public/images/service-mana-pack.png
+✅ Uploaded: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819381/manapalm/services/service-mana-pack.jpg
+
+📤 Uploading: public/images/products/fig-powder.png
+✅ Uploaded: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819383/manapalm/products/fig-powder.jpg
+
+📤 Uploading: public/images/products/dates-simple.png
+✅ Uploaded: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819384/manapalm/products/dates-simple.jpg
+
+📤 Uploading: public/images/products/dates-luxury.png
+✅ Uploaded: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819385/manapalm/products/dates-luxury.jpg
+
+📤 Uploading: public/images/products/date-syrup.png
+✅ Uploaded: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819386/manapalm/products/date-syrup.jpg
+
+
+🔄 URL MAPPING FOR CODE UPDATE:
+
+================================
+
+OLD: /images/avatar-female.png
+NEW: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819369/manapalm/avatars/avatar-female.jpg
+
+OLD: /images/avatar-male.png
+NEW: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819371/manapalm/avatars/avatar-male.jpg
+
+OLD: /images/palm-heritage-group.png
+NEW: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819374/manapalm/heritage/palm-heritage-group.jpg
+
+OLD: /images/palm-heritage-memorial.png
+NEW: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819376/manapalm/heritage/palm-heritage-memorial.jpg
+
+OLD: /images/service-coaching-lab.png
+NEW: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819379/manapalm/services/service-coaching-lab.jpg
+
+OLD: /images/service-mana-pack.png
+NEW: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819381/manapalm/services/service-mana-pack.jpg
+
+OLD: /images/products/fig-powder.png
+NEW: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819383/manapalm/products/fig-powder.jpg
+
+OLD: /images/products/dates-simple.png
+NEW: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819384/manapalm/products/dates-simple.jpg
+
+OLD: /images/products/dates-luxury.png
+NEW: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819385/manapalm/products/dates-luxury.jpg
+
+OLD: /images/products/date-syrup.png
+NEW: https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819386/manapalm/products/date-syrup.jpg

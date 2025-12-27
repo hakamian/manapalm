@@ -164,7 +164,7 @@ export const AddReviewForm: React.FC<AddReviewFormProps> = ({ isOpen, onClose, c
                 courseId: courseId,
                 userId: user?.id || 'guest',
                 userName: user?.fullName || 'کاربر مهمان',
-                userAvatar: user?.avatar || '/images/avatar-male.png',
+                userAvatar: user?.avatar || 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819371/manapalm/avatars/avatar-male.jpg',
                 rating: rating,
                 text: text,
                 date: new Date().toISOString(),

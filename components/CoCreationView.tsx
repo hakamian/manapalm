@@ -110,7 +110,7 @@ const CoCreationView: React.FC<CoCreationViewProps> = ({ user, proposals }) => {
             id: `prop-${Date.now()}`,
             proposerId: user.id,
             proposerName: user.fullName || user.name,
-            proposerAvatar: user.avatar || (user.id.charCodeAt(0) % 2 === 0 ? '/images/avatar-female.png' : '/images/avatar-male.png'),
+            proposerAvatar: user.avatar || (user.id.charCodeAt(0) % 2 === 0 ? 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819369/manapalm/avatars/avatar-female.jpg' : 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819371/manapalm/avatars/avatar-male.jpg'),
             title: newProposalTitle,
             description: newProposalDescription,
             dateSubmitted: new Date().toISOString(),

@@ -102,7 +102,7 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                             }}
                         />
                     </svg>
-                    <img src={user.avatar || (user.id.charCodeAt(0) % 2 === 0 ? '/images/avatar-female.png' : '/images/avatar-male.png')} alt="User Avatar" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full object-cover border-4 border-gray-800" />
+                    <img src={user.avatar || (user.id.charCodeAt(0) % 2 === 0 ? 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819369/manapalm/avatars/avatar-female.jpg' : 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819371/manapalm/avatars/avatar-male.jpg')} alt="User Avatar" className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-24 h-24 rounded-full object-cover border-4 border-gray-800" />
                 </div>
 
                 <div className="flex-grow">

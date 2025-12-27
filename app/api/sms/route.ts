@@ -32,10 +32,11 @@ export async function POST(req: Request) {
         if (response.ok) {
             return NextResponse.json(result);
         } else {
-            console.error('SMS.ir Error:', result);
+            console.error('SMS.ir Error Details:', result);
             return NextResponse.json({
-                message: 'Failed to send SMS',
-                error: result
+                message: result.message || 'Failed to send SMS',
+                error: result,
+                status: response.status
             }, { status: response.status });
         }
     } catch (error: any) {

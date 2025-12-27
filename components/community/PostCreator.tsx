@@ -45,7 +45,7 @@ const PostCreator: React.FC<PostCreatorProps> = ({ user, onPost }) => {
 
     return (
         <div className="bg-gray-800 p-4 rounded-lg border border-gray-700 flex space-x-reverse space-x-3">
-            <img src={user.avatar || '/images/avatar-male.png'} alt={user.fullName || 'User'} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+            <img src={user.avatar || 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819371/manapalm/avatars/avatar-male.jpg'} alt={user.fullName || 'User'} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
             <div className="flex-grow">
                 <div className="flex justify-between items-center mb-2">
                     <label htmlFor="postCreator" className="text-sm text-gray-400">چه چیزی در ذهن دارید؟</label>
