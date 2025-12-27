@@ -101,19 +101,22 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                 setStep(2);
 
             } else {
-                // 1. High Priority Dev Bypass (Even if Supabase is connected)
-                if (process.env.NODE_ENV === 'development' && phoneNumber === '09222453571' && password === '010263@Mm') {
-                    const testUser = allUsers.find(u => u.phone === phoneNumber);
-                    if (testUser) {
-                        console.log("🛠️ Dev Bypass Triggered for Test User");
-                        onLoginSuccess({
-                            phone: phoneNumber,
-                            fullName: testUser.fullName,
-                            email: testUser.email
-                        });
-                        onClose();
-                        return;
-                    }
+                // 1. High Priority Dev Bypass (Robust Check)
+                const isDev = process.env.NODE_ENV === 'development' || (import.meta as any).env?.DEV;
+                const cleanPhone = phoneNumber.trim();
+                const cleanPass = password.trim();
+
+                if (isDev && cleanPhone === '09222453571' && cleanPass === '010263@Mm') {
+                    console.log("🛠️ Dev Bypass Triggered for Test User");
+                    const testUser = allUsers.find(u => u.phone === cleanPhone);
+
+                    onLoginSuccess({
+                        phone: cleanPhone,
+                        fullName: testUser?.fullName || 'کاربر تست (توسعه)',
+                        email: testUser?.email || 'test@manapalm.com'
+                    });
+                    onClose();
+                    return;
                 }
 
                 // 2. Normal Auth Flow
