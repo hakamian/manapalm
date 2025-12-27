@@ -409,7 +409,10 @@ export const dbAdapter = {
         Object.keys(dbProduct).forEach(key => dbProduct[key] === undefined && delete dbProduct[key]);
 
         console.log("🔄 Attempting product upsert:", { id, dbProduct });
-        const { error } = await supabase!.from('products').upsert(dbProduct);
+        const { error } = await supabase!.from('products').upsert(dbProduct, {
+            onConflict: 'id',
+            ignoreDuplicates: false
+        });
 
         if (error) {
             console.error("❌ Error upserting product:", error.message, error.code);
