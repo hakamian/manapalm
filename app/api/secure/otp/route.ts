@@ -46,13 +46,13 @@ export async function POST(req: Request) {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-api-key': smsApiKey!,
+                    'X-API-KEY': smsApiKey!.trim(),
                 },
                 body: JSON.stringify({
-                    mobile,
-                    templateId: parseInt(templateId!),
+                    mobile: mobile.trim(),
+                    templateId: parseInt(templateId!.trim()),
                     parameters: [
-                        { name: "CODE", value: otpCode },
+                        { name: "CODE", value: otpCode.toString() },
                         { name: "EXPIRE_TIME", value: "5" }
                     ],
                 }),
@@ -61,12 +61,13 @@ export async function POST(req: Request) {
             const smsData = await smsRes.json();
 
             if (!smsRes.ok) {
-                console.error('❌ SMS.ir API Error:', smsData);
+                console.error(`❌ SMS.ir API Error (Template: ${templateId}):`, smsData);
 
                 try {
                     const fs = await import('fs');
                     const logPath = './sms_debug.log';
-                    const logMsg = `\n[${new Date().toISOString()}] SMS Error: ${JSON.stringify(smsData)}`;
+                    const maskedKey = smsApiKey ? `${smsApiKey.substring(0, 5)}...${smsApiKey.slice(-5)}` : 'MISSING';
+                    const logMsg = `\n[${new Date().toISOString()}] SMS Error: Template=${templateId}, Key=${maskedKey}, Response=${JSON.stringify(smsData)}`;
                     fs.appendFileSync(logPath, logMsg);
                 } catch (e) {
                     console.error('Failed to write to log file:', e);
@@ -74,13 +75,17 @@ export async function POST(req: Request) {
 
                 return NextResponse.json({
                     success: false,
-                    message: `خطا از سمت پنل پیامک: ${smsData.message || 'نامشخص'}`,
-                    debug: smsData // Return full debug info to client
+                    message: `خطا در ارسال پیامک: ${smsData.message || 'نامشخص'}`,
+                    debug: {
+                        status: smsData.status,
+                        message: smsData.message,
+                        templateUsed: templateId
+                    }
                 }, { status: smsRes.status });
             }
 
-            console.log('✅ SMS Sent Successfully:', smsData);
-            return NextResponse.json({ success: true, debug: smsData }); // Return success debug info too
+            console.log(`✅ SMS Sent Successfully to ${mobile} using template ${templateId}`);
+            return NextResponse.json({ success: true });
         }
 
         if (action === 'verify') {
