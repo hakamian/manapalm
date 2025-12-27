@@ -98,7 +98,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     {
         id: 'p_heritage_birthday', name: 'نخل تولد', price: 8600000, points: 43000, category: 'نخل میراث',
         // CHANGE: Updated image per user request
-        image: 'https://res-console.cloudinary.com/dk2x11rvs/thumbnails/v1/image/upload/v1765131546/QV95b3VuZ19fdmlicmFudF9wYWxtX3RyZWVfc2FwbGluZ19fZnJlc2hseV9wbGFudGVkX2FuZF9yZWFjaGluZ190b3dhcmRzX3RoZV9za3lfX1RoZV9iYWNrZ3JvdW5kX2lzX191amJieTc=/preview',
+        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1765131546/manapalm/products/ai-free/young-palm.jpg',
         popularity: 93, dateAdded: getPastDate(7), stock: 30, description: 'کاشت یک درخت به مناسبت تولد، نمادی از رشد و زندگی.', type: 'physical', isActive: true, tags: ['celebration', 'family']
     },
     { id: 'p_heritage_memory', name: 'نخل خاطره', price: 8500000, points: 42500, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1469122312224-c5846569feb1?q=80&w=800&auto=format&fit=crop', popularity: 91, dateAdded: getPastDate(18), stock: 25, description: 'ثبت یک خاطره خوش و ماندگار در دل طبیعت.', type: 'physical', isActive: true, tags: ['memory'] },

@@ -27,6 +27,27 @@ export const getOptimizedImageUrl = (url: string, options: TransformationOptions
     return url;
   }
 
+  // Handle Cloudinary Console URLs which are not meant for public delivery
+  if (url.includes('res-console.cloudinary.com')) {
+    // Try to convert to delivery URL if possible, otherwise return as is (and it will likely fail)
+    // res-console.cloudinary.com/cloud_name/thumbnails/v1/image/upload/v12345/BASE64_PUBLIC_ID/preview
+    const consoleRegex = /res-console\.cloudinary\.com\/([^/]+)\/thumbnails\/v1\/image\/upload\/(v[0-9]+\/)?([^/]+)\/preview/;
+    const match = url.match(consoleRegex);
+    if (match) {
+      const cloudName = match[1];
+      const version = match[2] || '';
+      const base64PublicId = match[3];
+      try {
+        const publicId = atob(base64PublicId.replace(/-/g, '+').replace(/_/g, '/'));
+        return `https://res.cloudinary.com/${cloudName}/image/upload/${version}${publicId}`;
+      } catch (e) {
+        // Fallback: can't easily fix it
+        return url;
+      }
+    }
+    return url;
+  }
+
   // Set defaults
   const {
     width,
@@ -39,7 +60,7 @@ export const getOptimizedImageUrl = (url: string, options: TransformationOptions
 
   // Build transformation string
   const transformations: string[] = [];
-  
+
   if (width) transformations.push(`w_${width}`);
   if (height) transformations.push(`h_${height}`);
   if (crop) transformations.push(`c_${crop}`);
@@ -52,10 +73,14 @@ export const getOptimizedImageUrl = (url: string, options: TransformationOptions
   // Inject transformation into URL
   // Matches: /image/upload/v12345/ or /image/upload/
   // We want to insert after /upload/
-  const uploadRegex = /(\/image\/upload\/)(v[0-9]+\/)?/;
-  
-  if (url.match(uploadRegex)) {
-    return url.replace(uploadRegex, `$1${transformationString}/$2`);
+  // Handle already existing transformations
+  if (url.includes('/image/upload/') && !url.includes('/image/upload/' + transformationString)) {
+    const uploadPath = '/image/upload/';
+    const parts = url.split(uploadPath);
+    if (parts.length === 2) {
+      // Ensure no double slash if parts[1] already starts with v123/
+      return `${parts[0]}${uploadPath}${transformationString}/${parts[1]}`;
+    }
   }
 
   return url;
