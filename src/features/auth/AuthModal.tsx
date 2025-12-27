@@ -327,7 +327,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="رمز عبور خود را وارد کنید"
-                        className="w-full bg-gray-900 border border-gray-600 rounded-md p-3 text-left focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
+                        className="w-full bg-gray-900 border border-gray-600 rounded-md p-3 text-right focus:border-amber-500 focus:outline-none focus:ring-1 focus:ring-amber-500 transition-colors"
                     />
                     <button
                         type="button"
@@ -449,14 +449,14 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                         placeholder="رمز عبور (حداقل ۶ کاراکتر)"
                         value={regPassword}
                         onChange={e => setRegPassword(e.target.value)}
-                        className="w-full bg-gray-900 border border-gray-600 rounded-md p-2 text-white focus:border-amber-500 focus:outline-none text-sm"
+                        className="w-full bg-gray-900 border border-gray-600 rounded-md p-2 text-white focus:border-amber-500 focus:outline-none text-sm text-right"
                     />
                     <input
                         type="password"
                         placeholder="تکرار رمز عبور"
                         value={regConfirmPassword}
                         onChange={e => setRegConfirmPassword(e.target.value)}
-                        className="w-full bg-gray-900 border border-gray-600 rounded-md p-2 text-white focus:border-amber-500 focus:outline-none text-sm"
+                        className="w-full bg-gray-900 border border-gray-600 rounded-md p-2 text-white focus:border-amber-500 focus:outline-none text-sm text-right"
                     />
                 </div>
             </div>
