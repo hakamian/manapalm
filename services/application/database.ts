@@ -352,33 +352,35 @@ export const dbAdapter = {
             return newProduct;
         }
 
-        const newProduct = {
-            name: product.name,
-            price: product.price,
-            category: product.category,
-            image_url: product.image,
-            description: product.description,
-            type: product.type,
-            stock: product.stock,
-            points: product.points,
-            tags: product.tags,
-            download_url: product.downloadUrl,
-            file_type: product.fileType
-        };
+        // Use API route with service role key for reliable writes
+        console.log("🔄 Creating product via API:", product.name);
 
-        const { data, error } = await supabase!.from('products').insert(newProduct).select().single();
-        if (error) {
-            console.error("Error creating product:", error);
+        try {
+            const response = await fetch('/api/update-product', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'create', product })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                console.error("❌ API Error:", result.error);
+                throw new Error(result.error);
+            }
+
+            console.log("✅ Product created successfully:", result.product?.id);
+            return {
+                ...product,
+                id: result.product.id,
+                dateAdded: result.product.created_at,
+                popularity: result.product.popularity || 0,
+                image: result.product.image_url
+            };
+        } catch (error) {
+            console.error("❌ Failed to create product:", error);
             throw error;
         }
-
-        return {
-            ...product,
-            id: data.id,
-            dateAdded: data.created_at,
-            popularity: data.popularity,
-            image: data.image_url
-        };
     },
 
     async updateProduct(id: string, updates: Partial<Product>): Promise<void> {
@@ -422,8 +424,29 @@ export const dbAdapter = {
             localStorage.setItem('nakhlestan_local_products', JSON.stringify(updatedList));
             return;
         }
-        const { error } = await supabase!.from('products').delete().eq('id', id);
-        if (error) throw error;
+
+        // Use API route with service role key for reliable writes
+        console.log("🔄 Deleting product via API:", id);
+
+        try {
+            const response = await fetch('/api/update-product', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete', id })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                console.error("❌ API Error:", result.error);
+                throw new Error(result.error);
+            }
+
+            console.log("✅ Product deleted successfully:", id);
+        } catch (error) {
+            console.error("❌ Failed to delete product:", error);
+            throw error;
+        }
     },
 
     async getAgentLogs(): Promise<AgentActionLog[]> {
