@@ -4,7 +4,7 @@ import { Product, User } from '../../../../types';
 import { HeartIcon, EyeIcon, FireIcon, SparklesIcon, ArrowDownTrayIcon, BanknotesIcon, UsersIcon } from '../../../../components/icons';
 import InstallmentInfo from '../../../../components/InstallmentInfo';
 import CrowdfundModal from './CrowdfundModal';
-import SmartImage from '../../../../components/ui/SmartImage';
+import CloudinaryImage from '../../../components/ui/CloudinaryImage';
 
 interface ProductCardProps {
     product: Product;
@@ -67,8 +67,8 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isWishlisted, onView
                 )}
 
                 <div className="relative overflow-hidden aspect-[4/3]">
-                    {/* Using SmartImage for optimization */}
-                    <SmartImage
+                    {/* Using CloudinaryImage for optimization */}
+                    <CloudinaryImage
                         src={product.image}
                         alt={`تصویر محصول ${product.name} - ${product.category}`}
                         className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${isOutOfStock && !isDigital ? 'filter grayscale' : ''}`}

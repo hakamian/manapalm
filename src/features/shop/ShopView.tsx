@@ -12,6 +12,7 @@ import ProductCard from './components/ProductCard'; // Assuming ProductCard was 
 import CountdownTimer from '../../../components/CountdownTimer';
 import SEOHead from '../../../components/seo/SEOHead';
 import { BreadcrumbSchema } from '../../../components/seo/RichSnippets';
+import CloudinaryImage from '../../components/ui/CloudinaryImage';
 
 const categories = ['همه', 'نخل میراث', 'محصولات دیجیتال', 'محصولات خرما', 'صنایع دستی', 'ارتقا'];
 const MAX_PRICE = 40000000;
@@ -163,7 +164,7 @@ const ShopView: React.FC = () => {
             const newDesc = await getAIAssistedText({
                 mode: 'improve',
                 type: 'product_description',
-                text: selectedProduct.description,
+                text: selectedProduct.description || '',
                 context: selectedProduct.name || '',
             });
             setSelectedProduct(prev => prev ? { ...prev, description: newDesc } : null);
@@ -314,9 +315,14 @@ const ShopView: React.FC = () => {
                         if (product.id === 'p_heritage_meaning' && !canPurchaseMeaningPalm(user)) {
                             return (
                                 <div key={product.id} className="group bg-gray-800 rounded-lg overflow-hidden shadow-lg transform relative border border-gray-700">
-                                    <div className="relative overflow-hidden grayscale">
-                                        <img src={product.image} alt={product.name} className="w-full h-56 object-cover" />
-                                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                                    <div className="relative overflow-hidden grayscale h-56">
+                                        <CloudinaryImage
+                                            src={product.image}
+                                            alt={product.name}
+                                            className="w-full h-full object-cover"
+                                            width={400}
+                                        />
+                                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center pointer-events-none">
                                             <LockClosedIcon className="w-16 h-16 text-white/70" />
                                         </div>
                                     </div>

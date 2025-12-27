@@ -11,7 +11,7 @@ interface TransformationOptions {
   height?: number;
   quality?: 'auto' | 'best' | 'good' | 'eco' | 'low';
   format?: 'auto' | 'webp' | 'jpg' | 'png';
-  crop?: 'fill' | 'scale' | 'fit' | 'thumb';
+  crop?: 'fill' | 'scale' | 'fit' | 'thumb' | 'limit' | 'pad';
   gravity?: 'auto' | 'face' | 'center';
 }
 
@@ -45,17 +45,26 @@ export const getOptimizedImageUrl = (url: string, options: TransformationOptions
         return url;
       }
     }
+
+    // Alternative console URL pattern sometimes seen:
+    // .../image/upload/v1234/folder/image.jpg (but on console domain)
+    // In this case, we just swap the hostname if it looks like a standard path structure.
+    const strictDeliveryPathRegex = /\/image\/upload\/v[0-9]+\/.+/;
+    if (strictDeliveryPathRegex.test(url)) {
+      return url.replace('res-console.cloudinary.com', 'res.cloudinary.com');
+    }
+
     return url;
   }
 
-  // Set defaults
+  // Set defaults - RELAXED to prevent 400 errors
   const {
     width,
     height,
     quality = 'auto',
     format = 'auto',
-    crop = 'fill',
-    gravity = 'auto'
+    crop,    // Removed default 'fill'
+    gravity  // Removed default 'auto'
   } = options;
 
   // Build transformation string
@@ -63,8 +72,11 @@ export const getOptimizedImageUrl = (url: string, options: TransformationOptions
 
   if (width) transformations.push(`w_${width}`);
   if (height) transformations.push(`h_${height}`);
+
+  // Only add crop/gravity if explicitly requested or if we have dimensions + explicit intent
   if (crop) transformations.push(`c_${crop}`);
   if (gravity) transformations.push(`g_${gravity}`);
+
   if (quality) transformations.push(`q_${quality}`);
   if (format) transformations.push(`f_${format}`);
 
@@ -96,7 +108,8 @@ export const getCloudinarySrcSet = (url: string): string => {
   const widths = [320, 480, 640, 768, 1024, 1280];
   return widths
     .map(w => {
-      const optimizedUrl = getOptimizedImageUrl(url, { width: w, crop: 'scale' });
+      // Use 'limit' crop which is safer than scale/fill for srccset
+      const optimizedUrl = getOptimizedImageUrl(url, { width: w, crop: 'limit' });
       return `${optimizedUrl} ${w}w`;
     })
     .join(', ');
