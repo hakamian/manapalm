@@ -17,11 +17,11 @@ export default async function handler(req, res) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-API-KEY': API_KEY,
+                'X-API-KEY': API_KEY.trim(),
             },
             body: JSON.stringify({
                 mobile: mobile,
-                templateId: templateId,
+                templateId: parseInt(templateId),
                 parameters: parameters,
             }),
         });
@@ -30,13 +30,13 @@ export default async function handler(req, res) {
 
         if (!response.ok) {
             console.error('SMS Provider Error:', data);
-            throw new Error(data.message || 'Error sending SMS');
+            throw new Error(data.message || 'خطا در پنل پیامک');
         }
 
         return res.status(200).json({ success: true, data });
 
     } catch (error) {
         console.error('SMS API Error:', error);
-        return res.status(500).json({ message: 'Failed to send SMS' });
+        return res.status(500).json({ message: error.message || 'خطا در ارسال پیامک (Legacy)' });
     }
 }
