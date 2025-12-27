@@ -293,11 +293,9 @@ export const dbAdapter = {
             .select('*')
             .order('created_at', { ascending: false });
 
-        if (error || !data || data.length === 0) {
-            return INITIAL_PRODUCTS;
-        }
+        if (error) return INITIAL_PRODUCTS;
 
-        return data.map((p: any) => ({
+        const dbProducts = (data || []).map((p: any) => ({
             id: p.id,
             name: p.name,
             price: p.price,
@@ -305,8 +303,8 @@ export const dbAdapter = {
             image: p.image_url,
             description: p.description,
             type: p.type || 'physical',
-            stock: p.stock,
-            points: p.points,
+            stock: p.stock ?? 0,
+            points: p.points ?? 0,
             popularity: p.popularity || 0,
             dateAdded: p.created_at,
             tags: p.tags || [],
@@ -314,6 +312,23 @@ export const dbAdapter = {
             fileType: p.file_type,
             isActive: p.is_active ?? true
         }));
+
+        // Merge INITIAL_PRODUCTS with DB products
+        // Any product in DB with same ID will overwrite the hardcoded one.
+        const merged = [...INITIAL_PRODUCTS.map(p => ({ ...p, isActive: true }))];
+
+        dbProducts.forEach(dbP => {
+            const index = merged.findIndex(p => p.id === dbP.id);
+            if (index > -1) {
+                merged[index] = dbP;
+            } else {
+                // If ID starts with p_local_, it's from local development and likely shouldn't be in main DB,
+                // but we allow it for consistency if it's already there.
+                merged.unshift(dbP);
+            }
+        });
+
+        return merged as Product[];
     },
 
     async createProduct(product: Omit<Product, 'id' | 'dateAdded' | 'popularity'>): Promise<Product | null> {
@@ -374,20 +389,32 @@ export const dbAdapter = {
             localStorage.setItem('nakhlestan_local_products', JSON.stringify(updatedList));
             return;
         }
-        const dbUpdates: any = {};
-        if (updates.name) dbUpdates.name = updates.name;
-        if (updates.price !== undefined) dbUpdates.price = updates.price;
-        if (updates.category) dbUpdates.category = updates.category;
-        if (updates.image) dbUpdates.image_url = updates.image;
-        if (updates.description) dbUpdates.description = updates.description;
-        if (updates.stock !== undefined) dbUpdates.stock = updates.stock;
-        if (updates.points !== undefined) dbUpdates.points = updates.points;
-        if (updates.tags) dbUpdates.tags = updates.tags;
-        if (updates.downloadUrl) dbUpdates.download_url = updates.downloadUrl;
-        if (updates.fileType) dbUpdates.file_type = updates.fileType;
+        // For live DB, we use upsert to ensure hardcoded products are "promoted" to DB on first edit
+        const initialP = INITIAL_PRODUCTS.find(p => p.id === id);
 
-        const { error } = await supabase!.from('products').update(dbUpdates).eq('id', id);
-        if (error) throw error;
+        const dbProduct: any = {
+            id: id,
+            name: updates.name || initialP?.name,
+            price: updates.price !== undefined ? updates.price : initialP?.price,
+            category: updates.category || initialP?.category,
+            image_url: updates.image || initialP?.image,
+            description: updates.description || initialP?.description,
+            stock: updates.stock !== undefined ? updates.stock : initialP?.stock,
+            points: updates.points !== undefined ? updates.points : initialP?.points,
+            tags: updates.tags || initialP?.tags,
+            download_url: updates.downloadUrl || (initialP as any)?.downloadUrl,
+            file_type: updates.fileType || (initialP as any)?.fileType,
+            is_active: updates.isActive !== undefined ? updates.isActive : true
+        };
+
+        // Remove undefined keys to prevent DB error
+        Object.keys(dbProduct).forEach(key => dbProduct[key] === undefined && delete dbProduct[key]);
+
+        const { error } = await supabase!.from('products').upsert(dbProduct);
+        if (error) {
+            console.error("Error upserting product:", error);
+            throw error;
+        }
     },
 
     async deleteProduct(id: string): Promise<void> {
