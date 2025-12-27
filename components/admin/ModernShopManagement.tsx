@@ -262,46 +262,138 @@ const ModernShopManagement: React.FC<ModernShopManagementProps> = ({
                 </div>
             </div>
 
-            {/* Products Grid */}
-            <div
-                className="admin-animate-fade-in"
-                style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                    gap: '1.5rem'
-                }}
-            >
-                {filteredProducts.map((product) => (
-                    <div key={product.id} className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
-                        {/* Image Area */}
-                        <div style={{
-                            height: '200px',
-                            background: product.image ? `url(${product.image}) center/cover` : 'var(--admin-bg-tertiary)',
-                            position: 'relative'
-                        }}>
-                            {/* ... badges ... */}
-                        </div>
+            {/* Products View */}
+            {viewMode === 'grid' ? (
+                <div
+                    className="admin-animate-fade-in"
+                    style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                        gap: '1.5rem'
+                    }}
+                >
+                    {filteredProducts.map((product) => (
+                        <div key={product.id} className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
+                            {/* Image Area */}
+                            <div style={{
+                                height: '200px',
+                                background: product.image ? `url("${product.image}") center/cover` : 'var(--admin-bg-tertiary)',
+                                position: 'relative'
+                            }}>
+                                <div style={{
+                                    position: 'absolute',
+                                    top: '0.5rem',
+                                    right: '0.5rem',
+                                    background: product.stock > 0 ? 'var(--admin-success-bg)' : 'var(--admin-danger-bg)',
+                                    color: product.stock > 0 ? 'var(--admin-success-text)' : 'var(--admin-danger-text)',
+                                    padding: '0.25rem 0.5rem',
+                                    borderRadius: '0.5rem',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 'bold'
+                                }}>
+                                    {product.stock > 0 ? `موجودی: ${product.stock.toLocaleString('fa-IR')}` : 'ناموجود'}
+                                </div>
+                            </div>
 
-                        <div style={{ padding: '1.5rem' }}>
-                            {/* ... info ... */}
-                            <h3 className="admin-heading-3">{product.name}</h3>
-                            {/* ... price/stock ... */}
+                            <div style={{ padding: '1.5rem' }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                                    <span className="admin-label" style={{ fontSize: '0.7rem' }}>{product.category}</span>
+                                    {product.points && (
+                                        <span style={{ color: 'var(--admin-accent)', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                                            {product.points.toLocaleString('fa-IR')} امتیاز
+                                        </span>
+                                    )}
+                                </div>
+                                <h3 className="admin-heading-3" style={{ marginBottom: '1rem' }}>{product.name}</h3>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                    <span className="admin-heading-2" style={{ fontSize: '1.1rem', color: 'var(--admin-text-primary)' }}>
+                                        {formatPrice(product.price)}
+                                    </span>
+                                </div>
 
-                            <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
-                                <button
-                                    onClick={() => handleEditClick(product)}
-                                    className="admin-btn admin-btn-primary"
-                                    style={{ flex: 1, padding: '0.5rem' }}
-                                >
-                                    <PencilIcon className="w-4 h-4" />
-                                    ویرایش
-                                </button>
-                                {/* ... delete ... */}
+                                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
+                                    <button
+                                        onClick={() => handleEditClick(product)}
+                                        className="admin-btn admin-btn-primary"
+                                        style={{ flex: 4, padding: '0.5rem' }}
+                                    >
+                                        <PencilIcon className="w-4 h-4" />
+                                        ویرایش
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (window.confirm('آیا از حذف این محصول اطمینان دارید؟')) {
+                                                onDeleteProduct?.(product.id);
+                                            }
+                                        }}
+                                        className="admin-btn admin-btn-danger"
+                                        style={{ flex: 1, padding: '0.5rem', justifyContent: 'center' }}
+                                    >
+                                        <TrashIcon className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
-            </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="admin-card admin-animate-fade-in" style={{ padding: 0, overflow: 'hidden' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'right' }}>
+                        <thead style={{ background: 'var(--admin-bg-tertiary)', borderBottom: '1px solid var(--admin-border)' }}>
+                            <tr>
+                                <th style={{ padding: '1rem' }}>محصول</th>
+                                <th style={{ padding: '1rem' }}>دسته‌بندی</th>
+                                <th style={{ padding: '1rem' }}>قیمت</th>
+                                <th style={{ padding: '1rem' }}>موجودی</th>
+                                <th style={{ padding: '1rem' }}>امتیاز</th>
+                                <th style={{ padding: '1rem' }}>عملیات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredProducts.map((product) => (
+                                <tr key={product.id} style={{ borderBottom: '1px solid var(--admin-border)' }}>
+                                    <td style={{ padding: '1rem' }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                                            <div style={{
+                                                width: '40px',
+                                                height: '40px',
+                                                borderRadius: '0.5rem',
+                                                background: product.image ? `url("${product.image}") center/cover` : 'var(--admin-bg-tertiary)'
+                                            }} />
+                                            <span style={{ fontWeight: 'bold' }}>{product.name}</span>
+                                        </div>
+                                    </td>
+                                    <td style={{ padding: '1rem' }}>{product.category}</td>
+                                    <td style={{ padding: '1rem' }}>{formatPrice(product.price)}</td>
+                                    <td style={{ padding: '1rem' }}>
+                                        <span style={{
+                                            color: product.stock > 0 ? 'var(--admin-success-text)' : 'var(--admin-danger-text)',
+                                            fontWeight: 'bold'
+                                        }}>
+                                            {product.stock.toLocaleString('fa-IR')}
+                                        </span>
+                                    </td>
+                                    <td style={{ padding: '1rem' }}>{product.points?.toLocaleString('fa-IR')}</td>
+                                    <td style={{ padding: '1rem' }}>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button onClick={() => handleEditClick(product)} className="text-blue-400 hover:text-blue-300">
+                                                <PencilIcon className="w-5 h-5" />
+                                            </button>
+                                            <button onClick={() => {
+                                                if (window.confirm('آیا از حذف این محصول اطمینان دارید؟')) {
+                                                    onDeleteProduct?.(product.id);
+                                                }
+                                            }} className="text-red-500 hover:text-red-400">
+                                                <TrashIcon className="w-5 h-5" />
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
 
             {/* EDIT MODAL */}
             {editingProduct && (
@@ -349,7 +441,7 @@ const ModernShopManagement: React.FC<ModernShopManagementProps> = ({
                                     <input
                                         type="text"
                                         value={editForm.category || ''}
-                                        onChange={e => setEditForm({ ...editForm, category: e.target.value })}
+                                        onChange={e => setEditForm({ ...editForm, category: e.target.value as any })}
                                         className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white"
                                     />
                                 </div>

@@ -175,6 +175,9 @@ export type Action =
     | { type: 'UPDATE_NAVIGATION'; payload: NavCategory[] }
     | { type: 'UPDATE_CAMPAIGN'; payload: Campaign }
     | { type: 'UPDATE_PALM_TYPES'; payload: PalmType[] }
+    | { type: 'UPDATE_PRODUCT'; payload: { id: string, data: Partial<Product> } }
+    | { type: 'ADD_PRODUCT'; payload: { product: Product } }
+    | { type: 'DELETE_PRODUCT'; payload: { id: string } }
     | { type: 'START_PLANTING_FLOW' }
     | { type: 'QUICK_PAY'; payload: any }
     | { type: 'CONFIRM_PLANTING'; payload: { deedId: string, photoBase64: string } }

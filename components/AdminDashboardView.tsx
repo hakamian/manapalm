@@ -1,7 +1,7 @@
 
 
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { User, Order, CommunityPost, OrderStatus, CartItem, Campaign, PalmType, ChatMessage, ProactiveReport, AdvisorType, IndividualOpinion, Suggestion, ArticleDraft, CommunityProject, ProjectUpdate } from '../types';
+import { User, Order, CommunityPost, OrderStatus, CartItem, Campaign, PalmType, Product, ChatMessage, ProactiveReport, AdvisorType, IndividualOpinion, Suggestion, ArticleDraft, CommunityProject, ProjectUpdate } from '../types';
 import { useAppState, useAppDispatch } from '../AppContext';
 import {
     getBoardMeetingAdvice,
@@ -76,6 +76,7 @@ interface AdminDashboardViewProps {
 
 const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, posts, campaign, palmTypes, allProjects = [], onAddProjectUpdate }) => {
     const { mentorshipRequests } = useAppState();
+    const dispatch = useAppDispatch();
     const [activeTab, setActiveTab] = useState('pulse');
     const [activeSubTab, setActiveSubTab] = useState<string>('users');
     const [dbHealth, setDbHealth] = useState<{ status: string; color: string }>({ status: 'checking', color: 'bg-yellow-500/20 text-yellow-500' });
@@ -222,11 +223,13 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                         <ModernShopManagement
                             products={useAppState().products}
                             onUpdateProduct={(id, data) => {
-                                // Dispatch update action
-                                // Since we don't have a direct UPDATE_PRODUCT action in reducers visible here, 
-                                // we'll log it for now. Ideally should dispatch('UPDATE_PRODUCT', ...)
-                                console.log('Update Product:', id, data);
-                                // In a real app we'd dispatch( { type: 'UPDATE_PRODUCT', payload: { id, ...data } })
+                                dispatch({ type: 'UPDATE_PRODUCT', payload: { id, data } });
+                            }}
+                            onCreateProduct={(product) => {
+                                dispatch({ type: 'ADD_PRODUCT', payload: { product: product as Product } });
+                            }}
+                            onDeleteProduct={(id) => {
+                                dispatch({ type: 'DELETE_PRODUCT', payload: { id } });
                             }}
                         />
                     )}

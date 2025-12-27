@@ -100,13 +100,24 @@ const AiArtStudioDashboard: React.FC = () => {
                                         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-4 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                                             <p className="text-white font-bold text-sm truncate">{item.title}</p>
                                             <p className="text-xs text-gray-300 mb-2">{item.type}</p>
-                                            <button
-                                                className="w-full bg-white/10 hover:bg-white/20 text-white text-xs py-1.5 rounded backdrop-blur-sm border border-white/10 flex items-center justify-center gap-1"
-                                                onClick={() => window.open(item.url, '_blank')}
-                                            >
-                                                <ArrowDownTrayIcon className="w-3 h-3" />
-                                                دانلود / نمایش
-                                            </button>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    className="flex-1 bg-white/10 hover:bg-white/20 text-white text-xs py-1.5 rounded backdrop-blur-sm border border-white/10 flex items-center justify-center gap-1"
+                                                    onClick={() => {
+                                                        navigator.clipboard.writeText(item.url);
+                                                        alert('لینک تصویر کپی شد');
+                                                    }}
+                                                >
+                                                    کپی لینک
+                                                </button>
+                                                <button
+                                                    className="flex-1 bg-white/10 hover:bg-white/20 text-white text-xs py-1.5 rounded backdrop-blur-sm border border-white/10 flex items-center justify-center gap-1"
+                                                    onClick={() => window.open(item.url, '_blank')}
+                                                >
+                                                    <ArrowDownTrayIcon className="w-3 h-3" />
+                                                    نمایش
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 ))}

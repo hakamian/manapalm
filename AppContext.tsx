@@ -290,6 +290,24 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'UPDATE_NAVIGATION': return { ...state, siteConfig: { ...state.siteConfig, navigation: action.payload } };
         case 'UPDATE_CAMPAIGN': return { ...state, campaign: action.payload };
         case 'UPDATE_PALM_TYPES': return { ...state, palmTypes: action.payload };
+        case 'UPDATE_PRODUCT':
+            dbAdapter.updateProduct(action.payload.id, action.payload.data);
+            return {
+                ...state,
+                products: state.products.map(p => p.id === action.payload.id ? { ...p, ...action.payload.data } : p)
+            };
+        case 'ADD_PRODUCT':
+            dbAdapter.createProduct(action.payload.product);
+            return {
+                ...state,
+                products: [action.payload.product, ...state.products]
+            };
+        case 'DELETE_PRODUCT':
+            dbAdapter.deleteProduct(action.payload.id);
+            return {
+                ...state,
+                products: state.products.filter(p => p.id !== action.payload.id)
+            };
         case 'START_PLANTING_FLOW': return { ...state, isPalmSelectionModalOpen: true };
         case 'QUICK_PAY': {
             const { palm, quantity, deedDetails, selectedPlan } = action.payload;
