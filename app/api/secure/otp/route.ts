@@ -39,18 +39,18 @@ export async function POST(req: Request) {
 
             if (dbError) throw dbError;
 
-            const smsApiKey = process.env.SMS_IR_API_KEY;
-            const templateId = process.env.SMS_IR_TEMPLATE_ID;
+            const finalApiKey = (process.env.SMS_IR_API_KEY || '').trim();
+            const finalTemplateId = (process.env.SMS_IR_TEMPLATE_ID || '').trim();
 
             const smsRes = await fetch('https://api.sms.ir/v1/send/verify', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-API-KEY': smsApiKey!.trim(),
+                    'X-API-KEY': finalApiKey,
                 },
                 body: JSON.stringify({
                     mobile: mobile.trim(),
-                    templateId: parseInt(templateId!.trim()),
+                    templateId: Number(finalTemplateId),
                     parameters: [
                         { name: "CODE", value: otpCode.toString() },
                         { name: "EXPIRE_TIME", value: "5" }
@@ -79,12 +79,13 @@ export async function POST(req: Request) {
                     debug: {
                         status: smsData.status,
                         message: smsData.message,
-                        templateUsed: templateId
+                        templateUsed: finalTemplateId,
+                        templateType: typeof Number(finalTemplateId)
                     }
                 }, { status: smsRes.status });
             }
 
-            console.log(`✅ SMS Sent Successfully to ${mobile} using template ${templateId}`);
+            console.log(`✅ SMS Sent Successfully to ${mobile} using template ${finalTemplateId}`);
             return NextResponse.json({ success: true });
         }
 
