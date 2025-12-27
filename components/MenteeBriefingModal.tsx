@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { User } from '../types';
 import { generateMenteeBriefing } from '../services/geminiService';
 import { SparklesIcon, XMarkIcon } from './icons';
@@ -50,7 +51,7 @@ const MenteeBriefingModal: React.FC<MenteeBriefingModalProps> = ({ isOpen, onClo
                         </div>
                     ) : (
                         <div className="whitespace-pre-wrap text-gray-200"
-                             dangerouslySetInnerHTML={{ __html: briefing.replace(/\* /g, '• ').replace(/\n/g, '<br />') }} />
+                            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(briefing.replace(/\* /g, '• ').replace(/\n/g, '<br />')) }} />
                     )}
                 </div>
                 <button onClick={onClose} className="mt-4 w-full bg-gray-600 hover:bg-gray-700 font-semibold py-2 rounded-lg">بستن</button>

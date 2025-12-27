@@ -3,6 +3,33 @@
 
 import { createClient } from '@supabase/supabase-js';
 
+// Simple in-memory rate limiting (resets on cold start, but still helps)
+// For production, consider using Redis/Upstash for persistent rate limiting
+const rateLimitStore = new Map();
+const RATE_LIMIT_WINDOW = 10 * 60 * 1000; // 10 minutes
+const RATE_LIMIT_MAX = 5; // max 5 OTP requests per window
+
+function checkRateLimit(mobile) {
+    const now = Date.now();
+    const key = `otp_${mobile}`;
+    const record = rateLimitStore.get(key);
+
+    if (!record || now - record.firstRequest > RATE_LIMIT_WINDOW) {
+        // Start new window
+        rateLimitStore.set(key, { firstRequest: now, count: 1 });
+        return { allowed: true, remaining: RATE_LIMIT_MAX - 1 };
+    }
+
+    if (record.count >= RATE_LIMIT_MAX) {
+        const retryAfter = Math.ceil((RATE_LIMIT_WINDOW - (now - record.firstRequest)) / 1000);
+        return { allowed: false, retryAfter };
+    }
+
+    record.count++;
+    rateLimitStore.set(key, record);
+    return { allowed: true, remaining: RATE_LIMIT_MAX - record.count };
+}
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method not allowed' });
@@ -44,9 +71,20 @@ export default async function handler(req, res) {
 
         // ===== SEND OTP =====
         if (action === 'send') {
+            const cleanMobile = cleanNumber(mobile);
+
+            // Check rate limit before processing
+            const rateLimit = checkRateLimit(cleanMobile);
+            if (!rateLimit.allowed) {
+                return res.status(429).json({
+                    success: false,
+                    message: `تعداد درخواست‌های شما بیش از حد مجاز است. لطفاً ${Math.ceil(rateLimit.retryAfter / 60)} دقیقه دیگر تلاش کنید.`,
+                    retryAfter: rateLimit.retryAfter
+                });
+            }
+
             const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
             const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
-            const cleanMobile = cleanNumber(mobile);
 
             const { error: dbError } = await supabase
                 .from('otps')
