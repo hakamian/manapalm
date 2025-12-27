@@ -114,7 +114,7 @@ export const INITIAL_PRODUCTS: Product[] = [
         name: 'نخل یادبود',
         price: 8900000,
         category: 'نخل میراث',
-        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819376/manapalm/heritage/palm-heritage-memorial.jpg',
+        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766665777/Gemini_Generated_Image_7h66h57h66h57h66_sydlx6.png',
         popularity: 92,
         dateAdded: getPastDate(15),
         stock: 50,
