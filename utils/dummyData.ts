@@ -94,7 +94,7 @@ export const INITIAL_PRODUCTS: Product[] = [
         price: 9000000,
         points: 45000,
         category: 'نخل میراث',
-        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1765110314/aerial-view_vwdbw2.png',
+        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766665786/Gemini_Generated_Image_rg0fnfrg0fnfrg0f_kksfet.png',
         popularity: 95,
         dateAdded: getPastDate(5),
         stock: 50,
@@ -126,7 +126,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     },
     {
         id: 'p_heritage_occasion', name: 'نخل مناسبت', price: 8800000, category: 'نخل میراث',
-        image: 'https://images.unsplash.com/photo-1513415277900-a62401e19be4?q=80&w=800&auto=format&fit=crop',
+        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766665785/Gemini_Generated_Image_uro3c9uro3c9uro3_mwi8zd.png',
         popularity: 90, dateAdded: getPastDate(2), stock: 15,
         description: 'جشن گرفتن یک رویداد خاص مانند سالگرد ازدواج یا فارغ‌التحصیلی.',
         type: 'physical', isActive: true, points: 44000, tags: ['celebration', 'memory']
@@ -137,7 +137,7 @@ export const INITIAL_PRODUCTS: Product[] = [
         price: 8600000,
         points: 43000,
         category: 'نخل میراث',
-        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766326450/manapalm/products/ai_free__1766326449529.jpg',
+        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766665795/Gemini_Generated_Image_va3ezwva3ezwva3e_gawccp.png',
         popularity: 93,
         dateAdded: getPastDate(7),
         stock: 30,
