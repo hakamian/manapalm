@@ -389,42 +389,28 @@ export const dbAdapter = {
             localStorage.setItem('nakhlestan_local_products', JSON.stringify(updatedList));
             return;
         }
-        // For live DB, we use upsert to ensure hardcoded products are "promoted" to DB on first edit
-        const initialP = INITIAL_PRODUCTS.find(p => p.id === id);
 
-        const dbProduct: any = {
-            id: id,
-            name: updates.name || initialP?.name,
-            price: updates.price !== undefined ? updates.price : initialP?.price,
-            category: updates.category || initialP?.category,
-            image_url: updates.image || initialP?.image,
-            description: updates.description || initialP?.description,
-            stock: updates.stock !== undefined ? updates.stock : initialP?.stock,
-            points: updates.points !== undefined ? updates.points : initialP?.points,
-            tags: updates.tags || initialP?.tags,
-            is_active: updates.isActive !== undefined ? updates.isActive : true
-        };
+        // Use API route with service role key for reliable writes
+        console.log("🔄 Updating product via API:", { id, updates });
 
-        // Remove undefined keys to prevent DB error
-        Object.keys(dbProduct).forEach(key => dbProduct[key] === undefined && delete dbProduct[key]);
+        try {
+            const response = await fetch('/api/update-product', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, updates })
+            });
 
-        console.log("🔄 Attempting product upsert:", { id, dbProduct });
-        const { error } = await supabase!.from('products').upsert(dbProduct, {
-            onConflict: 'id',
-            ignoreDuplicates: false
-        });
+            const result = await response.json();
 
-        if (error) {
-            console.error("❌ Error upserting product:", error.message, error.code);
-            // If it's a column mismatch, try minimal update
-            if (error.code === '42703' || error.message.includes('column')) {
-                const minimal = { ...dbProduct };
-                delete minimal.is_active;
-                const { error: retryError } = await supabase!.from('products').upsert(minimal);
-                if (retryError) throw retryError;
-            } else {
-                throw error;
+            if (!response.ok) {
+                console.error("❌ API Error:", result.error);
+                throw new Error(result.error);
             }
+
+            console.log("✅ Product updated successfully:", id);
+        } catch (error) {
+            console.error("❌ Failed to update product:", error);
+            throw error;
         }
     },
 
