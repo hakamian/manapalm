@@ -67,8 +67,8 @@ export interface Order {
     items: CartItem[]; // joined view
     statusHistory?: { status: OrderStatus; date: string }[];
 
-    // Legacy mapping
-    total?: number;
+    // Legacy mapping (now required for backward compat)
+    total: number;
     date?: string; // map to createdAt
     deeds?: Deed[];
 }

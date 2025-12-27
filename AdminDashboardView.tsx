@@ -67,7 +67,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
     const platformData = useMemo(() => ({
         totalUsers: users.length,
         totalPalms: orders.reduce((acc, order) => acc + (order.deeds?.length || 0), 0),
-        totalRevenue: orders.reduce((acc, order) => acc + order.total, 0),
+        totalRevenue: orders.reduce((acc, order) => acc + (order.total || 0), 0),
         recentPostsCount: posts.length,
     }), [users, orders, posts]);
 
@@ -133,8 +133,8 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                                     key={item.id}
                                     onClick={() => setActiveTab(item.id)}
                                     className={`w-full flex items-center p-3 rounded-2xl transition-all group ${activeTab === item.id
-                                            ? 'bg-green-500/10 text-white shadow-[inset_0_0_20px_rgba(34,197,94,0.05)] border border-green-500/20'
-                                            : 'hover:bg-white/5 text-stone-500 hover:text-stone-300 border border-transparent'
+                                        ? 'bg-green-500/10 text-white shadow-[inset_0_0_20px_rgba(34,197,94,0.05)] border border-green-500/20'
+                                        : 'hover:bg-white/5 text-stone-500 hover:text-stone-300 border border-transparent'
                                         }`}
                                 >
                                     <item.icon className={`w-6 h-6 flex-shrink-0 transition-transform group-hover:scale-110 ${activeTab === item.id ? 'text-green-400' : ''}`} />

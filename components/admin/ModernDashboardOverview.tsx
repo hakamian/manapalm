@@ -54,7 +54,7 @@ const ModernDashboardOverview: React.FC<ModernDashboardOverviewProps> = ({
     // Recent orders (last 10)
     const recentOrders = useMemo(() => {
         return [...orders]
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+            .sort((a, b) => new Date(b.createdAt || b.date || '').getTime() - new Date(a.createdAt || a.date || '').getTime())
             .slice(0, 10);
     }, [orders]);
 
@@ -258,7 +258,7 @@ const ModernDashboardOverview: React.FC<ModernDashboardOverviewProps> = ({
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                                                     <ClockIcon className="w-4 h-4" style={{ color: 'var(--admin-text-muted)' }} />
                                                     <span className="admin-caption">
-                                                        {formatDate(order.date)}
+                                                        {formatDate(order.createdAt || order.date || new Date().toISOString())}
                                                     </span>
                                                 </div>
                                             </td>

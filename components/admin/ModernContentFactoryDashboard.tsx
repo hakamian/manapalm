@@ -33,6 +33,7 @@ const ModernContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({
         if (!supabase) return;
 
         const fetchTasks = async () => {
+            if (!supabase) return;
             const { data } = await supabase
                 .from('agent_tasks')
                 .select('*')
@@ -64,7 +65,9 @@ const ModernContentFactoryDashboard: React.FC<ContentFactoryDashboardProps> = ({
             .subscribe();
 
         return () => {
-            supabase.removeChannel(channel);
+            if (supabase) {
+                supabase.removeChannel(channel);
+            }
         };
     }, []);
 
