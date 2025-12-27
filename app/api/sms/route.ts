@@ -18,11 +18,11 @@ export async function POST(req: Request) {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'x-api-key': apiKey,
+                'X-API-KEY': apiKey.trim(),
             },
             body: JSON.stringify({
-                mobile,
-                templateId: parseInt(templateId),
+                mobile: mobile.trim(),
+                templateId: parseInt(templateId.toString().trim()),
                 parameters: parameters || [],
             }),
         });
@@ -32,11 +32,10 @@ export async function POST(req: Request) {
         if (response.ok) {
             return NextResponse.json(result);
         } else {
-            console.error('SMS.ir Error Details:', result);
+            console.error('SMS.ir Error:', result);
             return NextResponse.json({
-                message: result.message || 'Failed to send SMS',
-                error: result,
-                status: response.status
+                message: result.message || 'خطا در ارسال پیامک از سمت پنل',
+                error: result
             }, { status: response.status });
         }
     } catch (error: any) {
