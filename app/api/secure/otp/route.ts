@@ -29,18 +29,25 @@ export async function POST(req: Request) {
         const jsonBody = await req.json();
         const { action, mobile, code } = jsonBody;
 
+        const cleanNumber = (str: string) => {
+            const p2e = (s: string) => s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d).toString())
+                .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
+            return p2e(str).replace(/\D/g, '');
+        };
+
+        const finalApiKey = (process.env.SMS_IR_API_KEY || '').trim();
+        const rawTemplateId = (process.env.SMS_IR_TEMPLATE_ID || '').trim();
+        const finalTemplateId = parseInt(cleanNumber(rawTemplateId));
+
         if (action === 'send') {
             const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
             const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
 
             const { error: dbError } = await supabase
                 .from('otps')
-                .upsert({ mobile, code: otpCode, expires_at: expiresAt }, { onConflict: 'mobile' });
+                .upsert({ mobile: cleanNumber(mobile), code: otpCode, expires_at: expiresAt }, { onConflict: 'mobile' });
 
             if (dbError) throw dbError;
-
-            const finalApiKey = (process.env.SMS_IR_API_KEY || '').trim();
-            const finalTemplateId = (process.env.SMS_IR_TEMPLATE_ID || '').trim();
 
             const smsRes = await fetch('https://api.sms.ir/v1/send/verify', {
                 method: 'POST',
@@ -49,10 +56,10 @@ export async function POST(req: Request) {
                     'X-API-KEY': finalApiKey,
                 },
                 body: JSON.stringify({
-                    mobile: mobile.trim(),
-                    templateId: Number(finalTemplateId),
+                    mobile: cleanNumber(mobile),
+                    templateId: finalTemplateId,
                     parameters: [
-                        { name: "CODE", value: otpCode.toString() },
+                        { name: "CODE", value: otpCode },
                         { name: "EXPIRE_TIME", value: "5" }
                     ],
                 }),
