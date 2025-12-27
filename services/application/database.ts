@@ -408,10 +408,11 @@ export const dbAdapter = {
         // Remove undefined keys to prevent DB error
         Object.keys(dbProduct).forEach(key => dbProduct[key] === undefined && delete dbProduct[key]);
 
+        console.log("🔄 Attempting product upsert:", { id, dbProduct });
         const { error } = await supabase!.from('products').upsert(dbProduct);
 
         if (error) {
-            console.error("❌ Error upserting product:", error);
+            console.error("❌ Error upserting product:", error.message, error.code);
             // If it's a column mismatch, try minimal update
             if (error.code === '42703' || error.message.includes('column')) {
                 const minimal = { ...dbProduct };
