@@ -402,8 +402,6 @@ export const dbAdapter = {
             stock: updates.stock !== undefined ? updates.stock : initialP?.stock,
             points: updates.points !== undefined ? updates.points : initialP?.points,
             tags: updates.tags || initialP?.tags,
-            download_url: updates.downloadUrl || (initialP as any)?.downloadUrl,
-            file_type: updates.fileType || (initialP as any)?.fileType,
             is_active: updates.isActive !== undefined ? updates.isActive : true
         };
 
@@ -411,9 +409,18 @@ export const dbAdapter = {
         Object.keys(dbProduct).forEach(key => dbProduct[key] === undefined && delete dbProduct[key]);
 
         const { error } = await supabase!.from('products').upsert(dbProduct);
+
         if (error) {
-            console.error("Error upserting product:", error);
-            throw error;
+            console.error("❌ Error upserting product:", error);
+            // If it's a column mismatch, try minimal update
+            if (error.code === '42703' || error.message.includes('column')) {
+                const minimal = { ...dbProduct };
+                delete minimal.is_active;
+                const { error: retryError } = await supabase!.from('products').upsert(minimal);
+                if (retryError) throw retryError;
+            } else {
+                throw error;
+            }
         }
     },
 
