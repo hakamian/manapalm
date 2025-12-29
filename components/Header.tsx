@@ -177,10 +177,18 @@ const Header: React.FC = () => {
     const megaNavItems: NavCategory[] = useMemo(() => {
         return siteConfig.navigation
             .filter(cat => {
+                const isCoach = user && (user.name?.includes('کوچ') || user.fullName?.includes('کوچ') || user.level === 'Coach');
+
                 // HIDE MANAGEMENT FOR NON-ADMINS
                 if (cat.category === 'مدیریت' || cat.category === 'Management') {
                     return user && user.isAdmin;
                 }
+
+                // HIDE ACADEMY AND CONSULTING FOR NON-COACHES
+                if (cat.category === 'آکادمی' || cat.category === 'مشاوره تخصصی') {
+                    return isCoach;
+                }
+
                 return true;
             })
             .map(cat => ({
@@ -190,7 +198,7 @@ const Header: React.FC = () => {
                     title: item.title.replace('{{userName}}', user?.name || '')
                 }))
             }));
-    }, [siteConfig.navigation, user?.name, user?.isAdmin]);
+    }, [siteConfig.navigation, user?.name, user?.isAdmin, user?.fullName, user?.level]);
 
 
     const cartItemCount = cartItems.length;
