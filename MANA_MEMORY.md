@@ -618,6 +618,7 @@ graph TD
 
 | تاریخ | تغییر | توسط |
 |-------|-------|------|
+| 2025-12-29 19:20 | **Shop & Navigation**: Restricted Shop to 'Heritage' & 'Physical'. Header/Footer 'Academy' & 'Consulting' made Coach-only (via `isCoach` flag). | Mana (Unified OS) |
 | 2025-12-25 17:00 | **Auth Cleanup**: Removed "Test Login", enabled real Google OAuth, verified SMS login locally, configured Vercel Env Vars. | Mana (Unified OS) |
 | 2025-12-24 20:00 | **Fix**: Removed duplicate `Header`, `Footer`, `LiveActivityBanner` from `App.tsx` (Legacy) -> Unified in `ClientWrapper` | Mana (Unified OS) |
 | 2025-12-22 19:30 | **✅ AI Fixed**: Switched to `mistralai/devstral-2512:free` via OpenRouter (Google quota=0, tested models) | Mana (Unified OS) |
