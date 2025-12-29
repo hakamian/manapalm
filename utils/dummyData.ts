@@ -50,7 +50,7 @@ export const INITIAL_PRODUCTS: Product[] = [
         stock: 9999,
         description: 'مجموعه‌ای از ۵ تصویر پس‌زمینه با کیفیت بالا و تم نخلستان برای موبایل و دسکتاپ. با خرید این محصول، اولین قدم را در حمایت از جنبش برمی‌دارید.',
         type: 'digital',
-        isActive: true,
+        isActive: false,
         points: 100,
         tags: ['art', 'digital', 'starter'],
         downloadUrl: 'https://example.com/art-pack.zip',
@@ -206,7 +206,7 @@ export const INITIAL_PRODUCTS: Product[] = [
         stock: 0,
         description: 'هنر دست زنان جنوبی در قالب یک حصیر زیبا و کاربردی. بافته شده از برگ درخت نخل، این محصول کاملاً طبیعی و سازگار با محیط زیست بوده و گرما و اصالت را به خانه شما می‌آورد.',
         type: 'physical',
-        isActive: true,
+        isActive: false,
         tags: ['community', 'sustainability'],
         points: 440
     },
@@ -236,22 +236,22 @@ export const INITIAL_PRODUCTS: Product[] = [
         stock: 10,
         description: 'یک سبد جادار و زیبا برای پیک‌نیک‌ها و خریدهای روزانه. این محصول دست‌بافت، علاوه بر زیبایی، دوام بالایی دارد و یک انتخاب پایدار به جای کیسه‌های پلاستیکی است.',
         type: 'physical',
-        isActive: true,
+        isActive: false,
         tags: ['community', 'sustainability'],
         points: 700
     },
 
     // --- SERVICES & UPGRADES ---
-    { id: 'upgrade_storage_100', name: 'بسته فضای ذخیره‌سازی +۱۰۰ مگابایت', price: 25000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1544396821-4dd40b938ad3?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'فضای ذخیره‌سازی خود را برای ثبت خاطرات و تصاویر بیشتر افزایش دهید. این بسته ۱۰۰ مگابایت به ظرفیت حساب شما اضافه می‌کند.', type: 'upgrade', points: 50, tags: ['growth'], isActive: true },
-    { id: 'p_reflection_unlock', name: 'نخل تامل', price: 100000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1499209971185-a6188b871be9?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'با کاشت این نخل، یک بار استفاده از قابلیت «آینه هوشمند تاملات» را برای تحلیل عمیق یادداشت‌های روزانه‌تان دریافت کنید.', type: 'service', points: 200, tags: ['growth', 'self-discovery'], isActive: true },
-    { id: 'p_ambassador_pack', name: 'بسته سفیر', price: 50000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'قابلیت «سفیر قصه‌گو» را فعال کنید تا داستان کاشت نخل خود را با یک تصویر و متن هنری خلق شده توسط AI در شبکه‌های اجتماعی به اشتراک بگذارید.', type: 'service', points: 100, tags: ['community', 'creativity'], isActive: true },
-    { id: 'p_coaching_lab_access', name: 'نخل دانش', price: 150000, category: 'ارتقا', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819379/manapalm/services/service-coaching-lab.jpg', popularity: 90, dateAdded: getPastDate(1), stock: 999, description: 'با کاشت این نخل ویژه، به مدت یک ماه دسترسی نامحدود به «آزمایشگاه کوچینگ معنا» دریافت کنید و در کنار کمک به اهداف اجتماعی، مهارت‌های کوچینگ خود را تقویت نمایید.', type: 'service', points: 300, tags: ['growth', 'coaching', 'self-discovery'], isActive: true },
-    { id: 'p_heritage_language', name: 'نخل زبان هوشمانا (آزمون تعیین سطح)', price: 75000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'با کاشت این نخل، قفل آزمون تعیین سطح آکادمی زبان هوشمانا را باز کرده و در مسیر رشد زبانی و اجتماعی قدم بگذارید.', type: 'service', points: 150, tags: ['growth', 'self-discovery'], isActive: true },
-    { id: 'p_mana_pack', name: 'بسته معنا (۱۰۰۰ امتیاز)', price: 49000, category: 'ارتقا', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819381/manapalm/services/service-mana-pack.jpg', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'با خرید این بسته، ۱۰۰۰ امتیاز معنا به حساب خود اضافه کنید تا به ابزارهای هوشمند دسترسی پیدا کنید.', type: 'service', points: 0, isActive: true },
-    { id: 'p_hoshmana_live_weekly', name: 'بسته هفتگی هوشمانا لایو', price: 150000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'دسترسی هفتگی (۶۰ دقیقه) به تمام ابزارهای گفتگوی زنده: همراه معنا، مربی معنا و هم‌صحبت انگلیسی.', type: 'service', points: 300, tags: ['growth', 'coaching', 'self-discovery'], isActive: true },
-    { id: 'p_unlock_video_gen', name: 'نخل رویا (فعال‌سازی ویدیو)', price: 350000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(0), stock: 999, description: 'با کاشت این نخل، موتور «رویاساز متحرک» را فعال کنید تا ایده‌هایتان را به ویدیوهای سینمایی تبدیل نمایید.', type: 'service', points: 700, tags: ['creativity', 'ai'], unlocksFeatureId: 'videoGen', isActive: true },
-    { id: 'p_unlock_deep_chat', name: 'نخل خرد (فعال‌سازی حکیم دانا)', price: 200000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(0), stock: 999, description: 'دسترسی به «حکیم دانا» برای گفتگوهای عمیق فلسفی و تحلیل‌های پیچیده.', type: 'service', points: 400, tags: ['growth', 'ai'], unlocksFeatureId: 'thinking', isActive: true },
-    { id: 'p_unlock_image_edit', name: 'نخل نقش', price: 150000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(0), stock: 999, description: 'ابزار ویرایش جادویی تصاویر را فعال کنید.', type: 'service', points: 300, tags: ['creativity', 'ai'], unlocksFeatureId: 'imageEdit', isActive: true },
+    { id: 'upgrade_storage_100', name: 'بسته فضای ذخیره‌سازی +۱۰۰ مگابایت', price: 25000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1544396821-4dd40b938ad3?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'فضای ذخیره‌سازی خود را برای ثبت خاطرات و تصاویر بیشتر افزایش دهید. این بسته ۱۰۰ مگابایت به ظرفیت حساب شما اضافه می‌کند.', type: 'upgrade', points: 50, tags: ['growth'], isActive: false },
+    { id: 'p_reflection_unlock', name: 'نخل تامل', price: 100000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1499209971185-a6188b871be9?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'با کاشت این نخل، یک بار استفاده از قابلیت «آینه هوشمند تاملات» را برای تحلیل عمیق یادداشت‌های روزانه‌تان دریافت کنید.', type: 'service', points: 200, tags: ['growth', 'self-discovery'], isActive: false },
+    { id: 'p_ambassador_pack', name: 'بسته سفیر', price: 50000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'قابلیت «سفیر قصه‌گو» را فعال کنید تا داستان کاشت نخل خود را با یک تصویر و متن هنری خلق شده توسط AI در شبکه‌های اجتماعی به اشتراک بگذارید.', type: 'service', points: 100, tags: ['community', 'creativity'], isActive: false },
+    { id: 'p_coaching_lab_access', name: 'نخل دانش', price: 150000, category: 'ارتقا', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819379/manapalm/services/service-coaching-lab.jpg', popularity: 90, dateAdded: getPastDate(1), stock: 999, description: 'با کاشت این نخل ویژه، به مدت یک ماه دسترسی نامحدود به «آزمایشگاه کوچینگ معنا» دریافت کنید و در کنار کمک به اهداف اجتماعی، مهارت‌های کوچینگ خود را تقویت نمایید.', type: 'service', points: 300, tags: ['growth', 'coaching', 'self-discovery'], isActive: false },
+    { id: 'p_heritage_language', name: 'نخل زبان هوشمانا (آزمون تعیین سطح)', price: 75000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'با کاشت این نخل، قفل آزمون تعیین سطح آکادمی زبان هوشمانا را باز کرده و در مسیر رشد زبانی و اجتماعی قدم بگذارید.', type: 'service', points: 150, tags: ['growth', 'self-discovery'], isActive: false },
+    { id: 'p_mana_pack', name: 'بسته معنا (۱۰۰۰ امتیاز)', price: 49000, category: 'ارتقا', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819381/manapalm/services/service-mana-pack.jpg', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'با خرید این بسته، ۱۰۰۰ امتیاز معنا به حساب خود اضافه کنید تا به ابزارهای هوشمند دسترسی پیدا کنید.', type: 'service', points: 0, isActive: false },
+    { id: 'p_hoshmana_live_weekly', name: 'بسته هفتگی هوشمانا لایو', price: 150000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'دسترسی هفتگی (۶۰ دقیقه) به تمام ابزارهای گفتگوی زنده: همراه معنا، مربی معنا و هم‌صحبت انگلیسی.', type: 'service', points: 300, tags: ['growth', 'coaching', 'self-discovery'], isActive: false },
+    { id: 'p_unlock_video_gen', name: 'نخل رویا (فعال‌سازی ویدیو)', price: 350000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(0), stock: 999, description: 'با کاشت این نخل، موتور «رویاساز متحرک» را فعال کنید تا ایده‌هایتان را به ویدیوهای سینمایی تبدیل نمایید.', type: 'service', points: 700, tags: ['creativity', 'ai'], unlocksFeatureId: 'videoGen', isActive: false },
+    { id: 'p_unlock_deep_chat', name: 'نخل خرد (فعال‌سازی حکیم دانا)', price: 200000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(0), stock: 999, description: 'دسترسی به «حکیم دانا» برای گفتگوهای عمیق فلسفی و تحلیل‌های پیچیده.', type: 'service', points: 400, tags: ['growth', 'ai'], unlocksFeatureId: 'thinking', isActive: false },
+    { id: 'p_unlock_image_edit', name: 'نخل نقش', price: 150000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(0), stock: 999, description: 'ابزار ویرایش جادویی تصاویر را فعال کنید.', type: 'service', points: 300, tags: ['creativity', 'ai'], unlocksFeatureId: 'imageEdit', isActive: false },
     {
         id: 'campaign_website_service',
         name: 'طراحی سایت حرفه‌ای (طرح معنا)',
@@ -265,7 +265,7 @@ export const INITIAL_PRODUCTS: Product[] = [
         type: 'service',
         points: 0,
         tags: ['campaign', 'web-design'],
-        isActive: true
+        isActive: false
     },
 
     // NEW DIGITAL PRODUCTS FOR PASSIVE INCOME
@@ -280,7 +280,7 @@ export const INITIAL_PRODUCTS: Product[] = [
         stock: 9999,
         description: 'مجموعه‌ای از ۵۰ دستور (Prompt) مهندسی شده برای چت‌بات‌های هوش مصنوعی (مانند ChatGPT) که به شما کمک می‌کنند در خودشناسی، نوشتن خاطرات عمیق و آرامش ذهن کمک می‌کنند. بلافاصله پس از خرید دانلود کنید.',
         type: 'digital',
-        isActive: true,
+        isActive: false,
         points: 200,
         tags: ['ai', 'self-discovery', 'digital'],
         downloadUrl: 'https://example.com/downloads/prompts-pack.txt',
@@ -297,7 +297,7 @@ export const INITIAL_PRODUCTS: Product[] = [
         stock: 9999,
         description: '۱۰ تصویر زمینه با کیفیت 4K برای موبایل و دسکتاپ، خلق شده توسط هوش مصنوعی با الهام از آرامش و زیبایی نخلستان‌های جنوب. فضای دیجیتال خود را با هنر معنوی تزیین کنید.',
         type: 'digital',
-        isActive: true,
+        isActive: false,
         points: 100,
         tags: ['art', 'digital', 'beauty'],
         downloadUrl: 'https://example.com/downloads/wallpapers.zip',
@@ -314,7 +314,7 @@ export const INITIAL_PRODUCTS: Product[] = [
         stock: 9999,
         description: 'یک قالب آماده و حرفه‌ای برای نرم‌افزار Notion که به شما کمک می‌کنند اهداف، عادت‌ها و مسیر رشد شخصی خود را مدیریت کنید. طراحی شده بر اساس اصول کوچینگ کواکتیو.',
         type: 'digital',
-        isActive: true,
+        isActive: false,
         points: 300,
         tags: ['productivity', 'digital', 'planning'],
         downloadUrl: 'https://example.com/downloads/hero-journey-template.pdf', // Mock link

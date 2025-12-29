@@ -2,14 +2,18 @@
 
 import React, { useState } from 'react';
 import { View } from '../types';
-import { useAppDispatch } from '../AppContext';
+import { useAppDispatch, useAppState } from '../AppContext';
 import { XIcon, InstagramIcon, LinkedInIcon, TelegramIcon, YouTubeIcon, WhatsAppIcon, BaleIcon, EitaaIcon } from './icons';
 import SmartLink from './ui/SmartLink';
 
 const Footer: React.FC = () => {
     const dispatch = useAppDispatch();
+    const { user } = useAppState();
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
+
+    // Check if the user is a coach (by name or explicit role if applicable)
+    const isCoach = user && (user.name?.includes('کوچ') || user.fullName?.includes('کوچ') || user.level === 'Coach');
 
     const handleSubscribe = (e: React.FormEvent) => {
         e.preventDefault();
@@ -77,6 +81,18 @@ const Footer: React.FC = () => {
                         </ul>
                     </div>
 
+                    {/* Column 3.5: Academy & Consulting (Conditional) */}
+                    {isCoach && (
+                        <div>
+                            <h3 className="text-lg font-semibold text-white mb-4 text-green-400">پنل کوچینگ</h3>
+                            <ul className="space-y-2">
+                                <li><SmartLink view={View.COACHING_LAB} className="hover:text-green-300 transition-colors">آزمایشگاه کوچینگ</SmartLink></li>
+                                <li><SmartLink view={View.SMART_CONSULTANT} className="hover:text-green-300 transition-colors">مشاور هوشمند</SmartLink></li>
+                                <li><SmartLink view={View.BUSINESS_ACADEMY} className="hover:text-green-300 transition-colors">آکادمی بیزینس</SmartLink></li>
+                            </ul>
+                        </div>
+                    )}
+
                     {/* Column 4: Contact & Trust */}
                     <div>
                         <h3 className="text-lg font-semibold text-white mb-4">تماس با ما</h3>
@@ -124,4 +140,3 @@ const Footer: React.FC = () => {
 };
 
 export default React.memo(Footer);
-
