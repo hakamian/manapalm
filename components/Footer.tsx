@@ -12,8 +12,8 @@ const Footer: React.FC = () => {
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
 
-    // Check if the user is a coach (by name or explicit role if applicable)
-    const isCoach = user && (user.name?.includes('کوچ') || user.fullName?.includes('کوچ') || user.level === 'Coach');
+    // Check if the user is a coach (by name, explicit role, or profile setting)
+    const isCoach = user && (user.isCoach || user.name?.includes('کوچ') || user.fullName?.includes('کوچ') || user.level === 'Coach');
 
     const handleSubscribe = (e: React.FormEvent) => {
         e.preventDefault();

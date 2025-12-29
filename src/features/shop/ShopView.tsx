@@ -133,6 +133,26 @@ const ShopView: React.FC = () => {
             }
         }
         if (selectedCategory === 'نخل میراث' && selectedIntention !== 'all') tempProducts = tempProducts.filter(p => p.id.includes(`p_heritage_${selectedIntention}`));
+
+        // --- PHASE 1 RESTRICTION: FORCE HIDE UNSUPPORTED CATEGORIES ---
+        // Only show types: 'heritage' (Nakhle Miras) and 'physical' (Date Products/Handicraft - currently mapped) 
+        // We explicitly exclude 'digital', 'service' (Upgrade), 'course' unless they are specially whitelisted.
+        tempProducts = tempProducts.filter(p => {
+            // 1. Must be active
+            if (!p.isActive) return false;
+
+            // 2. Allowed categories for this phase
+            const allowedTypes = ['heritage', 'physical'];
+            if (allowedTypes.includes(p.type || '')) return true;
+
+            // 3. Fallback for mixed data using category names
+            const allowedCategories = ['نخل میراث', 'محصولات خرما', 'صنایع دستی', 'محصولات ارگانیک'];
+            if (allowedCategories.includes(p.category)) return true;
+
+            return false;
+        });
+        // -------------------------------------------------------------
+
         if (inStockOnly) tempProducts = tempProducts.filter(p => p.stock > 0);
         if (wishlistOnly) tempProducts = tempProducts.filter(p => wishlist.includes(p.id));
         if (dateFilter !== 'all') {

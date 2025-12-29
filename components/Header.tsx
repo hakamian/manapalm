@@ -177,7 +177,7 @@ const Header: React.FC = () => {
     const megaNavItems: NavCategory[] = useMemo(() => {
         return siteConfig.navigation
             .filter(cat => {
-                const isCoach = user && (user.name?.includes('کوچ') || user.fullName?.includes('کوچ') || user.level === 'Coach');
+                const isCoach = user && (user.isCoach || user.name?.includes('کوچ') || user.fullName?.includes('کوچ') || user.level === 'Coach');
 
                 // HIDE MANAGEMENT FOR NON-ADMINS
                 if (cat.category === 'مدیریت' || cat.category === 'Management') {
@@ -198,7 +198,7 @@ const Header: React.FC = () => {
                     title: item.title.replace('{{userName}}', user?.name || '')
                 }))
             }));
-    }, [siteConfig.navigation, user?.name, user?.isAdmin, user?.fullName, user?.level]);
+    }, [siteConfig.navigation, user?.name, user?.isAdmin, user?.fullName, user?.level, user?.isCoach]);
 
 
     const cartItemCount = cartItems.length;
