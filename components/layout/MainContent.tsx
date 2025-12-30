@@ -48,6 +48,7 @@ const BusinessMentorView = React.lazy(() => import('../BusinessMentorView'));
 const PaymentCallbackView = React.lazy(() => import('../PaymentCallbackView'));
 const PublicStoryView = React.lazy(() => import('../seo/PublicStoryView')); // New Import
 const CampaignLandingView = React.lazy(() => import('../CampaignLandingView'));
+const TermsView = React.lazy(() => import('../TermsView'));
 
 const MainContent: React.FC = () => {
     const {
@@ -145,6 +146,7 @@ const MainContent: React.FC = () => {
             case View.PAYMENT_CALLBACK: return <PaymentCallbackView />;
             case View.PublicStory: return <PublicStoryView />; // New route
             case View.CampaignLanding: return <CampaignLandingView />;
+            case View.Terms: return <TermsView />;
             case View['living-heritage']: return <div>Living Heritage View (Data Needed)</div>;
             case View['digital-heritage-architect']: return <DigitalHeritageArchitectPage />;
             case View['garden-of-heroes']:

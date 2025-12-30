@@ -99,7 +99,7 @@ const ContactView: React.FC = () => {
                                     <div className="bg-gray-800 p-3 rounded-full text-green-400 mt-1"><PhoneIcon /></div>
                                     <div>
                                         <h3 className="font-semibold text-lg text-white">تلفن تماس (پشتیبانی)</h3>
-                                        <p className="text-gray-300" dir="ltr">۰۹۱۲ ۳۴۵ ۶۷۸۹</p>
+                                        <p className="text-gray-300" dir="ltr">0922 245 3571</p>
                                     </div>
                                 </div>
                             </div>
@@ -112,7 +112,7 @@ const ContactView: React.FC = () => {
                                 <a href="#" className="text-gray-400 hover:text-white" aria-label="Instagram"><InstagramIcon /></a>
                                 <a href="#" className="text-gray-400 hover:text-white" aria-label="LinkedIn"><LinkedInIcon /></a>
                                 <a href="#" className="text-gray-400 hover:text-white" aria-label="YouTube"><YouTubeIcon /></a>
-                                <a href="#" className="text-gray-400 hover:text-white" aria-label="Telegram"><TelegramIcon /></a>
+                                <a href="https://t.me/hossein_hakamian" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white" aria-label="Telegram"><TelegramIcon /></a>
                                 <a href="#" className="text-gray-400 hover:text-white" aria-label="WhatsApp"><WhatsAppIcon /></a>
                                 <a href="#" className="text-gray-400 hover:text-white" aria-label="Bale"><BaleIcon /></a>
                                 <a href="#" className="text-gray-400 hover:text-white" aria-label="Eitaa"><EitaaIcon /></a>

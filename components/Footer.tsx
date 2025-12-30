@@ -78,6 +78,7 @@ const Footer: React.FC = () => {
                             <li><SmartLink view={View.HallOfHeritage} className="hover:text-green-400 transition-colors">میراث نخل</SmartLink></li>
                             <li><SmartLink view={View.Shop} className="hover:text-green-400 transition-colors">فروشگاه</SmartLink></li>
                             <li><SmartLink view={View.Articles} className="hover:text-green-400 transition-colors">مقالات</SmartLink></li>
+                            <li><SmartLink view={View.Terms} className="hover:text-green-400 transition-colors">قوانین و مقررات</SmartLink></li>
                         </ul>
                     </div>
 
@@ -105,7 +106,7 @@ const Footer: React.FC = () => {
                             <a href="#" className="text-gray-400 hover:text-white" aria-label="Instagram"><InstagramIcon /></a>
                             <a href="#" className="text-gray-400 hover:text-white" aria-label="LinkedIn"><LinkedInIcon /></a>
                             <a href="#" className="text-gray-400 hover:text-white" aria-label="YouTube"><YouTubeIcon /></a>
-                            <a href="#" className="text-gray-400 hover:text-white" aria-label="Telegram"><TelegramIcon /></a>
+                            <a href="https://t.me/hossein_hakamian" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white" aria-label="Telegram"><TelegramIcon /></a>
                             <a href="#" className="text-gray-400 hover:text-white" aria-label="WhatsApp"><WhatsAppIcon /></a>
                             <a href="#" className="text-gray-400 hover:text-white" aria-label="Bale"><BaleIcon /></a>
                             <a href="#" className="text-gray-400 hover:text-white" aria-label="Eitaa"><EitaaIcon /></a>
