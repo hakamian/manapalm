@@ -36,16 +36,85 @@ interface DeedDisplayProps {
 const DeedDisplay = React.forwardRef<HTMLDivElement, DeedDisplayProps>(({ deed }, ref) => {
     const dispatch = useAppDispatch();
     const { user } = useAppState();
+    const certificateRef = React.useRef<HTMLDivElement>(null);
 
     const [activeTab, setActiveTab] = React.useState<'certificate' | 'timeline'>('certificate');
     const [memoryText, setMemoryText] = React.useState('');
     const [memoryPhoto, setMemoryPhoto] = React.useState<string | null>(null);
+    const [isDownloading, setIsDownloading] = React.useState(false);
 
     const deedEvents = React.useMemo(() => {
         return (user?.timeline || [])
             .filter((e: any) => e.deedId === deed.id)
             .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }, [user?.timeline, deed.id]);
+
+    const handleDownload = async () => {
+        if (typeof html2canvas === 'undefined') {
+            console.error('html2canvas library not loaded');
+            alert('خطا: ابزار ذخیره تصویر در دسترس نیست.');
+            return;
+        }
+
+        if (!certificateRef.current) return;
+
+        setIsDownloading(true);
+        try {
+            // Wait a moment for icons/images to fully render if needed
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            const canvas = await html2canvas(certificateRef.current, {
+                scale: 2, // Higher resolution
+                useCORS: true,
+                backgroundColor: null, // Transparent background if possible, or matches div
+                logging: false,
+            });
+
+            const image = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.href = image;
+            link.download = `Manapalm-Deed-${deed.name || 'Certificate'}.png`;
+            link.click();
+        } catch (error) {
+            console.error('Download failed:', error);
+            alert('متاسفانه ذخیره تصویر انجام نشد.');
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+    const handleShare = async () => {
+        const shareData = {
+            title: 'سند نخل میراث - نخلستان معنا',
+            text: `من یک نخل میراث با نیت "${deed.intention}" در نخلستان معنا کاشتم! 🌱\nبه نام: ${deed.name}`,
+            url: window.location.href
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (err) {
+                console.log('Share canceled');
+            }
+        } else {
+            // Fallback
+            navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+            alert('لینک و متن کپی شد!');
+        }
+    };
+
+    const handleSocialShare = (platform: 'telegram' | 'whatsapp') => {
+        const text = encodeURIComponent(`من یک نخل میراث با نیت "${deed.intention}" در نخلستان معنا کاشتم! 🌱\nبه نام: ${deed.name}\n${window.location.href}`);
+        let url = '';
+
+        if (platform === 'telegram') {
+            url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${text}`;
+        } else if (platform === 'whatsapp') {
+            url = `https://wa.me/?text=${text}`;
+        }
+
+        window.open(url, '_blank');
+    };
 
     const handleAddMemory = () => {
         if (!memoryText.trim() && !memoryPhoto) return;
@@ -114,77 +183,107 @@ const DeedDisplay = React.forwardRef<HTMLDivElement, DeedDisplayProps>(({ deed }
             <div className="overflow-y-auto custom-scrollbar p-2">
                 {activeTab === 'certificate' ? (
                     <div className="relative p-2">
-                        {/* Background Photo (If Planted) */}
-                        {deed.plantedPhotoUrl && (
-                            <div className="absolute inset-0 z-0 opacity-10 rounded-lg overflow-hidden pointer-events-none">
-                                <img src={deed.plantedPhotoUrl} alt="Planted Palm" className="w-full h-full object-cover grayscale" />
-                            </div>
-                        )}
-
-                        <div className="border-2 border-amber-700/50 dark:border-amber-400/30 p-6 rounded-md relative overflow-hidden z-10 bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm">
-                            <SubtlePalmWatermark />
-
-                            <div className="relative z-10 text-center space-y-6">
-                                <header className="space-y-1 border-b-2 border-double border-amber-800/30 dark:border-amber-300/20 pb-4">
-                                    <p className="text-sm tracking-widest text-amber-800/70 dark:text-amber-300/70">نخلستان معنا</p>
-                                    <h2 className="text-3xl font-bold text-amber-900 dark:text-amber-200" style={{ fontFamily: 'Vazirmatn, serif' }}>سند کاشت نخل میراث</h2>
-                                    <p className="text-xs text-stone-500">HERITAGE PALM PLANTING DEED</p>
-                                </header>
-
-                                <div className="text-lg space-y-4 py-2">
-                                    <p className="text-stone-600 dark:text-stone-400">گواهی می‌شود که یک اصله نخل میراث با نیتِ</p>
-                                    <p className="font-bold text-3xl text-green-700 dark:text-green-400">"{deed.intention}"</p>
-                                    <p className="text-stone-600 dark:text-stone-400">به نامِ</p>
-                                    <p className="font-semibold text-4xl text-stone-900 dark:text-stone-100">{deed.name}</p>
-                                    {deed.fromName && <p className="text-stone-500 dark:text-stone-400 text-base">از طرفِ <strong className="text-stone-700 dark:text-stone-200">{deed.fromName}</strong></p>}
+                        {/* Downloadable Area Ref */}
+                        <div ref={certificateRef} className="relative rounded-lg overflow-hidden bg-[#fcfaf5] dark:bg-stone-900">
+                            {/* Background Photo (If Planted) */}
+                            {deed.plantedPhotoUrl && (
+                                <div className="absolute inset-0 z-0 opacity-10 rounded-lg overflow-hidden pointer-events-none">
+                                    <img src={deed.plantedPhotoUrl} alt="Planted Palm" className="w-full h-full object-cover grayscale" />
                                 </div>
+                            )}
 
-                                {deed.message && (
-                                    <blockquote className="bg-stone-100/80 dark:bg-stone-800/80 border-r-4 border-amber-500 text-right p-4 my-4 rounded-r-lg">
-                                        <p className="text-md italic text-stone-700 dark:text-stone-300">"{deed.message}"</p>
-                                    </blockquote>
-                                )}
+                            <div className="border-2 border-amber-700/50 dark:border-amber-400/30 p-6 rounded-md relative overflow-hidden z-10 bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm">
+                                <SubtlePalmWatermark />
 
-                                {deed.gpsCoordinates && (
-                                    <div
-                                        onClick={openMap}
-                                        className="flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-2 rounded-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
-                                        title="مشاهده موقعیت دقیق در گوگل مپ"
-                                    >
-                                        <MapPinIcon className="w-4 h-4 text-blue-500" />
-                                        <span className="text-xs font-mono text-blue-700 dark:text-blue-300">
-                                            {deed.gpsCoordinates.lat.toFixed(4)}, {deed.gpsCoordinates.lng.toFixed(4)}
-                                        </span>
-                                        <GlobeIcon className="w-3 h-3 text-blue-400 ml-1" />
+                                <div className="relative z-10 text-center space-y-6">
+                                    <header className="space-y-1 border-b-2 border-double border-amber-800/30 dark:border-amber-300/20 pb-4">
+                                        <p className="text-sm tracking-widest text-amber-800/70 dark:text-amber-300/70">نخلستان معنا</p>
+                                        <h2 className="text-3xl font-bold text-amber-900 dark:text-amber-200" style={{ fontFamily: 'Vazirmatn, serif' }}>سند کاشت نخل میراث</h2>
+                                        <p className="text-xs text-stone-500">HERITAGE PALM PLANTING DEED</p>
+                                    </header>
+
+                                    <div className="text-lg space-y-4 py-2">
+                                        <p className="text-stone-600 dark:text-stone-400">گواهی می‌شود که یک اصله نخل میراث با نیتِ</p>
+                                        <p className="font-bold text-3xl text-green-700 dark:text-green-400">"{deed.intention}"</p>
+                                        <p className="text-stone-600 dark:text-stone-400">به نامِ</p>
+                                        <p className="font-semibold text-4xl text-stone-900 dark:text-stone-100">{deed.name}</p>
+                                        {deed.fromName && <p className="text-stone-500 dark:text-stone-400 text-base">از طرفِ <strong className="text-stone-700 dark:text-stone-200">{deed.fromName}</strong></p>}
                                     </div>
-                                )}
 
-                                <footer className="pt-6 mt-4 flex justify-between items-end">
-                                    <div className="text-right text-xs">
-                                        <p className="font-semibold text-stone-500 dark:text-stone-400">تاریخ ثبت:</p>
-                                        <p className="font-bold text-base text-stone-700 dark:text-stone-200">{new Date(deed.date).toLocaleDateString('fa-IR')}</p>
-                                        <p className="font-mono text-[10px] text-stone-400 dark:text-stone-500 mt-2">ID: {deed.id}</p>
-                                    </div>
-                                    <div className="flex flex-col items-end gap-2">
-                                        <div className="flex gap-2">
-                                            <button onClick={handleVoiceOfPalm} className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded hover:bg-green-200 dark:hover:bg-green-800/50 flex items-center gap-1 transition-colors" title="پیام نخل">
-                                                <MicrophoneIcon className="w-3 h-3" />
-                                                صدای نخل
-                                            </button>
-                                            <button onClick={handleFutureVision} className="text-[10px] bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded hover:bg-indigo-200 dark:hover:bg-indigo-800/50 flex items-center gap-1 transition-colors" title="ماشین زمان نخلستان">
-                                                <ClockForwardIcon className="w-3 h-3" />
-                                                آینده نخل
-                                            </button>
+                                    {deed.message && (
+                                        <blockquote className="bg-stone-100/80 dark:bg-stone-800/80 border-r-4 border-amber-500 text-right p-4 my-4 rounded-r-lg">
+                                            <p className="text-md italic text-stone-700 dark:text-stone-300">"{deed.message}"</p>
+                                        </blockquote>
+                                    )}
+
+                                    {deed.gpsCoordinates && (
+                                        <div
+                                            // Make link useless in image capture but clickable on web
+                                            data-html2canvas-ignore="true"
+                                            onClick={openMap}
+                                            className="flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-2 rounded-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                                            title="مشاهده موقعیت دقیق در گوگل مپ"
+                                        >
+                                            <MapPinIcon className="w-4 h-4 text-blue-500" />
+                                            <span className="text-xs font-mono text-blue-700 dark:text-blue-300">
+                                                {deed.gpsCoordinates.lat.toFixed(4)}, {deed.gpsCoordinates.lng.toFixed(4)}
+                                            </span>
+                                            <GlobeIcon className="w-3 h-3 text-blue-400 ml-1" />
                                         </div>
-                                        <ModernSealIcon />
-                                    </div>
-                                </footer>
+                                    )}
+
+                                    {/* Hide interactive elements in download */}
+                                    <footer className="pt-6 mt-4 flex justify-between items-end">
+                                        <div className="text-right text-xs">
+                                            <p className="font-semibold text-stone-500 dark:text-stone-400">تاریخ ثبت:</p>
+                                            <p className="font-bold text-base text-stone-700 dark:text-stone-200">{new Date(deed.date).toLocaleDateString('fa-IR')}</p>
+                                            <p className="font-mono text-[10px] text-stone-400 dark:text-stone-500 mt-2">ID: {deed.id}</p>
+                                        </div>
+                                        <div className="flex flex-col items-end gap-2">
+                                            <div className="flex gap-2" data-html2canvas-ignore="true">
+                                                <button onClick={handleVoiceOfPalm} className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded hover:bg-green-200 dark:hover:bg-green-800/50 flex items-center gap-1 transition-colors" title="پیام نخل">
+                                                    <MicrophoneIcon className="w-3 h-3" />
+                                                    صدای نخل
+                                                </button>
+                                                <button onClick={handleFutureVision} className="text-[10px] bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded hover:bg-indigo-200 dark:hover:bg-indigo-800/50 flex items-center gap-1 transition-colors" title="ماشین زمان نخلستان">
+                                                    <ClockForwardIcon className="w-3 h-3" />
+                                                    آینده نخل
+                                                </button>
+                                            </div>
+                                            <ModernSealIcon />
+                                        </div>
+                                    </footer>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons (Download/Share) */}
+                        <div className="flex justify-center flex-wrap gap-4 mt-6 pt-4 border-t border-stone-200 dark:border-stone-700">
+                            <button
+                                onClick={handleDownload}
+                                disabled={isDownloading}
+                                className="flex items-center gap-2 bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 text-stone-700 dark:text-stone-200 py-2 px-4 rounded-full transition-colors text-sm font-semibold disabled:opacity-50"
+                            >
+                                <ArrowDownTrayIcon className={`w-5 h-5 ${isDownloading ? 'animate-bounce' : ''}`} />
+                                {isDownloading ? 'در حال ذخیره...' : 'دانلود تصویر سند'}
+                            </button>
+
+                            <div className="flex gap-2">
+                                <button onClick={handleShare} className="bg-stone-100 hover:bg-stone-200 dark:bg-stone-800 dark:hover:bg-stone-700 p-2 rounded-full text-stone-600 hover:text-stone-900 dark:text-stone-400 dark:hover:text-stone-100 transition-colors" title="اشتراک‌گذاری">
+                                    <ShareIcon className="w-5 h-5" />
+                                </button>
+                                <button onClick={() => handleSocialShare('telegram')} className="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/40 p-2 rounded-full text-blue-500 hover:text-blue-600 transition-colors" title="ارسال در تلگرام">
+                                    <TelegramIcon className="w-5 h-5" />
+                                </button>
+                                <button onClick={() => handleSocialShare('whatsapp')} className="bg-green-50 hover:bg-green-100 dark:bg-green-900/20 dark:hover:bg-green-900/40 p-2 rounded-full text-green-600 hover:text-green-700 transition-colors" title="ارسال در واتس‌اپ">
+                                    <WhatsAppIcon className="w-5 h-5" />
+                                </button>
                             </div>
                         </div>
                     </div>
                 ) : (
                     <div className="p-4 space-y-6">
-                        {/* Add Memory Form */}
+                        {/* Memory Tab Content (Same as before) */}
                         <div className="bg-white dark:bg-stone-800 p-4 rounded-lg shadow-sm border border-stone-200 dark:border-stone-700">
                             <h3 className="font-semibold text-stone-700 dark:text-stone-300 mb-3 flex items-center gap-2">
                                 <span className="w-2 h-6 bg-amber-500 rounded-full"></span>
@@ -227,7 +326,7 @@ const DeedDisplay = React.forwardRef<HTMLDivElement, DeedDisplayProps>(({ deed }
                             </div>
                         </div>
 
-                        {/* Timeline List */}
+                        {/* Timeline List (Same as before) */}
                         <div className="space-y-4">
                             {deedEvents.length > 0 ? (
                                 deedEvents.map((event: any) => (
