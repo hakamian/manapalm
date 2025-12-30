@@ -4,7 +4,8 @@ import React from 'react';
 // Nature Icons
 export const SproutIcon = React.memo(({ className = "w-8 h-8", ...props }: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props} {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12.001 3a9 9 0 0 1 9 9v0a9 9 0 0 1-18 0v0a9 9 0 0 1 9-9zM3.864 12.002a9 9 0 0 1 16.273 0M12 3v13.5M9.485 10.515a4.5 4.5 0 0 1 5.03 0" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-4.5m0-13.5v.01" />
   </svg>
 ));
 
