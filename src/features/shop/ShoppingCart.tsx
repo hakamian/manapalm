@@ -53,6 +53,11 @@ const ShoppingCart: React.FC = () => {
       return;
     }
 
+    if (!user.address || user.address.length < 5) {
+      setError('لطفاً جهت ارسال سفارش، آدرس خود را در پروفایل تکمیل کنید.');
+      return;
+    }
+
     const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
     const newDeeds = cartItems.filter(item => item.type === 'heritage' && item.deedDetails).map(item => ({
       id: `deed-${Date.now()}-${item.id.slice(11, 15)}`,
@@ -271,8 +276,19 @@ const ShoppingCart: React.FC = () => {
                     {user ? (
                       <>
                         {error && (
-                          <div className="bg-red-900/50 text-red-300 text-sm p-3 rounded-md animate-shake" role="alert">
-                            {error}
+                          <div className="bg-red-900/50 text-red-300 text-sm p-3 rounded-md animate-shake flex flex-col gap-2" role="alert">
+                            <p>{error}</p>
+                            {error.includes('آدرس') && (
+                              <button
+                                onClick={() => {
+                                  handleClose();
+                                  dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'profile' });
+                                }}
+                                className="bg-red-800 hover:bg-red-700 text-white text-xs py-1 px-3 rounded self-start transition-colors"
+                              >
+                                تکمیل پروفایل (بخش اطلاعات تکمیلی)
+                              </button>
+                            )}
                           </div>
                         )}
                         <button
@@ -285,7 +301,7 @@ const ShoppingCart: React.FC = () => {
                       </>
                     ) : (
                       <div className="text-center bg-gray-800 p-3 rounded-xl border border-gray-700">
-                        <p className="text-xs text-gray-400 mb-2">برای ثبت نخل به نام خودتان، وارد شوید.</p>
+                        <p className="text-xs text-gray-400 mb-2">برای ثبت سفارش، لطفاً وارد شوید.</p>
                         <button onClick={() => { handleClose(); dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true }); }} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 rounded-lg transition-colors text-sm">
                           ورود | ثبت نام
                         </button>
