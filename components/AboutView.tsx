@@ -30,34 +30,35 @@ const AboutView: React.FC = () => {
             </div>
 
             <div className="container mx-auto px-6 py-16">
-                {/* Mission and Vision */}
+                {/* Mission and Vision - Business Focused */}
                 <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
                     <div>
-                        <h2 className="text-4xl font-bold text-green-400 mb-4">رسالت ما</h2>
-                        <p className="text-lg text-gray-300 leading-relaxed">
-                            رسالت ما در «نخلستان معنا» توانمندسازی جوامع محلی از طریق کشاورزی پایدار و ایجاد کسب‌وکارهای اجتماعی است. ما با کاشت هر نخل، نه تنها به مقابله با بیابان‌زایی و احیای محیط زیست کمک می‌کنیم، بلکه فرصت‌های شغلی معنادار ایجاد کرده و به اقتصاد منطقه جانی دوباره می‌بخشیم. ما به دنبال ساختن پلی هستیم میان سنت‌های غنی کشاورزی و نوآوری‌های امروزی تا آینده‌ای سبزتر و پربارتر برای نسل‌های بعد بسازیم.
+                        <h2 className="text-4xl font-bold text-green-400 mb-4">مدل کسب‌وکار ما</h2>
+                        <h3 className="text-xl font-bold text-white mb-2">تلفیق تجارت و کشاورزی پایدار</h3>
+                        <p className="text-lg text-gray-300 leading-relaxed text-justify">
+                            «نخلستان معنا» یک بنگاه اقتصادی فعال در حوزه کشاورزی و فروش محصولات ارگانیک است. ما خدمات حرفه‌ای کاشت و نگهداری درختان نخل را به مشتریان ارائه می‌دهیم و در کنار آن، محصولات جانبی و باکیفیت نخلستان (مانند خرما، شیره، و صنایع دستی) را مستقیماً به بازار عرضه می‌کنیم. رویکرد ما «تجارت مسئولانه» است؛ به این معنا که سودآوری اقتصادی را با توسعه زیرساخت‌های کشاورزی و اشتغال‌زایی برای مردم منطقه گره زده‌ایم. شما با خرید از ما، یک کالا یا خدمت مشخص و باکیفیت دریافت می‌کنید که پشتوانه آن، سال‌ها تجربه و تخصص در صنعت کشاورزی است.
                         </p>
                     </div>
                     <div className="flex justify-center">
-                        <img src="/assets/about/memorial-family.jpg" alt="Our Mission" className="rounded-lg shadow-2xl object-cover w-full h-80" />
+                        <img src="/assets/about/memorial-family.jpg" alt="Our Business Model" className="rounded-lg shadow-2xl object-cover w-full h-80" />
                     </div>
                 </div>
 
-                {/* Values Section */}
+                {/* Values Section - Commercial & Quality Focused */}
                 <div className="text-center mb-20">
-                    <h2 className="text-4xl font-bold mb-10">ارزش‌های ما</h2>
+                    <h2 className="text-4xl font-bold mb-10">ارزش‌های تجاری ما</h2>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div className="bg-gray-800 p-8 rounded-lg shadow-lg">
-                            <h3 className="text-2xl font-semibold text-green-400 mb-3">معنا و هدف</h3>
-                            <p className="text-gray-400">هر نخل نمادی از یک نیت، یک خاطره یا یک هدف است. ما به قدرت داستان‌ها و معنابخشی به زندگی ایمان داریم.</p>
+                            <h3 className="text-2xl font-semibold text-green-400 mb-3">کیفیت تضمین شده</h3>
+                            <p className="text-gray-400 leading-7">تعهد ما ارائه محصولات ارگانیک و خدمات کشاورزی با بالاترین استانداردهای کیفی است. مشتری حق دارد در ازای هزینه پرداختی، بهترین محصول را دریافت کند.</p>
                         </div>
                         <div className="bg-gray-800 p-8 rounded-lg shadow-lg">
-                            <h3 className="text-2xl font-semibold text-green-400 mb-3">پایداری و مسئولیت</h3>
-                            <p className="text-gray-400">ما به حفظ محیط زیست و توسعه پایدار متعهد هستیم و در تمام فرآیندها، ردپای مثبتی از خود به جا می‌گذاریم.</p>
+                            <h3 className="text-2xl font-semibold text-green-400 mb-3">شفافیت مالی و عملکردی</h3>
+                            <p className="text-gray-400 leading-7">ما یک خیریه نیستیم؛ بلکه کسب‌وکاری شفاف هستیم که گزارش‌های عملکردی و مالی پروژه‌های کاشت و فروش را به صورت روشن در اختیار مشتریان و شرکا قرار می‌دهیم.</p>
                         </div>
                         <div className="bg-gray-800 p-8 rounded-lg shadow-lg">
-                            <h3 className="text-2xl font-semibold text-green-400 mb-3">مشارکت و جامعه</h3>
-                            <p className="text-gray-400">ما یک خانواده‌ایم؛ از کشاورزان و کارکنان تا شما که با ما همراه هستید. رشد ما در گرو رشد جامعه است.</p>
+                            <h3 className="text-2xl font-semibold text-green-400 mb-3">توسعه اقتصاد ملی</h3>
+                            <p className="text-gray-400 leading-7">با سرمایه‌گذاری در کشاورزی نوین و فروش محصولات بومی، به چرخه تولید ثروت در کشور کمک کرده و برای جامعه محلی درآمد پایدار ایجاد می‌کنیم.</p>
                         </div>
                     </div>
                 </div>
@@ -101,7 +102,7 @@ const AboutView: React.FC = () => {
                         <h2 className="text-3xl font-bold text-white mb-2">حسین حکمیان</h2>
                         <h3 className="text-xl text-green-400 mb-6">بنیان‌گذار نخلستان معنا</h3>
                         <p className="text-gray-300 leading-relaxed mb-6">
-                            «نخلستان معنا» تلاشی است برای پیوند دوباره انسان با زمین و با خویشتن. ما اینجا هستیم تا نشان دهیم که چگونه می‌توان با یک کاشت ساده، هم طبیعت را احیا کرد و هم دل‌ها را به هم نزدیک کرد. من شخصاً متعهد به شفافیت، کیفیت و تاثیرگذاری واقعی این پروژه هستم و مشتاقانه منتظر شنیدن نظرات شما می‌مانم.
+                            «نخلستان معنا» یک پلتفرم تجاری متمرکز بر کشاورزی مدرن است. هدف ما این است که با ارائه مدلی کارآمد از "کشاورزی قراردادی" و "فروش مستقیم محصولات ارگانیک"، هم بازدهی اقتصادی برای سرمایه‌گذاران و خریداران ایجاد کنیم و هم به توسعه زیرساخت‌های تولیدی کشور کمک نماییم. ما اینجا تجارت می‌کنیم، اما تجارتی که در آن سود مالی با ارزش‌های زیست‌محیطی و ملی هم‌سو است. تعهد من، مدیریت حرفه‌ای این سرمایه‌ها و تضمین کیفیت خدمات و محصولات ارائه شده به شماست.
                         </p>
                         <div className="flex flex-wrap justify-center md:justify-start gap-4">
                             <a href="mailto:info@manapalm.com" className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition-colors flex items-center gap-2">
