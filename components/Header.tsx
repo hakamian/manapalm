@@ -343,14 +343,14 @@ const Header: React.FC = () => {
                                 )}
                             </div>
 
-                            {/* Campaign Button (Desktop) */}
-                            <SmartLink
+                            {/* Campaign Button (Desktop) - Hidden for Payment Gateway Review */}
+                            {/* <SmartLink
                                 view={View.CampaignLanding}
                                 className="hidden lg:flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white text-sm font-bold py-2 px-4 rounded-full shadow-lg transition-all hover:scale-105 animate-pulse"
                             >
                                 <SparklesIcon className="w-5 h-5" />
                                 <span>طرح معنا</span>
-                            </SmartLink>
+                            </SmartLink> */}
 
                             <button className="relative text-white hover:text-green-300 transition-colors duration-200 hidden md:block" aria-label={`Wishlist with ${wishlistItemCount} items`}>
                                 <HeartIcon className="w-6 h-6" />
@@ -434,8 +434,8 @@ const Header: React.FC = () => {
                                 </ul>
                             </div>
                         ))}
-                        {/* Campaign Button (Mobile) */}
-                        <div className="border-t border-gray-700 pt-4">
+                        {/* Campaign Button (Mobile) - Hidden for Payment Gateway Review */}
+                        {/* <div className="border-t border-gray-700 pt-4">
                             <SmartLink
                                 view={View.CampaignLanding}
                                 className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white font-bold py-3 px-4 rounded-md w-full"
@@ -444,7 +444,7 @@ const Header: React.FC = () => {
                                 <SparklesIcon className="w-6 h-6" />
                                 <span>طرح ویژه معنا (طراحی سایت)</span>
                             </SmartLink>
-                        </div>
+                        </div> */}
                     </nav>
                     {user ? null : <button onClick={() => { dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true }); setIsMenuOpen(false); }} className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-md transition-colors">ورود / ثبت‌نام</button>}
                 </div>
