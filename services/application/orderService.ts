@@ -122,7 +122,7 @@ export const orderService = {
             item.type !== 'heritage' && // Deeds are handled separately
             !item.webDevDetails && // Web projects handled separately
             !newUnlockedTools.includes(item.id) && // Unlocks usually don't need "shopping" event, or maybe they do? Let's include everything else.
-            !['p_life_coach_session', 'p_business_mentor_session', 'p_coaching_lab_access'].includes(item.productId) // Services handled separately or fine as is
+            !['p_life_coach_session', 'p_business_mentor_session', 'p_coaching_lab_access'].some(pid => item.id.includes(pid)) // Services handled separately or fine as is
         );
 
         // Actually, let's just make a "Shopping Spree" event for any non-deed physical/digital goods to rely on "Seeing what they bought"
