@@ -113,102 +113,101 @@ export const orderService = {
                     imageUrl: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?q=80&w=400',
                     prompt: webDevItem.name
                 }
-            }
             });
-    }
+        }
 
         // --- Standard Merchandise Timeline Event ---
         // Identify items that are NOT deeds, NOT web projects, and NOT special unlocks (which might have their own logic, but usually products are just products)
         const merchandiseItems = newOrder.items.filter(item =>
-        item.type !== 'heritage' && // Deeds are handled separately
-        !item.webDevDetails && // Web projects handled separately
-        !newUnlockedTools.includes(item.id) && // Unlocks usually don't need "shopping" event, or maybe they do? Let's include everything else.
-        !['p_life_coach_session', 'p_business_mentor_session', 'p_coaching_lab_access'].includes(item.productId) // Services handled separately or fine as is
-    );
+            item.type !== 'heritage' && // Deeds are handled separately
+            !item.webDevDetails && // Web projects handled separately
+            !newUnlockedTools.includes(item.id) && // Unlocks usually don't need "shopping" event, or maybe they do? Let's include everything else.
+            !['p_life_coach_session', 'p_business_mentor_session', 'p_coaching_lab_access'].includes(item.productId) // Services handled separately or fine as is
+        );
 
-    // Actually, let's just make a "Shopping Spree" event for any non-deed physical/digital goods to rely on "Seeing what they bought"
-    const standardProducts = newOrder.items.filter(item => item.type !== 'heritage' && !item.webDevDetails); // Simplify: All non-deed, non-project items
+        // Actually, let's just make a "Shopping Spree" event for any non-deed physical/digital goods to rely on "Seeing what they bought"
+        const standardProducts = newOrder.items.filter(item => item.type !== 'heritage' && !item.webDevDetails); // Simplify: All non-deed, non-project items
 
-    if(standardProducts.length > 0) {
-        const productNames = standardProducts.map(p => p.name).join('، ');
-newTimelineEvents.push({
-    id: `evt_shop_${newOrder.id}`,
-    date: newOrder.createdAt, // Use order date
-    type: 'creative_act', // Using 'creative_act' or 'milestone' generic type. Maybe need a 'purchase' type but 'creative_act' logic works for now or generic. 
-    // Let's use 'creative_act' as a catch-all specific event type might not exist in enum yet, checking types... 
-    // types/content.ts -> TimelineEventType = 'milestone' | 'creative_act' | 'palm_planted' | 'community_event' ...
-    // 'milestone' seems appropriate for a purchase.
-    title: 'خرید از بازارچه نخلستان',
-    description: `خرید ${standardProducts.length} محصول: ${productNames}`,
-    details: {
-        imageUrl: standardProducts[0].image,
-        prompt: productNames // abusing prompt field for metadata text
-    }
-} as any); // Type assertion if needed, but fitting TimelineEvent structure
+        if (standardProducts.length > 0) {
+            const productNames = standardProducts.map(p => p.name).join('، ');
+            newTimelineEvents.push({
+                id: `evt_shop_${newOrder.id}`,
+                date: newOrder.createdAt, // Use order date
+                type: 'creative_act', // Using 'creative_act' or 'milestone' generic type. Maybe need a 'purchase' type but 'creative_act' logic works for now or generic. 
+                // Let's use 'creative_act' as a catch-all specific event type might not exist in enum yet, checking types... 
+                // types/content.ts -> TimelineEventType = 'milestone' | 'creative_act' | 'palm_planted' | 'community_event' ...
+                // 'milestone' seems appropriate for a purchase.
+                title: 'خرید از بازارچه نخلستان',
+                description: `خرید ${standardProducts.length} محصول: ${productNames}`,
+                details: {
+                    imageUrl: standardProducts[0].image,
+                    prompt: productNames // abusing prompt field for metadata text
+                }
+            } as any); // Type assertion if needed, but fitting TimelineEvent structure
         }
 
-// --- Assembly of Updated User ---
-const updatedUser: User | null = state.user ? {
-    ...state.user,
-    points: state.user.points + pointsEarned,
-    pointsHistory: [
-        ...(state.user.pointsHistory || []),
-        { action: 'خرید', points: pointsEarned, type: 'barkat' as const, date: new Date().toISOString() }
-    ],
-    timeline: [...newTimelineEvents, ...(state.user.timeline || [])],
-    ...webProjectUpdate,
-    ...unlockUpdates,
-    notifications: [...newNotifications, ...(state.user.notifications || [])]
-} : null;
+        // --- Assembly of Updated User ---
+        const updatedUser: User | null = state.user ? {
+            ...state.user,
+            points: state.user.points + pointsEarned,
+            pointsHistory: [
+                ...(state.user.pointsHistory || []),
+                { action: 'خرید', points: pointsEarned, type: 'barkat' as const, date: new Date().toISOString() }
+            ],
+            timeline: [...newTimelineEvents, ...(state.user.timeline || [])],
+            ...webProjectUpdate,
+            ...unlockUpdates,
+            notifications: [...newNotifications, ...(state.user.notifications || [])]
+        } : null;
 
-// --- Persistence (Side Effects) ---
-dbAdapter.saveOrder(newOrder);
-if (updatedUser) dbAdapter.saveUser(updatedUser);
+        // --- Persistence (Side Effects) ---
+        dbAdapter.saveOrder(newOrder);
+        if (updatedUser) dbAdapter.saveUser(updatedUser);
 
-return {
-    updatedUser,
-    pointsEarned,
-    newNotifications
-};
+        return {
+            updatedUser,
+            pointsEarned,
+            newNotifications
+        };
     },
 
-/**
- * Helper to create a quick order object
- */
-createQuickOrder: (user: User | null, palm: any, quantity: number, deedDetails: any, selectedPlan: number): Order => {
-    const total = palm.price * quantity;
-    const orderId = `order-${Date.now()}`;
-    const deedId = `deed-${Date.now()}`;
+    /**
+     * Helper to create a quick order object
+     */
+    createQuickOrder: (user: User | null, palm: any, quantity: number, deedDetails: any, selectedPlan: number): Order => {
+        const total = palm.price * quantity;
+        const orderId = `order-${Date.now()}`;
+        const deedId = `deed-${Date.now()}`;
 
-    const deed: Deed = {
-        id: deedId,
-        productId: palm.id,
-        intention: deedDetails.intention,
-        name: deedDetails.name,
-        date: new Date().toISOString(),
-        palmType: palm.name,
-        message: deedDetails.message,
-        fromName: deedDetails.fromName,
-        groveKeeperId: deedDetails.groveKeeperId,
-        isPlanted: false
-    };
+        const deed: Deed = {
+            id: deedId,
+            productId: palm.id,
+            intention: deedDetails.intention,
+            name: deedDetails.name,
+            date: new Date().toISOString(),
+            palmType: palm.name,
+            message: deedDetails.message,
+            fromName: deedDetails.fromName,
+            groveKeeperId: deedDetails.groveKeeperId,
+            isPlanted: false
+        };
 
-    return {
-        id: orderId,
-        userId: user?.id || 'guest',
-        status: 'pending',
-        total: total,
-        totalAmount: total,
-        createdAt: new Date().toISOString(),
-        items: [{
-            ...palm,
-            id: `${palm.id}-${Date.now()}`,
-            quantity: quantity,
-            image: `https://picsum.photos/seed/${palm.id}/400/400`,
-            paymentPlan: selectedPlan > 1 ? { installments: selectedPlan } : undefined
-        }],
-        statusHistory: [{ status: 'pending', date: new Date().toISOString() }],
-        deeds: [deed]
-    };
-}
+        return {
+            id: orderId,
+            userId: user?.id || 'guest',
+            status: 'pending',
+            total: total,
+            totalAmount: total,
+            createdAt: new Date().toISOString(),
+            items: [{
+                ...palm,
+                id: `${palm.id}-${Date.now()}`,
+                quantity: quantity,
+                image: `https://picsum.photos/seed/${palm.id}/400/400`,
+                paymentPlan: selectedPlan > 1 ? { installments: selectedPlan } : undefined
+            }],
+            statusHistory: [{ status: 'pending', date: new Date().toISOString() }],
+            deeds: [deed]
+        };
+    }
 };
