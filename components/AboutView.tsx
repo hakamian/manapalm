@@ -14,7 +14,7 @@ const AboutView: React.FC = () => {
         <div className="bg-gray-900 text-white pb-24">
             {/* Hero Section */}
             {/* Hero Section */}
-            <div className="relative pb-20 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1544229669-e709428589ce?q=80&w=1920&auto=format&fit=crop')" }}>
+            <div className="relative pb-20 bg-cover bg-center" style={{ backgroundImage: "url('/assets/about/palm-path.jpg')" }}>
                 <div className="absolute inset-0 bg-black bg-opacity-70"></div>
                 <div className="relative container mx-auto px-6 text-center hero-header-clearance">
                     <h1 className="text-5xl font-bold mb-4">داستان ما: ریشه‌ها در خاک، نگاه به آینده</h1>
@@ -22,7 +22,7 @@ const AboutView: React.FC = () => {
                         ما باور داریم که هر دانه می‌تواند جنگلی را بسازد و هر انسان می‌تواند معنایی عمیق در زندگی خود و دیگران بکارد.
                     </p>
                     <img
-                        src="https://images.unsplash.com/photo-1620215097402-a1b7301c2514?q=80&w=1200&auto=format&fit=crop"
+                        src="/assets/about/aerial-complex.jpg"
                         alt="A thriving palm grove under a hopeful sky"
                         className="rounded-lg shadow-2xl w-full max-w-5xl mx-auto object-cover h-auto"
                     />
@@ -39,7 +39,7 @@ const AboutView: React.FC = () => {
                         </p>
                     </div>
                     <div className="flex justify-center">
-                        <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb77c35e?q=80&w=500&auto=format&fit=crop" alt="Our Mission" className="rounded-lg shadow-2xl object-cover w-full h-80" />
+                        <img src="/assets/about/memorial-family.jpg" alt="Our Mission" className="rounded-lg shadow-2xl object-cover w-full h-80" />
                     </div>
                 </div>
 
