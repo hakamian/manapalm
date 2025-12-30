@@ -13,7 +13,8 @@ const AboutView: React.FC = () => {
     return (
         <div className="bg-gray-900 text-white pb-24">
             {/* Hero Section */}
-            <div className="relative pb-20 bg-cover bg-center" style={{ backgroundImage: "url('https://picsum.photos/seed/palm-grove-sun/1920/1080')" }}>
+            {/* Hero Section */}
+            <div className="relative pb-20 bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1544229669-e709428589ce?q=80&w=1920&auto=format&fit=crop')" }}>
                 <div className="absolute inset-0 bg-black bg-opacity-70"></div>
                 <div className="relative container mx-auto px-6 text-center hero-header-clearance">
                     <h1 className="text-5xl font-bold mb-4">داستان ما: ریشه‌ها در خاک، نگاه به آینده</h1>
@@ -21,7 +22,7 @@ const AboutView: React.FC = () => {
                         ما باور داریم که هر دانه می‌تواند جنگلی را بسازد و هر انسان می‌تواند معنایی عمیق در زندگی خود و دیگران بکارد.
                     </p>
                     <img
-                        src="https://picsum.photos/seed/thriving-grove/1200/500"
+                        src="https://images.unsplash.com/photo-1620215097402-a1b7301c2514?q=80&w=1200&auto=format&fit=crop"
                         alt="A thriving palm grove under a hopeful sky"
                         className="rounded-lg shadow-2xl w-full max-w-5xl mx-auto object-cover h-auto"
                     />
@@ -34,11 +35,11 @@ const AboutView: React.FC = () => {
                     <div>
                         <h2 className="text-4xl font-bold text-green-400 mb-4">رسالت ما</h2>
                         <p className="text-lg text-gray-300 leading-relaxed">
-                            رسالت ما در «نخلستان معنا» توانمندسازی جوامع محلی از طریق کشاورزی پایدار و ایجاد کسب‌وکارهای اجتماعی است. ما با کاشت هر نخل، نه تنها به مقابله با بیابان‌zwnj;زایی و احیای محیط زیست کمک میzwnj;کنیم، بلکه فرصتzwnj;های شغلی معنادار ایجاد کرده و به اقتصاد منطقه جانی دوباره میzwnj;بخشیم. ما به دنبال ساختن پلی هستیم میان سنتzwnj;های غنی کشاورزی و نوآوریzwnj;های امروزی تا آیندهzwnj;ای سبزتر و پربارتر برای نسلzwnj;های بعد بسازیم.
+                            رسالت ما در «نخلستان معنا» توانمندسازی جوامع محلی از طریق کشاورزی پایدار و ایجاد کسب‌وکارهای اجتماعی است. ما با کاشت هر نخل، نه تنها به مقابله با بیابان‌زایی و احیای محیط زیست کمک می‌کنیم، بلکه فرصت‌های شغلی معنادار ایجاد کرده و به اقتصاد منطقه جانی دوباره می‌بخشیم. ما به دنبال ساختن پلی هستیم میان سنت‌های غنی کشاورزی و نوآوری‌های امروزی تا آینده‌ای سبزتر و پربارتر برای نسل‌های بعد بسازیم.
                         </p>
                     </div>
                     <div className="flex justify-center">
-                        <img src="https://picsum.photos/seed/community-hands/500/500" alt="Our Mission" className="rounded-lg shadow-2xl object-cover w-full h-80" />
+                        <img src="https://images.unsplash.com/photo-1542601906990-b4d3fb77c35e?q=80&w=500&auto=format&fit=crop" alt="Our Mission" className="rounded-lg shadow-2xl object-cover w-full h-80" />
                     </div>
                 </div>
 

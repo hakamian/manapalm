@@ -252,7 +252,8 @@ const ShopView: React.FC = () => {
                 </div>
 
                 {/* Monthly Subscription Card */}
-                <section className="mb-16 bg-gradient-to-br from-gray-800 via-gray-800 to-green-900/40 p-8 rounded-2xl border-2 border-green-700/60 shadow-lg text-center">
+                {/* Monthly Subscription Card (Hidden for now) */}
+                {/* <section className="mb-16 bg-gradient-to-br from-gray-800 via-gray-800 to-green-900/40 p-8 rounded-2xl border-2 border-green-700/60 shadow-lg text-center">
                     <h2 className="text-3xl font-bold mb-4 text-green-300">اشتراک ماهانه معنا</h2>
                     <p className="text-gray-300 max-w-xl mx-auto mb-6">
                         با حمایت ماهانه، به صورت مستمر در این جنبش سهیم باشید. هر ماه در کاشت یک نخل عمومی مشارکت کنید، امتیاز معنا دریافت کنید و نشان ویژه «حامی ماهانه» را در پروفایل خود داشته باشید.
@@ -276,7 +277,7 @@ const ShopView: React.FC = () => {
                             عضویت و حمایت ماهانه
                         </button>
                     )}
-                </section>
+                </section> */}
 
                 {(isLoadingRecs || personalizedRecs.length > 0) && (
                     <section className="mb-16">
