@@ -560,7 +560,7 @@ export const PALM_TYPES_DATA: PalmType[] = [
     { id: 'p_heritage_birthday', name: 'نخل تولد', price: 8600000, points: 43000, description: 'کاشت یک درخت به مناسبت تولد، نمادی از رشد و زندگی.', tags: ['celebration', 'family'] },
     { id: 'p_heritage_gift', name: 'نخل هدیه', price: 8500000, points: 42500, description: 'یک هدیه متفاوت و ماندگار برای کسانی که دوستشان دارید.', tags: ['family', 'gratitude'] },
     { id: 'p_heritage_campaign_100', name: 'نخل کمپین ۱۰۰ میراث', price: 8500000, points: 42500, description: 'با کاشت این نخل، در هدف جمعی ما برای کاشت ۱۰۰ نخل جدید سهیم شوید.', tags: ['community'] },
-    { id: 'p_companion_unlock', name: 'نخل آگاهی', price: 250000, points: 1250, description: 'با کاشت این نخل، قابلیت «همراه معنا» (مربی صوتی هوشمند) را برای خود فعال کنید.', tags: ['growth', 'self-discovery'] },
+    // { id: 'p_companion_unlock', name: 'نخل آگاهی', price: 250000, points: 1250, description: 'با کاشت این نخل، قابلیت «همراه معنا» (مربی صوتی هوشمند) را برای خود فعال کنید.', tags: ['growth', 'self-discovery'] },
 ];
 
 export const INITIAL_REVIEWS: Review[] = [

@@ -85,20 +85,20 @@ const ContactView: React.FC = () => {
                                     <div className="bg-gray-800 p-3 rounded-full text-green-400 mt-1"><MapPinIcon /></div>
                                     <div>
                                         <h3 className="font-semibold text-lg text-white">آدرس</h3>
-                                        <p className="text-gray-300">ایران، استان بوشهر، شهرستان دشتستان، نخلستان معنا</p>
+                                        <p className="text-gray-300">نخلستان‌های آب‌پخش، شهر آب‌پخش، شهرستان دشتستان، استان بوشهر، ایران</p>
                                     </div>
                                 </div>
                                 <div className="flex items-start space-x-reverse space-x-4">
                                     <div className="bg-gray-800 p-3 rounded-full text-green-400 mt-1"><EnvelopeIcon /></div>
                                     <div>
                                         <h3 className="font-semibold text-lg text-white">ایمیل</h3>
-                                        <a href="mailto:info@nakhlestanmana.com" className="text-gray-300 hover:text-green-300 transition-colors">info@nakhlestanmana.com</a>
+                                        <a href="mailto:info@manapalm.com" className="text-gray-300 hover:text-green-300 transition-colors">info@manapalm.com</a>
                                     </div>
                                 </div>
                                 <div className="flex items-start space-x-reverse space-x-4">
                                     <div className="bg-gray-800 p-3 rounded-full text-green-400 mt-1"><PhoneIcon /></div>
                                     <div>
-                                        <h3 className="font-semibold text-lg text-white">تلفن تماس (پشتیبانی)</h3>
+                                        <h3 className="font-semibold text-lg text-white">تلفن تماس (پشتیبانی و نظرات)</h3>
                                         <p className="text-gray-300" dir="ltr">0922 245 3571</p>
                                     </div>
                                 </div>
@@ -129,7 +129,7 @@ const ContactView: React.FC = () => {
 
                     {/* Right Column: Contact Form */}
                     <div className="bg-gray-800 p-8 rounded-lg shadow-xl border border-gray-700">
-                        <h2 className="text-3xl font-bold mb-6">برای ما پیام بگذارید</h2>
+                        <h2 className="text-3xl font-bold mb-6">ارسال پیام و نظرات</h2>
                         <form onSubmit={handleSubmit} className="space-y-6">
                             <div>
                                 <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">نام و نام خانوادگی</label>
@@ -141,7 +141,7 @@ const ContactView: React.FC = () => {
                                 {formErrors.email && <p className="text-red-400 text-sm mt-1">{formErrors.email}</p>}
                             </div>
                             <div>
-                                <label htmlFor="subject" className="block text-sm font-medium text-gray-300 mb-2">موضوع</label>
+                                <label htmlFor="subject" className="block text-sm font-medium text-gray-300 mb-2">موضوع (نظر، پیشنهاد، سوال)</label>
                                 <input type="text" id="subject" name="subject" value={formData.subject} onChange={handleChange} required className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 focus:outline-none focus:ring-2 focus:ring-green-500" />
                             </div>
                             <div>

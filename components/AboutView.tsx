@@ -91,8 +91,46 @@ const AboutView: React.FC = () => {
                 </div>
             </div>
 
+            {/* Founder Message Section */}
+            <div className="container mx-auto px-6 mb-20">
+                <div className="bg-gray-800 rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center gap-10 shadow-xl border border-gray-700">
+                    <div className="w-48 h-48 md:w-64 md:h-64 flex-shrink-0">
+                        <img src="https://picsum.photos/seed/founder/300/300" alt="حسین حکمیان" className="w-full h-full object-cover rounded-full border-4 border-green-500 shadow-lg" />
+                    </div>
+                    <div className="flex-grow text-center md:text-right">
+                        <h2 className="text-3xl font-bold text-white mb-2">حسین حکمیان</h2>
+                        <h3 className="text-xl text-green-400 mb-6">بنیان‌گذار نخلستان معنا</h3>
+                        <p className="text-gray-300 leading-relaxed mb-6">
+                            «نخلستان معنا» تلاشی است برای پیوند دوباره انسان با زمین و با خویشتن. ما اینجا هستیم تا نشان دهیم که چگونه می‌توان با یک کاشت ساده، هم طبیعت را احیا کرد و هم دل‌ها را به هم نزدیک کرد. من شخصاً متعهد به شفافیت، کیفیت و تاثیرگذاری واقعی این پروژه هستم و مشتاقانه منتظر شنیدن نظرات شما می‌مانم.
+                        </p>
+                        <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                            <a href="mailto:info@manapalm.com" className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-lg transition-colors flex items-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                                    <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                                </svg>
+                                ارتباط مستقیم با بنیان‌گذار
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {/* Team Section */}
-            <TeamView />
+            <div className="container mx-auto px-6 mb-12">
+                <h2 className="text-4xl font-bold text-center mb-10">تیم ما</h2>
+                <p className="text-center text-gray-400 max-w-2xl mx-auto mb-12">ما تیمی از متخصصان کشاورزی، مهندسان نرم‌افزار و عاشقان طبیعت هستیم که گرد هم آمده‌ایم تا این رویا را محقق کنیم.</p>
+                <TeamView />
+            </div>
+
+            <div className="container mx-auto px-6 text-center pb-8">
+                <p className="text-gray-400 mb-4">آیا سوالی دارید یا می‌خواهید با بخش خاصی از تیم صحبت کنید؟</p>
+                <div className="flex justify-center gap-4">
+                    <button onClick={() => onNavigate(View.Contact)} className="text-green-400 hover:text-green-300 border-b border-green-400 hover:border-green-300 pb-1 transition-all">
+                        ارتباط با تیم پشتیبانی و فنی
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };

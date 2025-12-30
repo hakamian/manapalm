@@ -8,19 +8,17 @@ import { orderService } from './services/application/orderService';
 import { userService } from './services/application/userService';
 import { communityService } from './services/application/communityService';
 
-const initialNavigation = [
-    {
-        category: 'نخلستان',
+{
+    category: 'نخلستان',
         children: [
             { view: View.HallOfHeritage, icon: 'SproutIcon', title: 'تالار میراث', description: 'میراث خود را با کاشت یک نخل جاودانه کنید.' },
             { view: View.OurGrove, icon: 'TreeIcon', title: 'نخلستان ما', description: 'تاثیر جمعی و نقشه زنده نخلستان را ببینید.' },
             { view: View.Shop, icon: 'ShoppingCartIcon', title: 'فروشگاه', description: 'محصولات ارگانیک و صنایع دستی محلی.' },
-            { view: View.About, icon: 'UsersIcon', title: 'درباره ما', description: 'با داستان، تیم و رسالت ما آشنا شوید.' },
             { view: View.Corporate, icon: 'BuildingOfficeIcon', title: 'همکاری سازمانی', description: 'با سازمان خود در این جنبش شریک شوید.' },
         ]
-    },
-    {
-        category: 'سفر',
+},
+{
+    category: 'سفر',
         children: [
             { view: View.HEROS_JOURNEY_INTRO, icon: 'CompassIcon', title: 'سفر قهرمانی', description: 'ماجراجویی خود را برای کشف معنا آغاز کنید.' },
             { view: View.AI_CREATION_STUDIO, icon: 'SparklesIcon', title: 'خلوت آفرینش', description: 'با ابزارهای هوشمند، میراث دیجیتال خود را خلق کنید.' },
@@ -29,16 +27,16 @@ const initialNavigation = [
             { view: View.DISC_TEST, icon: 'BrainCircuitIcon', title: 'آینه رفتارشناسی', description: 'سبک رفتاری خود را بشناسید.' },
             { view: View.ENNEAGRAM_TEST, icon: 'CompassIcon', title: 'نقشه روان انیاگرام', description: 'نقشه روان خود را کشف کنید.' },
         ]
-    },
-    {
-        category: 'مشاوره تخصصی',
+},
+{
+    category: 'مشاوره تخصصی',
         children: [
             { view: View.SMART_CONSULTANT, icon: 'LightBulbIcon', title: 'مشاور هوشمند زندگی', description: 'گفتگو برای شفاف‌سازی، آرامش و تعادل در زندگی.' },
             { view: View.BUSINESS_MENTOR, icon: 'BriefcaseIcon', title: 'منتور متخصص بیزینس', description: 'استراتژی، رشد و حل چالش‌های کسب‌وکار.' }
         ]
-    },
-    {
-        category: 'آکادمی',
+},
+{
+    category: 'آکادمی',
         children: [
             { view: View.AI_ACADEMY, icon: 'SparklesIcon', title: 'آکادمی هوش مصنوعی', description: 'اتوماسیون، ایجنت‌ها و مهارت‌های آینده.' },
             { view: View.BUSINESS_ACADEMY, icon: 'MegaphoneIcon', title: 'آکادمی برند و محتوا', description: 'اقتصاد خالق (Creator Economy) و بازاریابی.' },
@@ -49,23 +47,30 @@ const initialNavigation = [
             { view: View['digital-heritage-architect'], icon: 'SitemapIcon', title: 'معمار میراث دیجیتال', description: 'وب‌سایت حرفه‌ای خود را بسازید و در اشتغال‌زایی سهیم شوید.' },
             { view: View.COACHING_LAB, icon: 'BrainCircuitIcon', title: 'آزمایشگاه کوچینگ', description: 'فضای تمرین اختصاصی برای کوچ‌ها.' },
         ]
-    },
-    {
-        category: 'جامعه',
+},
+{
+    category: 'جامعه',
         children: [
             { view: View.CommunityHub, icon: 'UserGroupIcon', title: 'کانون', description: 'به جامعه ما بپیوندید و با دیگران ارتباط برقرار کنید.' },
             { view: View.Articles, icon: 'PencilSquareIcon', title: 'مقالات', description: 'دانش خود را با مقالات ما افزایش دهید.' },
             { view: View.CoCreation, icon: 'SparklesIcon', title: 'هم‌آفرینی', description: 'در ساختن آینده نخلستان مشارکت کنید.' },
             { view: View.Microfinance, icon: 'HandCoinIcon', title: 'صندوق رویش', description: 'سرمایه‌گذاری خرد بر روی کارآفرینان و توسعه نخلستان.' },
         ]
-    },
-    {
-        category: 'مدیریت',
+},
+{
+    category: 'درباره ما',
+        children: [
+            { view: View.About, icon: 'UsersIcon', title: 'درباره ما', description: 'با داستان، تیم و رسالت ما آشنا شوید.' },
+            { view: View.Contact, icon: 'PhoneIcon', title: 'تماس با ما', description: 'راه‌های ارتباطی و ارسال نظرات.' },
+        ]
+},
+{
+    category: 'مدیریت',
         children: [
             { view: View.AutoCEO, icon: 'BoltIcon', title: 'مدیر عامل خودکار', description: 'دستیار هوشمند مدیریت استراتژیک.' },
             { view: View.AdminDashboard, icon: 'ChartBarIcon', title: 'داشبورد ادمین', description: 'مدیریت کاربران و سفارشات.' },
         ]
-    }
+}
 ];
 
 const DEFAULT_ALCHEMY_PROMPT = `
