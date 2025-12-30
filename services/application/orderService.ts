@@ -197,6 +197,7 @@ createQuickOrder: (user: User | null, palm: any, quantity: number, deedDetails: 
         id: orderId,
         userId: user?.id || 'guest',
         status: 'pending',
+        total: total,
         totalAmount: total,
         createdAt: new Date().toISOString(),
         items: [{
