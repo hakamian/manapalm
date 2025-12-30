@@ -168,20 +168,25 @@ export async function POST(req: Request) {
             const existingAuthUser = users.find(u => u.phone === e164Mobile || u.email === cleanMobile + "@mana.com");
 
             const finalMetadata = { full_name: fullName || cleanMobile };
+            const virtualEmail = `${cleanMobile}@manapalm.com`;
 
             if (existingAuthUser) {
-                // Update password
+                // Update password AND ensure virtual email is set
                 const { error: updateError } = await supabase.auth.admin.updateUserById(
                     existingAuthUser.id,
                     {
+                        email: virtualEmail,
+                        email_confirm: true,
                         password: password,
                         user_metadata: { ...existingAuthUser.user_metadata, ...finalMetadata }
                     }
                 );
                 if (updateError) throw updateError;
             } else {
-                // Create user
+                // Create user with virtual email
                 const { error: createError } = await supabase.auth.admin.createUser({
+                    email: virtualEmail,
+                    email_confirm: true,
                     phone: e164Mobile,
                     password: password,
                     phone_confirm: true,

@@ -119,20 +119,28 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                     return;
                 }
 
-                // 2. Normal Auth Flow
+                // 2. Normal Auth Flow (Virtual Email Strategy)
                 if (!supabase) {
                     throw new Error("سرویس احراز هویت در دسترس نیست. لطفا اتصالات خود را بررسی کنید.");
                 }
 
+                // Strategy: Use "mobile@manapalm.com" as a virtual email for password login
+                // This bypasses the need for the "Phone Provider" to be enabled in Supabase for password logins
+                const virtualEmail = `${phoneNumber}@manapalm.com`;
+
                 const { data, error } = await supabase.auth.signInWithPassword({
-                    phone: '+98' + phoneNumber.substring(1),
+                    email: virtualEmail,
                     password: password
                 });
 
                 if (error) {
-                    // Friendly translation for specific Supabase errors
-                    if (error.message.includes('Phone logins are disabled')) {
-                        throw new Error("ورود با شماره موبایل در تنظیمات سرور غیرفعال است. لطفا از ورود با گوگل یا کد تایید استفاده کنید.");
+                    // Friendly translation
+                    if (error.message.includes('Invalid login credentials')) {
+                        throw new Error("شماره موبایل یا رمز عبور نادرست است.");
+                    }
+                    if (error.message.includes('Email not confirmed')) {
+                        // Should not happen if we auto-confirm in route.ts, but good to handle
+                        throw new Error("حساب کاربری فعال نشده است. لطفا با پیامک وارد شوید.");
                     }
                     throw error;
                 }
