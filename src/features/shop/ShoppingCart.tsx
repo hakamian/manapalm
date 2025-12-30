@@ -234,18 +234,24 @@ const ShoppingCart: React.FC = () => {
 
                   {/* Impact Metrics */}
                   <div className="grid grid-cols-3 gap-2 mb-6">
-                    <div className="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700 hover:border-green-500/30 transition-colors">
-                      <CloudIcon className="w-5 h-5 text-blue-400 mx-auto mb-1" />
+                    <div className="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700 hover:border-green-500/30 transition-colors group">
+                      <div className="w-8 h-8 mx-auto flex items-center justify-center bg-blue-500/10 rounded-full mb-1 group-hover:bg-blue-500/20 transition-colors">
+                        <CloudIcon className="w-5 h-5 text-blue-400" />
+                      </div>
                       <span className="block text-xs text-gray-400">هوای پاک</span>
                       <span className="block text-sm font-bold text-gray-200">{(palmCount * 12).toLocaleString('fa-IR')} kg</span>
                     </div>
-                    <div className="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700 hover:border-yellow-500/30 transition-colors">
-                      <TrophyIcon className="w-5 h-5 text-yellow-400 mx-auto mb-1" />
+                    <div className="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700 hover:border-yellow-500/30 transition-colors group">
+                      <div className="w-8 h-8 mx-auto flex items-center justify-center bg-yellow-500/10 rounded-full mb-1 group-hover:bg-yellow-500/20 transition-colors">
+                        <TrophyIcon className="w-5 h-5 text-yellow-400" />
+                      </div>
                       <span className="block text-xs text-gray-400">امتیاز معنا</span>
                       <span className="block text-sm font-bold text-gray-200">{totalPoints.toLocaleString('fa-IR')}</span>
                     </div>
-                    <div className="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700 hover:border-orange-500/30 transition-colors">
-                      <HeartIcon className="w-5 h-5 text-orange-400 mx-auto mb-1" />
+                    <div className="bg-gray-800/50 rounded-lg p-2 text-center border border-gray-700 hover:border-orange-500/30 transition-colors group">
+                      <div className="w-8 h-8 mx-auto flex items-center justify-center bg-orange-500/10 rounded-full mb-1 group-hover:bg-orange-500/20 transition-colors">
+                        <HeartIcon className="w-5 h-5 text-orange-400" />
+                      </div>
                       <span className="block text-xs text-gray-400">حمایت</span>
                       <span className="block text-sm font-bold text-gray-200">{(subtotal * 0.05).toLocaleString('fa-IR')} T</span>
                     </div>

@@ -56,7 +56,7 @@ const TransparencyDashboardView: React.FC = () => {
         { label: 'پروژه‌های توانمندسازی جامعه', value: 10, color: 'bg-yellow-500' },
         { label: 'عملیات و توسعه پلتفرم', value: 10, color: 'bg-indigo-500' },
     ];
-    
+
     const impactStories = [
         { title: "از خاک تا امید: داستان رضا", text: "رضا، یکی از جوانان روستای ما، پیش از این برای یافتن کار به شهرهای بزرگ می‌رفت. امروز او یکی از نخل‌داران متخصص ماست و با درآمد حاصل از آن، خانواده خود را تامین می‌کند و برای آینده‌اش رویا می‌بافد." },
         { title: "یک کلاس درس زیر سایه نخل‌ها", text: "با بخشی از درآمد حاصل از مشارکت شما، توانستیم یک کلاس آموزشی برای کودکان روستا در نزدیکی نخلستان راه‌اندازی کنیم. حالا صدای خنده بچه‌ها با خش‌خش برگ نخل‌ها در هم آمیخته است." }
@@ -74,13 +74,31 @@ const TransparencyDashboardView: React.FC = () => {
                 </header>
 
                 {/* Key Impact Numbers */}
-                <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+                <section className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20 animate-fade-in-up">
                     {/* FIX: Changed ref type from span to paragraph to match hook */}
-                    <div className="bg-gray-800 p-8 rounded-lg shadow-lg text-center"><SproutIcon className="w-12 h-12 mx-auto text-green-400 mb-3" /><p ref={totalPalms.ref} className="text-5xl font-bold text-white">{totalPalms.count.toLocaleString('fa-IR')}+</p><p className="text-gray-400 mt-2">نخل کاشته شده</p></div>
+                    <div className="bg-gray-800 p-8 rounded-2xl shadow-lg text-center transform hover:scale-105 transition-transform duration-300 border border-gray-700">
+                        <div className="w-20 h-20 mx-auto bg-green-900/30 rounded-full flex items-center justify-center mb-4">
+                            <SproutIcon className="w-10 h-10 text-green-400" />
+                        </div>
+                        <p ref={totalPalms.ref} className="text-5xl font-bold text-white mb-2">{totalPalms.count.toLocaleString('fa-IR')}+</p>
+                        <p className="text-gray-400 font-medium">نخل کاشته شده</p>
+                    </div>
                     {/* FIX: Changed ref type from span to paragraph to match hook */}
-                    <div className="bg-gray-800 p-8 rounded-lg shadow-lg text-center"><BriefcaseIcon className="w-12 h-12 mx-auto text-blue-400 mb-3" /><p ref={totalJobHours.ref} className="text-5xl font-bold text-white">{totalJobHours.count.toLocaleString('fa-IR')}+</p><p className="text-gray-400 mt-2">ساعت اشتغال‌زایی</p></div>
+                    <div className="bg-gray-800 p-8 rounded-2xl shadow-lg text-center transform hover:scale-105 transition-transform duration-300 border border-gray-700">
+                        <div className="w-20 h-20 mx-auto bg-blue-900/30 rounded-full flex items-center justify-center mb-4">
+                            <BriefcaseIcon className="w-10 h-10 text-blue-400" />
+                        </div>
+                        <p ref={totalJobHours.ref} className="text-5xl font-bold text-white mb-2">{totalJobHours.count.toLocaleString('fa-IR')}+</p>
+                        <p className="text-gray-400 font-medium">ساعت اشتغال‌زایی</p>
+                    </div>
                     {/* FIX: Changed ref type from span to paragraph to match hook */}
-                    <div className="bg-gray-800 p-8 rounded-lg shadow-lg text-center"><CloudIcon className="w-12 h-12 mx-auto text-teal-400 mb-3" /><p ref={totalCo2.ref} className="text-5xl font-bold text-white">{totalCo2.count.toLocaleString('fa-IR')}</p><p className="text-gray-400 mt-2">کیلوگرم جذب CO2 (سالانه)</p></div>
+                    <div className="bg-gray-800 p-8 rounded-2xl shadow-lg text-center transform hover:scale-105 transition-transform duration-300 border border-gray-700">
+                        <div className="w-20 h-20 mx-auto bg-teal-900/30 rounded-full flex items-center justify-center mb-4">
+                            <CloudIcon className="w-10 h-10 text-teal-400" />
+                        </div>
+                        <p ref={totalCo2.ref} className="text-5xl font-bold text-white mb-2">{totalCo2.count.toLocaleString('fa-IR')}</p>
+                        <p className="text-gray-400 font-medium">کیلوگرم جذب CO2 (سالانه)</p>
+                    </div>
                 </section>
 
                 {/* Financial Commitment */}
@@ -103,13 +121,13 @@ const TransparencyDashboardView: React.FC = () => {
                         </div>
                     </div>
                 </section>
-                
-                 {/* Impact Stories */}
+
+                {/* Impact Stories */}
                 <section>
                     <h2 className="text-3xl font-bold text-center mb-10">داستان‌هایی از نخلستان</h2>
                     <div className="max-w-4xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
                         {impactStories.map(story => (
-                             <div key={story.title} className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
+                            <div key={story.title} className="bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-700">
                                 <h3 className="text-xl font-semibold text-green-400 mb-3">{story.title}</h3>
                                 <p className="text-gray-300 leading-relaxed">{story.text}</p>
                             </div>
