@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppState } from '../AppContext';
 import { verifyPayment } from '../services/payment';
-import { CheckCircleIcon, XMarkIcon, ArrowLeftIcon, ArrowPathIcon, BanknotesIcon } from './icons'; 
+import { CheckCircleIcon, XMarkIcon, ArrowLeftIcon, ArrowPathIcon, BanknotesIcon } from './icons';
 import { View, Order, Deed } from '../types';
 
 const PaymentCallbackView: React.FC = () => {
@@ -18,7 +18,7 @@ const PaymentCallbackView: React.FC = () => {
             const urlParams = new URLSearchParams(window.location.search);
             const authority = urlParams.get('Authority');
             const paymentStatus = urlParams.get('Status');
-            
+
             // Retrieve pending order
             const pendingOrderStr = localStorage.getItem('pending_order');
             if (!pendingOrderStr) {
@@ -26,7 +26,7 @@ const PaymentCallbackView: React.FC = () => {
                 setMessage('اطلاعات سفارش در حافظه مرورگر یافت نشد. اگر پرداخت کرده‌اید، با پشتیبانی تماس بگیرید.');
                 return;
             }
-            
+
             const pendingOrder = JSON.parse(pendingOrderStr);
             setPaidAmount(pendingOrder.total);
 
@@ -38,12 +38,12 @@ const PaymentCallbackView: React.FC = () => {
 
             try {
                 const result = await verifyPayment(pendingOrder.total, authority!);
-                
+
                 if (result.success) {
                     setRefId(result.refId);
                     setStatus('success');
                     setMessage('پرداخت با موفقیت انجام شد.');
-                    
+
                     // Create Real Order
                     const newDeeds: Deed[] = pendingOrder.items
                         .filter((item: any) => item.type === 'heritage' && item.deedDetails)
@@ -59,20 +59,26 @@ const PaymentCallbackView: React.FC = () => {
                             groveKeeperId: item.deedDetails.groveKeeperId,
                         }));
 
+                    const newHistory = pendingOrder.statusHistory
+                        ? [...pendingOrder.statusHistory, { status: 'پرداخت شده', date: new Date().toISOString() }]
+                        : [{ status: 'پرداخت شده', date: new Date().toISOString() }];
+
                     const newOrder: Order = {
-                        id: `order-${Date.now()}`,
+                        id: pendingOrder.id || `order-${Date.now()}`, // Reuse ID if available
                         userId: user?.id || pendingOrder.userId,
-                        date: new Date().toISOString(),
+                        date: pendingOrder.date || new Date().toISOString(),
                         items: pendingOrder.items,
                         total: pendingOrder.total,
+                        totalAmount: pendingOrder.totalAmount || pendingOrder.total,
                         status: 'پرداخت شده',
-                        statusHistory: [{ status: 'پرداخت شده', date: new Date().toISOString() }],
+                        statusHistory: newHistory,
                         deeds: newDeeds,
+                        createdAt: pendingOrder.createdAt || new Date().toISOString()
                     };
-                    
+
                     // Dispatch Actions
                     dispatch({ type: 'PLACE_ORDER', payload: newOrder });
-                    
+
                     // Cleanup
                     localStorage.removeItem('pending_order');
 
@@ -88,15 +94,15 @@ const PaymentCallbackView: React.FC = () => {
         };
 
         // Run verify only once
-        if(status === 'loading') {
-             verify();
+        if (status === 'loading') {
+            verify();
         }
     }, [dispatch, user?.id, status]);
 
     return (
         <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center p-4">
             <div className="bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-md w-full text-center border border-gray-700">
-                
+
                 {status === 'loading' && (
                     <div className="py-10">
                         <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
@@ -112,7 +118,7 @@ const PaymentCallbackView: React.FC = () => {
                         </div>
                         <h2 className="text-2xl font-bold text-green-400 mb-2">پرداخت موفق!</h2>
                         <p className="text-gray-300 mb-6">{message}</p>
-                        
+
                         <div className="bg-gray-700/50 p-4 rounded-xl mb-6 border border-gray-600 space-y-2">
                             <div className="flex justify-between text-sm">
                                 <span className="text-gray-400">مبلغ:</span>
@@ -124,7 +130,7 @@ const PaymentCallbackView: React.FC = () => {
                             </div>
                         </div>
 
-                        <button 
+                        <button
                             onClick={() => dispatch({ type: 'SET_VIEW', payload: View.UserProfile })}
                             className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg"
                         >
@@ -141,19 +147,19 @@ const PaymentCallbackView: React.FC = () => {
                         </div>
                         <h2 className="text-2xl font-bold text-red-400 mb-2">پرداخت ناموفق</h2>
                         <p className="text-gray-300 mb-8 px-4">{message}</p>
-                        
+
                         <div className="flex gap-3">
-                            <button 
+                            <button
                                 onClick={() => dispatch({ type: 'SET_VIEW', payload: View.Shop })}
                                 className="flex-1 bg-gray-700 hover:bg-gray-600 text-white font-semibold py-3 rounded-xl transition-colors"
                             >
                                 بازگشت
                             </button>
-                            <button 
+                            <button
                                 onClick={() => {
                                     try {
                                         window.history.replaceState({}, document.title, "/");
-                                    } catch (e) {}
+                                    } catch (e) { }
                                     dispatch({ type: 'TOGGLE_CART', payload: true });
                                 }}
                                 className="flex-1 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"

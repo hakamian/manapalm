@@ -1,9 +1,9 @@
-
 import React, { useState, useMemo } from 'react';
 import { View, Order } from '../types';
 import { useAppState, useAppDispatch } from '../AppContext';
 import { TruckIcon, CreditCardIcon, ShieldCheckIcon, LockClosedIcon } from './icons';
 import { requestPayment } from '../services/payment';
+import { dbAdapter } from '../services/dbAdapter';
 
 const CheckoutView: React.FC = () => {
     const { cartItems, user } = useAppState();
@@ -28,7 +28,7 @@ const CheckoutView: React.FC = () => {
         if (step === 1 && (shippingInfo.fullName && shippingInfo.address && shippingInfo.phone)) setStep(2);
         else if (step === 2) setStep(3);
     };
-    
+
     const handlePayment = async () => {
         if (!user) return;
         setIsProcessing(true);
@@ -36,23 +36,37 @@ const CheckoutView: React.FC = () => {
 
         const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const description = `خرید ${cartItems.length} محصول از نخلستان معنا`;
+        const orderId = `order-${Date.now()}`;
 
-        // 1. Save Pending Order to LocalStorage (to retrieve after redirect)
-        const pendingOrder = {
+        // 1. Create Pending Order Object & Save to DB
+        const pendingOrder: Order = {
+            id: orderId,
             userId: user.id,
             items: cartItems,
             total: total,
-            shippingInfo: shippingInfo,
-            date: new Date().toISOString(),
+            totalAmount: total,
+            status: 'pending', // Or 'در انتظار پرداخت'
+            statusHistory: [{ status: 'pending', date: new Date().toISOString() }],
+            deeds: [],
+            createdAt: new Date().toISOString(),
+            date: new Date().toISOString()
         };
-        localStorage.setItem('pending_order', JSON.stringify(pendingOrder));
 
         try {
-            // 2. Request Payment Token
+            await dbAdapter.saveOrder(pendingOrder);
+
+            // 2. Save Pending Order to LocalStorage (with ID)
+            const storageOrder = {
+                ...pendingOrder,
+                shippingInfo: shippingInfo,
+            };
+            localStorage.setItem('pending_order', JSON.stringify(storageOrder));
+
+            // 3. Request Payment Token
             const result = await requestPayment(total, description, { email: user.email, phone: user.phone });
 
             if (result.success && result.url) {
-                // 3. Redirect to Gateway
+                // 4. Redirect to Gateway
                 window.location.href = result.url;
             } else {
                 throw new Error(result.error || 'خطا در اتصال به درگاه بانک');
@@ -64,7 +78,7 @@ const CheckoutView: React.FC = () => {
             setIsProcessing(false);
         }
     };
-    
+
     const shippingCost = useMemo(() => (cartItems.some(item => item.type !== 'upgrade') ? 35000 : 0), [cartItems]);
     const totalAmount = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0) + shippingCost;
 
@@ -75,13 +89,13 @@ const CheckoutView: React.FC = () => {
         { id: 2, name: 'روش پرداخت', icon: <CreditCardIcon className="w-6 h-6" /> },
         { id: 3, name: 'تایید و پرداخت', icon: <ShieldCheckIcon className="w-6 h-6" /> },
     ];
-    
+
     if (!user) { onNavigate(View.Home); return null; }
 
     return (
         <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
             <div className="w-full max-w-4xl mx-auto">
-                <div className="text-center mb-8" onClick={() => onNavigate(View.Home)} style={{cursor: 'pointer'}}><img src="https://picsum.photos/seed/nakhlestan-logo/60/60" alt="Logo" className="rounded-full mx-auto mb-2" /><h1 className="text-3xl font-bold">تکمیل خرید</h1></div>
+                <div className="text-center mb-8" onClick={() => onNavigate(View.Home)} style={{ cursor: 'pointer' }}><img src="https://picsum.photos/seed/nakhlestan-logo/60/60" alt="Logo" className="rounded-full mx-auto mb-2" /><h1 className="text-3xl font-bold">تکمیل خرید</h1></div>
                 <div className="w-full max-w-2xl mx-auto mb-8"><ol className="flex items-center w-full">{steps.map((s, index) => (<li key={s.id} className={`flex w-full items-center ${index < steps.length - 1 ? "after:content-[''] after:w-full after:h-1 after:border-b after:border-4 after:inline-block" : ""} ${step > s.id ? 'after:border-green-400' : 'after:border-gray-700'}`}><span className={`flex items-center justify-center w-12 h-12 rounded-full shrink-0 ${step >= s.id ? 'bg-green-600 border-2 border-green-400' : 'bg-gray-700 border-2 border-gray-600'}`}>{s.icon}</span></li>))}</ol></div>
                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                     <div className="lg:col-span-3 bg-gray-800 p-8 rounded-lg border border-gray-700">
@@ -126,7 +140,7 @@ const CheckoutView: React.FC = () => {
                                 </div>
                             </div>
                         )}
-                        
+
                         {error && <div className="mt-4 p-3 bg-red-900/50 text-red-200 rounded-lg text-sm text-center">{error}</div>}
 
                         <div className="flex justify-between items-center mt-8">
@@ -155,9 +169,9 @@ const CheckoutView: React.FC = () => {
                             {cartItems.map(item => (<div key={item.id} className="flex justify-between items-start text-sm"><div className="flex items-center"><img src={item.image} alt={item.name} className="w-12 h-12 rounded-md object-cover ml-3" /><div><p className="text-white font-semibold">{item.name}</p><p className="text-gray-400">تعداد: {item.quantity}</p></div></div><p className="font-semibold text-white">{formatPrice(item.price * item.quantity)}</p></div>))}
                         </div>
                         <div className="border-t border-gray-700 pt-4 space-y-3">
-                             <div className="flex justify-between text-gray-300"><span>جمع محصولات</span><span>{formatPrice(cartItems.reduce((s, i) => s + i.price * i.quantity, 0))} تومان</span></div>
-                             <div className="flex justify-between text-gray-300"><span>هزینه ارسال</span><span>{formatPrice(shippingCost)} تومان</span></div>
-                             <div className="flex justify-between text-white font-bold text-lg border-t border-gray-700 pt-3 mt-3"><span>مبلغ قابل پرداخت</span><span>{formatPrice(totalAmount)} تومان</span></div>
+                            <div className="flex justify-between text-gray-300"><span>جمع محصولات</span><span>{formatPrice(cartItems.reduce((s, i) => s + i.price * i.quantity, 0))} تومان</span></div>
+                            <div className="flex justify-between text-gray-300"><span>هزینه ارسال</span><span>{formatPrice(shippingCost)} تومان</span></div>
+                            <div className="flex justify-between text-white font-bold text-lg border-t border-gray-700 pt-3 mt-3"><span>مبلغ قابل پرداخت</span><span>{formatPrice(totalAmount)} تومان</span></div>
                         </div>
                     </aside>
                 </div>

@@ -2,7 +2,7 @@
 import { Deed } from './content';
 import { WebDevProject } from './education';
 
-export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'completed' | 'cancelled';
+export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'completed' | 'cancelled' | 'در انتظار پرداخت' | 'پرداخت شده' | 'تحویل داده شده' | 'لغو شده';
 export type ProductImpactType = 'tree' | 'hour' | 'meal' | 'unit';
 
 export interface ImpactCategory {

@@ -214,8 +214,25 @@ export const dbAdapter = {
             created_at: order.date
         };
 
-        const { error } = await supabase!.from('orders').insert(orderData);
+        const { error } = await supabase!.from('orders').upsert(orderData);
         if (error) console.error('Error saving order:', error.message);
+    },
+
+    async updateOrderStatus(orderId: string, status: string, refId?: string): Promise<void> {
+        if (!this.isLive()) return;
+
+        const { data: order } = await supabase!.from('orders').select('status_history').eq('id', orderId).single();
+        const currentHistory = safeParse(order?.status_history, []);
+
+        const newHistory = [...currentHistory, { status, date: new Date().toISOString(), refId }];
+
+        const updateData: any = {
+            status: status,
+            status_history: newHistory
+        };
+
+        const { error } = await supabase!.from('orders').update(updateData).eq('id', orderId);
+        if (error) console.error('Error updating order status:', error.message);
     },
 
     async getAllPosts(): Promise<CommunityPost[]> {
