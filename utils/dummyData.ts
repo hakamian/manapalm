@@ -153,7 +153,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     {
         id: 'mp_fig_powder',
         name: 'پودر انجیر ارگانیک ماناپالم',
-        price: 120000,
+        price: 1200000,
         category: 'محصولات خرما',
         image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819383/manapalm/products/fig-powder.jpg',
         popularity: 95,
@@ -168,7 +168,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     {
         id: 'mp_dates_simple',
         name: 'خرمای مضافتی ماناپالم (۵۰۰ گرم)',
-        price: 150000,
+        price: 300000,
         category: 'محصولات خرما',
         image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819384/manapalm/products/dates-simple.jpg',
         popularity: 92,
@@ -213,7 +213,7 @@ export const INITIAL_PRODUCTS: Product[] = [
     {
         id: 'mp_date_syrup',
         name: 'شیره خرما ماناپالم (۵۰۰ml)',
-        price: 200000,
+        price: 2000000,
         category: 'محصولات خرما',
         image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819386/manapalm/products/date-syrup.jpg',
         popularity: 90,
