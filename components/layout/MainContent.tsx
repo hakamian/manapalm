@@ -50,6 +50,7 @@ const SearchResultsView = React.lazy(() => import('../SearchResultsView'));
 const PublicStoryView = React.lazy(() => import('../seo/PublicStoryView')); // New Import
 const CampaignLandingView = React.lazy(() => import('../CampaignLandingView'));
 const TermsView = React.lazy(() => import('../TermsView'));
+const UserProfileView = React.lazy(() => import('../UserProfileView'));
 
 const MainContent: React.FC = () => {
     const {
@@ -157,6 +158,7 @@ const MainContent: React.FC = () => {
                 return user ? <MeaningCoachPage user={user} onSaveHistory={() => { }} onUpdateProfile={(u) => dispatch({ type: 'UPDATE_USER', payload: u })} /> : <HomeView />;
             case View['community-projects']:
                 return <CommunityProjectsPage user={user} allCommunityProjects={[]} onContribute={() => { }} onLoginClick={() => dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })} />;
+            case View.UserProfile: return <UserProfileView />;
             default: return <HomeView />;
         }
     };
