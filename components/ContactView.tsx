@@ -45,20 +45,35 @@ const ContactView: React.FC = () => {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (formErrors.email) return;
 
         setIsSubmitting(true);
         setSubmitMessage('');
 
-        // Simulate API call
-        setTimeout(() => {
+        try {
+            const response = await fetch('/api/contact', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(formData)
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                setSubmitMessage('پیام شما با موفقیت ارسال شد. سپاسگزاریم!');
+                setFormData({ name: '', email: '', subject: '', message: '' });
+            } else {
+                setSubmitMessage(result.error || 'خطا در ارسال پیام. لطفاً دوباره تلاش کنید.');
+            }
+        } catch (error) {
+            console.error('Contact form error:', error);
+            setSubmitMessage('خطا در ارسال پیام. لطفاً دوباره تلاش کنید.');
+        } finally {
             setIsSubmitting(false);
-            setSubmitMessage('پیام شما با موفقیت ارسال شد. سپاسگزاریم!');
-            setFormData({ name: '', email: '', subject: '', message: '' });
             setTimeout(() => setSubmitMessage(''), 5000);
-        }, 1500);
+        }
     };
 
     return (

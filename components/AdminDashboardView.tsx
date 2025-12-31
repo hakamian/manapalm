@@ -62,6 +62,7 @@ import ModernCampaignsDashboard from './admin/ModernCampaignsDashboard';
 import ModernContentFactoryDashboard from './admin/ModernContentFactoryDashboard';
 import ModernAcademiesDashboard from './admin/ModernAcademiesDashboard';
 import AiArtStudioDashboard from './admin/AiArtStudioDashboard';
+import ContactMessagesManager from './admin/ContactMessagesManager';
 import { timeAgo } from '../utils/time';
 
 interface AdminDashboardViewProps {
@@ -171,7 +172,8 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
         { id: 'ai_reports', label: 'گزارش‌های هوشمند', icon: <SparklesIcon className="w-5 h-5" /> },
         { id: 'settings', label: 'تنظیمات', icon: <CogIcon className="w-5 h-5" /> },
         { id: 'auto_ceo', label: 'مدیر عامل خودکار', icon: <BoltIcon className="w-5 h-5" /> },
-        { id: 'art_studio', label: 'استودیو هنری AI', icon: <PhotoIcon className="w-5 h-5" /> }
+        { id: 'art_studio', label: 'استودیو هنری AI', icon: <PhotoIcon className="w-5 h-5" /> },
+        { id: 'contact_messages', label: 'پیام‌های تماس', icon: <ChatBubbleLeftRightIcon className="w-5 h-5" /> }
     ];
 
     return (
@@ -281,6 +283,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                     {activeTab === 'api_management' && <ApiManagementDashboard />}
                     {activeTab === 'settings' && <ModernSettingsDashboard />}
                     {activeTab === 'auto_ceo' && <AutoCEOView />}
+                    {activeTab === 'contact_messages' && <ContactMessagesManager />}
                 </main>
             </div>
         </div>
