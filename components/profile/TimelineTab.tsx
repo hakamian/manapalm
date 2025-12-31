@@ -15,12 +15,12 @@ interface TimelineTabProps {
 }
 
 const fileToBase64 = (file: File): Promise<string> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = error => reject(error);
-  });
+    new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
+    });
 
 const TimelineHeader: React.FC<{ user: User; onStartPlantingFlow: () => void; onNavigate: (view: View) => void; }> = ({ user, onStartPlantingFlow, onNavigate }) => {
     const sortedTimeline = [...(user.timeline || [])].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
@@ -53,7 +53,7 @@ const TimelineHeader: React.FC<{ user: User; onStartPlantingFlow: () => void; on
                 <SproutIcon className="w-10 h-10 mx-auto text-yellow-400 mb-3" />
                 <h3 className="text-xl font-bold">سفر معنا با قدم‌های کوچک ادامه می‌یابد</h3>
                 <p className="text-gray-300 mt-2 max-w-xl mx-auto">
-                    {lastEvent ? 'مدتی است که در گاهشمار خود رویدادی ثبت نکرده‌اید.' : 'گاهشمار شما منتظر اولین داستان است.'} 
+                    {lastEvent ? 'مدتی است که در گاهشمار خود رویدادی ثبت نکرده‌اید.' : 'گاهشمار شما منتظر اولین داستان است.'}
                     آماده برداشتن قدم بعدی هستید؟
                 </p>
                 <div className="mt-4 flex justify-center gap-3">
@@ -83,13 +83,13 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ user, onStartPlantingFlow, on
         const formData = new FormData(event.currentTarget);
         const text = editingMemoryText;
         const imageFile = formData.get('memoryImage') as File;
-        
+
         if (imageFile && imageFile.size > 0) {
-             fileToBase64(imageFile).then(base64Image => {
+            fileToBase64(imageFile).then(base64Image => {
                 onUpdateTimelineEvent(deedId, { text, image: base64Image });
-             });
+            });
         } else {
-             onUpdateTimelineEvent(deedId, { text });
+            onUpdateTimelineEvent(deedId, { text });
         }
         setEditingMemoryDeedId(null);
         setEditingMemoryText('');
@@ -98,13 +98,13 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ user, onStartPlantingFlow, on
     const handleMemoryAIAssist = async (mode: 'generate' | 'improve', deedId: string) => {
         const deed = orders.flatMap(o => o.deeds || []).find(d => d.id === deedId);
         if (!deed) return;
-    
+
         setIsAIAssistLoading(true);
         try {
             const response = await getAIAssistedText({
                 mode,
                 type: 'timeline_memory',
-                text: editingMemoryText, 
+                text: editingMemoryText,
                 context: deed.intention,
             });
             setEditingMemoryText(response);
@@ -120,7 +120,7 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ user, onStartPlantingFlow, on
             <TimelineHeader user={user} onStartPlantingFlow={onStartPlantingFlow} onNavigate={onNavigate} />
             <h2 className="text-2xl font-bold mb-6">گاهشمار معنای شما</h2>
             <div className="relative pl-4 border-r-2 border-gray-700">
-                 {sortedTimeline.map((event, index) => (
+                {sortedTimeline.map((event, index) => (
                     <div key={index} className="mb-8 pl-8 relative">
                         <div className="absolute -right-[7px] top-1 w-4 h-4 rounded-full bg-green-500 border-2 border-gray-900"></div>
                         <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
@@ -131,18 +131,18 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ user, onStartPlantingFlow, on
                                 </div>
                                 <span className="text-xs text-gray-400">{new Date(event.date).toLocaleDateString('fa-IR')}</span>
                             </div>
-                            {event.type === 'palm_planted' && (
+                            {event.type === 'palm_planted' && event.deedId && (
                                 editingMemoryDeedId === event.deedId ? (
                                     <form onSubmit={(e) => handleSaveMemory(event.deedId!, e)} className="mt-4 space-y-3 bg-gray-700/50 p-3 rounded-md">
                                         <div>
                                             <div className="flex justify-between items-center mb-1">
                                                 <label className="text-sm font-semibold">ثبت خاطره</label>
-                                                <button 
-                                                    type="button" 
+                                                <button
+                                                    type="button"
                                                     onClick={() => handleMemoryAIAssist(editingMemoryText ? 'improve' : 'generate', event.deedId!)}
-                                                    disabled={isAIAssistLoading} 
+                                                    disabled={isAIAssistLoading}
                                                     className="flex items-center gap-1 text-xs py-1 px-2 bg-blue-600 hover:bg-blue-700 rounded-full text-white disabled:bg-gray-500" title="کمک گرفتن از هوش مصنوعی">
-                                                    <SparklesIcon className="w-4 h-4"/>
+                                                    <SparklesIcon className="w-4 h-4" />
                                                     <span>{editingMemoryText ? 'بهبود با AI' : 'کمک از AI'}</span>
                                                 </button>
                                             </div>
@@ -165,9 +165,22 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ user, onStartPlantingFlow, on
                                                 <p className="text-gray-300 italic">"{event.memoryText}"</p>
                                             </div>
                                         )}
-                                         <div className="mt-4 flex flex-wrap gap-2">
-                                            <button onClick={() => onOpenDeedModal(orders.flatMap(o => o.deeds || []).find(d => d.id === event.deedId)!)} className="text-xs bg-blue-800 hover:bg-blue-700 py-1 px-3 rounded-md flex items-center gap-1"><PhotoIcon className="w-4 h-4"/> مشاهده سند</button>
-                                            <button onClick={() => handleEditMemory(event.deedId!)} className="text-xs bg-yellow-800 hover:bg-yellow-700 py-1 px-3 rounded-md flex items-center gap-1"><PencilSquareIcon className="w-4 h-4"/> {event.memoryText ? 'ویرایش خاطره' : 'افزودن خاطره'}</button>
+                                        <div className="mt-4 flex flex-wrap gap-2">
+                                            {(() => {
+                                                const deed = orders.flatMap(o => o.deeds || []).find(d => d.id === event.deedId);
+                                                if (deed) {
+                                                    return (
+                                                        <>
+                                                            <button onClick={() => onOpenDeedModal(deed)} className="text-xs bg-blue-800 hover:bg-blue-700 py-1 px-3 rounded-md flex items-center gap-1"><PhotoIcon className="w-4 h-4" /> مشاهده سند</button>
+                                                            <button onClick={() => handleEditMemory(event.deedId!)} className="text-xs bg-yellow-800 hover:bg-yellow-700 py-1 px-3 rounded-md flex items-center gap-1"><PencilSquareIcon className="w-4 h-4" /> {event.memoryText ? 'ویرایش خاطره' : 'افزودن خاطره'}</button>
+                                                        </>
+                                                    );
+                                                }
+                                                // Deed not found in orders - show fallback
+                                                return (
+                                                    <button onClick={() => handleEditMemory(event.deedId!)} className="text-xs bg-yellow-800 hover:bg-yellow-700 py-1 px-3 rounded-md flex items-center gap-1"><PencilSquareIcon className="w-4 h-4" /> {event.memoryText ? 'ویرایش خاطره' : 'افزودن خاطره'}</button>
+                                                );
+                                            })()}
                                         </div>
                                     </>
                                 )
