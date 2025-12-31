@@ -4,9 +4,46 @@ import Script from 'next/script';
 import './globals.css';
 import ClientWrapper from '../components/ClientWrapper';
 
-export const metadata = {
-    title: 'نخلستان معنا | Nakhlestan Ma\'na',
-    description: 'پلتفرم جامع معنا، کسب‌و‌کار و زندگی، مسئولیت اجتماعی و کاشت نخل',
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+    title: {
+        default: "نخلستان معنا | Nakhlestan Ma'na",
+        template: "%s | نخلستان معنا"
+    },
+    description: "پلتفرم جامع معنا، کسب‌و‌کار و زندگی. با کاشت نخل‌های مثمر، هم به محیط زیست کمک کنید و هم سندی ماندگار به نام خود یا عزیزانتان دریافت کنید.",
+    applicationName: "Nakhlestan Ma'na",
+    authors: [{ name: "Manapalm Team", url: "https://manapalm.com" }],
+    keywords: ["کاشت نخل", "مسئولیت اجتماعی", "خیریه هوشمند", "خیرات اموات", "هدیه سازمانی", "نخلستان معنا"],
+    metadataBase: new URL('https://manapalm.com'),
+    openGraph: {
+        title: "نخلستان معنا | جایی که زندگی ثمر می‌دهد",
+        description: "با کاشت هر نخل، داستانی تازه آغاز می‌شود. همین امروز نخل خود را بکارید.",
+        url: 'https://manapalm.com',
+        siteName: "نخلستان معنا",
+        locale: 'fa_IR',
+        type: 'website',
+        images: [
+            {
+                url: 'https://manapalm.com/og-image.jpg', // Should ideally be a real image
+                width: 1200,
+                height: 630,
+                alt: 'Nakhlestan Mana Preview',
+            },
+        ],
+    },
+    twitter: {
+        card: 'summary_large_image',
+        title: "نخلستان معنا",
+        description: "پلتفرمی برای پیوند معنا و زندگی.",
+        images: ['https://manapalm.com/og-image.jpg'],
+    },
+    icons: {
+        icon: '/icon-192.png',
+        shortcut: '/icon-192.png',
+        apple: '/icon-192.png',
+    },
+    manifest: '/manifest.json',
 };
 
 export default function RootLayout({
@@ -62,6 +99,23 @@ export default function RootLayout({
                     .animate-fade-in-scale { animation: fade-in-scale 0.3s ease-out forwards; }
                     .animate-fade-in-down { animation: fade-in-down 0.3s ease-out forwards; }
                 ` }} />
+                <script
+                    type="application/ld+json"
+                    dangerouslySetInnerHTML={{
+                        __html: JSON.stringify({
+                            "@context": "https://schema.org",
+                            "@type": "Organization",
+                            "name": "نخلستان معنا",
+                            "alternateName": "Nakhlestan Mana",
+                            "url": "https://manapalm.com",
+                            "logo": "https://manapalm.com/icon-512.png",
+                            "sameAs": [
+                                "https://www.instagram.com/manapalm",
+                                "https://twitter.com/manapalm"
+                            ]
+                        }),
+                    }}
+                />
             </head>
             <body>
                 <Providers>

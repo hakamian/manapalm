@@ -21,6 +21,13 @@
 -   **Task:** Deploy to Vercel/Netlify.
 -   **Task:** Verify `SMS_IR_API_KEY` environment variable in the cloud dashboard.
 
+### 4. Search Engine Optimization (SEO)
+> **Goal:** Increase visibility on Google for "کاشت نخل", "خیرات اموات", etc.
+-   ✅ **Technical Foundation:** `sitemap.ts`, `robots.ts`, `manifest.ts` created.
+-   ✅ **Metadata:** Upgrade `layout.tsx` with OpenGraph/Twitter tags.
+-   ✅ **Programmatic SEO:** Create `/story/[id]` dynamic route for server-side rendering of Deeds.
+-   ✅ **Structured Data:** Inject JSON-LD Schema (Organization) globally.
+
 ## Suggested Next Command
 When you are ready to resume:
 `"I have the payment credentials. Let's finish the checkout flow."`
