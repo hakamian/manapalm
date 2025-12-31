@@ -11,6 +11,7 @@ import { useAppDispatch } from '../../AppContext';
 interface EditProfileTabProps {
     user: User;
     onUpdate: (updatedUser: Partial<User>) => void;
+    initialSection?: 'basic' | 'detailed' | 'security';
 }
 
 const fileToBase64 = (file: File): Promise<string> =>
@@ -21,11 +22,11 @@ const fileToBase64 = (file: File): Promise<string> =>
         reader.onerror = error => reject(error);
     });
 
-const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate }) => {
+const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initialSection = 'basic' }) => {
     const dispatch = useAppDispatch();
     const nameParts = user.fullName?.split(' ') || ['', ''];
 
-    const [activeSection, setActiveSection] = useState<'basic' | 'detailed' | 'security'>('basic');
+    const [activeSection, setActiveSection] = useState<'basic' | 'detailed' | 'security'>(initialSection);
 
     const [firstName, setFirstName] = useState(user.firstName || nameParts[0] || '');
     const [lastName, setLastName] = useState(user.lastName || nameParts.slice(1).join(' ') || '');
@@ -536,8 +537,8 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate }) => {
                                 onClick={handlePasswordUpdate}
                                 disabled={isSaving || !newPassword || !confirmPassword}
                                 className={`w-full py-3 rounded-xl font-bold transition-all mt-4 ${!newPassword || !confirmPassword
-                                        ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
-                                        : 'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20'
+                                    ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                    : 'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20'
                                     }`}
                             >
                                 {isSaving ? 'در حال ثبت...' : 'ثبت رمز عبور جدید'}

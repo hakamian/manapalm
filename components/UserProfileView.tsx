@@ -78,7 +78,11 @@ const UserProfileView: React.FC = () => {
 
     useEffect(() => {
         if (profileInitialTab) {
-            setActiveTab(profileInitialTab);
+            if (profileInitialTab === 'detailed' || profileInitialTab === 'security') {
+                setActiveTab('profile');
+            } else {
+                setActiveTab(profileInitialTab);
+            }
         }
     }, [profileInitialTab]);
 
@@ -183,7 +187,8 @@ const UserProfileView: React.FC = () => {
             case 'value-report':
                 return <ValueDashboardTab user={user} orders={orders} />;
             case 'profile':
-                return <EditProfileTab user={user} onUpdate={onUpdate} />;
+                const initialSection = (profileInitialTab === 'detailed' || profileInitialTab === 'security') ? profileInitialTab : undefined;
+                return <EditProfileTab user={user} onUpdate={onUpdate} initialSection={initialSection} />;
             case 'orders':
                 return <OrdersTab orders={orders} onNavigate={onNavigate} onOpenDeedModal={openDeedModal} />;
             case 'timeline':
