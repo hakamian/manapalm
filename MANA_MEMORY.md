@@ -1,6 +1,6 @@
 # 🧠 MANA Memory - حافظه بلند مدت پروژه نخلستان معنا
 
-> **آخرین به‌روزرسانی:** 2025-12-25 | Unified Meaning OS V6.0 (Reality-Anchored Core)
+> **آخرین به‌روزرسانی:** 2025-12-31 | Unified Meaning OS V6.1 (Bug Fixes & UX Enhancements)
 > **وضعیت سیستم:** Anti-Gravity Environment | Active | Reality-Check Mode
 
 ---
@@ -146,6 +146,21 @@ graph TD
 - **AI & Shop Solutions:** فایل‌های پراکنده (`AI_COMPLETE_SOLUTION.md`, `SHOP_MANAGEMENT_SOLUTION.md`) در حافظه مرکزی تجمیع شدند.
 
 ### 🚀 اقدامات اخیر (Live & Active)
+
+#### 25. Navigation & UX Bug Fixes (2025-12-31) ✅
+- **تاریخ:** ۱۱ دی ۱۴۰۳
+- **مشکلات رفع شده:**
+  1. **Navigation Double-Click Bug:** اصلاح `useRouteSync.ts` - تغییر `pushState` به `replaceState` و اضافه کردن `lastSyncedView` ref برای جلوگیری از loop.
+  2. **Cart Address Redirection:** حذف duplicate reducer case برای `SET_PROFILE_TAB_AND_NAVIGATE` و رفع race condition در `ShoppingCart.tsx`.
+  3. **Timeline Deed Display:** اصلاح نمایش دکمه‌های "مشاهده سند" و "افزودن خاطره" در `TimelineTab.tsx` با null-safe deed lookup.
+- **بهبودهای UX:**
+  - ✅ **Address در اطلاعات پایه:** فیلدهای آدرس (آدرس، پلاک، طبقه) به تب "اطلاعات پایه" پروفایل اضافه شد.
+  - ✅ **Checkout Validation:** اعتبارسنجی آدرس کامل (حداقل ۱۰ کاراکتر) + پلاک اجباری قبل از خرید.
+  - ✅ **Palm Planting Notice:** پیام اطلاع‌رسانی "کاشت ظرف ۷ روز کاری + ارسال عکس" بعد از خرید نخل.
+- **تغییرات دیگر:**
+  - ✅ **غیرفعال‌سازی موقت:** دکمه‌های "صدای نخل" و "آینده نخل" در `DeedDisplay.tsx` کامنت شدند.
+  - ✅ **SEO:** کلمات کلیدی "نخل معنا" و "معنا" به متادیتای سایت اضافه شد.
+- **نتیجه:** تجربه کاربری navigation و checkout به طور قابل توجهی بهبود یافت.
 
 #### 21. Product Persistence & Professional Visuals ✅
 - **تاریخ:** 2025-12-27 (۷ دی ۱۴۰۳)
@@ -549,6 +564,14 @@ graph TD
 
 | تاریخ | تغییر | توسط |
 |-------|-------|------|
+| 2025-12-31 19:30 | **UX**: Palm planting 7-day notice added to OrderSuccessModal. | Mana (Unified OS) |
+| 2025-12-31 18:50 | **Checkout**: Address (10+ chars) + Plaque validation added to ShoppingCart. | Mana (Unified OS) |
+| 2025-12-31 17:35 | **UI**: Disabled "Voice of Palm" & "Future Vision" buttons temporarily. | Mana (Unified OS) |
+| 2025-12-31 17:09 | **Bug Fix**: Timeline deed display - null-safe lookup for deed buttons. | Mana (Unified OS) |
+| 2025-12-31 16:51 | **UX**: Address fields moved to basic profile info section. | Mana (Unified OS) |
+| 2025-12-31 16:39 | **SEO**: Added "نخل معنا" keywords to global metadata. | Mana (Unified OS) |
+| 2025-12-31 13:10 | **Navigation Fix**: useRouteSync - replaceState + lastSyncedView ref to prevent loops. | Mana (Unified OS) |
+| 2025-12-31 12:50 | **Bug Fix**: Removed duplicate SET_PROFILE_TAB_AND_NAVIGATE reducer case. | Mana (Unified OS) |
 | 2025-12-30 09:44 | **Payment Gateway**: Created formal Test User (0900...) for bank reviewer access via `scripts/create_test_user.js`. | Mana (Unified OS) |
 | 2025-12-29 19:40 | **Infra**: Setup Supabase CLI & Vercel CLI, Generated Types, Synced Env Vars. | Mana (Unified OS) |
 | 2025-12-29 19:20 | **Shop & Navigation**: Restricted Shop to 'Heritage' & 'Physical'. Header/Footer 'Academy' & 'Consulting' made Coach-only (via `isCoach` flag). | Mana (Unified OS) |
