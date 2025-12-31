@@ -240,6 +240,7 @@ const DeedDisplay = React.forwardRef<HTMLDivElement, DeedDisplayProps>(({ deed }
                                             <p className="font-mono text-[10px] text-stone-400 dark:text-stone-500 mt-2">ID: {deed.id}</p>
                                         </div>
                                         <div className="flex flex-col items-end gap-2">
+                                            {/* TEMPORARILY DISABLED: Voice of Palm and Future Vision buttons
                                             <div className="flex gap-2" data-html2canvas-ignore="true">
                                                 <button onClick={handleVoiceOfPalm} className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded hover:bg-green-200 dark:hover:bg-green-800/50 flex items-center gap-1 transition-colors" title="پیام نخل">
                                                     <MicrophoneIcon className="w-3 h-3" />
@@ -250,6 +251,7 @@ const DeedDisplay = React.forwardRef<HTMLDivElement, DeedDisplayProps>(({ deed }
                                                     آینده نخل
                                                 </button>
                                             </div>
+                                            */}
                                             <ModernSealIcon />
                                         </div>
                                     </footer>
