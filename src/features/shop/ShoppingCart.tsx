@@ -53,8 +53,13 @@ const ShoppingCart: React.FC = () => {
       return;
     }
 
-    if (!user.address || user.address.length < 5) {
-      setError('لطفاً جهت ارسال سفارش، آدرس خود را در پروفایل تکمیل کنید.');
+    if (!user.address || user.address.length < 10) {
+      setError('لطفاً جهت ارسال سفارش، آدرس کامل خود را در پروفایل وارد کنید.');
+      return;
+    }
+
+    if (!user.plaque || user.plaque.trim().length === 0) {
+      setError('لطفاً پلاک را در قسمت آدرس پروفایل وارد کنید.');
       return;
     }
 
