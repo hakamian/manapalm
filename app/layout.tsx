@@ -8,34 +8,47 @@ import { Metadata } from 'next';
 
 export const metadata: Metadata = {
     title: {
-        default: "نخلستان معنا | Nakhlestan Ma'na",
+        default: "نخلستان معنا | پلتفرم کاشت نخل و درختکاری هوشمند",
         template: "%s | نخلستان معنا"
     },
-    description: "پلتفرم جامع معنا، کسب‌و‌کار و زندگی. با کاشت نخل‌های مثمر، هم به محیط زیست کمک کنید و هم سندی ماندگار به نام خود یا عزیزانتان دریافت کنید.",
+    description: "نخلستان معنا؛ سامانه جامع کاشت نخل، درختکاری و احیای محیط زیست. با خرید و کاشت نخل خرما، هم به طبیعت کمک کنید و هم سرمایه معنوی و ماندگاری برای خود و عزیزانتان بسازید.",
     applicationName: "Nakhlestan Ma'na",
     authors: [{ name: "Manapalm Team", url: "https://manapalm.com" }],
-    keywords: ["کاشت نخل", "مسئولیت اجتماعی", "خیریه هوشمند", "خیرات اموات", "هدیه سازمانی", "نخلستان معنا"],
+    keywords: [
+        "نخلستان معنا",
+        "کاشت نخل",
+        "درختکاری",
+        "کاشت درخت",
+        "نخل خرما",
+        "خرید نخل",
+        "احیای محیط زیست",
+        "خیریه هوشمند",
+        "خیرات اموات",
+        "هدیه سازمانی",
+        "مسئولیت اجتماعی",
+        "سرمایه گذاری سبز"
+    ],
     metadataBase: new URL('https://manapalm.com'),
     openGraph: {
-        title: "نخلستان معنا | جایی که زندگی ثمر می‌دهد",
-        description: "با کاشت هر نخل، داستانی تازه آغاز می‌شود. همین امروز نخل خود را بکارید.",
+        title: "نخلستان معنا | کاشت نخل و درختکاری برای آینده",
+        description: "با کاشت هر نخل، زندگی و معنا را به زمین هدیه دهید. همین امروز در نخلستان معنا درخت بکارید.",
         url: 'https://manapalm.com',
         siteName: "نخلستان معنا",
         locale: 'fa_IR',
         type: 'website',
         images: [
             {
-                url: 'https://manapalm.com/og-image.jpg', // Should ideally be a real image
+                url: 'https://manapalm.com/og-image.jpg',
                 width: 1200,
                 height: 630,
-                alt: 'Nakhlestan Mana Preview',
+                alt: 'Nakhlestan Mana - Tree Planting Platform',
             },
         ],
     },
     twitter: {
         card: 'summary_large_image',
-        title: "نخلستان معنا",
-        description: "پلتفرمی برای پیوند معنا و زندگی.",
+        title: "نخلستان معنا | درختکاری و احیای نخلستان‌ها",
+        description: "پلتفرمی برای پیوند معنا، زندگی و طبیعت. نخل خود را بکارید.",
         images: ['https://manapalm.com/og-image.jpg'],
     },
     icons: {

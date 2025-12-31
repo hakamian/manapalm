@@ -285,7 +285,6 @@ const ShoppingCart: React.FC = () => {
                             {error.includes('آدرس') && (
                               <button
                                 onClick={() => {
-                                  handleClose();
                                   dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'detailed' });
                                 }}
                                 className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-2 px-4 rounded-md self-end transition-colors flex items-center gap-2 shadow-lg"

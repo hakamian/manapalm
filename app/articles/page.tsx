@@ -2,8 +2,8 @@ import React from 'react';
 import ArticlesView from '../../components/ArticlesView';
 
 export const metadata = {
-    title: 'مقالات و دانش نخلستان معنا | مرجع تخصصی کشاورزی و معنا',
-    description: 'مجموعه مقالات تخصصی نخلستان معنا در زمینه‌های کشاورزی پایدار، هوش مصنوعی، سبک زندگی و داستان‌های موفقیت جامعه.',
+    title: 'مقالات درختکاری و دانش نخل | مجله نخلستان معنا',
+    description: 'مرجع تخصصی مقالات کاشت نخل، درختکاری، کشاورزی پایدار و سبک زندگی معنادار. با تازه ترین مطالب نخلستان معنا همراه باشید.',
 };
 
 export default function ArticlesPage() {

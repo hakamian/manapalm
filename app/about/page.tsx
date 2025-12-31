@@ -2,8 +2,8 @@ import React from 'react';
 import AboutView from '../../components/AboutView';
 
 export const metadata = {
-    title: 'درباره نخلستان معنا | ریشه‌ها و رسالت ما',
-    description: 'با داستان نخلستان معنا، تیم ما و رسالت ما در ایجاد اشتغال پایدار و احیای محیط زیست آشنا شوید.',
+    title: 'درباره نخلستان معنا | داستان درختکاری و احیای نخل‌ها',
+    description: 'آشنایی با تیم نخلستان معنا و ماموریت ما برای احیای محیط زیست از طریق کاشت نخل. با ما در مسیر سبز درختکاری و توسعه پایدار همراه شوید.',
 };
 
 export default function AboutPage() {
