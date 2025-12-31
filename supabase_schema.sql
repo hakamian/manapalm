@@ -297,4 +297,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
-  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();- -   M i g r a t i o n :   A d d   a d d r e s s   d e t a i l s  
+ A L T E R   T A B L E   p u b l i c . p r o f i l e s   A D D   C O L U M N   I F   N O T   E X I S T S   p l a q u e   T E X T ;  
+ A L T E R   T A B L E   p u b l i c . p r o f i l e s   A D D   C O L U M N   I F   N O T   E X I S T S   f l o o r   T E X T ;  
+ 

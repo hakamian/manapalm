@@ -65,6 +65,8 @@ export interface User {
     englishAcademyTrialSecondsUsed?: number;
     meaningCompassTrialSecondsUsed?: number;
     address?: string;
+    plaque?: string;
+    floor?: string;
     maritalStatus?: 'مجرد' | 'متاهل';
     childrenCount?: number;
     birthYear?: number;

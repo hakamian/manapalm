@@ -1,7 +1,8 @@
 
 import React, { useState, useRef, useMemo } from 'react';
 import { User, PointLog } from '../../types';
-import { UserCircleIcon, CameraIcon, SparklesIcon, MapPinIcon } from '../icons';
+import { UserCircleIcon, CameraIcon, SparklesIcon, MapPinIcon, LockClosedIcon } from '../icons';
+import { supabase } from '../../services/supabaseClient';
 import ToggleSwitch from '../ToggleSwitch';
 import { getAIAssistedText } from '../../services/geminiService';
 import { getLevelForPoints } from '../../services/gamificationService';
@@ -24,7 +25,7 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate }) => {
     const dispatch = useAppDispatch();
     const nameParts = user.fullName?.split(' ') || ['', ''];
 
-    const [activeSection, setActiveSection] = useState<'basic' | 'detailed'>('basic');
+    const [activeSection, setActiveSection] = useState<'basic' | 'detailed' | 'security'>('basic');
 
     const [firstName, setFirstName] = useState(user.firstName || nameParts[0] || '');
     const [lastName, setLastName] = useState(user.lastName || nameParts.slice(1).join(' ') || '');
@@ -35,6 +36,8 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate }) => {
     const [childrenCount, setChildrenCount] = useState(user.childrenCount ?? '');
     const [birthYear, setBirthYear] = useState(user.birthYear ?? '');
     const [address, setAddress] = useState(user.address || '');
+    const [plaque, setPlaque] = useState(user.plaque || '');
+    const [floor, setFloor] = useState(user.floor || '');
     const [nationalId, setNationalId] = useState(user.nationalId || '');
     const [fatherName, setFatherName] = useState(user.fatherName || '');
     const [motherName, setMotherName] = useState(user.motherName || '');
@@ -43,10 +46,44 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate }) => {
     const [groveDescription, setGroveDescription] = useState(user.groveDescription || '');
     const [isCoach, setIsCoach] = useState(user.isCoach || false);
 
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+
     const [isSaving, setIsSaving] = useState(false);
     const [isBioAIAssistLoading, setIsBioAIAssistLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [error, setError] = useState('');
+
+    const handlePasswordUpdate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setError('');
+        setSuccessMessage('');
+        setIsSaving(true);
+
+        if (newPassword !== confirmPassword) {
+            setError('رمز عبور و تکرار آن مطابقت ندارند.');
+            setIsSaving(false);
+            return;
+        }
+
+        if (newPassword.length < 6) {
+            setError('رمز عبور باید حداقل ۶ کاراکتر باشد.');
+            setIsSaving(false);
+            return;
+        }
+
+        try {
+            const { error } = await supabase!.auth.updateUser({ password: newPassword });
+            if (error) throw error;
+            setSuccessMessage('رمز عبور با موفقیت بروزرسانی شد.');
+            setNewPassword('');
+            setConfirmPassword('');
+        } catch (err: any) {
+            setError(err.message || 'خطا در بروزرسانی رمز عبور');
+        } finally {
+            setIsSaving(false);
+        }
+    };
 
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -55,11 +92,11 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate }) => {
         const fields = [
             firstName, lastName, email, description, avatar, // Basic (5)
             maritalStatus, childrenCount, birthYear, // Personal (3)
-            nationalId, fatherName, motherName, occupation, address // Identity & Address (5)
+            nationalId, fatherName, motherName, occupation, address, plaque, floor // Identity & Address (7)
         ];
         const filled = fields.filter(f => f !== '' && f !== undefined && f !== null).length;
         return Math.round((filled / fields.length) * 100);
-    }, [firstName, lastName, email, description, avatar, maritalStatus, childrenCount, birthYear, nationalId, fatherName, motherName, occupation, address]);
+    }, [firstName, lastName, email, description, avatar, maritalStatus, childrenCount, birthYear, nationalId, fatherName, motherName, occupation, address, plaque, floor]);
 
     const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -142,6 +179,8 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate }) => {
             childrenCount: childrenCount !== '' ? Number(childrenCount) : undefined,
             birthYear: birthYear !== '' ? Number(birthYear) : undefined,
             address,
+            plaque: plaque || '',
+            floor: floor || '',
             nationalId,
             fatherName,
             motherName,
@@ -216,6 +255,15 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate }) => {
                             }`}
                     >
                         اطلاعات تکمیلی
+                    </button>
+                    <button
+                        onClick={() => setActiveSection('security')}
+                        className={`flex-1 sm:flex-none px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${activeSection === 'security'
+                            ? 'bg-gray-700 text-white shadow-lg'
+                            : 'text-gray-400 hover:text-gray-200'
+                            }`}
+                    >
+                        امنیت و رمز عبور
                     </button>
                 </div>
             </div>
@@ -402,13 +450,98 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate }) => {
 
                             <div className="pt-6 border-t border-gray-700">
                                 <div className="flex justify-between items-center mb-4">
-                                    <label className="font-semibold text-gray-300">آدرس پستی</label>
+                                    <label className="font-semibold text-gray-300">جزئیات آدرس</label>
                                     <button type="button" onClick={() => alert('انتخاب از روی نقشه به زودی...')} className="text-xs flex items-center gap-1 text-green-400 hover:text-green-300">
                                         <MapPinIcon className="w-4 h-4" /> انتخاب از نقشه
                                     </button>
                                 </div>
-                                <textarea value={address} onChange={e => setAddress(e.target.value)} rows={2} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
+
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm text-gray-400">آدرس پستی</label>
+                                        <textarea
+                                            value={address}
+                                            onChange={e => setAddress(e.target.value)}
+                                            rows={2}
+                                            className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none text-right"
+                                            placeholder="استان، شهر، خیابان، کوچه..."
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-sm text-gray-400">پلاک</label>
+                                            <input
+                                                type="text"
+                                                value={plaque}
+                                                onChange={e => setPlaque(e.target.value)}
+                                                className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none text-center"
+                                                placeholder="مثلا: ۱۰"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-sm text-gray-400">طبقه / واحد</label>
+                                            <input
+                                                type="text"
+                                                value={floor}
+                                                onChange={e => setFloor(e.target.value)}
+                                                className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none text-center"
+                                                placeholder="مثلا: ۲"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {activeSection === 'security' && (
+                    <div className="glass-card p-6 rounded-2xl space-y-6">
+                        <div className="flex items-center gap-3 mb-6 border-b border-gray-700 pb-4">
+                            <div className="w-10 h-10 rounded-full bg-amber-900/30 flex items-center justify-center text-amber-500">
+                                <LockClosedIcon className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-white">تنظیم رمز عبور</h3>
+                                <p className="text-sm text-gray-400">برای ورود بدون پیامک، رمز عبور تنظیم کنید.</p>
+                            </div>
+                        </div>
+
+                        <div className="max-w-md mx-auto space-y-4">
+                            <div className="space-y-2">
+                                <label className="text-sm text-gray-300 font-medium">رمز عبور جدید</label>
+                                <input
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={e => setNewPassword(e.target.value)}
+                                    className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-amber-500 outline-none text-left dir-ltr"
+                                    placeholder="••••••"
+                                    autoComplete="new-password"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm text-gray-300 font-medium">تکرار رمز عبور</label>
+                                <input
+                                    type="password"
+                                    value={confirmPassword}
+                                    onChange={e => setConfirmPassword(e.target.value)}
+                                    className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-amber-500 outline-none text-left dir-ltr"
+                                    placeholder="••••••"
+                                    autoComplete="new-password"
+                                />
+                            </div>
+
+                            <button
+                                onClick={handlePasswordUpdate}
+                                disabled={isSaving || !newPassword || !confirmPassword}
+                                className={`w-full py-3 rounded-xl font-bold transition-all mt-4 ${!newPassword || !confirmPassword
+                                        ? 'bg-gray-700 text-gray-500 cursor-not-allowed'
+                                        : 'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20'
+                                    }`}
+                            >
+                                {isSaving ? 'در حال ثبت...' : 'ثبت رمز عبور جدید'}
+                            </button>
                         </div>
                     </div>
                 )}

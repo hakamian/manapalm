@@ -23,6 +23,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
     const [phoneNumber, setPhoneNumber] = useState('');
     const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(true);
     const [isValid, setIsValid] = useState(true);
     const [otp, setOtp] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -371,8 +372,17 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onLoginSuccess }
                     >
                         {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
                     </button>
-                    <div className="text-right mt-2">
-                        <button type="button" onClick={() => setLoginMethod('otp')} className="text-xs text-amber-500 hover:underline">رمز عبور را فراموش کرده‌اید؟ (ورود با پیامک)</button>
+                    <div className="flex items-center justify-between mt-3 px-1">
+                        <label className="flex items-center gap-2 cursor-pointer text-sm text-gray-400 hover:text-gray-300 select-none transition-colors">
+                            <input
+                                type="checkbox"
+                                checked={rememberMe}
+                                onChange={(e) => setRememberMe(e.target.checked)}
+                                className="w-4 h-4 rounded border-gray-600 bg-gray-800 text-amber-500 focus:ring-amber-500/50"
+                            />
+                            مرا به خاطر بسپار
+                        </label>
+                        <button type="button" onClick={() => setLoginMethod('otp')} className="text-xs text-amber-500 hover:underline">رمز فراموش شده؟</button>
                     </div>
                 </div>
             )}
