@@ -1,38 +1,39 @@
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useAppState, useAppDispatch } from '../AppContext';
 import { View } from '../types';
 
 export const useRouteSync = () => {
     const { currentView } = useAppState();
     const dispatch = useAppDispatch();
+    const isInitialMount = useRef(true);
 
-    // 1. Sync URL -> App State (On Load & PopState)
+    // 1. Sync URL -> App State (ONLY on initial load & PopState, not on every re-render)
     useEffect(() => {
         const handleLocationChange = () => {
-            // In blob environments or if search is empty, this might be safe or empty
             const search = window.location.search;
             if (!search) return;
 
             const params = new URLSearchParams(search);
             const viewParam = params.get('view');
-            
-            // Map string param to View enum
+
             if (viewParam && Object.values(View).includes(viewParam as View)) {
-                // Only dispatch if different to prevent loops
                 if (viewParam !== currentView) {
                     dispatch({ type: 'SET_VIEW', payload: viewParam as View });
                 }
             }
         };
 
-        // Handle initial load
-        handleLocationChange();
+        // Only sync from URL on FIRST mount, not on subsequent re-renders
+        if (isInitialMount.current) {
+            handleLocationChange();
+            isInitialMount.current = false;
+        }
 
-        // Handle Back/Forward buttons
+        // Handle Back/Forward buttons (popstate should always work)
         window.addEventListener('popstate', handleLocationChange);
         return () => window.removeEventListener('popstate', handleLocationChange);
-    }, [dispatch]); // Removed currentView dependency to avoid overwrite on back
+    }, [dispatch, currentView]);
 
     // 2. Sync App State -> URL
     useEffect(() => {
@@ -44,7 +45,7 @@ export const useRouteSync = () => {
 
         if (currentUrlView !== currentView) {
             params.set('view', currentView);
-            
+
             // Preserve other params like 'intent' or 'id' if we are just switching views
             // But clear 'product_id' if we leave the shop, etc.
             if (currentView !== View.Shop) {
@@ -52,7 +53,7 @@ export const useRouteSync = () => {
             }
 
             const newUrl = `${window.location.pathname}?${params.toString()}`;
-            
+
             try {
                 window.history.pushState({ path: newUrl }, '', newUrl);
                 // Update Page Title for History
