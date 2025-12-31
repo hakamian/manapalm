@@ -357,6 +357,58 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
                                 placeholder="من ..."
                             />
                         </div>
+
+                        {/* Address Section - Added to Basic Info */}
+                        <div className="glass-card p-6 sm:p-8 rounded-2xl">
+                            <div className="flex justify-between items-center mb-4">
+                                <div>
+                                    <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                                        <MapPinIcon className="w-5 h-5 text-green-400" />
+                                        آدرس ارسال سفارش
+                                    </h3>
+                                    <p className="text-sm text-gray-400">برای ارسال سفارشات فروشگاه نیاز به آدرس دقیق دارید</p>
+                                </div>
+                                <button type="button" onClick={() => alert('انتخاب از روی نقشه به زودی...')} className="text-xs flex items-center gap-1 text-green-400 hover:text-green-300">
+                                    <MapPinIcon className="w-4 h-4" /> انتخاب از نقشه
+                                </button>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-sm text-gray-400">آدرس پستی کامل</label>
+                                    <textarea
+                                        value={address}
+                                        onChange={e => setAddress(e.target.value)}
+                                        rows={2}
+                                        className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none text-right"
+                                        placeholder="استان، شهر، خیابان، کوچه..."
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm text-gray-400">پلاک</label>
+                                        <input
+                                            type="text"
+                                            value={plaque}
+                                            onChange={e => setPlaque(e.target.value)}
+                                            className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none text-center"
+                                            placeholder="مثلا: ۱۰"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm text-gray-400">طبقه / واحد</label>
+                                        <input
+                                            type="text"
+                                            value={floor}
+                                            onChange={e => setFloor(e.target.value)}
+                                            className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none text-center"
+                                            placeholder="مثلا: ۲"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
 
