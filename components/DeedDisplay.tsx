@@ -2,7 +2,7 @@
 import React from 'react';
 import { Deed } from '../types';
 import { useAppDispatch, useAppState } from '../AppContext';
-import { ClockForwardIcon, MicrophoneIcon, MapPinIcon, GlobeIcon, PhotoIcon } from './icons';
+import { ClockForwardIcon, MicrophoneIcon, MapPinIcon, GlobeIcon, PhotoIcon, ArrowDownTrayIcon, ShareIcon, TelegramIcon, WhatsAppIcon } from './icons';
 
 const SubtlePalmWatermark = () => (
     <svg viewBox="0 0 100 150" className="absolute inset-0 w-full h-full object-contain z-0 opacity-[0.03] text-stone-900 dark:text-white" aria-hidden="true" style={{ transform: 'scale(1.5)' }}>
