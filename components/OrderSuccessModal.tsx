@@ -223,6 +223,25 @@ const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({ isOpen, onClose, 
             </div>
           )}
 
+          {/* Palm Planting Timeline Notice */}
+          {deeds.length > 0 && (
+            <div className="bg-green-900/30 border border-green-600/40 rounded-lg p-4 mb-6 text-right">
+              <div className="flex items-start gap-3">
+                <div className="bg-green-600/20 p-2 rounded-full">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-green-300 font-semibold text-sm mb-1">زمان کاشت نخل شما</p>
+                  <p className="text-gray-300 text-xs leading-relaxed">
+                    نخل شما ظرف <span className="text-green-400 font-bold">۷ روز کاری</span> کاشته می‌شود و پس از کاشت، عکس نخل برای شما ارسال خواهد شد.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Special Section for Web Project */}
           {hasWebProject && (
             <div className="bg-gradient-to-r from-stone-800 to-stone-900 rounded-lg p-5 border border-amber-500/30 mb-6 text-center">
