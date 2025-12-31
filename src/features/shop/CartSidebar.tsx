@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { View, Order } from '../../../types';
 import { useAppState, useAppDispatch } from '../../../AppContext';
-import { XMarkIcon, ShoppingCartIcon, SproutIcon, TrophyIcon, SparklesIcon, MinusIcon, PlusIcon, GiftIcon, CheckCircleIcon, HeartIcon, ArrowDownTrayIcon } from '../../../components/icons';
+import { XMarkIcon, ShoppingCartIcon, SproutIcon, TrophyIcon, SparklesIcon, MinusIcon, PlusIcon, GiftIcon, CheckCircleIcon, HeartIcon, ArrowDownTrayIcon, MapPinIcon } from '../../../components/icons';
 
 const CartSidebar: React.FC = () => {
   const { isCartOpen, cartItems, user, products } = useAppState();
@@ -334,12 +334,22 @@ const CartSidebar: React.FC = () => {
                         {error}
                       </div>
                     )}
-                    <button
-                      onClick={handleCheckout}
-                      className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-md transition-colors flex items-center justify-center"
-                    >
-                      تکمیل خرید و پرداخت
-                    </button>
+                    {(!user.address || !user.plaque) ? (
+                      <button
+                        onClick={() => dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'detailed' })}
+                        className="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 rounded-md transition-colors flex items-center justify-center gap-2"
+                      >
+                        <MapPinIcon className="w-5 h-5" />
+                        ثبت آدرس و تکمیل پروفایل
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleCheckout}
+                        className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-md transition-colors flex items-center justify-center"
+                      >
+                        تکمیل خرید و پرداخت
+                      </button>
+                    )}
                   </>
                 ) : (
                   <div className="text-center bg-gray-700 p-3 rounded-md">

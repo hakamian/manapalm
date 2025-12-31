@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { View, Order } from '../types';
 import { useAppState, useAppDispatch } from '../AppContext';
-import { TruckIcon, CreditCardIcon, ShieldCheckIcon, LockClosedIcon } from './icons';
+import { TruckIcon, CreditCardIcon, ShieldCheckIcon, LockClosedIcon, PencilSquareIcon } from './icons';
 import { requestPayment } from '../services/payment';
 import { dbAdapter } from '../services/dbAdapter';
 
@@ -11,7 +11,7 @@ const CheckoutView: React.FC = () => {
     const [step, setStep] = useState(1);
     const [shippingInfo, setShippingInfo] = useState({
         fullName: user?.fullName || '',
-        address: user?.address || '',
+        address: user ? `${user.address || ''}${user.plaque ? '، پلاک ' + user.plaque : ''}${user.floor ? '، طبقه/واحد ' + user.floor : ''}` : '',
         phone: user?.phone || '',
     });
     const [paymentProvider, setPaymentProvider] = useState('zarinpal');
@@ -105,7 +105,19 @@ const CheckoutView: React.FC = () => {
                                 <div className="space-y-4">
                                     <div><label className="block text-sm text-gray-400 mb-1">نام کامل گیرنده</label><input type="text" name="fullName" value={shippingInfo.fullName} onChange={handleInputChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white" /></div>
                                     <div><label className="block text-sm text-gray-400 mb-1">شماره تماس</label><input type="tel" name="phone" value={shippingInfo.phone} onChange={handleInputChange} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white" /></div>
-                                    <div><label className="block text-sm text-gray-400 mb-1">آدرس پستی دقیق</label><textarea name="address" value={shippingInfo.address} onChange={handleInputChange} rows={3} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white" /></div>
+                                    <div>
+                                        <div className="flex justify-between items-center mb-1">
+                                            <label className="block text-sm text-gray-400">آدرس پستی دقیق</label>
+                                            <button
+                                                onClick={() => dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'detailed' })}
+                                                className="text-xs text-amber-500 hover:text-amber-400 flex items-center gap-1 transition-colors"
+                                            >
+                                                <PencilSquareIcon className="w-4 h-4" />
+                                                تکمیل/ویرایش از پروفایل
+                                            </button>
+                                        </div>
+                                        <textarea name="address" value={shippingInfo.address} onChange={handleInputChange} rows={3} className="w-full bg-gray-700 border border-gray-600 rounded-md p-3 text-white focus:border-amber-500 outline-none transition-colors" />
+                                    </div>
                                 </div>
                             </div>
                         )}

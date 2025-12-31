@@ -246,7 +246,7 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'MARK_ALL_NOTIFICATIONS_READ': return { ...state, notifications: state.notifications.map(n => ({ ...n, read: true, isRead: true })) };
         case 'CLOSE_DEED_MODALS': return { ...state, isOrderSuccessModalOpen: false, isPalmSelectionModalOpen: false, isDeedPersonalizationModalOpen: false };
         case 'SET_WELCOME_MODAL': return { ...state, isWelcomeModalOpen: action.payload };
-        case 'SET_PROFILE_TAB_AND_NAVIGATE': return { ...state, currentView: View.UserProfile, profileInitialTab: action.payload };
+        case 'SET_PROFILE_TAB_AND_NAVIGATE': return { ...state, currentView: View.UserProfile, profileInitialTab: action.payload, isCartOpen: false };
         case 'HIDE_POINTS_TOAST': return { ...state, pointsToast: null };
         case 'SHOW_POINTS_TOAST': return { ...state, pointsToast: action.payload };
         case 'SELECT_PALM_FOR_DEED': return { ...state, selectedPalmForPersonalization: action.payload, isPalmSelectionModalOpen: false, isDeedPersonalizationModalOpen: true };
