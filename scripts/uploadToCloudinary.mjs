@@ -5,12 +5,16 @@
 import { v2 as cloudinary } from 'cloudinary';
 import fs from 'fs';
 import path from 'path';
+import dotenv from 'dotenv';
+
+// Load secrets from .env.local
+dotenv.config({ path: '.env.local' });
 
 // Configure Cloudinary
 cloudinary.config({
-    cloud_name: 'dk2x11rvs',
-    api_key: '564926637515816',
-    api_secret: 'tU-uWx4BYS1kbZ_tBI_3hdLHKCY'
+    cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
 // List of images to upload
