@@ -108,6 +108,7 @@ const initialState: AppState = {
     isVoiceOfPalmModalOpen: false,
     isBottomNavVisible: true,
     pendingRedirectView: undefined,
+    searchQuery: '',
 
     lastOrderDeeds: [],
     lastOrderPointsEarned: 0,
@@ -354,9 +355,11 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'ADD_GENERATED_COURSE': { const newCourse = action.payload; return { ...state, generatedCourses: [...(state.generatedCourses || []), newCourse] }; }
         case 'SET_BOTTOM_NAV_VISIBLE': return { ...state, isBottomNavVisible: action.payload };
         case 'LOAD_INITIAL_DATA': return { ...state, ...action.payload };
+        case 'LOAD_ADMIN_DATA': return { ...state, allUsers: action.payload.users, users: action.payload.users, orders: action.payload.orders };
         case 'ADD_GAMIFICATION_ALERT': return { ...state, gamificationAlerts: [...state.gamificationAlerts, action.payload] };
         case 'DISMISS_GAMIFICATION_ALERT': return { ...state, gamificationAlerts: state.gamificationAlerts.slice(1) };
         case 'SET_PENDING_REDIRECT': return { ...state, pendingRedirectView: action.payload };
+        case 'SET_SEARCH_QUERY': return { ...state, searchQuery: action.payload };
 
         // --- NEW EXECUTIVE OS HANDLER ---
         case 'EXECUTE_SMART_ACTION': {
@@ -385,83 +388,92 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     useEffect(() => {
         const loadData = async () => {
-            const [users, orders, posts, products] = await Promise.all([
-                dbAdapter.getAllUsers(),
-                dbAdapter.getAllOrders(),
+            const currentUserId = dbAdapter.getCurrentUserId();
+
+            // Only fetch what is needed for initial render
+            const [posts, products] = await Promise.all([
                 dbAdapter.getAllPosts(),
                 dbAdapter.getAllProducts()
             ]);
 
-            const currentUserId = dbAdapter.getCurrentUserId();
-            const currentUser = currentUserId ? await dbAdapter.getUserById(currentUserId) : null;
+            let currentUser = null;
+            let userOrders: Order[] = [];
+
+            if (currentUserId) {
+                currentUser = await dbAdapter.getUserById(currentUserId);
+                userOrders = await dbAdapter.getOrders(currentUserId);
+            }
 
             dispatch({
                 type: 'LOAD_INITIAL_DATA',
                 payload: {
-                    users,
-                    allUsers: users,
-                    orders,
+                    users: [], // Don't load all users initially
+                    allUsers: [], // Don't load all users initially
+                    orders: userOrders, // Only load MY orders
                     communityPosts: posts,
                     products: products.length > 0 ? products : INITIAL_PRODUCTS,
                     user: currentUser
                 }
             });
         };
+
         loadData();
-
-        // 🟢 AUTH LISTENER (Unified Meaning OS Fix)
-        // Keeps local state in sync with Supabase Auth (Google Login support)
-        if (supabase) {
-            const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-                console.log("🔐 Auth Event:", event);
-
-                if (event === 'SIGNED_IN' && session?.user) {
-                    const currentId = dbAdapter.getCurrentUserId();
-                    // Prevent redundant updates if already logged in matches
-                    if (currentId === session.user.id) return;
-
-                    console.log("✅ User Signed In, Syncing...");
-
-                    // 1. Try to get full profile from our DB
-                    let appUser = await dbAdapter.getUserById(session.user.id);
-
-                    // 2. If new user, map from Supabase and save
-                    if (!appUser) {
-                        console.log("🌱 New User/First Login - Creating Profile");
-                        appUser = {
-                            ...mapSupabaseUser(session.user),
-                            id: session.user.id // Ensure ID matches
-                        } as User;
-                        await dbAdapter.saveUser(appUser);
-                    }
-
-                    dbAdapter.setCurrentUserId(session.user.id);
-                    dispatch({
-                        type: 'LOGIN_SUCCESS',
-                        payload: {
-                            user: appUser!,
-                            orders: [],
-                            keepOpen: false
-                        }
-                    });
-                }
-                else if (event === 'SIGNED_OUT') {
-                    dbAdapter.setCurrentUserId(null);
-                    dispatch({ type: 'LOGOUT' });
-                }
-            });
-
-            return () => {
-                subscription.unsubscribe();
-            };
-        }
     }, []);
 
-    return (
-        <AppContext.Provider value={{ state, dispatch }}>
-            {children}
-        </AppContext.Provider>
-    );
+
+    // 🟢 AUTH LISTENER (Unified Meaning OS Fix)
+    // Keeps local state in sync with Supabase Auth (Google Login support)
+    if (supabase) {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log("🔐 Auth Event:", event);
+
+            if (event === 'SIGNED_IN' && session?.user) {
+                const currentId = dbAdapter.getCurrentUserId();
+                // Prevent redundant updates if already logged in matches
+                if (currentId === session.user.id) return;
+
+                console.log("✅ User Signed In, Syncing...");
+
+                // 1. Try to get full profile from our DB
+                let appUser = await dbAdapter.getUserById(session.user.id);
+
+                // 2. If new user, map from Supabase and save
+                if (!appUser) {
+                    console.log("🌱 New User/First Login - Creating Profile");
+                    appUser = {
+                        ...mapSupabaseUser(session.user),
+                        id: session.user.id // Ensure ID matches
+                    } as User;
+                    await dbAdapter.saveUser(appUser);
+                }
+
+                dbAdapter.setCurrentUserId(session.user.id);
+                dispatch({
+                    type: 'LOGIN_SUCCESS',
+                    payload: {
+                        user: appUser!,
+                        orders: [],
+                        keepOpen: false
+                    }
+                });
+            }
+            else if (event === 'SIGNED_OUT') {
+                dbAdapter.setCurrentUserId(null);
+                dispatch({ type: 'LOGOUT' });
+            }
+        });
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }
+}, []);
+
+return (
+    <AppContext.Provider value={{ state, dispatch }}>
+        {children}
+    </AppContext.Provider>
+);
 };
 
 export const useAppState = () => {

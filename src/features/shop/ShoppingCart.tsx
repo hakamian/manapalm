@@ -276,17 +276,22 @@ const ShoppingCart: React.FC = () => {
                     {user ? (
                       <>
                         {error && (
-                          <div className="bg-red-900/50 text-red-300 text-sm p-3 rounded-md animate-shake flex flex-col gap-2" role="alert">
-                            <p>{error}</p>
+                          <div className={`text-sm p-4 rounded-lg flex flex-col gap-3 animate-shake ${error.includes('آدرس') ? 'bg-amber-900/40 border border-amber-500/50' : 'bg-red-900/50 border border-red-500/50'}`} role="alert">
+                            <div className="flex items-start gap-2">
+                              {error.includes('آدرس') ? <span className="text-xl">📍</span> : <span className="text-xl">⚠️</span>}
+                              <p className={`leading-relaxed ${error.includes('آدرس') ? 'text-amber-100' : 'text-red-200'}`}>{error}</p>
+                            </div>
+
                             {error.includes('آدرس') && (
                               <button
                                 onClick={() => {
                                   handleClose();
                                   dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'profile' });
                                 }}
-                                className="bg-red-800 hover:bg-red-700 text-white text-xs py-1 px-3 rounded self-start transition-colors"
+                                className="bg-amber-500 hover:bg-amber-600 text-gray-900 font-bold py-2 px-4 rounded-md self-end transition-colors flex items-center gap-2 shadow-lg"
                               >
-                                تکمیل پروفایل (بخش اطلاعات تکمیلی)
+                                <span>ثبت آدرس در پروفایل</span>
+                                <span className="text-lg">👈</span>
                               </button>
                             )}
                           </div>

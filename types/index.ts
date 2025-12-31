@@ -63,6 +63,7 @@ export interface AppState {
     isVoiceOfPalmModalOpen: boolean;
     isBottomNavVisible: boolean;
     pendingRedirectView?: View;
+    searchQuery: string;
 
     lastOrderDeeds: Deed[];
     lastOrderPointsEarned: number;
@@ -200,7 +201,9 @@ export type Action =
     | { type: 'ADD_GENERATED_COURSE'; payload: Course }
     | { type: 'SET_BOTTOM_NAV_VISIBLE'; payload: boolean }
     | { type: 'LOAD_INITIAL_DATA'; payload: Partial<AppState> }
+    | { type: 'LOAD_ADMIN_DATA'; payload: { users: User[], orders: Order[] } }
     | { type: 'SET_PENDING_REDIRECT'; payload: View | undefined }
+    | { type: 'SET_SEARCH_QUERY'; payload: string }
     | { type: 'EXECUTE_SMART_ACTION'; payload: SmartAction }
     | { type: 'ADD_GAMIFICATION_ALERT'; payload: { type: 'achievement' | 'level_up', data: any } }
     | { type: 'DISMISS_GAMIFICATION_ALERT' };

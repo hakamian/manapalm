@@ -236,7 +236,8 @@ const Header: React.FC = () => {
 
     const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && searchQuery.trim()) {
-            console.log(`Performing search for: "${searchQuery.trim()}"`);
+            dispatch({ type: 'SET_SEARCH_QUERY', payload: searchQuery.trim() });
+            dispatch({ type: 'SET_VIEW', payload: View.SearchResults });
             if (isMobileSearchOpen) {
                 setIsMobileSearchOpen(false);
             }

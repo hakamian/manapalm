@@ -83,7 +83,21 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
 
     useEffect(() => {
         checkDbHealth();
-    }, []);
+        // Lazy load admin data if not already loaded
+        if (users.length === 0) {
+            const fetchAdminData = async () => {
+                const [fetchedUsers, fetchedOrders] = await Promise.all([
+                    dbAdapter.getAllUsers(),
+                    dbAdapter.getAllOrders()
+                ]);
+                dispatch({
+                    type: 'LOAD_ADMIN_DATA',
+                    payload: { users: fetchedUsers, orders: fetchedOrders }
+                });
+            };
+            fetchAdminData();
+        }
+    }, [users.length]);
 
     const checkDbHealth = async () => {
         const health = await dbAdapter.getSystemHealth();

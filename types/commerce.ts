@@ -53,6 +53,8 @@ export interface CartItem extends Product {
     webDevDetails?: any;
     coCreationDetails?: any;
     paymentPlan?: any; // To be deprecated or mapped to PaymentPlan
+    productId?: string;
+    bonusPoints?: number;
 }
 
 export interface Order {

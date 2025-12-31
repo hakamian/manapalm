@@ -49,6 +49,7 @@ export enum View {
     BUSINESS_MENTOR = 'BUSINESS_MENTOR',
     'ai-tools' = 'AI_TOOLS',
     PAYMENT_CALLBACK = 'PAYMENT_CALLBACK',
+    SearchResults = 'SEARCH_RESULTS',
     PublicStory = 'PUBLIC_STORY',
     AutoCEO = 'AUTO_CEO',
     CampaignLanding = 'CAMPAIGN_LANDING',
