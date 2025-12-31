@@ -424,57 +424,58 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
     // 🟢 AUTH LISTENER (Unified Meaning OS Fix)
     // Keeps local state in sync with Supabase Auth (Google Login support)
-    if (supabase) {
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log("🔐 Auth Event:", event);
+    useEffect(() => {
+        if (supabase) {
+            const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+                console.log("🔐 Auth Event:", event);
 
-            if (event === 'SIGNED_IN' && session?.user) {
-                const currentId = dbAdapter.getCurrentUserId();
-                // Prevent redundant updates if already logged in matches
-                if (currentId === session.user.id) return;
+                if (event === 'SIGNED_IN' && session?.user) {
+                    const currentId = dbAdapter.getCurrentUserId();
+                    // Prevent redundant updates if already logged in matches
+                    if (currentId === session.user.id) return;
 
-                console.log("✅ User Signed In, Syncing...");
+                    console.log("✅ User Signed In, Syncing...");
 
-                // 1. Try to get full profile from our DB
-                let appUser = await dbAdapter.getUserById(session.user.id);
+                    // 1. Try to get full profile from our DB
+                    let appUser = await dbAdapter.getUserById(session.user.id);
 
-                // 2. If new user, map from Supabase and save
-                if (!appUser) {
-                    console.log("🌱 New User/First Login - Creating Profile");
-                    appUser = {
-                        ...mapSupabaseUser(session.user),
-                        id: session.user.id // Ensure ID matches
-                    } as User;
-                    await dbAdapter.saveUser(appUser);
-                }
-
-                dbAdapter.setCurrentUserId(session.user.id);
-                dispatch({
-                    type: 'LOGIN_SUCCESS',
-                    payload: {
-                        user: appUser!,
-                        orders: [],
-                        keepOpen: false
+                    // 2. If new user, map from Supabase and save
+                    if (!appUser) {
+                        console.log("🌱 New User/First Login - Creating Profile");
+                        appUser = {
+                            ...mapSupabaseUser(session.user),
+                            id: session.user.id // Ensure ID matches
+                        } as User;
+                        await dbAdapter.saveUser(appUser);
                     }
-                });
-            }
-            else if (event === 'SIGNED_OUT') {
-                dbAdapter.setCurrentUserId(null);
-                dispatch({ type: 'LOGOUT' });
-            }
-        });
 
-        return () => {
-            subscription.unsubscribe();
-        };
-    }
-}, []);
+                    dbAdapter.setCurrentUserId(session.user.id);
+                    dispatch({
+                        type: 'LOGIN_SUCCESS',
+                        payload: {
+                            user: appUser!,
+                            orders: [],
+                            keepOpen: false
+                        }
+                    });
+                }
+                else if (event === 'SIGNED_OUT') {
+                    dbAdapter.setCurrentUserId(null);
+                    dispatch({ type: 'LOGOUT' });
+                }
+            });
 
-return (
-    <AppContext.Provider value={{ state, dispatch }}>
-        {children}
-    </AppContext.Provider>
-);
+            return () => {
+                subscription.unsubscribe();
+            };
+        }
+    }, []);
+
+    return (
+        <AppContext.Provider value={{ state, dispatch }}>
+            {children}
+        </AppContext.Provider>
+    );
 };
 
 export const useAppState = () => {
