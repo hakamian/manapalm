@@ -354,6 +354,7 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'DELETE_REVIEW': { const { reviewId } = action.payload; const updatedReviews = state.reviews.filter(r => r.id !== reviewId); return { ...state, reviews: updatedReviews }; }
         case 'ADD_GENERATED_COURSE': { const newCourse = action.payload; return { ...state, generatedCourses: [...(state.generatedCourses || []), newCourse] }; }
         case 'SET_BOTTOM_NAV_VISIBLE': return { ...state, isBottomNavVisible: action.payload };
+        case 'SET_PROFILE_TAB_AND_NAVIGATE': return { ...state, currentView: View.UserProfile, profileInitialTab: action.payload };
         case 'LOAD_INITIAL_DATA': return { ...state, ...action.payload };
         case 'LOAD_ADMIN_DATA': return { ...state, allUsers: action.payload.users, users: action.payload.users, orders: action.payload.orders };
         case 'ADD_GAMIFICATION_ALERT': return { ...state, gamificationAlerts: [...state.gamificationAlerts, action.payload] };
