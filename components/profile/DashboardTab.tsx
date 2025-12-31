@@ -26,7 +26,7 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ user, orders, onNavigateToT
 
     return (
         <div className="space-y-8">
-            
+
             {/* 1. Digital Architect Mission Control (Top Priority if active) */}
             {hasActiveProject && (
                 <section className="animate-fade-in-down">
@@ -43,7 +43,7 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ user, orders, onNavigateToT
                 <NextHeroicStep user={user} orders={orders} onNavigateToTab={onNavigateToTab} onStartPlantingFlow={onStartPlantingFlow} onNavigate={onNavigate} />
             )}
 
-            {/* 3. CTA for Digital Architect (If not active) */}
+            {/* TEMPORARILY HIDDEN: Digital Architect CTA - Uncomment after payment gateway approval
             {!hasActiveProject && (
                 <div className="bg-gradient-to-r from-stone-800 to-stone-900 rounded-xl p-6 border border-stone-700/50 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div>
@@ -59,6 +59,7 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ user, orders, onNavigateToT
                     </button>
                 </div>
             )}
+            */}
 
             {/* 4. Meaning Compass */}
             <MeaningCompass user={user} />
@@ -69,7 +70,7 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ user, orders, onNavigateToT
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                     {achievements.map(ach => (
                         <div key={ach.id} className={`bg-gray-800 p-4 rounded-lg transition-opacity ${ach.achieved ? 'opacity-100' : 'opacity-40'}`}>
-                            <div className={`w-12 h-12 mx-auto transition-colors ${ach.achieved ? 'text-yellow-400' : 'text-gray-500'}`}>{React.cloneElement(ach.icon as React.ReactElement<{ className?: string }>, {className: 'w-12 h-12'})}</div>
+                            <div className={`w-12 h-12 mx-auto transition-colors ${ach.achieved ? 'text-yellow-400' : 'text-gray-500'}`}>{React.cloneElement(ach.icon as React.ReactElement<{ className?: string }>, { className: 'w-12 h-12' })}</div>
                             <p className="text-xs mt-2">{ach.label}</p>
                         </div>
                     ))}
@@ -84,12 +85,12 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ user, orders, onNavigateToT
                         <>
                             <p>#{orders[orders.length - 1].id.slice(-6)}</p>
                             <p className="text-sm text-gray-400">{new Date(orders[orders.length - 1].date).toLocaleDateString('fa-IR')}</p>
-                            <span className="text-xs bg-yellow-500 text-black px-2 py-1 rounded-full mt-2 inline-block">{orders[orders.length-1].status}</span>
+                            <span className="text-xs bg-yellow-500 text-black px-2 py-1 rounded-full mt-2 inline-block">{orders[orders.length - 1].status}</span>
                         </>
                     ) : <p className="text-gray-400">سفارشی ثبت نشده است.</p>}
                 </div>
                 <div className="bg-gray-800 p-6 rounded-lg grid grid-cols-2 gap-4">
-                   <div className="text-center">
+                    <div className="text-center">
                         <p className="text-3xl font-bold text-green-300">{user.points.toLocaleString('fa-IR')}</p>
                         <p className="text-sm text-gray-400">امتیاز برکت</p>
                     </div>
