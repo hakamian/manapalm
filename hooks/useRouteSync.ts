@@ -7,8 +7,9 @@ export const useRouteSync = () => {
     const { currentView } = useAppState();
     const dispatch = useAppDispatch();
     const isInitialMount = useRef(true);
+    const lastSyncedView = useRef<View | null>(null);
 
-    // 1. Sync URL -> App State (ONLY on initial load & PopState, not on every re-render)
+    // 1. Sync URL -> App State (ONLY on initial page load & PopState/Back button)
     useEffect(() => {
         const handleLocationChange = () => {
             const search = window.location.search;
@@ -18,27 +19,31 @@ export const useRouteSync = () => {
             const viewParam = params.get('view');
 
             if (viewParam && Object.values(View).includes(viewParam as View)) {
-                if (viewParam !== currentView) {
+                // Only dispatch if this is from browser navigation, not our own updates
+                if (viewParam !== lastSyncedView.current) {
                     dispatch({ type: 'SET_VIEW', payload: viewParam as View });
+                    lastSyncedView.current = viewParam as View;
                 }
             }
         };
 
-        // Only sync from URL on FIRST mount, not on subsequent re-renders
+        // Only sync from URL on FIRST mount
         if (isInitialMount.current) {
             handleLocationChange();
             isInitialMount.current = false;
         }
 
-        // Handle Back/Forward buttons (popstate should always work)
+        // Handle Back/Forward buttons
         window.addEventListener('popstate', handleLocationChange);
         return () => window.removeEventListener('popstate', handleLocationChange);
-    }, [dispatch, currentView]);
+    }, [dispatch]); // Removed currentView dependency - this should only react to browser navigation
 
-    // 2. Sync App State -> URL
+    // 2. Sync App State -> URL (use replaceState to avoid creating extra history entries)
     useEffect(() => {
-        // Skip if running in a blob/sandbox environment where location manipulation is restricted
         if (window.location.protocol === 'blob:') return;
+
+        // Skip if this view was already synced (prevents loops)
+        if (lastSyncedView.current === currentView) return;
 
         const params = new URLSearchParams(window.location.search);
         const currentUrlView = params.get('view');
@@ -46,8 +51,6 @@ export const useRouteSync = () => {
         if (currentUrlView !== currentView) {
             params.set('view', currentView);
 
-            // Preserve other params like 'intent' or 'id' if we are just switching views
-            // But clear 'product_id' if we leave the shop, etc.
             if (currentView !== View.Shop) {
                 params.delete('product_id');
             }
@@ -55,12 +58,12 @@ export const useRouteSync = () => {
             const newUrl = `${window.location.pathname}?${params.toString()}`;
 
             try {
-                window.history.pushState({ path: newUrl }, '', newUrl);
-                // Update Page Title for History
+                // Use replaceState for internal navigation to avoid polluting history
+                window.history.replaceState({ path: newUrl }, '', newUrl);
                 document.title = `نخلستان معنا | ${getViewTitle(currentView)}`;
+                lastSyncedView.current = currentView;
             } catch (e) {
-                // Ignore security errors in sandboxed environments
-                console.debug('History pushState blocked:', e);
+                console.debug('History replaceState blocked:', e);
             }
         }
     }, [currentView]);
@@ -73,6 +76,7 @@ const getViewTitle = (view: View): string => {
         case View.HallOfHeritage: return 'تالار میراث';
         case View.CommunityHub: return 'کانون جامعه';
         case View.Courses: return 'آکادمی';
+        case View.UserProfile: return 'پروفایل';
         default: return 'خوش آمدید';
     }
 };
