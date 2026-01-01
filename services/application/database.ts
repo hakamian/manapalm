@@ -126,6 +126,11 @@ export const dbAdapter = {
             return;
         }
 
+        if (user.id.startsWith('user_') && localStorage.getItem('supabase.auth.token')) {
+            console.warn("⚠️ Blocked save of temporary user over active session:", user.id);
+            return;
+        }
+
         // 🛡️ Create a robust metadata object by picking all non-column fields from user
         const {
             id, email, fullName, name, phone, avatar, address, plaque, floor,

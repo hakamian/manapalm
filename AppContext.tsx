@@ -190,10 +190,15 @@ function appReducer(state: AppState, action: Action): AppState {
             return { ...state, user: action.payload };
         case 'UPDATE_USER':
             if (state.user) {
+                // 🛡️ Ensure we are updating the SAME user, not clobbering with a temporary one
                 const updatedUser = { ...state.user, ...action.payload };
                 const updatedAllUsers = state.allUsers.map(u => u.id === updatedUser.id ? updatedUser : u);
-                // 🔧 FIX: Save user to database to persist changes
-                console.log("📝 UPDATE_USER called with:", action.payload);
+
+                console.log("📝 UPDATE_USER Syncing to DB:", {
+                    id: updatedUser.id,
+                    addresses: updatedUser.addresses?.length || 0
+                });
+
                 dbAdapter.saveUser(updatedUser);
                 return { ...state, user: updatedUser, allUsers: updatedAllUsers };
             }
