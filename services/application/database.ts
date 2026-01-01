@@ -106,8 +106,18 @@ export const dbAdapter = {
         }
 
         const { data, error } = await supabase!.from('profiles').select('*').eq('id', id).single();
-        if (error || !data) return null;
-        return mapProfileToUser(data);
+        if (error || !data) {
+            console.error('❌ DB Error (getUserById):', error?.message);
+            return null;
+        }
+
+        const user = mapProfileToUser(data);
+        console.log("📥 User Data Hydrated:", {
+            id: user.id,
+            addresses: user.addresses?.length || 0,
+            hasMetadata: !!data.metadata
+        });
+        return user;
     },
 
     async saveUser(user: User): Promise<void> {

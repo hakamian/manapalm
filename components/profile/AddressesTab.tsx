@@ -19,9 +19,21 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
         postalCode: '',
         recipientName: user.fullName || user.name || '',
         phone: user.phone || '',
-        title: 'خانه',
+        title: 'خانه', // 🏠 Default title set to Home
         isDefault: false
     });
+
+    const IRAN_PROVINCES = {
+        'تهران': ['تهران', 'ری', 'شمیرانات', 'اسلامشهر', 'بومهن'],
+        'اصفهان': ['اصفهان', 'کاشان', 'نجف‌آباد', 'خمینی‌شهر'],
+        'خراسان رضوی': ['مشهد', 'نیشابور', 'سبزوار', 'تربت حیدریه'],
+        'فارس': ['شیراز', 'مرودشت', 'جهرم', 'فسا'],
+        'آذربایجان شرقی': ['تبریز', 'مراغه', 'مرند', 'میانه'],
+        'مازندران': ['ساری', 'بابل', 'آمل', 'قائم‌شهر'],
+        'البرز': ['کرج', 'فردیس', 'کمال‌شهر'],
+        'گیلان': ['رشت', 'بندر انزلی', 'لاهیجان'],
+        'خورستان': ['اهواز', 'دزفول', 'آبادان', 'خرمشهر']
+    };
 
     const addresses = user.addresses || [];
 
@@ -46,7 +58,7 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
             postalCode: '',
             recipientName: user.fullName || user.name || '',
             phone: user.phone || '',
-            title: 'آدرس جدید',
+            title: 'خانه', // 🏠 Set to Home by default
             isDefault: addresses.length === 0
         });
         setEditingId(null);
@@ -54,15 +66,15 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
     };
 
     const handleSave = () => {
-        if (!formData.fullAddress || !formData.recipientName) return alert('لطفا فیلدهای اجباری را پر کنید.');
+        if (!formData.fullAddress || !formData.recipientName || !formData.province || !formData.city) {
+            return alert('لطفا تمام فیلدهای اجباری (استان، شهر، آدرس و نام گیرنده) را پر کنید.');
+        }
 
         let newAddresses = [...addresses];
 
         if (editingId) {
-            // Update existing
             newAddresses = newAddresses.map(a => a.id === editingId ? { ...a, ...formData } as UserAddress : a);
         } else {
-            // Create new
             const newAddress: UserAddress = {
                 ...formData as UserAddress,
                 id: Date.now().toString(),
@@ -70,7 +82,6 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
             newAddresses.push(newAddress);
         }
 
-        // Handle default address logic
         if (formData.isDefault) {
             newAddresses = newAddresses.map(a => ({
                 ...a,
@@ -101,7 +112,7 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
             </div>
 
             {isEditing ? (
-                <div className="bg-gray-700/50 p-6 rounded-lg animate-fade-in">
+                <div className="bg-gray-700/50 p-6 rounded-lg animate-fade-in text-right" dir="rtl">
                     <h3 className="text-lg font-semibold mb-4 text-green-300">
                         {editingId ? 'ویرایش آدرس' : 'افزودن آدرس جدید'}
                     </h3>
@@ -112,7 +123,7 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
                                 type="text"
                                 value={formData.title}
                                 onChange={e => setFormData({ ...formData, title: e.target.value })}
-                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500"
                                 placeholder="مثال: خانه، محل کار"
                             />
                         </div>
@@ -122,33 +133,45 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
                                 type="text"
                                 value={formData.recipientName}
                                 onChange={e => setFormData({ ...formData, recipientName: e.target.value })}
-                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500"
                             />
                         </div>
+
                         <div className="space-y-2">
                             <label className="text-sm text-gray-400">استان</label>
-                            <input
-                                type="text"
+                            <select
                                 value={formData.province}
-                                onChange={e => setFormData({ ...formData, province: e.target.value })}
-                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                            />
+                                onChange={e => setFormData({ ...formData, province: e.target.value, city: '' })}
+                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500"
+                            >
+                                <option value="">انتخاب استان</option>
+                                {Object.keys(IRAN_PROVINCES).map(p => (
+                                    <option key={p} value={p}>{p}</option>
+                                ))}
+                            </select>
                         </div>
+
                         <div className="space-y-2">
                             <label className="text-sm text-gray-400">شهر</label>
-                            <input
-                                type="text"
+                            <select
                                 value={formData.city}
                                 onChange={e => setFormData({ ...formData, city: e.target.value })}
-                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500 focus:ring-1 focus:ring-green-500"
-                            />
+                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500"
+                                disabled={!formData.province}
+                            >
+                                <option value="">انتخاب شهر</option>
+                                {formData.province && IRAN_PROVINCES[formData.province as keyof typeof IRAN_PROVINCES].map(c => (
+                                    <option key={c} value={c}>{c}</option>
+                                ))}
+                            </select>
                         </div>
+
                         <div className="space-y-2 md:col-span-2">
                             <label className="text-sm text-gray-400">آدرس پستی کامل</label>
                             <textarea
                                 value={formData.fullAddress}
                                 onChange={e => setFormData({ ...formData, fullAddress: e.target.value })}
-                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500 focus:ring-1 focus:ring-green-500 min-h-[80px]"
+                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500 min-h-[80px]"
                             />
                         </div>
                         <div className="space-y-2">
@@ -157,7 +180,7 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
                                 type="text"
                                 value={formData.postalCode}
                                 onChange={e => setFormData({ ...formData, postalCode: e.target.value })}
-                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500"
                             />
                         </div>
                         <div className="space-y-2">
@@ -166,7 +189,7 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
                                 type="text"
                                 value={formData.phone}
                                 onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500 focus:ring-1 focus:ring-green-500"
+                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500"
                             />
                         </div>
                     </div>
@@ -178,7 +201,7 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
                         <span className="text-sm text-gray-300">تنظیم به عنوان آدرس پیش‌فرض</span>
                     </div>
 
-                    <div className="flex justify-end gap-3">
+                    <div className="flex justify-start gap-3 flex-row-reverse">
                         <button
                             onClick={() => setIsEditing(false)}
                             className="px-4 py-2 rounded-lg text-sm text-gray-300 hover:bg-gray-700 transition-colors"
