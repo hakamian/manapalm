@@ -199,7 +199,7 @@ export const dbAdapter = {
             createdAt: o.created_at,
             date: o.created_at,
             statusHistory: safeParse(o.status_history, [{ status: o.status, date: o.created_at }]),
-            deeds: []
+            deeds: safeParse(o.deeds, [])
         }));
     },
 
