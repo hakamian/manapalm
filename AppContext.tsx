@@ -193,6 +193,7 @@ function appReducer(state: AppState, action: Action): AppState {
                 const updatedUser = { ...state.user, ...action.payload };
                 const updatedAllUsers = state.allUsers.map(u => u.id === updatedUser.id ? updatedUser : u);
                 // 🔧 FIX: Save user to database to persist changes
+                console.log("📝 UPDATE_USER called with:", action.payload);
                 dbAdapter.saveUser(updatedUser);
                 return { ...state, user: updatedUser, allUsers: updatedAllUsers };
             }

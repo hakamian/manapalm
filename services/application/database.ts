@@ -145,8 +145,13 @@ export const dbAdapter = {
             }
         };
 
+        console.log("🔄 Saving user to DB:", { id: user.id, address: user.address, phone: user.phone });
         const { error } = await supabase!.from('profiles').upsert(profileData);
-        if (error) console.error('Error saving user to DB:', error.message);
+        if (error) {
+            console.error('❌ Error saving user to DB:', error.message);
+        } else {
+            console.log("✅ User saved successfully:", user.id);
+        }
     },
 
     async spendBarkatPoints(amount: number): Promise<boolean> {
