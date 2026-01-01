@@ -404,7 +404,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 dbAdapter.getAllProducts()
             ]);
 
-            let currentUser = null;
+            let currentUser: User | null = null;
             let userOrders: Order[] = [];
 
             if (currentUserId) {
