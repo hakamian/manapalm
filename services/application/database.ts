@@ -217,6 +217,7 @@ export const dbAdapter = {
             status: order.status,
             items: order.items,
             status_history: order.statusHistory,
+            deeds: order.deeds || [],
             created_at: order.date
         };
 
