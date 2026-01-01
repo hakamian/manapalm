@@ -6,7 +6,7 @@ import {
     UserCircleIcon, BoxIcon, HeartIcon, BellIcon, CogIcon, GiftIcon, ContributionIcon,
     HomeIcon, TrophyIcon, ClockIcon, ShieldCheckIcon, CompassIcon,
     BrainCircuitIcon, FlagIcon, PalmTreeIcon, SparklesIcon, XMarkIcon, ChartPieIcon,
-    AwardIcon, HandshakeIcon, PlayIcon, LockClosedIcon
+    AwardIcon, HandshakeIcon, PlayIcon, LockClosedIcon, MapPinIcon, EnvelopeIcon, EyeIcon
 } from './icons';
 import { getNextLevelInfo } from '../services/gamificationService';
 import { useAppState, useAppDispatch } from '../AppContext';
@@ -34,6 +34,9 @@ import StrengthsReportTab from './profile/StrengthsReportTab';
 import IkigaiReportTab from './profile/IkigaiReportTab';
 import MentorTab from './MentorTab';
 import ValueDashboardTab from './profile/ValueDashboardTab';
+import AddressesTab from './profile/AddressesTab';
+import MessagesTab from './profile/MessagesTab';
+import RecentViewsTab from './profile/RecentViewsTab';
 
 declare const html2canvas: any;
 
@@ -152,7 +155,11 @@ const UserProfileView: React.FC = () => {
             { id: 'profile', label: 'ویرایش پروفایل', icon: <UserCircleIcon /> },
             { id: 'orders', label: 'سفارش‌ها', icon: <BoxIcon /> },
             { id: 'timeline', label: 'گاهشمار معنا', icon: <ClockIcon /> },
+            { id: 'timeline', label: 'گاهشمار معنا', icon: <ClockIcon /> },
             { id: 'meaning-compass', label: 'قطب‌نمای معنا', icon: <CompassIcon /> },
+            { id: 'addresses', label: 'آدرس‌ها', icon: <MapPinIcon /> },
+            { id: 'messages', label: 'پیام‌ها', icon: <EnvelopeIcon /> },
+            { id: 'recent-views', label: 'بازدیدهای اخیر', icon: <EyeIcon /> },
 
             // Psychometric Tests Group
             { id: 'disc_report', label: 'آینه رفتارشناسی (DISC)', icon: <BrainCircuitIcon /> },
@@ -195,6 +202,12 @@ const UserProfileView: React.FC = () => {
                 return <TimelineTab user={user} onStartPlantingFlow={onStartPlantingFlow} onNavigate={onNavigate} onUpdateTimelineEvent={onUpdateTimelineEvent} orders={orders} onOpenDeedModal={openDeedModal} />;
             case 'settings':
                 return <SettingsTab user={user} onUpdate={onUpdate} />;
+            case 'recent-views':
+                return <RecentViewsTab user={user} products={products} onNavigate={onNavigate} onAddToCart={onAddToCart} onToggleWishlist={onToggleWishlist} />;
+            case 'messages':
+                return <MessagesTab user={user} />;
+            case 'addresses':
+                return <AddressesTab user={user} onUpdate={onUpdate} />;
             case 'gamification':
                 return <GamificationTab user={user} animatedBarkatProgress={animatedBarkatProgress} animatedManaProgress={animatedManaProgress} onNavigate={onNavigate} setActiveTab={setActiveTab} onStartPlantingFlow={onStartPlantingFlow} />;
             case 'referral':

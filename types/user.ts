@@ -115,6 +115,32 @@ export interface User {
     isMonthlySubscriber?: boolean;
     lastDailyChestClaimed?: string;
     dailyStreak?: number;
+    addresses?: UserAddress[];
+    messages?: UserMessage[];
+    recentViews?: string[];
+}
+
+export interface UserAddress {
+    id: string;
+    title: string;
+    recipientName: string;
+    phone: string;
+    province: string;
+    city: string;
+    fullAddress: string;
+    postalCode: string;
+    isDefault: boolean;
+}
+
+export interface UserMessage {
+    id: string;
+    title: string;
+    body: string;
+    date: string;
+    isRead: boolean;
+    type: 'notification' | 'ticket';
+    priority?: 'low' | 'medium' | 'high';
+    reply?: string;
 }
 
 export interface PointLog {

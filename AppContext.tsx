@@ -433,16 +433,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 console.log("🔐 Auth Event:", event);
 
                 if (event === 'SIGNED_IN' && session?.user) {
-                    const currentId = dbAdapter.getCurrentUserId();
-                    // Prevent redundant updates if already logged in matches
-                    if (currentId === session.user.id) return;
-
                     console.log("✅ User Signed In, Syncing...");
 
-                    // 1. Try to get full profile from our DB
+                    // Always try to get full profile from our DB (fresh data)
                     let appUser = await dbAdapter.getUserById(session.user.id);
+                    console.log("📥 Loaded user from DB:", appUser ? { id: appUser.id, address: appUser.address } : null);
 
-                    // 2. If new user, map from Supabase and save
+                    // If new user, map from Supabase and save
                     if (!appUser) {
                         console.log("🌱 New User/First Login - Creating Profile");
                         appUser = {
