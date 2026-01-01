@@ -10,7 +10,9 @@ import {
     ArrowDownTrayIcon,
     PhotoIcon,
     CheckCircleIcon,
-    XMarkIcon
+    XMarkIcon,
+    EyeIcon,
+    EyeSlashIcon
 } from '../icons';
 import '../../styles/admin-dashboard.css';
 
@@ -215,7 +217,7 @@ const ModernShopManagement: React.FC<ModernShopManagementProps> = ({
 
                     {/* Category Filter */}
                     <div className="admin-input-group" style={{ minWidth: '150px' }}>
-                        <FunnelIcon className="admin-input-icon" />
+                        <FunnelIcon className="w-4 h-4" style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-text-muted)', pointerEvents: 'none' }} />
                         <select
                             className="admin-input"
                             value={filterCategory}
@@ -273,7 +275,7 @@ const ModernShopManagement: React.FC<ModernShopManagementProps> = ({
                     }}
                 >
                     {filteredProducts.map((product) => (
-                        <div key={product.id} className="admin-card" style={{ padding: 0, overflow: 'hidden' }}>
+                        <div key={product.id} className="admin-card" style={{ padding: 0, overflow: 'hidden', opacity: product.isActive ? 1 : 0.6 }}>
                             {/* Image Area */}
                             <div style={{
                                 height: '200px',
@@ -293,6 +295,21 @@ const ModernShopManagement: React.FC<ModernShopManagementProps> = ({
                                 }}>
                                     {product.stock > 0 ? `موجودی: ${product.stock.toLocaleString('fa-IR')}` : 'ناموجود'}
                                 </div>
+                                {!product.isActive && (
+                                    <div style={{
+                                        position: 'absolute',
+                                        top: '0.5rem',
+                                        left: '0.5rem',
+                                        background: 'rgba(239, 68, 68, 0.9)',
+                                        color: 'white',
+                                        padding: '0.25rem 0.5rem',
+                                        borderRadius: '0.5rem',
+                                        fontSize: '0.75rem',
+                                        fontWeight: 'bold'
+                                    }}>
+                                        غیرفعال
+                                    </div>
+                                )}
                             </div>
 
                             <div style={{ padding: '1.5rem' }}>
@@ -313,9 +330,17 @@ const ModernShopManagement: React.FC<ModernShopManagementProps> = ({
 
                                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1.5rem' }}>
                                     <button
+                                        onClick={() => onUpdateProduct?.(product.id, { isActive: !product.isActive })}
+                                        className={`admin-btn ${product.isActive ? 'admin-btn-ghost' : 'admin-btn-success'}`}
+                                        style={{ flex: 1, padding: '0.5rem', justifyContent: 'center' }}
+                                        title={product.isActive ? 'غیرفعال کردن' : 'فعال کردن'}
+                                    >
+                                        {product.isActive ? <EyeSlashIcon className="w-4 h-4" /> : <EyeIcon className="w-4 h-4" />}
+                                    </button>
+                                    <button
                                         onClick={() => handleEditClick(product)}
                                         className="admin-btn admin-btn-primary"
-                                        style={{ flex: 4, padding: '0.5rem' }}
+                                        style={{ flex: 3, padding: '0.5rem' }}
                                     >
                                         <PencilIcon className="w-4 h-4" />
                                         ویرایش
@@ -345,7 +370,7 @@ const ModernShopManagement: React.FC<ModernShopManagementProps> = ({
                                 <th style={{ padding: '1rem' }}>دسته‌بندی</th>
                                 <th style={{ padding: '1rem' }}>قیمت</th>
                                 <th style={{ padding: '1rem' }}>موجودی</th>
-                                <th style={{ padding: '1rem' }}>امتیاز</th>
+                                <th style={{ padding: '1rem' }}>وضعیت</th>
                                 <th style={{ padding: '1rem' }}>عملیات</th>
                             </tr>
                         </thead>
@@ -373,9 +398,20 @@ const ModernShopManagement: React.FC<ModernShopManagementProps> = ({
                                             {product.stock.toLocaleString('fa-IR')}
                                         </span>
                                     </td>
-                                    <td style={{ padding: '1rem' }}>{product.points?.toLocaleString('fa-IR')}</td>
+                                    <td style={{ padding: '1rem' }}>
+                                        <span className={product.isActive ? 'admin-badge admin-badge-success' : 'admin-badge admin-badge-danger'}>
+                                            {product.isActive ? 'فعال' : 'غیرفعال'}
+                                        </span>
+                                    </td>
                                     <td style={{ padding: '1rem' }}>
                                         <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button
+                                                onClick={() => onUpdateProduct?.(product.id, { isActive: !product.isActive })}
+                                                className={product.isActive ? 'text-gray-400 hover:text-yellow-400' : 'text-green-400 hover:text-green-300'}
+                                                title={product.isActive ? 'غیرفعال کردن' : 'فعال کردن'}
+                                            >
+                                                {product.isActive ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                                            </button>
                                             <button onClick={() => handleEditClick(product)} className="text-blue-400 hover:text-blue-300">
                                                 <PencilIcon className="w-5 h-5" />
                                             </button>
@@ -393,107 +429,110 @@ const ModernShopManagement: React.FC<ModernShopManagementProps> = ({
                         </tbody>
                     </table>
                 </div>
-            )}
+            )
+            }
 
             {/* EDIT MODAL */}
-            {editingProduct && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-                    <div className="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in">
-                        <div className="p-6 border-b border-gray-700 flex justify-between items-center sticky top-0 bg-gray-800 z-10">
-                            <h2 className="text-xl font-bold text-white">ویرایش محصول: {editingProduct.name}</h2>
-                            <button onClick={() => setEditingProduct(null)} className="text-gray-400 hover:text-white"><XMarkIcon className="w-6 h-6" /></button>
-                        </div>
+            {
+                editingProduct && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                        <div className="bg-gray-800 border border-gray-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-scale-in">
+                            <div className="p-6 border-b border-gray-700 flex justify-between items-center sticky top-0 bg-gray-800 z-10">
+                                <h2 className="text-xl font-bold text-white">ویرایش محصول: {editingProduct.name}</h2>
+                                <button onClick={() => setEditingProduct(null)} className="text-gray-400 hover:text-white"><XMarkIcon className="w-6 h-6" /></button>
+                            </div>
 
-                        <div className="p-6 space-y-6">
-                            {/* Image Input Section */}
-                            <div className="bg-gray-900/50 p-4 rounded-xl border border-gray-700 border-dashed">
-                                <label className="block text-sm font-medium text-gray-300 mb-2">لینک تصویر (Image URL)</label>
-                                <div className="flex gap-2">
-                                    <input
-                                        type="text"
-                                        value={editForm.image || ''}
-                                        onChange={e => setEditForm({ ...editForm, image: e.target.value })}
-                                        className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-green-500 outline-none dir-ltr"
-                                        placeholder="https://..."
-                                    />
-                                </div>
-                                <p className="text-xs text-gray-500 mt-2">لینک کپی شده از استودیو هوش مصنوعی را اینجا قرار دهید.</p>
-
-                                {editForm.image && (
-                                    <div className="mt-4 relative h-40 rounded-lg overflow-hidden border border-gray-700">
-                                        <img src={editForm.image} alt="Preview" className="w-full h-full object-cover" />
+                            <div className="p-6 space-y-6">
+                                {/* Image Input Section */}
+                                <div className="bg-gray-900/50 p-4 rounded-xl border border-gray-700 border-dashed">
+                                    <label className="block text-sm font-medium text-gray-300 mb-2">لینک تصویر (Image URL)</label>
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="text"
+                                            value={editForm.image || ''}
+                                            onChange={e => setEditForm({ ...editForm, image: e.target.value })}
+                                            className="flex-1 bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-green-500 outline-none dir-ltr"
+                                            placeholder="https://..."
+                                        />
                                     </div>
-                                )}
+                                    <p className="text-xs text-gray-500 mt-2">لینک کپی شده از استودیو هوش مصنوعی را اینجا قرار دهید.</p>
+
+                                    {editForm.image && (
+                                        <div className="mt-4 relative h-40 rounded-lg overflow-hidden border border-gray-700">
+                                            <img src={editForm.image} alt="Preview" className="w-full h-full object-cover" />
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400 mb-1">نام محصول</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.name || ''}
+                                            onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                                            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400 mb-1">دسته‌بندی</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.category || ''}
+                                            onChange={e => setEditForm({ ...editForm, category: e.target.value as any })}
+                                            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400 mb-1">قیمت (تومان)</label>
+                                        <input
+                                            type="number"
+                                            value={editForm.price || 0}
+                                            onChange={e => setEditForm({ ...editForm, price: Number(e.target.value) })}
+                                            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white dir-ltr"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-gray-400 mb-1">موجودی</label>
+                                        <input
+                                            type="number"
+                                            value={editForm.stock || 0}
+                                            onChange={e => setEditForm({ ...editForm, stock: Number(e.target.value) })}
+                                            className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white dir-ltr"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-400 mb-1">توضیحات</label>
+                                    <textarea
+                                        rows={4}
+                                        value={editForm.description || ''}
+                                        onChange={e => setEditForm({ ...editForm, description: e.target.value })}
+                                        className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white resize-none"
+                                    />
+                                </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-400 mb-1">نام محصول</label>
-                                    <input
-                                        type="text"
-                                        value={editForm.name || ''}
-                                        onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                                        className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-400 mb-1">دسته‌بندی</label>
-                                    <input
-                                        type="text"
-                                        value={editForm.category || ''}
-                                        onChange={e => setEditForm({ ...editForm, category: e.target.value as any })}
-                                        className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-400 mb-1">قیمت (تومان)</label>
-                                    <input
-                                        type="number"
-                                        value={editForm.price || 0}
-                                        onChange={e => setEditForm({ ...editForm, price: Number(e.target.value) })}
-                                        className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white dir-ltr"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-400 mb-1">موجودی</label>
-                                    <input
-                                        type="number"
-                                        value={editForm.stock || 0}
-                                        onChange={e => setEditForm({ ...editForm, stock: Number(e.target.value) })}
-                                        className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white dir-ltr"
-                                    />
-                                </div>
+                            <div className="p-6 border-t border-gray-700 bg-gray-800 sticky bottom-0 flex justify-end gap-3 z-10">
+                                <button
+                                    onClick={() => setEditingProduct(null)}
+                                    className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
+                                >
+                                    انصراف
+                                </button>
+                                <button
+                                    onClick={handleSaveEdit}
+                                    className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-lg shadow-green-900/40 transition-all transform active:scale-95"
+                                >
+                                    ذخیره تغییرات
+                                </button>
                             </div>
-
-                            <div>
-                                <label className="block text-sm font-medium text-gray-400 mb-1">توضیحات</label>
-                                <textarea
-                                    rows={4}
-                                    value={editForm.description || ''}
-                                    onChange={e => setEditForm({ ...editForm, description: e.target.value })}
-                                    className="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-white resize-none"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="p-6 border-t border-gray-700 bg-gray-800 sticky bottom-0 flex justify-end gap-3 z-10">
-                            <button
-                                onClick={() => setEditingProduct(null)}
-                                className="px-4 py-2 text-gray-300 hover:text-white transition-colors"
-                            >
-                                انصراف
-                            </button>
-                            <button
-                                onClick={handleSaveEdit}
-                                className="px-6 py-2 bg-green-600 hover:bg-green-500 text-white font-bold rounded-lg shadow-lg shadow-green-900/40 transition-all transform active:scale-95"
-                            >
-                                ذخیره تغییرات
-                            </button>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

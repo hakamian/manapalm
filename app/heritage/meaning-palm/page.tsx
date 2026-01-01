@@ -9,13 +9,6 @@ import { heritageItems } from '../../../utils/heritage';
 import PlantingRitualModal from '../../../components/PlantingRitualModal';
 import {
     StarIcon,
-    CheckCircleIcon,
-    ShieldCheckIcon,
-    MapPinIcon,
-    CalendarIcon,
-    TruckIcon,
-    DocumentTextIcon,
-    GlobeAltIcon,
     ChevronLeftIcon
 } from '../../../components/icons';
 
@@ -34,9 +27,11 @@ export default function MeaningPalmPage() {
             name: item.title,
             price: item.price,
             quantity: 1,
-            image: `https://images.unsplash.com/photo-1509316785289-025f5b846b35?q=80&w=800&auto=format&fit=crop`,
+            image: `https://res.cloudinary.com/dk2x11rvs/image/upload/v1767174550/manapalm/gallery/night-vigil-lantern.jpg`,
             stock: 999,
             type: 'heritage',
+            category: 'نخل میراث',
+            isActive: true,
             popularity: 100,
             dateAdded: new Date().toISOString(),
             deedDetails: details ? {
@@ -102,7 +97,7 @@ export default function MeaningPalmPage() {
                         >
                             <div className="aspect-square rounded-3xl overflow-hidden shadow-2xl ring-4 ring-amber-400/50">
                                 <img
-                                    src="https://images.unsplash.com/photo-1509316785289-025f5b846b35?q=80&w=800&auto=format&fit=crop"
+                                    src="https://res.cloudinary.com/dk2x11rvs/image/upload/v1767174550/manapalm/gallery/night-vigil-lantern.jpg"
                                     alt="نخل معنا - نخل بالغ خرما"
                                     className="w-full h-full object-cover"
                                 />
@@ -247,9 +242,9 @@ export default function MeaningPalmPage() {
                 <PlantingRitualModal
                     isOpen={showRitualModal}
                     onClose={() => setShowRitualModal(false)}
-                    user={currentUser}
-                    item={meaningPalm}
-                    onComplete={handleRitualComplete}
+                    onComplete={() => {
+                        handleRitualComplete(meaningPalm, { recipient: '', message: '', isAnonymous: false, pointsApplied: 0 });
+                    }}
                 />
             )}
         </main>
