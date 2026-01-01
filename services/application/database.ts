@@ -159,18 +159,25 @@ export const dbAdapter = {
             }
         };
 
-        console.log("🔄 Saving to DB (Metadata check):", {
-            hasAddresses: !!user.addresses,
-            addressCount: user.addresses?.length,
-            hasDisc: !!user.discReport
-        });
+        try {
+            console.log("🔄 Saving to DB (Metadata check):", {
+                id: profileData.id,
+                hasAddresses: !!user.addresses,
+                addressCount: user.addresses?.length
+            });
 
-        const { error } = await supabase!.from('profiles').upsert(profileData);
-        if (error) {
-            console.error('❌ DB Error (saveUser):', error.message);
-            throw error;
-        } else {
-            console.log("✅ User successfully persisted to DB:", user.id);
+            const { error } = await supabase!.from('profiles').upsert(profileData);
+
+            if (error) {
+                console.error('❌ Supabase Upsert Error:', error);
+                throw error;
+            } else {
+                console.log("✅ User successfully persisted to DB:", user.id);
+            }
+        } catch (e: any) {
+            console.error('❌ Critical Error in saveUser:', e);
+            // Fallback for debugging - what exactly failed?
+            if (e.message) console.error('Error Message:', e.message);
         }
     },
 

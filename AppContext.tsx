@@ -396,10 +396,9 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
 
     useEffect(() => {
-        const loadData = async () => {
+        const loadInit = async () => {
+            console.log("🚀 Initial App Load - Fetching Global Data...");
             const currentUserId = dbAdapter.getCurrentUserId();
-
-            // Only fetch what is needed for initial render
             const [posts, products] = await Promise.all([
                 dbAdapter.getAllPosts(),
                 dbAdapter.getAllProducts()
@@ -411,22 +410,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             if (currentUserId) {
                 currentUser = await dbAdapter.getUserById(currentUserId);
                 userOrders = await dbAdapter.getOrders(currentUserId);
+                console.log("📦 Initial User Loaded:", {
+                    id: currentUser?.id,
+                    addressCount: currentUser?.addresses?.length || 0
+                });
             }
 
             dispatch({
                 type: 'LOAD_INITIAL_DATA',
                 payload: {
-                    users: [], // Don't load all users initially
-                    allUsers: [], // Don't load all users initially
-                    orders: userOrders, // Only load MY orders
                     communityPosts: posts,
                     products: products.length > 0 ? products : INITIAL_PRODUCTS,
-                    user: currentUser
+                    user: currentUser,
+                    orders: userOrders
                 }
             });
         };
-
-        loadData();
+        loadInit();
     }, []);
 
 
