@@ -552,11 +552,25 @@ export const dbAdapter = {
         return true;
     },
 
+    async signOut() {
+        this.setCurrentUserId(null);
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem('supabase.auth.token'); // Legacy
+            // Supabase 2.x uses different keys, but signOut() usually handles them.
+            // We manually clear our own tracker.
+        }
+        if (supabase) {
+            await supabase.auth.signOut();
+        }
+    },
+
     getCurrentUserId(): string | null {
+        if (typeof localStorage === 'undefined') return null;
         return localStorage.getItem('nakhlestan_current_user_id');
     },
 
     setCurrentUserId(id: string | null) {
+        if (typeof localStorage === 'undefined') return;
         if (id) localStorage.setItem('nakhlestan_current_user_id', id);
         else localStorage.removeItem('nakhlestan_current_user_id');
     }

@@ -5,6 +5,7 @@ import { View, NavCategory } from '../types';
 import { useAppState, useAppDispatch } from '../AppContext';
 import SmartLink from './ui/SmartLink';
 import { supabase } from '../services/supabaseClient';
+import { dbAdapter } from '../services/dbAdapter';
 import {
     ChevronDownIcon, ShoppingCartIcon, UserCircleIcon, HeartIcon, BellIcon, XMarkIcon, EnvelopeIcon,
     SproutIcon, TreeIcon, UsersIcon, CompassIcon, FlagIcon, BookOpenIcon, UserGroupIcon, PencilSquareIcon, SparklesIcon,
@@ -93,14 +94,13 @@ const UserMenu: React.FC = () => {
                         <a href="#" onClick={async (e) => {
                             e.preventDefault();
                             try {
-                                // Clear local state immediately for responsiveness
+                                // Thorough cleanup: our ID, Supabase session, and state
+                                await dbAdapter.signOut();
                                 dispatch({ type: 'LOGOUT' });
                                 setIsOpen(false);
 
-                                // Sign out from Supabase to clear session (prevents auto-relogin)
-                                if (supabase) {
-                                    await supabase.auth.signOut();
-                                }
+                                // Redirect to home to ensure a clean state
+                                dispatch({ type: 'SET_VIEW', payload: View.Home });
                             } catch (error) {
                                 console.error("Logout error:", error);
                             }
