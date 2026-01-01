@@ -120,9 +120,9 @@ export const dbAdapter = {
             points: user.points,
             mana_points: user.manaPoints,
             level: user.level,
-            isAdmin: user.isAdmin,
-            isGuardian: user.isGuardian,
-            isGroveKeeper: user.isGroveKeeper,
+            is_admin: user.isAdmin,
+            is_guardian: user.isGuardian,
+            is_grove_keeper: user.isGroveKeeper,
             metadata: {
                 profileCompletion: user.profileCompletion,
                 timeline: user.timeline ? user.timeline.slice(0, 50) : [],
