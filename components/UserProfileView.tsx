@@ -155,7 +155,6 @@ const UserProfileView: React.FC = () => {
             { id: 'profile', label: 'ویرایش پروفایل', icon: <UserCircleIcon /> },
             { id: 'orders', label: 'سفارش‌ها', icon: <BoxIcon /> },
             { id: 'timeline', label: 'گاهشمار معنا', icon: <ClockIcon /> },
-            { id: 'timeline', label: 'گاهشمار معنا', icon: <ClockIcon /> },
             { id: 'meaning-compass', label: 'قطب‌نمای معنا', icon: <CompassIcon /> },
             { id: 'addresses', label: 'آدرس‌ها', icon: <MapPinIcon /> },
             { id: 'messages', label: 'پیام‌ها', icon: <EnvelopeIcon /> },

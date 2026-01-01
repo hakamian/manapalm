@@ -39,6 +39,10 @@ const mapProfileToUser = (profile: any): User => {
         timeline: metadata.timeline || [],
         unlockedTools: metadata.unlockedTools || [],
         purchasedCourseIds: metadata.purchasedCourseIds || [],
+        // New fields for profile upgrade
+        addresses: metadata.addresses || [],
+        messages: metadata.messages || [],
+        recentViews: metadata.recentViews || [],
     };
 };
 
@@ -141,7 +145,11 @@ export const dbAdapter = {
                 motherName: user.motherName,
                 occupation: user.occupation,
                 meaningCoachHistory: user.meaningCoachHistory,
-                languageConfig: user.languageConfig
+                languageConfig: user.languageConfig,
+                // New fields for profile upgrade
+                addresses: user.addresses || [],
+                messages: user.messages || [],
+                recentViews: user.recentViews || [],
             }
         };
 
