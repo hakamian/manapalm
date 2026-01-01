@@ -112,6 +112,13 @@ export const dbAdapter = {
             return;
         }
 
+        // 🛡️ Create a robust metadata object by picking all non-column fields from user
+        const {
+            id, email, fullName, name, phone, avatar, address, plaque, floor,
+            points, manaPoints, level, isAdmin, isGuardian, isGroveKeeper, joinDate,
+            ...metadata
+        } = user;
+
         const profileData = {
             id: user.id,
             email: user.email,
@@ -128,37 +135,23 @@ export const dbAdapter = {
             is_guardian: user.isGuardian,
             is_grove_keeper: user.isGroveKeeper,
             metadata: {
-                profileCompletion: user.profileCompletion,
-                timeline: user.timeline ? user.timeline.slice(0, 50) : [],
-                unlockedTools: user.unlockedTools,
-                purchasedCourseIds: user.purchasedCourseIds,
-                reflectionAnalysesRemaining: user.reflectionAnalysesRemaining,
-                ambassadorPacksRemaining: user.ambassadorPacksRemaining,
-                impactPortfolio: user.impactPortfolio,
-                referralPointsEarned: user.referralPointsEarned,
-                // address moved to column
-                maritalStatus: user.maritalStatus,
-                childrenCount: user.childrenCount,
-                birthYear: user.birthYear,
-                nationalId: user.nationalId,
-                fatherName: user.fatherName,
-                motherName: user.motherName,
-                occupation: user.occupation,
-                meaningCoachHistory: user.meaningCoachHistory,
-                languageConfig: user.languageConfig,
-                // New fields for profile upgrade
-                addresses: user.addresses || [],
-                messages: user.messages || [],
-                recentViews: user.recentViews || [],
+                ...metadata, // 🚀 Keep ALL existing fields (DISC, addresses, messages, etc.)
+                timeline: user.timeline ? user.timeline.slice(0, 50) : [], // Limit timeline size
             }
         };
 
-        console.log("🔄 Saving user to DB:", { id: user.id, address: user.address, phone: user.phone });
+        console.log("🔄 Saving to DB (Metadata check):", {
+            hasAddresses: !!user.addresses,
+            addressCount: user.addresses?.length,
+            hasDisc: !!user.discReport
+        });
+
         const { error } = await supabase!.from('profiles').upsert(profileData);
         if (error) {
-            console.error('❌ Error saving user to DB:', error.message);
+            console.error('❌ DB Error (saveUser):', error.message);
+            throw error;
         } else {
-            console.log("✅ User saved successfully:", user.id);
+            console.log("✅ User successfully persisted to DB:", user.id);
         }
     },
 
