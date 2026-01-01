@@ -140,10 +140,17 @@ export const dbAdapter = {
                 body: JSON.stringify({ user })
             });
 
-            const result = await response.json();
+            const text = await response.text();
+            let result;
+            try {
+                result = JSON.parse(text);
+            } catch (e) {
+                console.error('❌ Server returned non-JSON:', text);
+                throw new Error('پاسخ سرور معتبر نیست');
+            }
 
             if (!response.ok) {
-                console.error('❌ Server API Error:', result.error || 'Unknown error');
+                console.error('❌ Server API Error:', result.error || 'Unknown error', result);
                 return;
             }
 
