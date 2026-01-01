@@ -11,7 +11,7 @@ import InstallmentModal from './InstallmentModal.tsx';
 const HeritageCard: React.FC<{ item: HeritageItem; onSelect: () => void; onInstallmentSelect: () => void; }> = ({ item, onSelect, onInstallmentSelect }) => {
     const { user: currentUser } = useAppState();
     const [isHovered, setIsHovered] = useState(false);
-    
+
     const Icon = iconMap[item.icon as keyof typeof iconMap] || iconMap.default;
     const isCommunity = item.isCommunity;
 
@@ -23,7 +23,7 @@ const HeritageCard: React.FC<{ item: HeritageItem; onSelect: () => void; onInsta
     }, [currentUser, item.id]);
 
     return (
-        <div 
+        <div
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
             className={`relative bg-white dark:bg-stone-800/50 rounded-2xl shadow-lg border-2 border-transparent overflow-hidden flex flex-col group transition-all duration-300 hover:shadow-xl hover:-translate-y-2 hover:border-${item.color}-300 dark:hover:border-${item.color}-700`}
@@ -57,7 +57,7 @@ const HeritageCard: React.FC<{ item: HeritageItem; onSelect: () => void; onInsta
                     </div>
                 </div>
             )}
-            
+
             <div className="p-5 bg-stone-50 dark:bg-stone-800 border-t border-stone-200 dark:border-stone-700 space-y-3">
                 <div className="text-center space-y-1">
                     <div>
@@ -86,7 +86,7 @@ const HeritageCard: React.FC<{ item: HeritageItem; onSelect: () => void; onInsta
                     </button>
                 )}
             </div>
-             <style>{`
+            <style>{`
                 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
                 .animate-fade-in { animation: fade-in 0.3s ease-out forwards; }
             `}</style>
@@ -124,7 +124,7 @@ const HeritagePage: React.FC = () => {
     const handleSelect = (item: HeritageItem) => {
         // AUDIT FIX: Allow opening ritual modal even if guest
         if (item.isCommunity) {
-             if (!currentUser) {
+            if (!currentUser) {
                 dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true });
                 return;
             }
@@ -149,12 +149,12 @@ const HeritagePage: React.FC = () => {
             // Ideally we'd save state here to resume after login, but simple gatekeeping is fine for V1
             return;
         }
-        
+
         const itemWithDetails = { ...item, plantingDetails: details };
         handleAddToCart(itemWithDetails, 'heritage');
         setSelectedItem(null);
     };
-    
+
     const onAddToCartWithInstallments = (item: HeritageItem | Course, months: number) => {
         const cartItem: CartItem = {
             id: `${item.id}-installments-${months}`,
@@ -196,10 +196,10 @@ const HeritagePage: React.FC = () => {
                 <section className="container mx-auto px-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {displayItems.map(item => (
-                            <HeritageCard 
-                                key={item.id} 
-                                item={item} 
-                                onSelect={() => handleSelect(item)} 
+                            <HeritageCard
+                                key={item.id}
+                                item={item}
+                                onSelect={() => handleSelect(item)}
                                 onInstallmentSelect={() => handleInstallmentSelect(item)}
                             />
                         ))}
@@ -216,7 +216,7 @@ const HeritagePage: React.FC = () => {
                 />
             )}
             {installmentModalItem && currentUser && (
-                 <InstallmentModal
+                <InstallmentModal
                     isOpen={!!installmentModalItem}
                     onClose={() => setInstallmentModalItem(null)}
                     item={installmentModalItem}

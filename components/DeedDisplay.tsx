@@ -42,6 +42,12 @@ const DeedDisplay = React.forwardRef<HTMLDivElement, DeedDisplayProps>(({ deed }
     const [memoryText, setMemoryText] = React.useState('');
     const [memoryPhoto, setMemoryPhoto] = React.useState<string | null>(null);
     const [isDownloading, setIsDownloading] = React.useState(false);
+    const [bgStyle, setBgStyle] = React.useState<'modern' | 'classic'>('modern');
+
+    const DEED_BACKGROUNDS = {
+        modern: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767202287/deed-bg-modern_yihffm.png',
+        classic: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767202286/deed-bg-classic_e3r0ja.png'
+    };
 
     const deedEvents = React.useMemo(() => {
         return (user?.timeline || [])
@@ -184,15 +190,24 @@ const DeedDisplay = React.forwardRef<HTMLDivElement, DeedDisplayProps>(({ deed }
                 {activeTab === 'certificate' ? (
                     <div className="relative p-2">
                         {/* Downloadable Area Ref */}
-                        <div ref={certificateRef} className="relative rounded-lg overflow-hidden bg-[#fcfaf5] dark:bg-stone-900">
-                            {/* Background Photo (If Planted) */}
+                        <div ref={certificateRef} className="relative rounded-lg overflow-hidden">
+                            {/* Custom Background Image */}
+                            <div className="absolute inset-0 z-0">
+                                <img
+                                    src={DEED_BACKGROUNDS[bgStyle]}
+                                    alt="Certificate Background"
+                                    className="w-full h-full object-cover"
+                                />
+                            </div>
+
+                            {/* Background Photo Overlay (If Planted) */}
                             {deed.plantedPhotoUrl && (
-                                <div className="absolute inset-0 z-0 opacity-10 rounded-lg overflow-hidden pointer-events-none">
+                                <div className="absolute inset-0 z-[1] opacity-10 rounded-lg overflow-hidden pointer-events-none">
                                     <img src={deed.plantedPhotoUrl} alt="Planted Palm" className="w-full h-full object-cover grayscale" />
                                 </div>
                             )}
 
-                            <div className="border-2 border-amber-700/50 dark:border-amber-400/30 p-6 rounded-md relative overflow-hidden z-10 bg-white/50 dark:bg-stone-900/50 backdrop-blur-sm">
+                            <div className="border-2 border-amber-700/50 dark:border-amber-400/30 p-6 rounded-md relative overflow-hidden z-10 bg-white/70 dark:bg-stone-900/70 backdrop-blur-sm m-2">
                                 <SubtlePalmWatermark />
 
                                 <div className="relative z-10 text-center space-y-6">
@@ -257,6 +272,29 @@ const DeedDisplay = React.forwardRef<HTMLDivElement, DeedDisplayProps>(({ deed }
                                     </footer>
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Background Style Selector */}
+                        <div className="flex justify-center gap-3 mt-4" data-html2canvas-ignore="true">
+                            <span className="text-xs text-stone-500 dark:text-stone-400 self-center">طرح سند:</span>
+                            <button
+                                onClick={() => setBgStyle('modern')}
+                                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${bgStyle === 'modern'
+                                        ? 'bg-green-600 text-white shadow-md'
+                                        : 'bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-300 dark:hover:bg-stone-600'
+                                    }`}
+                            >
+                                🌿 مدرن
+                            </button>
+                            <button
+                                onClick={() => setBgStyle('classic')}
+                                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${bgStyle === 'classic'
+                                        ? 'bg-amber-600 text-white shadow-md'
+                                        : 'bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-300 dark:hover:bg-stone-600'
+                                    }`}
+                            >
+                                📜 کلاسیک
+                            </button>
                         </div>
 
                         {/* Action Buttons (Download/Share) */}
