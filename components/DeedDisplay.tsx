@@ -190,86 +190,105 @@ const DeedDisplay = React.forwardRef<HTMLDivElement, DeedDisplayProps>(({ deed }
                 {activeTab === 'certificate' ? (
                     <div className="relative p-2">
                         {/* Downloadable Area Ref */}
-                        <div ref={certificateRef} className="relative rounded-lg overflow-hidden">
-                            {/* Custom Background Image */}
-                            <div className="absolute inset-0 z-0">
+                        <div ref={certificateRef} className="relative rounded-xl overflow-hidden bg-gradient-to-b from-stone-100 to-stone-50 dark:from-stone-800 dark:to-stone-900">
+
+                            {/* Top Image Section */}
+                            <div className="relative h-48 overflow-hidden">
                                 <img
                                     src={DEED_BACKGROUNDS[bgStyle]}
                                     alt="Certificate Background"
                                     className="w-full h-full object-cover"
                                 />
+                                {/* Gradient overlay for text readability */}
+                                <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-stone-100/90 dark:to-stone-800/90" />
+
+                                {/* Planted Photo Overlay */}
+                                {deed.plantedPhotoUrl && (
+                                    <div className="absolute inset-0 z-[1]">
+                                        <img src={deed.plantedPhotoUrl} alt="Planted Palm" className="w-full h-full object-cover" />
+                                        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-stone-100 dark:to-stone-800" />
+                                    </div>
+                                )}
+
+                                {/* Header Title */}
+                                <div className="absolute top-4 left-0 right-0 text-center z-10">
+                                    <p className="text-xs tracking-[0.3em] text-white/80 drop-shadow-lg uppercase">نخلستان معنا</p>
+                                    <h2 className="text-xl font-bold text-white drop-shadow-lg mt-1" style={{ fontFamily: 'Vazirmatn, serif' }}>
+                                        سند کاشت نخل میراث
+                                    </h2>
+                                </div>
                             </div>
 
-                            {/* Background Photo Overlay (If Planted) */}
-                            {deed.plantedPhotoUrl && (
-                                <div className="absolute inset-0 z-[1] opacity-10 rounded-lg overflow-hidden pointer-events-none">
-                                    <img src={deed.plantedPhotoUrl} alt="Planted Palm" className="w-full h-full object-cover grayscale" />
+                            {/* Content Section */}
+                            <div className="relative px-6 pb-6 pt-4 space-y-5">
+
+                                {/* Intention */}
+                                <div className="text-center">
+                                    <p className="text-xs text-stone-500 dark:text-stone-400 mb-1">نیت کاشت</p>
+                                    <p className="text-2xl font-bold text-green-700 dark:text-green-400 leading-relaxed">
+                                        "{deed.intention}"
+                                    </p>
                                 </div>
-                            )}
 
-                            <div className="border-2 border-amber-700/50 dark:border-amber-400/30 p-6 rounded-md relative overflow-hidden z-10 bg-white/70 dark:bg-stone-900/70 backdrop-blur-sm m-2">
-                                <SubtlePalmWatermark />
+                                {/* Divider */}
+                                <div className="flex items-center gap-3">
+                                    <div className="flex-1 h-px bg-gradient-to-r from-transparent to-amber-300/50" />
+                                    <SubtlePalmWatermark />
+                                    <div className="flex-1 h-px bg-gradient-to-l from-transparent to-amber-300/50" />
+                                </div>
 
-                                <div className="relative z-10 text-center space-y-6">
-                                    <header className="space-y-1 border-b-2 border-double border-amber-800/30 dark:border-amber-300/20 pb-4">
-                                        <p className="text-sm tracking-widest text-amber-800/70 dark:text-amber-300/70">نخلستان معنا</p>
-                                        <h2 className="text-3xl font-bold text-amber-900 dark:text-amber-200" style={{ fontFamily: 'Vazirmatn, serif' }}>سند کاشت نخل میراث</h2>
-                                        <p className="text-xs text-stone-500">HERITAGE PALM PLANTING DEED</p>
-                                    </header>
+                                {/* Name Section */}
+                                <div className="text-center space-y-1">
+                                    <p className="text-xs text-stone-500 dark:text-stone-400">به نام</p>
+                                    <p className="text-3xl font-bold text-stone-800 dark:text-stone-100" style={{ fontFamily: 'Vazirmatn, serif' }}>
+                                        {deed.name}
+                                    </p>
+                                    {deed.fromName && (
+                                        <p className="text-sm text-stone-500 dark:text-stone-400">
+                                            اهدا از طرف <span className="font-semibold text-stone-700 dark:text-stone-200">{deed.fromName}</span>
+                                        </p>
+                                    )}
+                                </div>
 
-                                    <div className="text-lg space-y-4 py-2">
-                                        <p className="text-stone-600 dark:text-stone-400">گواهی می‌شود که یک اصله نخل میراث با نیتِ</p>
-                                        <p className="font-bold text-3xl text-green-700 dark:text-green-400">"{deed.intention}"</p>
-                                        <p className="text-stone-600 dark:text-stone-400">به نامِ</p>
-                                        <p className="font-semibold text-4xl text-stone-900 dark:text-stone-100">{deed.name}</p>
-                                        {deed.fromName && <p className="text-stone-500 dark:text-stone-400 text-base">از طرفِ <strong className="text-stone-700 dark:text-stone-200">{deed.fromName}</strong></p>}
+                                {/* Message Quote */}
+                                {deed.message && (
+                                    <div className="bg-amber-50/80 dark:bg-amber-900/20 border-r-4 border-amber-500 p-4 rounded-lg">
+                                        <p className="text-sm italic text-stone-700 dark:text-stone-300 leading-relaxed">
+                                            "{deed.message}"
+                                        </p>
                                     </div>
+                                )}
 
-                                    {deed.message && (
-                                        <blockquote className="bg-stone-100/80 dark:bg-stone-800/80 border-r-4 border-amber-500 text-right p-4 my-4 rounded-r-lg">
-                                            <p className="text-md italic text-stone-700 dark:text-stone-300">"{deed.message}"</p>
-                                        </blockquote>
-                                    )}
+                                {/* GPS Location */}
+                                {deed.gpsCoordinates && (
+                                    <div
+                                        data-html2canvas-ignore="true"
+                                        onClick={openMap}
+                                        className="flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-3 rounded-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
+                                        title="مشاهده موقعیت دقیق در گوگل مپ"
+                                    >
+                                        <MapPinIcon className="w-5 h-5 text-blue-500" />
+                                        <span className="text-sm font-mono text-blue-700 dark:text-blue-300">
+                                            {deed.gpsCoordinates.lat.toFixed(4)}, {deed.gpsCoordinates.lng.toFixed(4)}
+                                        </span>
+                                        <GlobeIcon className="w-4 h-4 text-blue-400" />
+                                    </div>
+                                )}
 
-                                    {deed.gpsCoordinates && (
-                                        <div
-                                            // Make link useless in image capture but clickable on web
-                                            data-html2canvas-ignore="true"
-                                            onClick={openMap}
-                                            className="flex items-center justify-center gap-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 p-2 rounded-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors"
-                                            title="مشاهده موقعیت دقیق در گوگل مپ"
-                                        >
-                                            <MapPinIcon className="w-4 h-4 text-blue-500" />
-                                            <span className="text-xs font-mono text-blue-700 dark:text-blue-300">
-                                                {deed.gpsCoordinates.lat.toFixed(4)}, {deed.gpsCoordinates.lng.toFixed(4)}
-                                            </span>
-                                            <GlobeIcon className="w-3 h-3 text-blue-400 ml-1" />
-                                        </div>
-                                    )}
-
-                                    {/* Hide interactive elements in download */}
-                                    <footer className="pt-6 mt-4 flex justify-between items-end">
-                                        <div className="text-right text-xs">
-                                            <p className="font-semibold text-stone-500 dark:text-stone-400">تاریخ ثبت:</p>
-                                            <p className="font-bold text-base text-stone-700 dark:text-stone-200">{new Date(deed.date).toLocaleDateString('fa-IR')}</p>
-                                            <p className="font-mono text-[10px] text-stone-400 dark:text-stone-500 mt-2">ID: {deed.id}</p>
-                                        </div>
-                                        <div className="flex flex-col items-end gap-2">
-                                            {/* TEMPORARILY DISABLED: Voice of Palm and Future Vision buttons
-                                            <div className="flex gap-2" data-html2canvas-ignore="true">
-                                                <button onClick={handleVoiceOfPalm} className="text-[10px] bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-1 rounded hover:bg-green-200 dark:hover:bg-green-800/50 flex items-center gap-1 transition-colors" title="پیام نخل">
-                                                    <MicrophoneIcon className="w-3 h-3" />
-                                                    صدای نخل
-                                                </button>
-                                                <button onClick={handleFutureVision} className="text-[10px] bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 px-2 py-1 rounded hover:bg-indigo-200 dark:hover:bg-indigo-800/50 flex items-center gap-1 transition-colors" title="ماشین زمان نخلستان">
-                                                    <ClockForwardIcon className="w-3 h-3" />
-                                                    آینده نخل
-                                                </button>
-                                            </div>
-                                            */}
-                                            <ModernSealIcon />
-                                        </div>
-                                    </footer>
+                                {/* Footer with Date and Seal */}
+                                <div className="flex justify-between items-end pt-4 border-t border-stone-200 dark:border-stone-700">
+                                    <div className="text-right">
+                                        <p className="text-xs text-stone-500 dark:text-stone-400">تاریخ ثبت</p>
+                                        <p className="text-lg font-bold text-stone-700 dark:text-stone-200">
+                                            {new Date(deed.date).toLocaleDateString('fa-IR')}
+                                        </p>
+                                        <p className="font-mono text-[10px] text-stone-400 dark:text-stone-500 mt-1">
+                                            ID: {deed.id}
+                                        </p>
+                                    </div>
+                                    <div className="flex flex-col items-center">
+                                        <ModernSealIcon />
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -280,8 +299,8 @@ const DeedDisplay = React.forwardRef<HTMLDivElement, DeedDisplayProps>(({ deed }
                             <button
                                 onClick={() => setBgStyle('modern')}
                                 className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${bgStyle === 'modern'
-                                        ? 'bg-green-600 text-white shadow-md'
-                                        : 'bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-300 dark:hover:bg-stone-600'
+                                    ? 'bg-green-600 text-white shadow-md'
+                                    : 'bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-300 dark:hover:bg-stone-600'
                                     }`}
                             >
                                 🌿 مدرن
@@ -289,8 +308,8 @@ const DeedDisplay = React.forwardRef<HTMLDivElement, DeedDisplayProps>(({ deed }
                             <button
                                 onClick={() => setBgStyle('classic')}
                                 className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${bgStyle === 'classic'
-                                        ? 'bg-amber-600 text-white shadow-md'
-                                        : 'bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-300 dark:hover:bg-stone-600'
+                                    ? 'bg-amber-600 text-white shadow-md'
+                                    : 'bg-stone-200 dark:bg-stone-700 text-stone-600 dark:text-stone-300 hover:bg-stone-300 dark:hover:bg-stone-600'
                                     }`}
                             >
                                 📜 کلاسیک
