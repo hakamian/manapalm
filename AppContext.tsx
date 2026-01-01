@@ -437,7 +437,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
                     // Always try to get full profile from our DB (fresh data)
                     let appUser = await dbAdapter.getUserById(session.user.id);
-                    console.log("📥 Loaded user from DB:", appUser ? { id: appUser.id, address: appUser.address } : null);
+                    console.log("📥 Loaded user from DB:", appUser ? {
+                        id: appUser.id,
+                        address: appUser.address,
+                        addressCount: appUser.addresses?.length || 0
+                    } : null);
 
                     // If new user, map from Supabase and save
                     if (!appUser) {

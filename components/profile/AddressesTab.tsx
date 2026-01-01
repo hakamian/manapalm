@@ -23,16 +23,18 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
         isDefault: false
     });
 
-    const IRAN_PROVINCES = {
-        'تهران': ['تهران', 'ری', 'شمیرانات', 'اسلامشهر', 'بومهن'],
-        'اصفهان': ['اصفهان', 'کاشان', 'نجف‌آباد', 'خمینی‌شهر'],
-        'خراسان رضوی': ['مشهد', 'نیشابور', 'سبزوار', 'تربت حیدریه'],
-        'فارس': ['شیراز', 'مرودشت', 'جهرم', 'فسا'],
-        'آذربایجان شرقی': ['تبریز', 'مراغه', 'مرند', 'میانه'],
-        'مازندران': ['ساری', 'بابل', 'آمل', 'قائم‌شهر'],
-        'البرز': ['کرج', 'فردیس', 'کمال‌شهر'],
-        'گیلان': ['رشت', 'بندر انزلی', 'لاهیجان'],
-        'خورستان': ['اهواز', 'دزفول', 'آبادان', 'خرمشهر']
+    const IRAN_DATA: Record<string, string[]> = {
+        'تهران': ['تهران', 'اسلامشهر', 'بهارستان', 'پاکدشت', 'پردیس', 'پیشوا', 'دماوند', 'رباط کریم', 'ری', 'شمیرانات', 'شهریار', 'فیروزکوه', 'قدس', 'قرچک', 'ملارد', 'ورامین'],
+        'اصفهان': ['اصفهان', 'کاشان', 'خمینی‌شهر', 'نجف‌آباد', 'لنجان', 'فلاورجان', 'شاهین‌شهر و میمه', 'شهرضا', 'مبارکه', 'برخوار', 'آران و بیدگل', 'گلپایگان', 'فریدن', 'تیران و کرون', 'سمیرم'],
+        'البرز': ['کرج', 'فردیس', 'ساوجبلاغ', 'نظرآباد', 'اشتهارد', 'طالقان', 'چهارباغ'],
+        'فارس': ['شیراز', 'مرودشت', 'کازرون', 'جهرم', 'لارستان', 'فسا', 'داراب', 'فیروزآباد', 'ممسنی', 'نی‌ریز', 'اقلید', 'سپیدان'],
+        'آذربایجان شرقی': ['تبریز', 'مراغه', 'مرند', 'میانه', 'اسکو', 'بناب', 'شبستر', 'بستان‌آباد', 'عجب‌شیر', 'ملکان', 'آذرشهر'],
+        'خراسان رضوی': ['مشهد', 'نیشابور', 'سبزوار', 'تربت حیدریه', 'قوچان', 'کاشمر', 'چناران', 'خواف', 'تربت جام', 'تایباد', 'سرخس'],
+        'مازندران': ['ساری', 'بابل', 'آمل', 'قائم‌شهر', 'بهشهر', 'تنکابن', 'نوشهر', 'چالوس', 'نکا', 'بابلسر', 'محمودآباد'],
+        'گیلان': ['رشت', 'بندر انزلی', 'لاهیجان', 'تالش', 'لنگرود', 'رودسر', 'صومعه‌سرا', 'آستانه اشرفیه', 'رودبار', 'فومن', 'آستارا'],
+        'هرمزگان': ['بندرعباس', 'میناب', 'قشم', 'لنگه', 'رودان', 'حاجی‌آباد', 'جاسک', 'بستک', 'خمیر', 'پارسیان'],
+        'آذربایجان غربی': ['ارومیه', 'خوی', 'میاندوآب', 'مهاباد', 'بوکان', 'سلماس', 'نقده', 'پیرانشهر', 'تکاب', 'ماکو'],
+        'پردیس': ['پردیس', 'بومهن', 'جاجرود']
     };
 
     const addresses = user.addresses || [];
@@ -58,7 +60,7 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
             postalCode: '',
             recipientName: user.fullName || user.name || '',
             phone: user.phone || '',
-            title: 'خانه', // 🏠 Set to Home by default
+            title: 'خانه', // 🏠 Default
             isDefault: addresses.length === 0
         });
         setEditingId(null);
@@ -67,7 +69,7 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
 
     const handleSave = () => {
         if (!formData.fullAddress || !formData.recipientName || !formData.province || !formData.city) {
-            return alert('لطفا تمام فیلدهای اجباری (استان، شهر، آدرس و نام گیرنده) را پر کنید.');
+            return alert('لطفا تمام فیلدها از جمله استان و شهر را پر کنید.');
         }
 
         let newAddresses = [...addresses];
@@ -94,16 +96,16 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
     };
 
     return (
-        <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700">
-            <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-700">
-                <h2 className="text-xl font-bold flex items-center gap-2">
+        <div className="bg-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 text-right" dir="rtl">
+            <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-700 flex-row-reverse">
+                <h2 className="text-xl font-bold flex items-center gap-2 flex-row-reverse">
                     <MapPinIcon className="w-6 h-6 text-green-400" />
                     مدیریت آدرس‌ها
                 </h2>
                 {!isEditing && (
                     <button
                         onClick={handleAddNew}
-                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors flex-row-reverse"
                     >
                         <PlusIcon className="w-4 h-4" />
                         افزودن آدرس جدید
@@ -112,23 +114,23 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
             </div>
 
             {isEditing ? (
-                <div className="bg-gray-700/50 p-6 rounded-lg animate-fade-in text-right" dir="rtl">
+                <div className="bg-gray-700/50 p-6 rounded-lg animate-fade-in">
                     <h3 className="text-lg font-semibold mb-4 text-green-300">
                         {editingId ? 'ویرایش آدرس' : 'افزودن آدرس جدید'}
                     </h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div className="space-y-2">
-                            <label className="text-sm text-gray-400">عنوان آدرس</label>
+                            <label className="text-sm text-gray-400 block pb-1">عنوان آدرس</label>
                             <input
                                 type="text"
                                 value={formData.title}
                                 onChange={e => setFormData({ ...formData, title: e.target.value })}
                                 className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500"
-                                placeholder="مثال: خانه، محل کار"
+                                placeholder="خانه، محل کار و..."
                             />
                         </div>
                         <div className="space-y-2">
-                            <label className="text-sm text-gray-400">نام گیرنده</label>
+                            <label className="text-sm text-gray-400 block pb-1">نام گیرنده</label>
                             <input
                                 type="text"
                                 value={formData.recipientName}
@@ -138,31 +140,27 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm text-gray-400">استان</label>
+                            <label className="text-sm text-gray-400 block pb-1">استان</label>
                             <select
                                 value={formData.province}
                                 onChange={e => setFormData({ ...formData, province: e.target.value, city: '' })}
-                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500"
+                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500 appearance-none"
                             >
                                 <option value="">انتخاب استان</option>
-                                {Object.keys(IRAN_PROVINCES).map(p => (
-                                    <option key={p} value={p}>{p}</option>
-                                ))}
+                                {Object.keys(IRAN_DATA).map(p => <option key={p} value={p}>{p}</option>)}
                             </select>
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm text-gray-400">شهر</label>
+                            <label className="text-sm text-gray-400 block pb-1">شهر</label>
                             <select
                                 value={formData.city}
                                 onChange={e => setFormData({ ...formData, city: e.target.value })}
-                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500"
+                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500 appearance-none"
                                 disabled={!formData.province}
                             >
                                 <option value="">انتخاب شهر</option>
-                                {formData.province && IRAN_PROVINCES[formData.province as keyof typeof IRAN_PROVINCES].map(c => (
-                                    <option key={c} value={c}>{c}</option>
-                                ))}
+                                {formData.province && IRAN_DATA[formData.province]?.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
                         </div>
 
