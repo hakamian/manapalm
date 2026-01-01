@@ -18,7 +18,6 @@ const safeParse = (data: any, fallback: any) => {
 const mapProfileToUser = (profile: any): User => {
     const metadata = safeParse(profile.metadata, {});
     return {
-        ...metadata,
         id: profile.id,
         name: profile.full_name || metadata.name || 'کاربر',
         fullName: profile.full_name || metadata.fullName,
@@ -35,11 +34,16 @@ const mapProfileToUser = (profile: any): User => {
         isGuardian: profile.is_guardian ?? false,
         isGroveKeeper: profile.is_grove_keeper ?? false,
         joinDate: profile.created_at,
+
+        // 🚀 CRITICAL: Spread ALL metadata fields first, then override specific ones if needed
+        ...metadata,
+
         profileCompletion: metadata.profileCompletion || { initial: false, additional: false, extra: false },
         timeline: metadata.timeline || [],
         unlockedTools: metadata.unlockedTools || [],
         purchasedCourseIds: metadata.purchasedCourseIds || [],
-        // New fields for profile upgrade
+
+        // Ensure upgrade fields are at least empty arrays if not present
         addresses: metadata.addresses || [],
         messages: metadata.messages || [],
         recentViews: metadata.recentViews || [],
