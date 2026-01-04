@@ -1,4 +1,7 @@
 export default async function handler(req, res) {
+    // 🛑 DEBUG: Globally disabled
+    return res.status(200).json({ success: true, message: 'LEGACY_SMS_DISABLED' });
+
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method not allowed' });
     }

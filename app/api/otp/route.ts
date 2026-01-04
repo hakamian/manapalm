@@ -29,6 +29,9 @@ function checkRateLimit(mobile: string) {
 }
 
 export async function POST(req: Request) {
+    // 🛑 DEBUG: Globally disabled
+    return NextResponse.json({ success: true, message: 'OTP_API_DISABLED' });
+
     try {
         const body = await req.json();
         const { action, mobile, code, password, fullName } = body;

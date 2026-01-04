@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 
 export async function POST(req: Request) {
+    // 🛑 DEBUG: Globally disabled to unblock profile updates
+    return NextResponse.json({ success: true, message: 'SMS IS TEMPORARILY DISABLED' });
+
     try {
         const { mobile, templateId, parameters } = await req.json();
 
