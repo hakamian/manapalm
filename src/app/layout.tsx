@@ -6,6 +6,8 @@ export const metadata: Metadata = {
     description: "میراث خود را با کاشت یک نخل جاودانه کنید.",
 };
 
+import { AppProvider } from "../../AppContext";
+
 export default function RootLayout({
     children,
 }: Readonly<{
@@ -14,7 +16,9 @@ export default function RootLayout({
     return (
         <html lang="fa" dir="rtl">
             <body>
-                {children}
+                <AppProvider>
+                    {children}
+                </AppProvider>
             </body>
         </html>
     );

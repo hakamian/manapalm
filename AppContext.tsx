@@ -1,3 +1,4 @@
+'use client';
 
 import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
 import { AppState, Action, View, Deed, TimelineEvent, Order, CartItem, WebDevProject, AIConfig, TargetLanguage, Review, User, SmartAction, Campaign, CommunityPost, DeedUpdate } from './types';
