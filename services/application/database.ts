@@ -257,6 +257,95 @@ export const dbAdapter = {
         if (error) console.error('Error updating order status:', error.message);
     },
 
+    // --- NEW E-COMMERCE METHODS (NORMALIZED) ---
+
+    /**
+     * Finalizes a checkout by creating an order and its constituent items.
+     * This follows the new normalized schema with order_items table.
+     */
+    async processCheckout(userId: string, cartItems: any[]) {
+        if (!this.isLive()) return { success: false, error: 'Database disconnected' };
+
+        try {
+            // 1. Create the main Order record
+            const total = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+            const { data: order, error: orderErr } = await supabase!
+                .from('orders')
+                .insert({
+                    user_id: userId,
+                    total_amount: total,
+                    status: 'pending',
+                    items: cartItems // Keep items JSON for legacy compatibility
+                })
+                .select()
+                .single();
+
+            if (orderErr) throw orderErr;
+
+            // 2. Insert into Order_Items table (Normalized)
+            const itemsToInsert = cartItems.map(item => ({
+                order_id: order.id,
+                product_id: item.id,
+                quantity: item.quantity,
+                price_at_time: item.price
+            }));
+
+            const { error: itemsErr } = await supabase!
+                .from('order_items')
+                .insert(itemsToInsert);
+
+            if (itemsErr) throw itemsErr;
+
+            // 3. Clear User's Persistent Cart
+            await supabase!.from('cart').delete().eq('user_id', userId);
+
+            return { success: true, orderId: order.id };
+        } catch (err: any) {
+            console.error("❌ Checkout Failed:", err.message);
+            return { success: false, error: err.message };
+        }
+    },
+
+    /**
+     * Synchronizes a single item in the persistent user cart.
+     */
+    async syncCartItem(userId: string, productId: string, quantity: number) {
+        if (!this.isLive()) return;
+        try {
+            if (quantity <= 0) {
+                await supabase!.from('cart').delete().match({ user_id: userId, product_id: productId });
+            } else {
+                await supabase!.from('cart').upsert({
+                    user_id: userId,
+                    product_id: productId,
+                    quantity: quantity
+                });
+            }
+        } catch (e) {
+            console.warn("Cart Sync Failed:", e);
+        }
+    },
+
+    /**
+     * Fetches the persistent cart for a user.
+     */
+    async getPersistentCart(userId: string) {
+        if (!this.isLive()) return [];
+        const { data, error } = await supabase!
+            .from('cart')
+            .select(`
+                quantity,
+                products (*)
+            `)
+            .eq('user_id', userId);
+
+        if (error) return [];
+        return (data || []).map((c: any) => ({
+            ...c.products,
+            quantity: c.quantity
+        }));
+    },
+
     async getAllPosts(): Promise<CommunityPost[]> {
         if (!this.isLive()) return INITIAL_POSTS;
 
