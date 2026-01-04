@@ -140,7 +140,7 @@ export const dbAdapter = {
         try {
             console.log("🚀 Syncing User to Server API:", { id: user.id, addresses: user.addresses?.length });
 
-            const response = await fetch('/api/update-user', {
+            const response = await fetch('/api/update-user-v2', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ user })
