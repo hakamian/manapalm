@@ -33,10 +33,8 @@ const App: React.FC = () => {
 
     useEffect(() => {
         setMounted(true);
-        console.log('✅ App.tsx mounted');
-        console.log('Current view:', state.currentView);
-        console.log('User:', state.user);
-    }, []);
+        console.log("🏁 App.tsx mounted. User:", state.user?.id || 'null');
+    }, [state.user?.id]);
 
     useRouteSync();
 

@@ -188,8 +188,10 @@ function appReducer(state: AppState, action: Action): AppState {
 
     switch (action.type) {
         case 'SET_USER':
+            console.log("⚛️ Reducer: SET_USER", action.payload?.id || 'null');
             return { ...state, user: action.payload };
         case 'UPDATE_USER':
+            console.log("⚛️ Reducer: UPDATE_USER", action.payload);
             if (state.user) {
                 // 🛡️ Ensure we are updating the SAME user, not clobbering with a temporary one
                 const updatedUser = { ...state.user, ...action.payload };
@@ -240,10 +242,10 @@ function appReducer(state: AppState, action: Action): AppState {
             };
         }
         case 'LOGIN_SUCCESS':
-            const loggedInUser = action.payload.user;
+            console.log("⚛️ Reducer: LOGIN_SUCCESS", action.payload.user?.id);
             return {
                 ...state,
-                user: loggedInUser,
+                user: action.payload.user,
                 orders: action.payload.orders,
                 isAuthModalOpen: action.payload.keepOpen ? true : false
             };
@@ -365,8 +367,14 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'SET_BOTTOM_NAV_VISIBLE': return { ...state, isBottomNavVisible: action.payload };
         // Duplicate SET_PROFILE_TAB_AND_NAVIGATE removed
         case 'LOAD_INITIAL_DATA':
+            console.log("⚛️ Reducer: LOAD_INITIAL_DATA", {
+                hasStateUser: !!state.user,
+                hasPayloadUser: !!action.payload.user,
+                payloadUserId: action.payload.user?.id
+            });
             // 🛡️ Prevent overwriting a user already set by AUTH (race condition fix)
             if (state.user && !action.payload.user) {
+                console.log("🛡️ Reducer: Guarding against overwriting authenticated user with null initial data");
                 const { user, ...otherInitialData } = action.payload;
                 return { ...state, ...otherInitialData };
             }
@@ -401,6 +409,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     const [state, dispatch] = useReducer(appReducer, initialState);
 
 
+
+    useEffect(() => {
+        console.log("💎 AppProvider Mounted. Current storage user ID:", dbAdapter.getCurrentUserId());
+    }, []);
 
     // 🛡️ Consolidated Auth & Initial Load Sync
     useEffect(() => {
