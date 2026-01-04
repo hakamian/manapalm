@@ -1,17 +1,22 @@
--- [SOURCE OF TRUTH] Based on User Report - 2026-01-04 (Normalized Schema Update)
--- MODIFIED: 2026-01-04 (E-commerce tables added with TEXT ID compatibility)
+-- [SOURCE OF TRUTH] Unified Meaning OS - Database Schema v2.1
+-- DATE: 2026-01-04
+-- GOAL: Clean relational structure with JSONB flexibility for rapid iteration.
 
--- 1. CLEANUP (COMMENTED OUT TO PREVENT DATA LOSS)
--- WARNING: Uncomment these only if you want to WIPE all data and start fresh.
--- DROP TABLE IF EXISTS public.payments CASCADE;
--- DROP TABLE IF EXISTS public.order_items CASCADE;
--- DROP TABLE IF EXISTS public.cart CASCADE;
--- DROP TABLE IF EXISTS public.orders CASCADE;
--- DROP TABLE IF EXISTS public.profiles CASCADE;
+-- 1. CLEANUP (WIPE EXISTING TABLES FOR FULL RECONFIG)
+DROP TABLE IF EXISTS public.payments CASCADE;
+DROP TABLE IF EXISTS public.order_items CASCADE;
+DROP TABLE IF EXISTS public.cart CASCADE;
+DROP TABLE IF EXISTS public.orders CASCADE;
+DROP TABLE IF EXISTS public.posts CASCADE;
+DROP TABLE IF EXISTS public.agent_tasks CASCADE;
+DROP TABLE IF EXISTS public.profiles CASCADE;
+DROP TABLE IF EXISTS public.products CASCADE;
 
--- 2. PROFILES (Text ID for frontend compatibility)
-CREATE TABLE IF NOT EXISTS public.profiles (
-    id TEXT PRIMARY KEY, 
+-- 2. PROFILES
+-- Stores core identity and gamification stats.
+-- Note: 'address', 'plaque', 'floor' removed to use 'metadata.addresses' as the source of truth.
+CREATE TABLE public.profiles (
+    id TEXT PRIMARY KEY, -- Matches Supabase Auth User ID
     email TEXT,
     full_name TEXT,
     phone TEXT,
@@ -23,42 +28,47 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     is_guardian BOOLEAN DEFAULT FALSE,
     is_grove_keeper BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    metadata JSONB DEFAULT '{}'::jsonb,
-    plaque TEXT,
-    floor TEXT
+    metadata JSONB DEFAULT '{
+        "addresses": [],
+        "messages": [],
+        "recentViews": [],
+        "timeline": [],
+        "coursePersonalizations": {},
+        "discReport": null
+    }'::jsonb
 );
 
 -- 3. PRODUCTS
-CREATE TABLE IF NOT EXISTS public.products (
-    id TEXT PRIMARY KEY, -- Changed to TEXT to match project IDs like 'p3', 'p_heritage_iran'
+CREATE TABLE public.products (
+    id TEXT PRIMARY KEY, -- Supports custom IDs like 'p_heritage_iran'
     name TEXT NOT NULL,
     price BIGINT NOT NULL,
     category TEXT NOT NULL,
     image_url TEXT,
     description TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
-    type TEXT DEFAULT 'physical',
+    type TEXT DEFAULT 'physical', -- 'physical', 'digital', 'heritage', 'service'
     stock INTEGER DEFAULT 0,
     points INTEGER DEFAULT 0,
     popularity INTEGER DEFAULT 0,
     tags TEXT[] DEFAULT '{}',
-    is_active BOOLEAN DEFAULT TRUE
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 4. ORDERS (Normalized)
-CREATE TABLE IF NOT EXISTS public.orders (
+-- 4. ORDERS
+CREATE TABLE public.orders (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL,
     total_amount BIGINT NOT NULL,
     status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'paid', 'processing', 'shipped', 'completed', 'cancelled')),
-    items JSONB DEFAULT '[]'::jsonb, -- Legacy support
+    items JSONB DEFAULT '[]'::jsonb, -- Snapshot of products at purchase
     status_history JSONB DEFAULT '[]'::jsonb,
-    deeds JSONB DEFAULT '[]'::jsonb,
+    deeds JSONB DEFAULT '[]'::jsonb, -- Relational impact items (palms etc)
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 5. ORDER ITEMS
-CREATE TABLE IF NOT EXISTS public.order_items (
+-- 5. ORDER ITEMS (Strict normalization for reporting)
+CREATE TABLE public.order_items (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     order_id UUID REFERENCES public.orders(id) ON DELETE CASCADE,
     product_id TEXT REFERENCES public.products(id) ON DELETE CASCADE,
@@ -68,18 +78,18 @@ CREATE TABLE IF NOT EXISTS public.order_items (
 );
 
 -- 6. PAYMENTS
-CREATE TABLE IF NOT EXISTS public.payments (
+CREATE TABLE public.payments (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     order_id UUID REFERENCES public.orders(id) ON DELETE CASCADE,
     amount BIGINT NOT NULL,
     status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'successful', 'failed', 'refunded')),
     transaction_date TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     bank_ref_id TEXT,
-    payment_method TEXT
+    payment_method TEXT DEFAULT 'online'
 );
 
--- 7. CART (Persistent)
-CREATE TABLE IF NOT EXISTS public.cart (
+-- 7. CART (Server-side persistence)
+CREATE TABLE public.cart (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id TEXT REFERENCES public.profiles(id) ON DELETE CASCADE,
     product_id TEXT REFERENCES public.products(id) ON DELETE CASCADE,
@@ -88,8 +98,8 @@ CREATE TABLE IF NOT EXISTS public.cart (
     UNIQUE(user_id, product_id)
 );
 
--- 8. POSTS
-CREATE TABLE IF NOT EXISTS public.posts (
+-- 8. POSTS (Community & Timeline)
+CREATE TABLE public.posts (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     author_id TEXT REFERENCES public.profiles(id),
     title TEXT NOT NULL,
@@ -100,8 +110,8 @@ CREATE TABLE IF NOT EXISTS public.posts (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL 
 );
 
--- 9. AGENT TASKS
-CREATE TABLE IF NOT EXISTS public.agent_tasks (
+-- 9. AGENT TASKS (Executive OS Queue)
+CREATE TABLE public.agent_tasks (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     task_type TEXT NOT NULL,
     status TEXT DEFAULT 'pending',
@@ -110,7 +120,7 @@ CREATE TABLE IF NOT EXISTS public.agent_tasks (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
--- 10. SECURITY (RLS)
+-- 10. SECURITY (Row Level Security)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.products ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.orders ENABLE ROW LEVEL SECURITY;
@@ -120,33 +130,34 @@ ALTER TABLE public.cart ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.agent_tasks ENABLE ROW LEVEL SECURITY;
 
--- Profiles Policies
-DROP POLICY IF EXISTS "Public profiles" ON public.profiles;
-DROP POLICY IF EXISTS "Insert profiles" ON public.profiles;
-DROP POLICY IF EXISTS "Update own profile" ON public.profiles;
-CREATE POLICY "Public profiles" ON public.profiles FOR SELECT USING (true);
-CREATE POLICY "Insert profiles" ON public.profiles FOR INSERT WITH CHECK (auth.uid()::text = id);
-CREATE POLICY "Update own profile" ON public.profiles FOR UPDATE USING (auth.uid()::text = id);
+-- 🛡️ Profiles Policies: Public can see profiles, users can only update their own.
+CREATE POLICY "Profiles are viewable by everyone" ON public.profiles FOR SELECT USING (true);
+CREATE POLICY "Users can insert their own profile" ON public.profiles FOR INSERT WITH CHECK (auth.uid()::text = id);
+CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE USING (auth.uid()::text = id);
 
--- Products Policies
-DROP POLICY IF EXISTS "Public products" ON public.products;
-CREATE POLICY "Public products" ON public.products FOR SELECT USING (true);
+-- 🛡️ Products Policies: Viewable by everyone.
+CREATE POLICY "Products are viewable by everyone" ON public.products FOR SELECT USING (true);
 
--- Orders Policies
-DROP POLICY IF EXISTS "View own orders" ON public.orders;
-DROP POLICY IF EXISTS "Insert own orders" ON public.orders;
-CREATE POLICY "View own orders" ON public.orders FOR SELECT USING (auth.uid()::text = user_id);
-CREATE POLICY "Insert own orders" ON public.orders FOR INSERT WITH CHECK (auth.uid()::text = user_id);
+-- 🛡️ Orders Policies: Users can see/insert only their own orders.
+CREATE POLICY "Users can view own orders" ON public.orders FOR SELECT USING (auth.uid()::text = user_id);
+CREATE POLICY "Users can insert own orders" ON public.orders FOR INSERT WITH CHECK (auth.uid()::text = user_id);
 
--- Cart Policies
-DROP POLICY IF EXISTS "Users can handle own cart" ON public.cart;
-CREATE POLICY "Users can handle own cart" ON public.cart FOR ALL USING (auth.uid()::text = user_id);
+-- 🛡️ Cart Policies: Purely private per user.
+CREATE POLICY "Users can manage own cart" ON public.cart FOR ALL USING (auth.uid()::text = user_id);
 
--- 11. PERFORMANCE INDEXES
-CREATE INDEX IF NOT EXISTS idx_orders_user_id ON public.orders(user_id);
-CREATE INDEX IF NOT EXISTS idx_cart_user_id ON public.cart(user_id);
-CREATE INDEX IF NOT EXISTS idx_order_items_order_id ON public.order_items(order_id);
-CREATE INDEX IF NOT EXISTS idx_profiles_email ON public.profiles(email);
+-- 🛡️ Posts Policies: Publicly viewable, owners can manage.
+CREATE POLICY "Posts are viewable by everyone" ON public.posts FOR SELECT USING (true);
+CREATE POLICY "Users can insert posts" ON public.posts FOR INSERT WITH CHECK (auth.uid()::text = author_id);
 
--- 12. INITIAL DATA
--- Note: Already handled in DB, but documented here for truth.
+-- 11. INDEXES (Optimized for performance)
+CREATE INDEX idx_orders_user_id ON public.orders(user_id);
+CREATE INDEX idx_cart_user_id ON public.cart(user_id);
+CREATE INDEX idx_profiles_email ON public.profiles(email);
+CREATE INDEX idx_posts_type ON public.posts(type);
+
+-- 12. SEED DATA (CORE PRODUCTS)
+INSERT INTO public.products (id, name, price, category, type, description, stock, points)
+VALUES 
+('p_heritage_iran', 'نخل میراث ایران', 2500000, 'heritage', 'heritage', 'کاشت نخل به نام شما در نخلستان‌های ایران.', 999, 500),
+('p_meaning_compass', 'قطب‌نمای معنا', 50000, 'digital', 'digital', 'دستیار هوشمند برای یافتن معنای زندگی.', 9999, 100)
+ON CONFLICT (id) DO NOTHING;

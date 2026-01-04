@@ -64,9 +64,6 @@ export interface User {
     ikigaiReport?: IkigaiReport | null;
     englishAcademyTrialSecondsUsed?: number;
     meaningCompassTrialSecondsUsed?: number;
-    address?: string;
-    plaque?: string;
-    floor?: string;
     maritalStatus?: 'مجرد' | 'متاهل';
     childrenCount?: number;
     birthYear?: number;
