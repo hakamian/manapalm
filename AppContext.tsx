@@ -444,8 +444,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     let appUser = await dbAdapter.getUserById(session.user.id);
                     console.log("📥 Loaded user from DB:", appUser ? {
                         id: appUser.id,
-                        address: appUser.address,
-                        addressCount: appUser.addresses?.length || 0
+                        addressCount: (appUser.addresses || []).length
                     } : null);
 
                     // If new user, map from Supabase and save
@@ -471,6 +470,10 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 else if (event === 'SIGNED_OUT') {
                     dbAdapter.setCurrentUserId(null);
                     dispatch({ type: 'LOGOUT' });
+                    // Force a hard refresh to clear all application state and modals
+                    if (typeof window !== 'undefined') {
+                        window.location.href = '/';
+                    }
                 }
             });
 
