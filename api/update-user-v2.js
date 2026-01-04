@@ -73,17 +73,26 @@ export default async function handler(req, res) {
         };
 
         // Upsert profile
-        const { error } = await supabaseAdmin
+        // Log the exact payload being sent to Supabase
+        console.log('📤 Sending to DB (Payload):', JSON.stringify(profileUpdate.metadata.addresses));
+
+        // Upsert profile and SELECT the result to confirm persistence
+        const { data: savedData, error } = await supabaseAdmin
             .from('profiles')
-            .upsert(profileUpdate, { onConflict: 'id' });
+            .upsert(profileUpdate, { onConflict: 'id' })
+            .select()
+            .single();
 
         if (error) {
             console.error('❌ Supabase upsert error:', error);
             return res.status(500).json({ success: false, error: error.message });
         }
 
-        console.log('✅ User profile saved:', user.id);
-        return res.status(200).json({ success: true, debug: `User ${user.id} saved with ${user.addresses?.length || 0} addresses` });
+        console.log('📥 DB Response (Saved):', JSON.stringify(savedData?.metadata?.addresses));
+        return res.status(200).json({
+            success: true,
+            debug: `Sent ${user.addresses?.length || 0}, Saved ${savedData?.metadata?.addresses?.length || 0}`
+        });
 
     } catch (error) {
         console.error('❌ API Error in update-user-v2:', error);
