@@ -124,25 +124,31 @@ export const dbAdapter = {
             return INITIAL_USERS.find(u => u.id === id) || null;
         }
 
-        const { data, error } = await supabase!
-            .from('profiles')
-            .select('*')
-            .eq('id', id)
-            .single();
+        try {
+            console.log("🔍 [DB] Fetching user by ID:", id);
+            const { data, error } = await supabase!
+                .from('profiles')
+                .select('*')
+                .eq('id', id)
+                .maybeSingle(); // Better than .single() as it doesn't throw on 406
 
-        if (error || !data) {
-            console.warn("⚠️ User not found in DB:", id);
+            if (error) {
+                console.error("❌ [DB] Error in getUserById:", error.message);
+                return null;
+            }
+
+            if (!data) {
+                console.log("⚠️ [DB] No profile found in database for:", id);
+                return null;
+            }
+
+            const user = mapProfileToUser(data);
+            console.log("📥 [DB] Profile hydrated successfully:", user.id);
+            return user;
+        } catch (err: any) {
+            console.error("❌ [DB] Critical failure in getUserById:", err.message);
             return null;
         }
-
-        const user = mapProfileToUser(data);
-        console.log("📥 User Data Hydrated:", {
-            id: user.id,
-            fullName: user.fullName,
-            addressCount: (user.addresses || []).length,
-            hasMetadata: !!data.metadata
-        });
-        return user;
     },
 
     async saveUser(user: User): Promise<void> {
