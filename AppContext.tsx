@@ -438,39 +438,51 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         };
 
         const loadInit = async () => {
-            console.log("🚀 Initial App Load - Fetching Global Data...");
-            const currentUserId = dbAdapter.getCurrentUserId();
-            const [posts, products] = await Promise.all([
-                dbAdapter.getAllPosts(),
-                dbAdapter.getAllProducts()
-            ]);
+            console.log("🚀 [StallTrace] loadInit started");
+            try {
+                const currentUserId = dbAdapter.getCurrentUserId();
+                console.log("🚀 [StallTrace] currentUserId from storage:", currentUserId);
 
-            let currentUser: User | null = null;
-            let userOrders: Order[] = [];
+                console.log("🚀 [StallTrace] Fetching posts and products...");
+                const [posts, products] = await Promise.all([
+                    dbAdapter.getAllPosts().catch(e => { console.error("❌ posts fetch failed", e); return []; }),
+                    dbAdapter.getAllProducts().catch(e => { console.error("❌ products fetch failed", e); return []; })
+                ]);
+                console.log("🚀 [StallTrace] Posts/Products fetched successfully");
 
-            if (currentUserId) {
-                currentUser = await dbAdapter.getUserById(currentUserId);
-                userOrders = await dbAdapter.getOrders(currentUserId);
-                console.log("📦 Initial User Loaded:", {
-                    id: currentUser?.id,
-                    addressCount: currentUser?.addresses?.length || 0
-                });
-            }
+                let currentUser: User | null = null;
+                let userOrders: Order[] = [];
 
-            dispatch({
-                type: 'LOAD_INITIAL_DATA',
-                payload: {
-                    communityPosts: posts,
-                    products: products.length > 0 ? products : INITIAL_PRODUCTS,
-                    // 🛡️ Only load user if it's NOT already set by a faster Auth event
-                    user: currentUser,
-                    orders: userOrders
+                if (currentUserId) {
+                    console.log("🚀 [StallTrace] Fetching user by ID:", currentUserId);
+                    currentUser = await dbAdapter.getUserById(currentUserId).catch(e => { console.error("❌ getUserById failed", e); return null; });
+                    console.log("🚀 [StallTrace] User fetch result:", currentUser?.id || 'null');
+
+                    if (currentUser) {
+                        console.log("🚀 [StallTrace] Fetching orders for user...");
+                        userOrders = await dbAdapter.getOrders(currentUserId).catch(e => { console.error("❌ getOrders failed", e); return []; });
+                        console.log("🚀 [StallTrace] Orders fetched:", userOrders.length);
+                    }
                 }
-            });
 
-            if (cleanAuthUrl()) {
-                console.log("🔄 Detected Auth Redirect - Navigating to Profile");
-                dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'profile' });
+                console.log("🚀 [StallTrace] Dispatching LOAD_INITIAL_DATA");
+                dispatch({
+                    type: 'LOAD_INITIAL_DATA',
+                    payload: {
+                        communityPosts: posts,
+                        products: products.length > 0 ? products : INITIAL_PRODUCTS,
+                        // 🛡️ Only load user if it's NOT already set by a faster Auth event
+                        user: currentUser,
+                        orders: userOrders
+                    }
+                });
+
+                if (cleanAuthUrl()) {
+                    console.log("🔄 Detected Auth Redirect - Navigating to Profile");
+                    dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'profile' });
+                }
+            } catch (err) {
+                console.error("❌ [StallTrace] loadInit FATAL ERROR:", err);
             }
         };
         loadInit();
@@ -481,44 +493,52 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     // Keeps local state in sync with Supabase Auth (Google Login support)
     useEffect(() => {
         if (supabase) {
-            const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-                console.log("🔐 Auth Event:", event);
+            const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+                console.log("🔐 [StallTrace] Auth Event fired:", event);
 
-                if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
-                    const realId = session.user.id;
-                    console.log("✅ User Signed In, Syncing Identity:", realId);
+                // Run actual sync in a separate async block to avoid stalling the listener
+                const runSync = async () => {
+                    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
+                        const realId = session.user.id;
+                        console.log("✅ [StallTrace] Auth listener processing user:", realId);
 
-                    // 🛡️ Force ID Sync before any other operation
-                    dbAdapter.setCurrentUserId(realId);
+                        // 🛡️ Force ID Sync before any other operation
+                        dbAdapter.setCurrentUserId(realId);
 
-                    let appUser = await dbAdapter.getUserById(realId);
+                        console.log("✅ [StallTrace] Fetching app profile for:", realId);
+                        let appUser = await dbAdapter.getUserById(realId).catch(e => { console.error("❌ getUserById stall/error", e); return null; });
+                        console.log("✅ [StallTrace] Profile fetch result:", appUser?.id || 'null');
 
-                    if (!appUser) {
-                        console.log("🌱 Creating initial profile for " + realId);
-                        appUser = {
-                            ...mapSupabaseUser(session.user),
-                            id: realId
-                        } as User;
-                        await dbAdapter.saveUser(appUser);
-                    }
-
-                    dispatch({
-                        type: 'LOGIN_SUCCESS',
-                        payload: {
-                            user: appUser!,
-                            orders: [],
-                            keepOpen: false
+                        if (!appUser) {
+                            console.log("🌱 [StallTrace] Creating initial profile for " + realId);
+                            appUser = {
+                                ...mapSupabaseUser(session.user),
+                                id: realId
+                            } as User;
+                            await dbAdapter.saveUser(appUser).catch(e => console.error("❌ saveUser failed", e));
                         }
-                    });
-                }
-                else if (event === 'SIGNED_OUT') {
-                    dbAdapter.setCurrentUserId(null);
-                    dispatch({ type: 'LOGOUT' });
-                    // Force a hard refresh to clear all application state and modals
-                    if (typeof window !== 'undefined') {
-                        window.location.href = '/';
+
+                        console.log("✅ [StallTrace] Dispatching LOGIN_SUCCESS");
+                        dispatch({
+                            type: 'LOGIN_SUCCESS',
+                            payload: {
+                                user: appUser!,
+                                orders: [],
+                                keepOpen: false
+                            }
+                        });
                     }
-                }
+                    else if (event === 'SIGNED_OUT') {
+                        console.log("🔐 [StallTrace] Processing logout event");
+                        dbAdapter.setCurrentUserId(null);
+                        dispatch({ type: 'LOGOUT' });
+                        if (typeof window !== 'undefined') {
+                            window.location.href = '/';
+                        }
+                    }
+                };
+
+                runSync().catch(err => console.error("❌ [StallTrace] runSync fatal error:", err));
             });
 
             return () => {
