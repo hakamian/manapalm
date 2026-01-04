@@ -20,8 +20,21 @@ export async function POST(req: Request) {
             email: user.email,
             full_name: user.fullName || user.name,
             phone: user.phone,
+            avatar_url: user.avatar,
+            points: user.points || 0,
+            mana_points: user.manaPoints || 0,
+            level: user.level || 'جوانه',
+            is_admin: !!user.isAdmin,
+            is_guardian: !!user.isGuardian,
+            is_grove_keeper: !!user.isGroveKeeper,
             metadata: {
+                ...(user.metadata || {}), // Preserve existing metadata
                 addresses: user.addresses || [],
+                messages: user.messages || [],
+                recentViews: user.recentViews || [],
+                timeline: (user.timeline || []).slice(0, 50),
+                coursePersonalizations: user.coursePersonalizations || {},
+                discReport: user.discReport || null,
                 updated_at: new Date().toISOString()
             }
         };
