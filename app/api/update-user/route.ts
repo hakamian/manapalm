@@ -27,7 +27,7 @@ export async function POST(req: Request) {
             id: user.id,
             email: user.email,
             full_name: user.fullName || user.name,
-            phone: user.phone,
+            // phone: user.phone, // 🛑 Temporarily disabled to check if this triggers the ghost SMS
             avatar_url: user.avatar,
             points: user.points || 0,
             mana_points: user.manaPoints || 0,
