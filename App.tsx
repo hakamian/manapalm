@@ -242,6 +242,8 @@ const App: React.FC = () => {
             <WhatsNewModal />
             <CommandPalette />
 
+            <LiveActivityBanner />
+            <Header />
             <div className="relative z-10">
                 <MainContent />
             </div>
