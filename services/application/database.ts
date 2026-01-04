@@ -19,14 +19,30 @@ const safeParse = (data: any, fallback: any) => {
 };
 
 const mapProfileToUser = (profile: any): User => {
-    const metadata = safeParse(profile.metadata, {});
+    const rawMetadata = profile.metadata;
+    let metadata = {};
+
+    if (rawMetadata) {
+        if (typeof rawMetadata === 'object') {
+            metadata = rawMetadata;
+        } else if (typeof rawMetadata === 'string') {
+            try {
+                metadata = JSON.parse(rawMetadata);
+            } catch (e) {
+                console.error("❌ Failed to parse metadata string:", rawMetadata);
+            }
+        }
+    }
+
+    const addresses = (metadata as any)?.addresses || [];
+
     return {
         id: profile.id,
-        name: profile.full_name || metadata.name || 'کاربر',
-        fullName: profile.full_name || metadata.fullName,
+        name: profile.full_name || (metadata as any)?.name || 'کاربر',
+        fullName: profile.full_name || (metadata as any)?.fullName,
         email: profile.email,
         phone: profile.phone || '',
-        avatar: profile.avatar_url || metadata.avatar,
+        avatar: profile.avatar_url || (metadata as any)?.avatar,
         points: profile.points ?? 0,
         manaPoints: profile.mana_points ?? 0,
         level: profile.level || 'جوانه',
@@ -35,18 +51,15 @@ const mapProfileToUser = (profile: any): User => {
         isGroveKeeper: profile.is_grove_keeper ?? false,
         joinDate: profile.created_at,
 
-        // 🚀 CRITICAL: Spread ALL metadata fields first, then override specific ones if needed
         ...metadata,
 
-        profileCompletion: metadata.profileCompletion || { initial: false, additional: false, extra: false },
-        timeline: metadata.timeline || [],
-        unlockedTools: metadata.unlockedTools || [],
-        purchasedCourseIds: metadata.purchasedCourseIds || [],
-
-        // Ensure upgrade fields are at least empty arrays if not present
-        addresses: metadata.addresses || [],
-        messages: metadata.messages || [],
-        recentViews: metadata.recentViews || [],
+        addresses: addresses,
+        profileCompletion: (metadata as any)?.profileCompletion || { initial: false, additional: false, extra: false },
+        timeline: (metadata as any)?.timeline || [],
+        unlockedTools: (metadata as any)?.unlockedTools || [],
+        purchasedCourseIds: (metadata as any)?.purchasedCourseIds || [],
+        messages: (metadata as any)?.messages || [],
+        recentViews: (metadata as any)?.recentViews || [],
     };
 };
 
