@@ -91,20 +91,14 @@ const UserMenu: React.FC = () => {
                         </li>
                     )}
                     <li>
-                        <a href="#" onClick={async (e) => {
+                        <a href="#" onClick={(e) => {
                             e.preventDefault();
-                            try {
-                                // Thorough cleanup: our ID, Supabase session, and state
-                                await dbAdapter.signOut();
-                                dispatch({ type: 'LOGOUT' });
-                                setIsOpen(false);
-
-                                // Redirect to home to ensure a clean state
-                                if (typeof window !== 'undefined') {
-                                    window.location.href = '/';
-                                }
-                            } catch (error) {
-                                console.error("Logout error:", error);
+                            console.log("🚪 Forced Logout initiated...");
+                            if (typeof window !== 'undefined') {
+                                localStorage.clear();
+                                // Try to sign out via adapter, but don't await to avoid blocking redirect
+                                dbAdapter.signOut().catch(console.error);
+                                window.location.href = '/';
                             }
                         }} className="block px-4 py-2 hover:bg-green-800 transition-colors duration-200">
                             خروج
