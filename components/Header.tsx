@@ -91,14 +91,34 @@ const UserMenu: React.FC = () => {
                         </li>
                     )}
                     <li>
-                        <a href="#" onClick={(e) => {
+                        <a href="#" onClick={async (e) => {
                             e.preventDefault();
-                            console.log("🚪 Forced Logout initiated...");
-                            if (typeof window !== 'undefined') {
-                                localStorage.clear();
-                                // Try to sign out via adapter, but don't await to avoid blocking redirect
-                                dbAdapter.signOut().catch(console.error);
-                                window.location.href = '/';
+                            console.log("🚪 Logout initiated...");
+                            try {
+                                // 1. Clear all local storage and session storage
+                                if (typeof window !== 'undefined') {
+                                    localStorage.clear();
+                                    sessionStorage.clear();
+                                }
+
+                                // 2. Sign out from Supabase (clears auth cookies)
+                                await dbAdapter.signOut();
+
+                                // 3. Dispatch local logout for state cleanup
+                                dispatch({ type: 'LOGOUT' });
+
+                                console.log("✅ Logout successful, redirecting...");
+
+                                // 4. Force full page reload to clear any cached state
+                                if (typeof window !== 'undefined') {
+                                    window.location.href = '/';
+                                }
+                            } catch (err) {
+                                console.error("❌ Logout failed", err);
+                                // Fallback: force refresh anyway
+                                if (typeof window !== 'undefined') {
+                                    window.location.href = '/';
+                                }
                             }
                         }} className="block px-4 py-2 hover:bg-green-800 transition-colors duration-200">
                             خروج

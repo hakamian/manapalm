@@ -5,9 +5,9 @@ import GrantPointsModal from '../GrantPointsModal';
 import PotentialScoreGauge from '../PotentialScoreGauge';
 import { timeAgo } from '../../utils/time';
 import Modal from '../Modal';
-import { 
-    UserCircleIcon, ShoppingCartIcon, AcademicCapIcon, ClockIcon, 
-    EnvelopeIcon, ShieldExclamationIcon, CheckCircleIcon, XMarkIcon 
+import {
+    UserCircleIcon, ShoppingCartIcon, AcademicCapIcon, ClockIcon,
+    EnvelopeIcon, ShieldExclamationIcon, CheckCircleIcon, XMarkIcon
 } from '../icons';
 import { useAppState } from '../../AppContext';
 
@@ -18,7 +18,7 @@ interface UserManagementProps {
 }
 
 // --- 360 DEGREE PROFILE MODAL ---
-const UserDetailModal: React.FC<{ user: User; orders: Order[]; onClose: () => void }> = ({ user, orders, onClose }) => {
+const UserDetailModal: React.FC<{ user: User; orders: Order[]; onClose: () => void; onSendSms: () => void }> = ({ user, orders, onClose, onSendSms }) => {
     const [activeTab, setActiveTab] = useState<'overview' | 'purchases' | 'courses' | 'logs'>('overview');
 
     // Calculate Course Progress
@@ -73,7 +73,7 @@ const UserDetailModal: React.FC<{ user: User; orders: Order[]; onClose: () => vo
                                     <div className="flex justify-between"><span className="text-gray-500">آخرین ورود:</span> <span className="text-green-400">آنلاین (همین الان)</span></div>
                                 </div>
                             </div>
-                             <div className="bg-gray-800 p-4 rounded-xl border border-gray-700">
+                            <div className="bg-gray-800 p-4 rounded-xl border border-gray-700">
                                 <h3 className="font-bold text-gray-300 mb-4 border-b border-gray-600 pb-2">خلاصه وضعیت</h3>
                                 <div className="space-y-3 text-sm">
                                     <div className="flex justify-between"><span className="text-gray-500">ارزش طول عمر (CLV):</span> <span className="text-green-400 font-bold">{totalSpent.toLocaleString('fa-IR')} تومان</span></div>
@@ -86,12 +86,12 @@ const UserDetailModal: React.FC<{ user: User; orders: Order[]; onClose: () => vo
                     )}
 
                     {activeTab === 'purchases' && (
-                         <div className="space-y-4">
+                        <div className="space-y-4">
                             {userOrders.length > 0 ? userOrders.map(order => (
                                 <div key={order.id} className="bg-gray-800 p-4 rounded-xl border border-gray-700 flex justify-between items-center">
                                     <div>
                                         <p className="font-bold text-white">سفارش #{order.id.slice(-6)}</p>
-                                        <p className="text-xs text-gray-400">{new Date(order.date).toLocaleDateString('fa-IR')}</p>
+                                        <p className="text-xs text-gray-400">{new Date(order.date || Date.now()).toLocaleDateString('fa-IR')}</p>
                                     </div>
                                     <div className="text-right">
                                         <p className="font-bold text-green-400">{order.total.toLocaleString('fa-IR')} تومان</p>
@@ -99,7 +99,7 @@ const UserDetailModal: React.FC<{ user: User; orders: Order[]; onClose: () => vo
                                     </div>
                                 </div>
                             )) : <p className="text-center text-gray-500">هیچ سفارشی یافت نشد.</p>}
-                         </div>
+                        </div>
                     )}
 
                     {activeTab === 'courses' && (
@@ -135,8 +135,11 @@ const UserDetailModal: React.FC<{ user: User; orders: Order[]; onClose: () => vo
 
                 {/* Actions Footer */}
                 <div className="p-4 bg-gray-800 border-t border-gray-700 flex justify-end gap-3">
-                    <button className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 text-sm">
-                        <EnvelopeIcon className="w-4 h-4" /> ارسال پیام
+                    <button
+                        onClick={onSendSms}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center gap-2 text-sm"
+                    >
+                        <EnvelopeIcon className="w-4 h-4" /> ارسال پیامک
                     </button>
                     <button className="px-4 py-2 bg-red-600/20 text-red-400 hover:bg-red-600/30 border border-red-600/50 rounded-lg flex items-center gap-2 text-sm">
                         <ShieldExclamationIcon className="w-4 h-4" /> مسدودسازی
@@ -154,6 +157,41 @@ const UserManagement: React.FC<UserManagementProps> = ({ allUsers, onAdminUpdate
     const [isGrantModalOpen, setIsGrantModalOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
 
+    // SMS States
+    const [isSmsModalOpen, setIsSmsModalOpen] = useState(false);
+    const [smsText, setSmsText] = useState('');
+    const [isSendingSms, setIsSendingSms] = useState(false);
+
+    const handleSendSms = async () => {
+        if (!selectedUser || !smsText) return;
+
+        setIsSendingSms(true);
+        try {
+            const response = await fetch('/api/sms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    mobile: selectedUser.phone,
+                    message: smsText
+                })
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                alert('پیامک با موفقیت ارسال شد.');
+                setIsSmsModalOpen(false);
+                setSmsText('');
+            } else {
+                alert(`خطا در ارسال: ${data.message || 'نامشخص'}`);
+            }
+        } catch (err) {
+            console.error('SMS Error:', err);
+            alert('خطا در برقراری ارتباط با سرور.');
+        } finally {
+            setIsSendingSms(false);
+        }
+    };
+
     const usersWithPotential = useMemo(() => {
         return allUsers.map(user => {
             const pointsScore = Math.min(user.points / 5000, 1) * 40;
@@ -170,7 +208,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ allUsers, onAdminUpdate
             if (potential > 75) rationale = 'پتانسیل بالا: کاربر بسیار فعال و در مسیر طلایی است.';
             else if (potential > 40) rationale = 'نیاز به توجه: فعالیت خوبی دارد اما اخیراً کمی غیرفعال شده است.';
             else rationale = 'ریسک بالا: کاربر برای مدتی غیرفعال بوده است.';
-            
+
             return { ...user, potential, rationale };
         }).filter(u => u.fullName?.includes(searchTerm) || u.phone.includes(searchTerm));
     }, [allUsers, searchTerm]);
@@ -179,15 +217,15 @@ const UserManagement: React.FC<UserManagementProps> = ({ allUsers, onAdminUpdate
         <div className="bg-white dark:bg-stone-800/50 p-4 rounded-2xl shadow-lg border border-stone-200/50 dark:border-stone-700/50">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="text-xl font-bold">مدیریت کاربران ({allUsers.length})</h2>
-                <input 
-                    type="text" 
-                    placeholder="جستجو..." 
+                <input
+                    type="text"
+                    placeholder="جستجو..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="bg-gray-700 text-white px-3 py-1.5 rounded-lg text-sm border border-gray-600 focus:border-amber-500 outline-none"
                 />
             </div>
-            
+
             <div className="max-h-[70vh] overflow-y-auto">
                 <table className="w-full text-sm text-right">
                     <thead className="text-xs text-stone-700 uppercase bg-stone-50 dark:bg-stone-700 dark:text-stone-400 sticky top-0">
@@ -201,7 +239,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ allUsers, onAdminUpdate
                     </thead>
                     <tbody>
                         {usersWithPotential.map(user => {
-                            const lastEvent = user.timeline && user.timeline.length > 1 ? user.timeline.sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0] : null;
+                            const lastEvent = user.timeline && user.timeline.length > 1 ? user.timeline.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0] : null;
                             return (
                                 <tr key={user.id} className="bg-white border-b dark:bg-stone-800 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-700/50 cursor-pointer" onClick={() => setSelectedUser(user)}>
                                     <td className="px-6 py-4 font-medium text-stone-900 whitespace-nowrap dark:text-white flex items-center gap-2">
@@ -214,8 +252,8 @@ const UserManagement: React.FC<UserManagementProps> = ({ allUsers, onAdminUpdate
                                     </td>
                                     <td className="px-6 py-4 text-stone-500 dark:text-stone-400">{lastEvent ? timeAgo(lastEvent.date) : timeAgo(user.joinDate)}</td>
                                     <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
-                                        <button 
-                                            onClick={() => { setSelectedUser(user); setIsGrantModalOpen(true); }} 
+                                        <button
+                                            onClick={() => { setSelectedUser(user); setIsGrantModalOpen(true); }}
                                             className="font-medium text-amber-600 dark:text-amber-500 hover:underline mr-2"
                                         >
                                             امتیاز
@@ -231,11 +269,72 @@ const UserManagement: React.FC<UserManagementProps> = ({ allUsers, onAdminUpdate
                 </table>
             </div>
 
-            {selectedUser && !isGrantModalOpen && (
-                <UserDetailModal user={selectedUser} orders={orders} onClose={() => setSelectedUser(null)} />
+            {selectedUser && !isGrantModalOpen && !isSmsModalOpen && (
+                <UserDetailModal user={selectedUser} orders={orders} onClose={() => setSelectedUser(null)} onSendSms={() => setIsSmsModalOpen(true)} />
             )}
 
-            <GrantPointsModal 
+            {isSmsModalOpen && selectedUser && (
+                <Modal isOpen={true} onClose={() => setIsSmsModalOpen(false)}>
+                    <div className="bg-gray-800 p-6 rounded-2xl border border-gray-700 w-full max-w-md text-white shadow-2xl">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold flex items-center gap-2">
+                                <EnvelopeIcon className="w-6 h-6 text-blue-400" />
+                                ارسال پیامک به {selectedUser.fullName || selectedUser.name}
+                            </h3>
+                            <button onClick={() => setIsSmsModalOpen(false)}><XMarkIcon className="w-6 h-6 text-gray-400" /></button>
+                        </div>
+
+                        <div className="space-y-4">
+                            <div>
+                                <label className="block text-sm text-gray-400 mb-1">شماره موبایل</label>
+                                <input
+                                    type="text"
+                                    disabled
+                                    className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-gray-500 font-mono"
+                                    value={selectedUser.phone}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm text-gray-400 mb-1">متن پیام</label>
+                                <textarea
+                                    rows={4}
+                                    className="w-full bg-gray-900 border border-gray-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition-all"
+                                    placeholder="متن پیام خود را اینجا بنویسید..."
+                                    value={smsText}
+                                    onChange={(e) => setSmsText(e.target.value)}
+                                />
+                                <p className="text-[10px] text-gray-500 mt-1">تذکر: پیام شما با قالب پیش‌فرض پنل (Template ID) ارسال خواهد شد.</p>
+                            </div>
+
+                            <div className="flex justify-end gap-3 mt-6">
+                                <button
+                                    onClick={() => setIsSmsModalOpen(false)}
+                                    className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+                                >
+                                    انصراف
+                                </button>
+                                <button
+                                    onClick={handleSendSms}
+                                    disabled={isSendingSms || !smsText}
+                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg flex items-center gap-2"
+                                >
+                                    {isSendingSms ? (
+                                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                    ) : (
+                                        <>
+                                            <CheckCircleIcon className="w-5 h-5" />
+                                            ارسال پیامک
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            <GrantPointsModal
                 isOpen={isGrantModalOpen}
                 onClose={() => { setIsGrantModalOpen(false); setSelectedUser(null); }}
                 user={selectedUser}
