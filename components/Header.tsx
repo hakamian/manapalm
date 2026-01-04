@@ -100,7 +100,9 @@ const UserMenu: React.FC = () => {
                                 setIsOpen(false);
 
                                 // Redirect to home to ensure a clean state
-                                dispatch({ type: 'SET_VIEW', payload: View.Home });
+                                if (typeof window !== 'undefined') {
+                                    window.location.href = '/';
+                                }
                             } catch (error) {
                                 console.error("Logout error:", error);
                             }

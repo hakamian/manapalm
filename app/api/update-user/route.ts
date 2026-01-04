@@ -57,8 +57,17 @@ export async function POST(req: Request) {
             .upsert(profileData);
 
         if (error) {
-            console.error('❌ Supabase Error:', error);
-            return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+            console.error('❌ Supabase Update Error:', {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code
+            });
+            return NextResponse.json({
+                success: false,
+                error: error.message,
+                code: error.code
+            }, { status: 500 });
         }
 
         return NextResponse.json({ success: true });
