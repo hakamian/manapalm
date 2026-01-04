@@ -93,24 +93,19 @@ const UserMenu: React.FC = () => {
                     <li>
                         <a href="#" onClick={async (e) => {
                             e.preventDefault();
-                            console.log("🚪 Logout initiated...");
+                            console.log("🚪 Manual Logout Initiated...");
                             try {
-                                // 1. Clear all local storage and session storage
+                                // 1. Attempt graceful Supabase signout (clears cookies and remote session)
+                                await dbAdapter.signOut();
+
+                                // 2. Dispatch local state cleanup
+                                dispatch({ type: 'LOGOUT' });
+
+                                // 3. Thoroughly wipe all potential persistent storage and reload
                                 if (typeof window !== 'undefined') {
                                     localStorage.clear();
                                     sessionStorage.clear();
-                                }
-
-                                // 2. Sign out from Supabase (clears auth cookies)
-                                await dbAdapter.signOut();
-
-                                // 3. Dispatch local logout for state cleanup
-                                dispatch({ type: 'LOGOUT' });
-
-                                console.log("✅ Logout successful, redirecting...");
-
-                                // 4. Force full page reload to clear any cached state
-                                if (typeof window !== 'undefined') {
+                                    console.log("✅ Logout successful, forcing hard reload...");
                                     window.location.href = '/';
                                 }
                             } catch (err) {

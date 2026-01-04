@@ -682,21 +682,31 @@ export const dbAdapter = {
     },
 
     async signOut() {
-        console.log("🚪 Logging out and clearing all local states...");
+        console.log("🚪 Logging out: Clearing sessions and tokens...");
+        if (supabase) {
+            try {
+                // Use global scope to sign out from all devices/sessions
+                await supabase.auth.signOut({ scope: 'global' });
+            } catch (e) {
+                console.error("Supabase signOut error:", e);
+            }
+        }
+
         this.setCurrentUserId(null);
         if (typeof window !== 'undefined') {
             // Hard clear all potential auth and app keys
             localStorage.removeItem('supabase.auth.token');
             localStorage.removeItem('nakhlestan_current_user_id');
-            // Clear any backup keys to force fresh state on next login
+
+            // Clear any backup keys and supabase internal storage
             Object.keys(localStorage).forEach(key => {
-                if (key.startsWith('user_backup_') || key.includes('supabase')) {
+                if (key.startsWith('user_backup_') || key.toLowerCase().includes('supabase') || key.includes('sb-')) {
                     localStorage.removeItem(key);
                 }
             });
-        }
-        if (supabase) {
-            await supabase.auth.signOut();
+
+            // Also clear session storage
+            sessionStorage.clear();
         }
     },
 
