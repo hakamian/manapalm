@@ -1,5 +1,5 @@
-
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { createBrowserClient } from '@supabase/ssr';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { User } from '../../types';
 import { REFERENCE_DATE_STR } from '../../utils/dummyData';
 
@@ -43,14 +43,7 @@ if (typeof window !== 'undefined') {
 const isConfigured = supabaseUrl && supabaseAnonKey && supabaseUrl.startsWith('http');
 
 export const supabase: SupabaseClient | null = isConfigured
-    ? createClient(supabaseUrl, supabaseAnonKey, {
-        auth: {
-            persistSession: true,
-            autoRefreshToken: true,
-            detectSessionInUrl: true,
-            flowType: 'pkce'
-        }
-    })
+    ? createBrowserClient(supabaseUrl, supabaseAnonKey)
     : null;
 
 export const setupSupabaseKeys = (url: string, key: string) => {

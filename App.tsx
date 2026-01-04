@@ -172,69 +172,6 @@ const App: React.FC = () => {
         }
     }, [allUsers, dispatch]);
 
-    const cleanAuthUrl = () => {
-        if (typeof window === 'undefined') return false;
-        const params = new URLSearchParams(window.location.search);
-        const hasAuthParams = params.has('code') || params.has('error') || params.has('access_token') || window.location.hash.includes('access_token');
-
-        if (hasAuthParams) {
-            params.delete('code');
-            params.delete('error');
-            params.delete('error_description');
-            params.delete('access_token');
-            params.delete('refresh_token');
-            params.delete('expires_in');
-            params.delete('token_type');
-            const newQuery = params.toString();
-            const newUrl = window.location.pathname + (newQuery ? '?' + newQuery : '');
-            window.history.replaceState({}, document.title, newUrl);
-            return true;
-        }
-        return false;
-    };
-
-    useEffect(() => {
-        if (!supabase) return;
-
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session?.user) {
-                const existingUser = allUsers.find(u => u.email === session.user.email);
-                const appUser = mapSupabaseUserToAppUser(session.user, existingUser);
-                dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
-
-                if (cleanAuthUrl()) {
-                    console.log("🔄 Detected Auth Redirect - Navigating to Profile");
-                    dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'profile' });
-                }
-            }
-        });
-
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            if (session?.user) {
-                const existingUser = allUsers.find(u => u.email === session.user.email);
-                const appUser = mapSupabaseUserToAppUser(session.user, existingUser);
-                if (!user || user.id !== appUser.id) {
-                    dispatch({ type: 'LOGIN_SUCCESS', payload: { user: appUser, orders: [], keepOpen: false } });
-                    dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: false });
-                }
-
-                // Also check here in case onAuthStateChange fires before getSession on some flows
-                if (cleanAuthUrl()) {
-                    console.log("🔄 Detected Auth Redirect (Listener) - Navigating to Profile");
-                    dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'profile' });
-                }
-            } else if (_event === 'SIGNED_OUT') {
-                if (user) {
-                    dispatch({ type: 'LOGOUT' });
-                }
-            }
-        });
-
-        return () => {
-            subscription.unsubscribe();
-        };
-    }, [dispatch, allUsers, user]);
-
     return (
         <>
             <SEOIndex products={products} />

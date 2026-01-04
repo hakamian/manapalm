@@ -364,7 +364,13 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'ADD_GENERATED_COURSE': { const newCourse = action.payload; return { ...state, generatedCourses: [...(state.generatedCourses || []), newCourse] }; }
         case 'SET_BOTTOM_NAV_VISIBLE': return { ...state, isBottomNavVisible: action.payload };
         // Duplicate SET_PROFILE_TAB_AND_NAVIGATE removed
-        case 'LOAD_INITIAL_DATA': return { ...state, ...action.payload };
+        case 'LOAD_INITIAL_DATA':
+            // 🛡️ Prevent overwriting a user already set by AUTH (race condition fix)
+            if (state.user && !action.payload.user) {
+                const { user, ...otherInitialData } = action.payload;
+                return { ...state, ...otherInitialData };
+            }
+            return { ...state, ...action.payload };
         case 'LOAD_ADMIN_DATA': return { ...state, allUsers: action.payload.users, users: action.payload.users, orders: action.payload.orders };
         case 'ADD_GAMIFICATION_ALERT': return { ...state, gamificationAlerts: [...state.gamificationAlerts, action.payload] };
         case 'DISMISS_GAMIFICATION_ALERT': return { ...state, gamificationAlerts: state.gamificationAlerts.slice(1) };
@@ -396,7 +402,29 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
 
 
+    // 🛡️ Consolidated Auth & Initial Load Sync
     useEffect(() => {
+        const cleanAuthUrl = () => {
+            if (typeof window === 'undefined') return false;
+            const params = new URLSearchParams(window.location.search);
+            const hasAuthParams = params.has('code') || params.has('error') || params.has('access_token') || window.location.hash.includes('access_token');
+
+            if (hasAuthParams) {
+                params.delete('code');
+                params.delete('error');
+                params.delete('error_description');
+                params.delete('access_token');
+                params.delete('refresh_token');
+                params.delete('expires_in');
+                params.delete('token_type');
+                const newQuery = params.toString();
+                const newUrl = window.location.pathname + (newQuery ? '?' + newQuery : '');
+                window.history.replaceState({}, document.title, newUrl);
+                return true;
+            }
+            return false;
+        };
+
         const loadInit = async () => {
             console.log("🚀 Initial App Load - Fetching Global Data...");
             const currentUserId = dbAdapter.getCurrentUserId();
@@ -422,10 +450,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 payload: {
                     communityPosts: posts,
                     products: products.length > 0 ? products : INITIAL_PRODUCTS,
+                    // 🛡️ Only load user if it's NOT already set by a faster Auth event
                     user: currentUser,
                     orders: userOrders
                 }
             });
+
+            if (cleanAuthUrl()) {
+                console.log("🔄 Detected Auth Redirect - Navigating to Profile");
+                dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'profile' });
+            }
         };
         loadInit();
     }, []);
@@ -438,7 +472,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
                 console.log("🔐 Auth Event:", event);
 
-                if (event === 'SIGNED_IN' && session?.user) {
+                if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
                     const realId = session.user.id;
                     console.log("✅ User Signed In, Syncing Identity:", realId);
 
