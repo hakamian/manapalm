@@ -2,6 +2,9 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
 export async function POST(req: Request) {
+    // 🧪 ISOLATION TEST: If the error still happens, it's NOT in the code below.
+    // return NextResponse.json({ success: true, message: 'EARLY_EXIT_DEBUG_ACTIVE' }); 
+
     try {
         const body = await req.json();
         const { user } = body;
