@@ -179,12 +179,16 @@ export const dbAdapter = {
                 throw new Error('پاسخ سرور معتبر نیست');
             }
 
-            if (!response.ok) {
+            if (result.success) {
+                console.log("✅ User successfully saved via Server API", result.debug || '');
+                // 🛡️ CRITICAL: Force update local storage ID and backup to prevent refresh jumps
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.setItem('nakhlestan_current_user_id', user.id);
+                    localStorage.setItem(`user_backup_${user.id}`, JSON.stringify(user));
+                }
+            } else {
                 console.error('❌ Server API Error:', result.error || 'Unknown error', result);
-                return;
             }
-
-            console.log("✅ User successfully saved via Server API");
         } catch (e: any) {
             console.error('❌ Critical Error in saveUser:', e.message);
             // Fallback to local storage for safety if API fails
