@@ -7,12 +7,15 @@ import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS, INITIAL_PRODUCTS } from '
 // This layer isolates the UI from the Data Source.
 
 const safeParse = (data: any, fallback: any) => {
-    if (typeof data === 'object') return data;
-    try {
-        return JSON.parse(data);
-    } catch {
-        return fallback;
+    if (data && typeof data === 'object') return data;
+    if (typeof data === 'string' && data.trim() !== '') {
+        try {
+            return JSON.parse(data);
+        } catch {
+            return fallback;
+        }
     }
+    return fallback;
 };
 
 const mapProfileToUser = (profile: any): User => {
@@ -111,7 +114,8 @@ export const dbAdapter = {
         const user = mapProfileToUser(data);
         console.log("📥 User Data Hydrated:", {
             id: user.id,
-            addresses: user.addresses?.length || 0,
+            fullName: user.fullName,
+            addressCount: user.addresses?.length || 0,
             hasMetadata: !!data.metadata
         });
         return user;

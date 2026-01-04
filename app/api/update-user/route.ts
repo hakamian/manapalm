@@ -46,6 +46,12 @@ export async function POST(req: Request) {
             }
         };
 
+        console.log('📝 Upserting Profile:', {
+            id: profileData.id,
+            fullName: profileData.full_name,
+            addressCount: profileData.metadata.addresses.length
+        });
+
         const { error } = await supabase
             .from('profiles')
             .upsert(profileData);
