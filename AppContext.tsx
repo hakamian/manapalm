@@ -367,16 +367,12 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'SET_BOTTOM_NAV_VISIBLE': return { ...state, isBottomNavVisible: action.payload };
         // Duplicate SET_PROFILE_TAB_AND_NAVIGATE removed
         case 'LOAD_INITIAL_DATA':
-            console.log("⚛️ Reducer: LOAD_INITIAL_DATA", {
-                hasStateUser: !!state.user,
-                hasPayloadUser: !!action.payload.user,
-                payloadUserId: action.payload.user?.id
-            });
-            // 🛡️ Prevent overwriting a user already set by AUTH (race condition fix)
+            // 🛡️ CRITICAL: If a user is already authenticated (e.g. by a fast Auth Event), 
+            // do not overwrite them with potentially null data from the slow initial load.
             if (state.user && !action.payload.user) {
-                console.log("🛡️ Reducer: Guarding against overwriting authenticated user with null initial data");
-                const { user, ...otherInitialData } = action.payload;
-                return { ...state, ...otherInitialData };
+                console.log("🛡️ [AuthGate] Guarding authenticated user from null data overwrite");
+                const { user, ...otherData } = action.payload;
+                return { ...state, ...otherData };
             }
             return { ...state, ...action.payload };
         case 'LOAD_ADMIN_DATA': return { ...state, allUsers: action.payload.users, users: action.payload.users, orders: action.payload.orders };
@@ -489,62 +485,44 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }, []);
 
 
-    // 🟢 AUTH LISTENER (Unified Meaning OS Fix)
-    // Keeps local state in sync with Supabase Auth (Google Login support)
+    // 🟢 UNIFIED AUTH LISTENER
     useEffect(() => {
-        if (supabase) {
-            const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-                console.log("🔐 [StallTrace] Auth Event fired:", event);
+        if (!supabase) return;
 
-                // Run actual sync in a separate async block to avoid stalling the listener
-                const runSync = async () => {
-                    if ((event === 'SIGNED_IN' || event === 'INITIAL_SESSION') && session?.user) {
-                        const realId = session.user.id;
-                        console.log("✅ [StallTrace] Auth listener processing user:", realId);
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log("🔐 [AuthEvent]:", event, session?.user?.id);
 
-                        // 🛡️ Force ID Sync before any other operation
-                        dbAdapter.setCurrentUserId(realId);
+            if (session?.user) {
+                const realId = session.user.id;
+                dbAdapter.setCurrentUserId(realId);
 
-                        console.log("✅ [StallTrace] Fetching app profile for:", realId);
-                        let appUser = await dbAdapter.getUserById(realId).catch(e => { console.error("❌ getUserById stall/error", e); return null; });
-                        console.log("✅ [StallTrace] Profile fetch result:", appUser?.id || 'null');
+                // Try to load detailed profile
+                let appUser = await dbAdapter.getUserById(realId);
 
-                        if (!appUser) {
-                            console.log("🌱 [StallTrace] Creating initial profile for " + realId);
-                            appUser = {
-                                ...mapSupabaseUser(session.user),
-                                id: realId
-                            } as User;
-                            await dbAdapter.saveUser(appUser).catch(e => console.error("❌ saveUser failed", e));
-                        }
+                if (!appUser) {
+                    console.log("🌱 Creating missing profile for:", realId);
+                    appUser = {
+                        ...mapSupabaseUser(session.user),
+                        id: realId
+                    } as User;
+                    await dbAdapter.saveUser(appUser).catch(console.error);
+                }
 
-                        console.log("✅ [StallTrace] Dispatching LOGIN_SUCCESS");
-                        dispatch({
-                            type: 'LOGIN_SUCCESS',
-                            payload: {
-                                user: appUser!,
-                                orders: [],
-                                keepOpen: false
-                            }
-                        });
-                    }
-                    else if (event === 'SIGNED_OUT') {
-                        console.log("🔐 [StallTrace] Processing logout event");
-                        dbAdapter.setCurrentUserId(null);
-                        dispatch({ type: 'LOGOUT' });
-                        if (typeof window !== 'undefined') {
-                            window.location.href = '/';
-                        }
-                    }
-                };
+                dispatch({
+                    type: 'LOGIN_SUCCESS',
+                    payload: { user: appUser, orders: [] }
+                });
 
-                runSync().catch(err => console.error("❌ [StallTrace] runSync fatal error:", err));
-            });
+                // Auto-close modal if open
+                dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: false });
+            }
+            else if (event === 'SIGNED_OUT') {
+                dbAdapter.setCurrentUserId(null);
+                dispatch({ type: 'LOGOUT' });
+            }
+        });
 
-            return () => {
-                subscription.unsubscribe();
-            };
-        }
+        return () => subscription.unsubscribe();
     }, []);
 
     return (
