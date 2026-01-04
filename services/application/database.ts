@@ -151,7 +151,12 @@ export const dbAdapter = {
         }
 
         try {
-            console.log("🚀 Syncing User to Server API:", { id: user.id, addresses: user.addresses?.length });
+            const userId = user.id;
+            console.log("🚀 Syncing User to Server API:", {
+                id: userId,
+                currentStorageId: this.getCurrentUserId(),
+                addresses: user.addresses?.length
+            });
 
             const response = await fetch('/api/update-user-v2', {
                 method: 'POST',

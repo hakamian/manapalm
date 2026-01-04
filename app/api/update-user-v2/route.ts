@@ -39,13 +39,19 @@ export async function POST(req: Request) {
             }
         };
 
-        const { error } = await supabase
+        const { data, error } = await supabase
             .from('profiles')
-            .upsert(profileData);
+            .upsert(profileData)
+            .select()
+            .single();
 
         if (error) throw error;
 
-        return NextResponse.json({ success: true, message: 'New Route Active' });
+        return NextResponse.json({
+            success: true,
+            message: 'New Route Active',
+            savedData: data
+        });
     } catch (error: any) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
