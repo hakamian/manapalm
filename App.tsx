@@ -238,7 +238,7 @@ const App: React.FC = () => {
     return (
         <>
             <SEOIndex products={products} />
-            <WelcomeTour />
+            {/* <WelcomeTour /> */}
             <WhatsNewModal />
             <CommandPalette />
 
