@@ -105,9 +105,14 @@ export const dbAdapter = {
             return INITIAL_USERS.find(u => u.id === id) || null;
         }
 
-        const { data, error } = await supabase!.from('profiles').select('*').eq('id', id).single();
+        const { data, error } = await supabase!
+            .from('profiles')
+            .select('*')
+            .eq('id', id)
+            .single();
+
         if (error || !data) {
-            console.error('❌ DB Error (getUserById):', error?.message);
+            console.warn("⚠️ User not found in DB:", id);
             return null;
         }
 
@@ -115,7 +120,7 @@ export const dbAdapter = {
         console.log("📥 User Data Hydrated:", {
             id: user.id,
             fullName: user.fullName,
-            addressCount: user.addresses?.length || 0,
+            addressCount: (user.addresses || []).length,
             hasMetadata: !!data.metadata
         });
         return user;
@@ -643,11 +648,18 @@ export const dbAdapter = {
     },
 
     async signOut() {
+        console.log("🚪 Logging out and clearing all local states...");
         this.setCurrentUserId(null);
         if (typeof window !== 'undefined') {
-            localStorage.removeItem('supabase.auth.token'); // Legacy
-            // Supabase 2.x uses different keys, but signOut() usually handles them.
-            // We manually clear our own tracker.
+            // Hard clear all potential auth and app keys
+            localStorage.removeItem('supabase.auth.token');
+            localStorage.removeItem('nakhlestan_current_user_id');
+            // Clear any backup keys to force fresh state on next login
+            Object.keys(localStorage).forEach(key => {
+                if (key.startsWith('user_backup_') || key.includes('supabase')) {
+                    localStorage.removeItem(key);
+                }
+            });
         }
         if (supabase) {
             await supabase.auth.signOut();
