@@ -18,6 +18,27 @@ const safeParse = (data: any, fallback: any) => {
     return fallback;
 };
 
+// 🛡️ Helper to prevent hanging database calls
+const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, fallback: T): Promise<T> => {
+    let timeoutHandle: any;
+    const timeoutPromise = new Promise<T>((resolve) => {
+        timeoutHandle = setTimeout(() => {
+            console.warn(`⏳ [DB Timeout] Operation exceeded ${timeoutMs}ms. Using fallback.`);
+            resolve(fallback);
+        }, timeoutMs);
+    });
+
+    try {
+        const result = await Promise.race([promise, timeoutPromise]);
+        clearTimeout(timeoutHandle);
+        return result;
+    } catch (err) {
+        clearTimeout(timeoutHandle);
+        console.error("❌ [DB Error]", err);
+        return fallback;
+    }
+};
+
 const mapProfileToUser = (profile: any): User => {
     const rawMetadata = profile.metadata;
     let metadata = {};
@@ -124,31 +145,35 @@ export const dbAdapter = {
             return INITIAL_USERS.find(u => u.id === id) || null;
         }
 
-        try {
-            console.log("🔍 [DB] Fetching user by ID:", id);
-            const { data, error } = await supabase!
-                .from('profiles')
-                .select('*')
-                .eq('id', id)
-                .maybeSingle(); // Better than .single() as it doesn't throw on 406
+        const fetchUser = async () => {
+            console.log("🔍 [DB StallTrace] Starting getUserById for:", id);
+            try {
+                const { data, error } = await supabase!
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', id)
+                    .maybeSingle();
 
-            if (error) {
-                console.error("❌ [DB] Error in getUserById:", error.message);
+                if (error) {
+                    console.error("❌ [DB StallTrace] Error in getUserById:", error.message);
+                    return null;
+                }
+
+                if (!data) {
+                    console.log("⚠️ [DB StallTrace] User profile not found in DB for:", id);
+                    return null;
+                }
+
+                const user = mapProfileToUser(data);
+                console.log("📥 [DB StallTrace] Profile hydrated successfully:", user.id);
+                return user;
+            } catch (err: any) {
+                console.error("❌ [DB StallTrace] getUserById failed:", err.message);
                 return null;
             }
+        };
 
-            if (!data) {
-                console.log("⚠️ [DB] No profile found in database for:", id);
-                return null;
-            }
-
-            const user = mapProfileToUser(data);
-            console.log("📥 [DB] Profile hydrated successfully:", user.id);
-            return user;
-        } catch (err: any) {
-            console.error("❌ [DB] Critical failure in getUserById:", err.message);
-            return null;
-        }
+        return withTimeout(fetchUser(), 5000, null);
     },
 
     async saveUser(user: User): Promise<void> {
@@ -396,26 +421,26 @@ export const dbAdapter = {
     async getAllPosts(): Promise<CommunityPost[]> {
         if (!this.isLive()) return INITIAL_POSTS;
 
-        const { data, error } = await supabase!
-            .from('posts')
-            .select(`*, profiles(full_name, avatar_url)`)
-            .order('created_at', { ascending: false })
-            .limit(20);
+        const fetchPosts = async () => {
+            const { data, error } = await supabase!
+                .from('posts')
+                .select(`*, profiles(full_name, avatar_url)`)
+                .order('created_at', { ascending: false })
+                .limit(20);
 
-        if (error) {
-            console.error("Error fetching posts:", error.message);
-            return INITIAL_POSTS;
-        }
+            if (error) throw error;
+            return (data || []).map((p: any) => ({
+                id: p.id,
+                authorId: p.author_id,
+                authorName: p.profiles?.full_name || 'کاربر ناشناس',
+                authorAvatar: p.profiles?.avatar_url || '',
+                text: p.content,
+                likes: p.likes_count || 0,
+                timestamp: p.created_at
+            }));
+        };
 
-        return data.map((p: any) => ({
-            id: p.id,
-            authorId: p.author_id,
-            authorName: p.profiles?.full_name || 'کاربر ناشناس',
-            authorAvatar: p.profiles?.avatar_url || '',
-            text: p.content,
-            likes: p.likes_count || 0,
-            timestamp: p.created_at
-        }));
+        return withTimeout(fetchPosts(), 4000, INITIAL_POSTS);
     },
 
     async savePost(post: CommunityPost): Promise<void> {
@@ -432,75 +457,43 @@ export const dbAdapter = {
     },
 
     async getAllProducts(): Promise<Product[]> {
-        if (!this.isLive()) {
-            if (typeof localStorage !== 'undefined') {
-                const stored = localStorage.getItem('nakhlestan_local_products');
-                if (stored) {
-                    try {
-                        const localProducts = JSON.parse(stored);
-                        // Merge initial products with local changes if needed, or just return local if it bootstraps from initial
-                        // Strategy: Local storage acts as the "live" DB in mock mode.
-                        // If local is empty, we initialize it? No, getAllProducts just returns what's there.
-                        // But we want to see INITIAL_PRODUCTS too.
-                        // Let's assume nakhlestan_local_products contains ALL products (initial + added).
-                        // If it doesn't exist, we return INITIAL_PRODUCTS.
-                        return localProducts;
-                    } catch (e) {
-                        console.error("Error parsing local products", e);
-                    }
-                }
-                // Initialize local storage with initial products for first run
-                const initial = INITIAL_PRODUCTS.map(p => ({
-                    ...p,
-                    isActive: p.isActive ?? true,
-                    description: p.description || '',
-                    stock: p.stock || 0
-                }));
-                // Don't write to localStorage here to avoid side-effects in getters, 
-                // but returning INITIAL_PRODUCTS is safe.
-                return initial as Product[];
-            }
-            return INITIAL_PRODUCTS;
-        }
+        if (!this.isLive()) return INITIAL_PRODUCTS;
 
-        const { data, error } = await supabase!
-            .from('products')
-            .select('*')
-            .order('created_at', { ascending: false });
+        const fetchProducts = async () => {
+            const { data, error } = await supabase!
+                .from('products')
+                .select('*')
+                .order('created_at', { ascending: false });
 
-        if (error) return INITIAL_PRODUCTS;
+            if (error) throw error;
 
-        const dbProducts = (data || []).map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            price: p.price,
-            category: p.category,
-            image: p.image_url,
-            description: p.description,
-            type: p.type || 'physical',
-            stock: p.stock ?? 0,
-            points: p.points ?? 0,
-            popularity: p.popularity || 0,
-            dateAdded: p.created_at,
-            tags: p.tags || [],
-            downloadUrl: p.download_url,
-            fileType: p.file_type,
-            isActive: p.is_active ?? true
-        }));
+            return (data || []).map((p: any) => ({
+                id: p.id,
+                name: p.name,
+                price: p.price,
+                category: p.category,
+                image: p.image_url,
+                description: p.description,
+                type: p.type || 'physical',
+                stock: p.stock ?? 0,
+                points: p.points ?? 0,
+                popularity: p.popularity || 0,
+                dateAdded: p.created_at,
+                tags: p.tags || [],
+                downloadUrl: p.download_url,
+                fileType: p.file_type,
+                isActive: p.is_active ?? true
+            }));
+        };
 
-        // Merge INITIAL_PRODUCTS with DB products
-        // Any product in DB with same ID will overwrite the hardcoded one.
+        const dbProducts = await withTimeout(fetchProducts(), 4000, []);
+
+        // Merge with initial for robust display
         const merged = [...INITIAL_PRODUCTS.map(p => ({ ...p, isActive: true }))];
-
         dbProducts.forEach(dbP => {
             const index = merged.findIndex(p => p.id === dbP.id);
-            if (index > -1) {
-                merged[index] = dbP;
-            } else {
-                // If ID starts with p_local_, it's from local development and likely shouldn't be in main DB,
-                // but we allow it for consistency if it's already there.
-                merged.unshift(dbP);
-            }
+            if (index > -1) merged[index] = dbP;
+            else merged.unshift(dbP);
         });
 
         return merged as Product[];

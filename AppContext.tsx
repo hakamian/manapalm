@@ -436,6 +436,37 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         const loadInit = async () => {
             console.log("🚀 [StallTrace] loadInit started");
             try {
+                // 1. Proactively check for Supabase session first (with timeout)
+                if (supabase) {
+                    console.log("🔐 [StallTrace] Proactively checking for session...");
+                    const sessionPromise = supabase.auth.getSession();
+
+                    // Simple inline timeout for getSession
+                    const timeoutPromise = new Promise<{ data: { session: null }, error: any }>(resolve =>
+                        setTimeout(() => resolve({ data: { session: null }, error: new Error("getSession timeout") }), 3000)
+                    );
+
+                    const { data: { session }, error: sessionError } = await Promise.race([sessionPromise, timeoutPromise]);
+
+                    if (sessionError) {
+                        console.warn("⚠️ [StallTrace] getSession failed or timed out:", sessionError.message);
+                    }
+                    else if (session?.user) {
+                        const realId = session.user.id;
+                        console.log("🔐 [StallTrace] Found active session on mount:", realId);
+                        dbAdapter.setCurrentUserId(realId);
+
+                        // Set fallback identity immediately
+                        const fallbackUser = mapSupabaseUser(session.user);
+                        dispatch({
+                            type: 'LOGIN_SUCCESS',
+                            payload: { user: fallbackUser as User, orders: [] }
+                        });
+                    } else {
+                        console.log("🔐 [StallTrace] No active session found during mount check.");
+                    }
+                }
+
                 const currentUserId = dbAdapter.getCurrentUserId();
                 console.log("🚀 [StallTrace] currentUserId from storage:", currentUserId);
 
@@ -467,7 +498,6 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     payload: {
                         communityPosts: posts,
                         products: products.length > 0 ? products : INITIAL_PRODUCTS,
-                        // 🛡️ Only load user if it's NOT already set by a faster Auth event
                         user: currentUser,
                         orders: userOrders
                     }

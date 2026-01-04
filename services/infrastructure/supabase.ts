@@ -3,19 +3,33 @@ import { SupabaseClient } from '@supabase/supabase-js';
 import { User } from '../../types';
 import { REFERENCE_DATE_STR } from '../../utils/dummyData';
 
-const getSupabaseConfig = () => {
-    const url = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://sbjrayzghjfsmmuygwbw.supabase.co';
-    const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
-    return { url, key };
+// 🌐 Unified Environment Configuration (Client-Side)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://sbjrayzghjfsmmuygwbw.supabase.co';
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+
+if (typeof window !== 'undefined') {
+    console.log("🛠️ [SupabaseInit] Configuration:", {
+        url: supabaseUrl,
+        hasKey: !!supabaseAnonKey,
+        env: process.env.NODE_ENV
+    });
+}
+
+// 🛡️ Singleton Client Instance
+let supabaseInstance: SupabaseClient | null = null;
+
+export const getSupabaseClient = () => {
+    if (!supabaseInstance && supabaseUrl && supabaseAnonKey) {
+        supabaseInstance = createBrowserClient(supabaseUrl, supabaseAnonKey);
+    }
+    return supabaseInstance;
 };
 
-const { url: supabaseUrl, key: supabaseAnonKey } = getSupabaseConfig();
+export const supabase = getSupabaseClient();
 
-// 🛡️ standard cookie configuration to match Middleware default settings
-export const supabase: SupabaseClient | null = (supabaseUrl && supabaseAnonKey)
-    ? createBrowserClient(supabaseUrl, supabaseAnonKey)
-    : null;
-
+/**
+ * Maps Supabase Auth User metadata to the internal Application User type.
+ */
 export const mapSupabaseUser = (sbUser: any): User => {
     return {
         id: sbUser.id,
