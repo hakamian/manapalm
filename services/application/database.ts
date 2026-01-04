@@ -60,6 +60,12 @@ const mapProfileToUser = (profile: any): User => {
         purchasedCourseIds: (metadata as any)?.purchasedCourseIds || [],
         messages: (metadata as any)?.messages || [],
         recentViews: (metadata as any)?.recentViews || [],
+
+        // 🛡️ Mapped missing mandatory fields to prevent hydration failure
+        conversations: (metadata as any)?.conversations || [],
+        notifications: (metadata as any)?.notifications || [],
+        reflectionAnalysesRemaining: (metadata as any)?.reflectionAnalysesRemaining || 0,
+        ambassadorPacksRemaining: (metadata as any)?.ambassadorPacksRemaining || 0,
     };
 };
 
