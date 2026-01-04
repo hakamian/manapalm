@@ -39,18 +39,33 @@ export async function POST(req: Request) {
             }
         };
 
+        // DIAGNOSTIC: Check if user exists in auth.users
+        const { data: authUser } = await supabase.auth.admin.getUserById(user.id);
+
         const { data, error } = await supabase
             .from('profiles')
             .upsert(profileData)
-            .select()
-            .single();
+            .select('*')
+            .maybeSingle();
 
-        if (error) throw error;
+        if (error) {
+            console.error("❌ Supabase Upsert Error:", error);
+            throw error;
+        }
+
+        // DIAGNOSTIC: Count total profiles to see if we are in the right DB
+        const { count: totalProfiles } = await supabase.from('profiles').select('*', { count: 'exact', head: true });
 
         return NextResponse.json({
             success: true,
-            message: 'New Route Active',
-            savedData: data
+            message: 'Save Confirmed',
+            savedData: data,
+            diagnostics: {
+                targetId: user.id,
+                foundInAuth: !!authUser,
+                totalProfilesInDB: totalProfiles,
+                dbUrl: supabaseUrl.split('.')[0] // Get project ref
+            }
         });
     } catch (error: any) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
