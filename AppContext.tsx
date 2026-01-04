@@ -367,10 +367,10 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'SET_BOTTOM_NAV_VISIBLE': return { ...state, isBottomNavVisible: action.payload };
         // Duplicate SET_PROFILE_TAB_AND_NAVIGATE removed
         case 'LOAD_INITIAL_DATA':
-            // 🛡️ CRITICAL: If a user is already authenticated (e.g. by a fast Auth Event), 
-            // do not overwrite them with potentially null data from the slow initial load.
+            // 🛡️ CRITICAL GUARD: Never overwrite an already authenticated user with null/default data.
+            // This fixes the case where Google Auth finishes before Initial Load.
             if (state.user && !action.payload.user) {
-                console.log("🛡️ [AuthGate] Guarding authenticated user from null data overwrite");
+                console.log("🛡️ [AuthGate] Blocking attempt to overwrite active session with null initial data");
                 const { user, ...otherData } = action.payload;
                 return { ...state, ...otherData };
             }
@@ -496,24 +496,29 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 const realId = session.user.id;
                 dbAdapter.setCurrentUserId(realId);
 
-                // Try to load detailed profile
-                let appUser = await dbAdapter.getUserById(realId);
-
-                if (!appUser) {
-                    console.log("🌱 Creating missing profile for:", realId);
-                    appUser = {
-                        ...mapSupabaseUser(session.user),
-                        id: realId
-                    } as User;
-                    await dbAdapter.saveUser(appUser).catch(console.error);
-                }
+                // 🛡️ Immediate Fallback Identity: Use mapped Google user as a baseline 
+                // so the app never shows 'null' while loading DB profile.
+                const fallbackUser = mapSupabaseUser(session.user);
 
                 dispatch({
                     type: 'LOGIN_SUCCESS',
-                    payload: { user: appUser, orders: [] }
+                    payload: { user: fallbackUser as User, orders: [] }
                 });
 
-                // Auto-close modal if open
+                // Try to load detailed profile from DB
+                try {
+                    const appUser = await dbAdapter.getUserById(realId);
+                    if (appUser) {
+                        dispatch({ type: 'SET_USER', payload: appUser });
+                    } else {
+                        console.log("🌱 Creating profile record for new user:", realId);
+                        await dbAdapter.saveUser(fallbackUser as User);
+                    }
+                } catch (err) {
+                    console.error("❌ Failed to sync detailed profile, staying with fallback identity.", err);
+                }
+
+                // Close modal and potential redirect
                 dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: false });
             }
             else if (event === 'SIGNED_OUT') {
