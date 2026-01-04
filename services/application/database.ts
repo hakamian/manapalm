@@ -158,11 +158,18 @@ export const dbAdapter = {
 
         try {
             const userId = user.id;
+            const storageId = this.getCurrentUserId();
+
             console.log("🚀 Syncing User to Server API:", {
                 id: userId,
-                currentStorageId: this.getCurrentUserId(),
+                currentStorageId: storageId,
                 addresses: user.addresses?.length
             });
+
+            if (!userId || userId === 'null') {
+                console.error("❌ Cannot save user: Invalid ID");
+                return;
+            }
 
             const response = await fetch('/api/update-user-v2', {
                 method: 'POST',

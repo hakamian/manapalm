@@ -438,26 +438,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 console.log("🔐 Auth Event:", event);
 
                 if (event === 'SIGNED_IN' && session?.user) {
-                    console.log("✅ User Signed In, Syncing...");
+                    const realId = session.user.id;
+                    console.log("✅ User Signed In, Syncing Identity:", realId);
 
-                    // Always try to get full profile from our DB (fresh data)
-                    let appUser = await dbAdapter.getUserById(session.user.id);
-                    console.log("📥 Loaded user from DB:", appUser ? {
-                        id: appUser.id,
-                        addressCount: (appUser.addresses || []).length
-                    } : null);
+                    // 🛡️ Force ID Sync before any other operation
+                    dbAdapter.setCurrentUserId(realId);
 
-                    // If new user, map from Supabase and save
+                    let appUser = await dbAdapter.getUserById(realId);
+
                     if (!appUser) {
-                        console.log("🌱 New User/First Login - Creating Profile");
+                        console.log("🌱 Creating initial profile for " + realId);
                         appUser = {
                             ...mapSupabaseUser(session.user),
-                            id: session.user.id // Ensure ID matches
+                            id: realId
                         } as User;
                         await dbAdapter.saveUser(appUser);
                     }
 
-                    dbAdapter.setCurrentUserId(session.user.id);
                     dispatch({
                         type: 'LOGIN_SUCCESS',
                         payload: {
