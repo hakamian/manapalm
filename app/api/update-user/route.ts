@@ -57,17 +57,18 @@ export async function POST(req: Request) {
             .upsert(profileData);
 
         if (error) {
-            console.error('❌ Supabase Update Error [DEBUG]:', {
+            console.error('❌ Supabase Update Error [CRITICAL_DEBUG]:', {
                 message: error.message,
                 details: error.details,
                 hint: error.hint,
                 code: error.code,
-                fullError: error
+                full_error: error
             });
+            // Return BOTH message and details to help local debugging
             return NextResponse.json({
                 success: false,
                 error: error.message,
-                details: error.details,
+                details: error.details || 'No extra details',
                 code: error.code
             }, { status: 500 });
         }
