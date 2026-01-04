@@ -2,7 +2,20 @@
 -- DATE: 2026-01-04
 -- GOAL: Clean relational structure with JSONB flexibility for rapid iteration.
 
--- 1. CLEANUP (WIPE EXISTING TABLES FOR FULL RECONFIG)
+-- 1. CLEANUP (WIPE EXISTING TABLES, TRIGGERS & FUNCTIONS FOR FULL RECONFIG)
+DO $$ 
+DECLARE 
+    r RECORD;
+BEGIN
+    FOR r IN (SELECT trigger_name, event_object_table FROM information_schema.triggers WHERE trigger_schema = 'public') 
+    LOOP
+        EXECUTE 'DROP TRIGGER IF EXISTS ' || r.trigger_name || ' ON public.' || r.event_object_table || ' CASCADE;';
+    END LOOP;
+END $$;
+
+DROP FUNCTION IF EXISTS public.notify_profile_change CASCADE;
+DROP FUNCTION IF EXISTS public.send_sms_on_profile_update CASCADE;
+
 DROP TABLE IF EXISTS public.payments CASCADE;
 DROP TABLE IF EXISTS public.order_items CASCADE;
 DROP TABLE IF EXISTS public.cart CASCADE;
