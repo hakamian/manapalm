@@ -9,10 +9,14 @@ const CheckoutView: React.FC = () => {
     const { cartItems, user } = useAppState();
     const dispatch = useAppDispatch();
     const [step, setStep] = useState(1);
+    const defaultAddress = useMemo(() => user?.addresses?.find(a => a.isDefault) || user?.addresses?.[0], [user]);
+
     const [shippingInfo, setShippingInfo] = useState({
-        fullName: user?.fullName || '',
-        address: user ? `${user.address || ''}${user.plaque ? '، پلاک ' + user.plaque : ''}${user.floor ? '، طبقه/واحد ' + user.floor : ''}` : '',
-        phone: user?.phone || '',
+        fullName: defaultAddress?.recipientName || user?.fullName || '',
+        address: defaultAddress
+            ? `${defaultAddress.province}، ${defaultAddress.city}، ${defaultAddress.fullAddress}`
+            : (user ? `${user.address || ''}${user.plaque ? '، پلاک ' + user.plaque : ''}${user.floor ? '، طبقه/واحد ' + user.floor : ''}` : ''),
+        phone: defaultAddress?.phone || user?.phone || '',
     });
     const [paymentProvider, setPaymentProvider] = useState('zarinpal');
     const [isProcessing, setIsProcessing] = useState(false);
@@ -109,7 +113,7 @@ const CheckoutView: React.FC = () => {
                                         <div className="flex justify-between items-center mb-1">
                                             <label className="block text-sm text-gray-400">آدرس پستی دقیق</label>
                                             <button
-                                                onClick={() => dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'detailed' })}
+                                                onClick={() => dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'addresses' })}
                                                 className="text-xs text-amber-500 hover:text-amber-400 flex items-center gap-1 transition-colors"
                                             >
                                                 <PencilSquareIcon className="w-4 h-4" />
