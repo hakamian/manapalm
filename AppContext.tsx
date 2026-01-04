@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useReducer, ReactNode, useEffect } from 'react';
+import React, { createContext, useContext, useReducer, ReactNode, useEffect, useRef } from 'react';
 import { AppState, Action, View, Deed, TimelineEvent, Order, CartItem, WebDevProject, AIConfig, TargetLanguage, Review, User, SmartAction, Campaign, CommunityPost, DeedUpdate } from './types';
 import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS, INITIAL_DEEDS, PALM_TYPES_DATA, INITIAL_PROPOSALS, INITIAL_LIVE_ACTIVITIES, INITIAL_PRODUCTS, INITIAL_NOTIFICATIONS, INITIAL_MENTORSHIP_REQUESTS, INITIAL_MICROFINANCE_PROJECTS, INITIAL_REVIEWS } from './utils/dummyData';
 import { dbAdapter } from './services/dbAdapter';
@@ -8,6 +8,10 @@ import { supabase, mapSupabaseUser } from './services/supabaseClient';
 import { orderService } from './services/application/orderService';
 import { userService } from './services/application/userService';
 import { communityService } from './services/application/communityService';
+
+// 🛡️ Global flag to prevent re-authentication during logout
+let isLoggingOut = false;
+export const setLoggingOut = (value: boolean) => { isLoggingOut = value; };
 
 const initialNavigation = [
     {
@@ -520,7 +524,18 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (!supabase) return;
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log("🔐 [AuthEvent]:", event, session?.user?.id);
+            console.log("🔐 [AuthEvent]:", event, session?.user?.id, "| isLoggingOut:", isLoggingOut);
+
+            // 🛡️ CRITICAL: Block re-authentication during logout process
+            if (isLoggingOut) {
+                console.log("🚫 [AuthEvent] Blocked - logout in progress");
+                if (event === 'SIGNED_OUT') {
+                    isLoggingOut = false; // Reset flag after successful signout
+                    dbAdapter.setCurrentUserId(null);
+                    dispatch({ type: 'LOGOUT' });
+                }
+                return;
+            }
 
             if (session?.user) {
                 const realId = session.user.id;

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { View, NavCategory } from '../types';
-import { useAppState, useAppDispatch } from '../AppContext';
+import { useAppState, useAppDispatch, setLoggingOut } from '../AppContext';
 import SmartLink from './ui/SmartLink';
 import { supabase } from '../services/supabaseClient';
 import { dbAdapter } from '../services/dbAdapter';
@@ -95,6 +95,9 @@ const UserMenu: React.FC = () => {
                             e.preventDefault();
                             console.log("🚪 Manual Logout Initiated...");
                             try {
+                                // 🛡️ CRITICAL: Set flag BEFORE signOut to block auth listener
+                                setLoggingOut(true);
+
                                 // 1. Attempt graceful Supabase signout (clears cookies and remote session)
                                 await dbAdapter.signOut();
 
@@ -110,6 +113,7 @@ const UserMenu: React.FC = () => {
                                 }
                             } catch (err) {
                                 console.error("❌ Logout failed", err);
+                                setLoggingOut(false); // Reset flag on error
                                 // Fallback: force refresh anyway
                                 if (typeof window !== 'undefined') {
                                     window.location.href = '/';
