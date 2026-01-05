@@ -305,11 +305,33 @@ export const dbAdapter = {
             items: order.items,
             status_history: order.statusHistory,
             deeds: order.deeds || [],
-            created_at: order.date
+            created_at: order.date,
+            updated_at: new Date().toISOString()
         };
 
-        const { error } = await supabase!.from('orders').upsert(orderData);
-        if (error) console.error('Error saving order:', error.message);
+        const { error: orderError } = await supabase!.from('orders').upsert(orderData);
+        if (orderError) {
+            console.error('Error saving order:', orderError.message);
+            return;
+        }
+
+        // 🛡️ Also save to normalized order_items table for reporting
+        if (order.items && order.items.length > 0) {
+            const itemsToInsert = order.items.map(item => ({
+                order_id: order.id,
+                product_id: item.id,
+                quantity: item.quantity,
+                price_at_time: item.price,
+                created_at: new Date().toISOString()
+            }));
+
+            // We use 'upsert' assuming ID might be auto-generated or handled. 
+            // Since we don't have item IDs in the order object usually (only product ID), 
+            // we really should just INSERT. explicit IDs might be missing.
+            // However, typical flow is fresh insert.
+            const { error: itemsError } = await supabase!.from('order_items').insert(itemsToInsert);
+            if (itemsError) console.warn('Warning: Could not save order_items (Non-critical):', itemsError.message);
+        }
     },
 
     async updateOrderStatus(orderId: string, status: string, refId?: string): Promise<void> {

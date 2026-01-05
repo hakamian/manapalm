@@ -69,6 +69,7 @@ export default async function handler(req, res) {
             is_admin: user.isAdmin || false,
             is_guardian: user.isGuardian || false,
             is_grove_keeper: user.isGroveKeeper || false,
+            updated_at: new Date().toISOString(),
             metadata: metadata
         };
 

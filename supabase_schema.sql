@@ -41,6 +41,7 @@ CREATE TABLE public.profiles (
     is_guardian BOOLEAN DEFAULT FALSE,
     is_grove_keeper BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
     metadata JSONB DEFAULT '{
         "addresses": [],
         "messages": [],
@@ -65,7 +66,8 @@ CREATE TABLE public.products (
     popularity INTEGER DEFAULT 0,
     tags TEXT[] DEFAULT '{}',
     is_active BOOLEAN DEFAULT TRUE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
 -- 4. ORDERS
@@ -77,7 +79,8 @@ CREATE TABLE public.orders (
     items JSONB DEFAULT '[]'::jsonb, -- Snapshot of products at purchase
     status_history JSONB DEFAULT '[]'::jsonb,
     deeds JSONB DEFAULT '[]'::jsonb, -- Relational impact items (palms etc)
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
 -- 5. ORDER ITEMS (Strict normalization for reporting)
