@@ -23,131 +23,256 @@ export const getPastDate = (daysAgo: number) => {
 };
 
 export const INITIAL_PRODUCTS: Product[] = [
+
     // --- GATEWAY PRODUCTS ---
+
     {
+
         id: 'p_contribution_sapling',
+
         name: 'سهم در نهال‌کاری (نهال امید)',
+
         price: 200000,
+
         category: 'نخل میراث',
-        image: 'https://images.unsplash.com/photo-1530968464165-7a1861cbaf9f?auto=format&fit=crop&w=800&q=80',
+
+        image: 'https://images.unsplash.com/photo-1628126235206-5260b9ea6441?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', // Young plant, artistic light
+
         popularity: 98,
+
         dateAdded: getPastDate(1),
+
         stock: 9999,
+
         description: 'یک شروع کوچک برای تاثیری بزرگ. با خرید این محصول، شما در کاشت یک نهال جدید در نخلستان مشارکت می‌کنید و نام خود را به عنوان "حامی رویش" ثبت می‌کنید.',
+
         type: 'physical',
+
         isActive: true,
+
         points: 1000,
+
         tags: ['community', 'starter']
+
     },
+
     {
+
         id: 'p_digital_art_pack',
+
         name: 'مجموعه هنری "روح نخلستان"',
+
         price: 50000,
+
         category: 'محصولات دیجیتال',
-        image: 'https://images.unsplash.com/photo-1550684848-fac1c5b4e853?auto=format&fit=crop&w=800&q=80',
+
+        image: 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', // Abstract palm art
+
         popularity: 85,
+
         dateAdded: getPastDate(3),
+
         stock: 9999,
+
         description: 'مجموعه‌ای از ۵ تصویر پس‌زمینه با کیفیت بالا و تم نخلستان برای موبایل و دسکتاپ. با خرید این محصول، اولین قدم را در حمایت از جنبش برمی‌دارید.',
+
         type: 'digital',
+
         isActive: false,
+
         points: 100,
+
         tags: ['art', 'digital', 'starter'],
+
         downloadUrl: 'https://example.com/art-pack.zip',
+
         fileType: 'ZIP',
+
     },
+
     // --- HIGH TICKET ---
+
     {
+
         id: 'p_heritage_meaning', name: 'نخل معنا', price: 30000000, category: 'نخل میراث',
-        image: 'https://images.unsplash.com/photo-1512428559087-560fa5ce7d87?auto=format&fit=crop&w=1000&q=80',
+
+        image: 'https://images.unsplash.com/photo-1597466599360-3b9775841aec?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3', // Majestic palm, golden hour, fantasy feel
+
         popularity: 100, dateAdded: getPastDate(10), stock: 10,
+
         description: 'کاشت نخلی برای یافتن و بزرگداشت معنای شخصی زندگی. این نخل در قلب نخلستان کاشته می‌شود و نماد تعهد شما به یک زندگی هدفمند است.',
+
         type: 'physical',
+
         points: 150000,
+
         tags: ['growth', 'self-discovery'],
+
         culturalSignificance: 'نخل در فرهنگ ایرانی نماد جاودانگی، مقاومت و بخشندگی است. کاشت «نخل معنا» یک پیمان شخصی با این ارزش‌های کهن و تعهدی برای به ثمر نشاندن معنای منحصر به فرد زندگی خویش است.',
+
         botanicalInfo: {
+
             scientificName: 'Phoenix dactylifera',
+
             origin: 'خاورمیانه و شمال آفریقا',
+
             fruitCharacteristics: 'میوه‌ای شیرین و پرانرژی، سرشار از مواد معدنی و ویتامین‌ها که به آن «نان صحرا» نیز می‌گوینند.'
+
         },
+
         isActive: true
+
     },
+
     {
+
         id: 'p_heritage_group',
+
         name: 'نخل گروهی',
+
         price: 15000000,
+
         points: 75000,
+
         category: 'نخل میراث',
-        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819374/manapalm/heritage/palm-heritage-group.jpg',
+
+        image: 'https://images.unsplash.com/photo-1535202677944-77732a871234?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', // Grove of palms, community feel
+
         popularity: 80,
+
         dateAdded: getPastDate(1),
+
         stock: 100,
+
         description: 'برای یک هدف یا پروژه گروهی، با هم یک نخل بکارید و تاثیر جمعی خود را ثبت کنید.',
+
         type: 'physical',
+
         isActive: true,
+
         tags: ['community']
+
     },
+
     {
+
         id: 'p_heritage_iran',
+
         name: 'نخل ایران',
+
         price: 9000000,
+
         points: 45000,
+
         category: 'نخل میراث',
-        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766665786/Gemini_Generated_Image_rg0fnfrg0fnfrg0f_kksfet.png',
+
+        image: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', // Desert landscape, epic feel
+
         popularity: 95,
+
         dateAdded: getPastDate(5),
+
         stock: 50,
+
         description: 'برای سربلندی و آبادانی ایران، یک نخل در خاک وطن بکارید و ریشه‌های خود را در این سرزمین محکم‌تر کنید.',
+
         type: 'physical',
+
         tags: ['community', 'patriotism'],
+
         culturalSignificance: 'درخت نخل از دیرباز با تاریخ و تمدن ایران گره خورده و در ادبیات و هنر ما به عنوان نماد پایداری و سربلندی ستایش شده است. این نخل، ادای دینی به این میراث غنی است.',
+
         botanicalInfo: {
+
             scientificName: 'Phoenix dactylifera',
+
             origin: 'فلات ایران',
+
             fruitCharacteristics: 'ایران یکی از بزرگترین تولیدکنندگان خرما با تنوع بی‌نظیر در جهان است.'
+
         },
+
         isActive: true
+
     },
+
     {
+
         id: 'p_heritage_memorial',
+
         name: 'نخل یادبود',
+
         price: 8900000,
+
         category: 'نخل میراث',
-        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766665777/Gemini_Generated_Image_7h66h57h66h57h66_sydlx6.png',
+
+        image: 'https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', // Sunset, peaceful, memory
+
         popularity: 92,
+
         dateAdded: getPastDate(15),
+
         stock: 50,
+
         description: 'زنده نگه داشتن یاد و خاطره عزیزان با هدیه کردن یک زندگی جدید به طبیعت.',
+
         type: 'physical',
+
         isActive: true,
+
         points: 44500,
+
         tags: ['legacy', 'family', 'memory']
+
     },
+
     {
+
         id: 'p_heritage_occasion', name: 'نخل مناسبت', price: 8800000, category: 'نخل میراث',
-        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766665785/Gemini_Generated_Image_uro3c9uro3c9uro3_mwi8zd.png',
+
+        image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', // Starry night, celebration
+
         popularity: 90, dateAdded: getPastDate(2), stock: 15,
+
         description: 'جشن گرفتن یک رویداد خاص مانند سالگرد ازدواج یا فارغ‌التحصیلی.',
+
         type: 'physical', isActive: true, points: 44000, tags: ['celebration', 'memory']
+
     },
+
     {
+
         id: 'p_heritage_birthday',
+
         name: 'نخل تولد',
+
         price: 8600000,
+
         points: 43000,
+
         category: 'نخل میراث',
-        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766665795/Gemini_Generated_Image_va3ezwva3ezwva3e_gawccp.png',
+
+        image: 'https://images.unsplash.com/photo-1496317556649-f930d733eea3?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', // Sunrise, new beginning
+
         popularity: 93,
+
         dateAdded: getPastDate(7),
+
         stock: 30,
+
         description: 'کاشت یک درخت به مناسبت تولد، نمادی از رشد و زندگی.',
+
         type: 'physical',
+
         isActive: true,
+
         tags: ['celebration', 'family']
+
     },
-    { id: 'p_heritage_memory', name: 'نخل خاطره', price: 8500000, points: 42500, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1469122312224-c5846569feb1?q=80&w=800&auto=format&fit=crop', popularity: 91, dateAdded: getPastDate(18), stock: 25, description: 'ثبت یک خاطره خوش و ماندگار در دل طبیعت.', type: 'physical', isActive: true, tags: ['memory'] },
-    { id: 'p_heritage_gift', name: 'نخل هدیه', price: 8500000, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1513885535751-8b9238bd345a?q=80&w=800&auto=format&fit=crop', popularity: 89, dateAdded: getPastDate(40), stock: 4, description: 'یک هدیه متفاوت و ماندگار برای کسانی که دوستشان دارید.', type: 'physical', isActive: true, points: 42500, tags: ['family', 'gratitude'] },
+
+    { id: 'p_heritage_memory', name: 'نخل خاطره', price: 8500000, points: 42500, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', popularity: 91, dateAdded: getPastDate(18), stock: 25, description: 'ثبت یک خاطره خوش و ماندگار در دل طبیعت.', type: 'physical', isActive: true, tags: ['memory'] },
+
+    { id: 'p_heritage_gift', name: 'نخل هدیه', price: 8500000, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', popularity: 89, dateAdded: getPastDate(40), stock: 4, description: 'یک هدیه متفاوت و ماندگار برای کسانی که دوستشان دارید.', type: 'physical', isActive: true, points: 42500, tags: ['family', 'gratitude'] },
 
     // --- MANAPALM ORGANIC PRODUCTS ---
     {
