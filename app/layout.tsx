@@ -51,8 +51,10 @@ export default function RootLayout({
         <link rel="icon" href="/icon-192x192.png" />
         <link rel="apple-touch-icon" href="/icon-512x512.png" />
       </head>
-      <body className="bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50 min-h-screen">
+      <body className="bg-gradient-to-br from-gray-900 via-gray-800 to-emerald-950 min-h-screen text-white">
+
         <Providers>{children}</Providers>
+
       </body>
     </html>
   );
