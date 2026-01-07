@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
+// import { Helmet } from 'react-helmet-async'; // Removed: Use Next.js Metadata API instead
 
 interface SEOHeadProps {
   title: string;
@@ -19,35 +19,9 @@ const SEOHead: React.FC<SEOHeadProps> = ({
   url = 'https://manapalm.com',
   type = 'website'
 }) => {
-  const siteTitle = 'نخلستان معنا | Nakhlestan Ma\'na';
-  const fullTitle = title === 'Home' ? siteTitle : `${title} | نخلستان معنا`;
-
-  return (
-    <Helmet>
-      {/* Basic Meta Tags */}
-      <title>{fullTitle}</title>
-      <meta name="description" content={description} />
-      <meta name="keywords" content={['نخلستان معنا', 'کاشت نخل', 'مسئولیت اجتماعی', 'خیریه هوشمند', ...keywords].join(', ')} />
-
-      {/* Open Graph / Facebook / Telegram */}
-      <meta property="og:type" content={type} />
-      <meta property="og:title" content={fullTitle} />
-      <meta property="og:description" content={description} />
-      <meta property="og:image" content={image} />
-      <meta property="og:url" content={url} />
-      <meta property="og:site_name" content="نخلستان معنا" />
-      <meta property="og:locale" content="fa_IR" />
-
-      {/* Twitter */}
-      <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={fullTitle} />
-      <meta name="twitter:description" content={description} />
-      <meta name="twitter:image" content={image} />
-
-      {/* Canonical */}
-      <link rel="canonical" href={url} />
-    </Helmet>
-  );
+  // In Next.js, use Metadata API in app/layout.tsx instead of Helmet
+  // This component is now a placeholder for backward compatibility
+  return null;
 };
 
 export default SEOHead;

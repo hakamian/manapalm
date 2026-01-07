@@ -13,7 +13,7 @@ import { useAppState, useAppDispatch } from '../AppContext';
 import MenteeBriefingModal from './MenteeBriefingModal';
 import GroveKeeperDashboard from './GroveKeeperDashboard';
 import DeedDisplay from './DeedDisplay';
-import ProductCard from '../src/features/shop/components/ProductCard';
+import ProductCard from './ProductCard';
 import ImpactHero from './profile/ImpactHero'; // Import the new component
 import CoachingLabAccessModal from './CoachingLabAccessModal'; // Import the access modal
 
@@ -37,7 +37,7 @@ import ValueDashboardTab from './profile/ValueDashboardTab';
 import MessagesTab from './profile/MessagesTab';
 import RecentViewsTab from './profile/RecentViewsTab';
 
-declare const html2canvas: any;
+// declare const html2canvas: any;
 
 const UserProfileView: React.FC = () => {
     const { user, allUsers, orders, profileInitialTab, products, wishlist, notifications } = useAppState();
@@ -138,7 +138,22 @@ const UserProfileView: React.FC = () => {
         }
     };
 
-    if (!user) return null;
+    if (!user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto mb-4"></div>
+                    <p className="mb-4">در حال بارگذاری پروفایل...</p>
+                    <button 
+                        onClick={() => dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })}
+                        className="text-sm text-green-400 hover:text-green-300 underline"
+                    >
+                        اگر طول کشید، اینجا کلیک کنید تا وارد شوید
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     const tabs = useMemo(() => {
         const baseTabs = [

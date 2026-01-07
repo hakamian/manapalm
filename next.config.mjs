@@ -1,9 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false, // For easier migration, we can turn this on later
-  eslint: {
-    ignoreDuringBuilds: true, // Boring solution: don't let lint errors stop the deploy
-  },
   typescript: {
     ignoreBuildErrors: true, // Boring solution: don't let TS errors stop the deploy during transition
   },

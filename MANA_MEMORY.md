@@ -166,19 +166,64 @@ graph TD
 
 
 
+#### 27. Next.js Routing Architecture (2025-01-04) ✅
+
+- **تاریخ:** ۱۴ دی ۱۴۰۳
+
+- **هدف:** ایجاد زیرساخت روتینگ واقعی برای پایداری سیستم و تایید درگاه پرداخت.
+
+- **اقدامات:**
+
+  1. **Static Routes Creation:** ایجاد صفحات واقعی در پوشه `app` برای بخش‌های کلیدی:
+
+     - `/about` (درباره ما)
+
+     - `/contact` (تماس با ما)
+
+     - `/heritage` (تالار میراث)
+
+     - `/terms` (قوانین و مقررات)
+
+     - `/shop` (فروشگاه)
+
+     - `/checkout` (پرداخت)
+
+     - `/profile` (پروفایل کاربری)
+
+  2. **SmartLink Upgrade:** به‌روزرسانی `SmartLink.tsx` برای استفاده از مسیرهای واقعی Next.js به جای State-based navigation.
+
+  3. **Hybrid Stability:** استفاده از `ClientWrapper` و `dynamic imports` در صفحات جدید برای جلوگیری از خطاهای Hydration در این فاز گذار.
+
+- **نتیجه:** لینک‌های هدر اکنون به درستی کار می‌کنند و URLهای واقعی برای بررسی توسط بازرس درگاه پرداخت (Shaparak/BitPay) وجود دارد.
+
+
+
 #### 25. Navigation & UX Bug Fixes (2025-12-31) ✅
+
 - **تاریخ:** ۱۱ دی ۱۴۰۳
+
 - **مشکلات رفع شده:**
+
   1. **Navigation Double-Click Bug:** اصلاح `useRouteSync.ts` - تغییر `pushState` به `replaceState` و اضافه کردن `lastSyncedView` ref برای جلوگیری از loop.
+
   2. **Cart Address Redirection:** حذف duplicate reducer case برای `SET_PROFILE_TAB_AND_NAVIGATE` و رفع race condition در `ShoppingCart.tsx`.
+
   3. **Timeline Deed Display:** اصلاح نمایش دکمه‌های "مشاهده سند" و "افزودن خاطره" در `TimelineTab.tsx` با null-safe deed lookup.
+
 - **بهبودهای UX:**
+
   - ✅ **Address در اطلاعات پایه:** فیلدهای آدرس (آدرس، پلاک، طبقه) به تب "اطلاعات پایه" پروفایل اضافه شد.
+
   - ✅ **Checkout Validation:** اعتبارسنجی آدرس کامل (حداقل ۱۰ کاراکتر) + پلاک اجباری قبل از خرید.
+
   - ✅ **Palm Planting Notice:** پیام اطلاع‌رسانی "کاشت ظرف ۷ روز کاری + ارسال عکس" بعد از خرید نخل.
+
 - **تغییرات دیگر:**
+
   - ✅ **غیرفعال‌سازی موقت:** دکمه‌های "صدای نخل" و "آینده نخل" در `DeedDisplay.tsx` کامنت شدند.
+
   - ✅ **SEO:** کلمات کلیدی "نخل معنا" و "معنا" به متادیتای سایت اضافه شد.
+
 - **نتیجه:** تجربه کاربری navigation و checkout به طور قابل توجهی بهبود یافت.
 
 #### 21. Product Persistence & Professional Visuals ✅

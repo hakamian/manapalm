@@ -1,7 +1,7 @@
 import React from 'react';
 import { User, Product } from '../../types';
 import { ClockIcon, EyeIcon } from '../icons';
-import ProductCard from '../../src/features/shop/components/ProductCard';
+import ProductCard from '../ProductCard';
 
 interface RecentViewsTabProps {
     user: User;

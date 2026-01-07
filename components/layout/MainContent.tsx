@@ -18,8 +18,8 @@ const CoCreationView = React.lazy(() => import('../CoCreationView'));
 const DailyOasisView = React.lazy(() => import('../DailyOasisView'));
 const DirectMessagesView = React.lazy(() => import('../DirectMessagesView'));
 const TransparencyDashboardView = React.lazy(() => import('../TransparencyDashboardView'));
-const AIStudioView = React.lazy(() => import('../../src/features/ai-studio/AIStudioView'));
-const AutoCEOView = React.lazy(() => import('../../src/features/admin/AutoCEOView'));
+const AIStudioView = React.lazy(() => import('../ai-studio/AIAcademyView')); // Fixed: was src/features/
+const AutoCEOView = React.lazy(() => import('../AdminAICoach')); // Fixed: was src/features/, using AdminAICoach instead
 const AICreationStudio = React.lazy(() => import('../AICreationStudio'));
 const MeaningCompanionView = React.lazy(() => import('../MeaningCompanionView'));
 const EnglishAcademyView = React.lazy(() => import('../EnglishAcademyView'));
@@ -50,7 +50,8 @@ const SearchResultsView = React.lazy(() => import('../SearchResultsView'));
 const PublicStoryView = React.lazy(() => import('../seo/PublicStoryView')); // New Import
 const CampaignLandingView = React.lazy(() => import('../CampaignLandingView'));
 const TermsView = React.lazy(() => import('../TermsView'));
-const UserProfileView = React.lazy(() => import('../UserProfileView'));
+import UserProfileView from '../UserProfileView';
+// const UserProfileView = React.lazy(() => import('../UserProfileView'));
 
 const MainContent: React.FC = () => {
     const {

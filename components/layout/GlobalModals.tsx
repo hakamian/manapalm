@@ -4,11 +4,9 @@ import { createPortal } from 'react-dom';
 import { useAppState, useAppDispatch } from '../../AppContext';
 import { View } from '../../types';
 import PalmSelectionModal from '../PalmSelectionModal';
-import ShoppingCart from '../../src/features/shop/ShoppingCart';
+import ShoppingCartModal from '../ShoppingCartModal';
+import AuthModal from '../AuthModal';
 import DeedPersonalizationModal from '../DeedPersonalizationModal';
-
-// Lazy Import Modals
-const AuthModal = React.lazy(() => import('../../src/features/auth/AuthModal'));
 // ShoppingCart is now static
 const OrderSuccessModal = React.lazy(() => import('../OrderSuccessModal'));
 const WelcomeModal = React.lazy(() => import('../WelcomeModal'));
@@ -81,8 +79,7 @@ const GlobalModals: React.FC<GlobalModalsProps> = ({ onLoginSuccess }) => {
                     onLoginSuccess={onLoginSuccess}
                 />
             )}
-            {/* ShoppingCart handles its own open state visibility internally */}
-            <ShoppingCart />
+            <ShoppingCartModal />
 
             {isOrderSuccessModalOpen && (
                 <OrderSuccessModal

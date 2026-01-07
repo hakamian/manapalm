@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 
 // --- Local Business Schema ---
 export const LocalBusinessSchema: React.FC = () => {
@@ -35,11 +34,10 @@ export const LocalBusinessSchema: React.FC = () => {
     };
 
     return (
-        <Helmet>
-            <script type="application/ld+json">
-                {JSON.stringify(schema)}
-            </script>
-        </Helmet>
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
     );
 };
 
@@ -64,11 +62,10 @@ export const FAQSchema: React.FC<{ items: FAQItem[] }> = ({ items }) => {
     };
 
     return (
-        <Helmet>
-            <script type="application/ld+json">
-                {JSON.stringify(schema)}
-            </script>
-        </Helmet>
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
     );
 };
 
@@ -91,10 +88,9 @@ export const BreadcrumbSchema: React.FC<{ items: BreadcrumbItem[] }> = ({ items 
     };
 
     return (
-        <Helmet>
-            <script type="application/ld+json">
-                {JSON.stringify(schema)}
-            </script>
-        </Helmet>
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
     );
 };

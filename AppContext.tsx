@@ -474,12 +474,14 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 const currentUserId = dbAdapter.getCurrentUserId();
                 console.log("🚀 [StallTrace] currentUserId from storage:", currentUserId);
 
-                console.log("🚀 [StallTrace] Fetching posts and products...");
-                const [posts, products] = await Promise.all([
-                    dbAdapter.getAllPosts().catch(e => { console.error("❌ posts fetch failed", e); return []; }),
-                    dbAdapter.getAllProducts().catch(e => { console.error("❌ products fetch failed", e); return []; })
-                ]);
-                console.log("🚀 [StallTrace] Posts/Products fetched successfully");
+                console.log("🚀 [StallTrace] Skipping heavy initial fetch (Optimized)");
+                // const [posts, products] = await Promise.all([
+                //     dbAdapter.getAllPosts().catch(e => { console.error("❌ posts fetch failed", e); return []; }),
+                //     dbAdapter.getAllProducts().catch(e => { console.error("❌ products fetch failed", e); return []; })
+                // ]);
+                const posts: CommunityPost[] = [];
+                const products: Product[] = [];
+                console.log("🚀 [StallTrace] Initial fetch skipped for performance");
 
                 let currentUser: User | null = null;
                 let userOrders: Order[] = [];

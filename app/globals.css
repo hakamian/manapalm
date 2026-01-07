@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* استایل‌های سفارشی */
+@layer base {
+  * {
+    @apply border-gray-200;
+  }
+  body {
+    @apply bg-gradient-to-br from-gray-900 via-gray-800 to-emerald-950 text-white min-h-screen;
+  }
+}
+
+/* Glassmorphism Effects */
+@layer utilities {
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg;
+  }
+  
+  .glass-dark {
+    @apply bg-gray-900/80 backdrop-blur-md border border-gray-700/20 shadow-lg;
+  }
+}
+
+/* اسکرول بار سفارشی */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-emerald-400 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-emerald-500;
+}
+
+/* انیمیشن‌های سفارشی */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* استایل برای موبایل */
+@media (max-width: 768px) {
+  body {
+    @apply pb-20; /* فضا برای bottom nav */
+  }
+}

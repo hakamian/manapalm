@@ -4,7 +4,7 @@ import { useAppState, useAppDispatch } from '../AppContext';
 import { View, Product } from '../types';
 import { SparklesIcon, GiftIcon, ArrowLeftIcon, HeartIcon, UserCircleIcon, CalendarDaysIcon, PencilSquareIcon, CheckCircleIcon } from './icons';
 import { getGiftRecommendation } from '../services/geminiService';
-import ProductCard from '../src/features/shop/components/ProductCard';
+import ProductCard from './ProductCard';
 
 const GiftConciergeView: React.FC = () => {
     const { products, wishlist, user } = useAppState();

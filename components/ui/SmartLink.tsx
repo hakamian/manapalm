@@ -12,14 +12,27 @@ interface SmartLinkProps {
 }
 
 const VIEW_TO_ROUTE: Partial<Record<View, string>> = {
+
     [View.About]: '/about',
+
     [View.Contact]: '/contact',
+
     [View.Shop]: '/shop',
+
     [View.Courses]: '/courses',
+
     [View.UserProfile]: '/profile',
+
     [View.Articles]: '/articles',
+
     [View.HallOfHeritage]: '/heritage',
+
+    [View.Terms]: '/terms',
+
+    // Checkout is usually triggered programmatically, but good to have mapping
+
     // Add more routes here as we migrate them
+
 };
 
 const SmartLink: React.FC<SmartLinkProps> = ({ view, children, className, ariaLabel, params, onClick }) => {

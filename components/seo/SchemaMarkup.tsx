@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Helmet } from 'react-helmet-async';
 
 interface ProductSchemaProps {
     name: string;
@@ -28,7 +27,7 @@ export const ProductSchema: React.FC<ProductSchemaProps> = ({
         },
         "offers": {
             "@type": "Offer",
-            "url": window.location.href,
+            "url": "https://manapalm.com",
             "priceCurrency": currency,
             "price": price * 10, // Converting Toman to Rial usually preferred for schema or keep Toman if standard
             "availability": `https://schema.org/${availability}`,
@@ -42,11 +41,10 @@ export const ProductSchema: React.FC<ProductSchemaProps> = ({
     };
 
     return (
-        <Helmet>
-            <script type="application/ld+json">
-                {JSON.stringify(schema)}
-            </script>
-        </Helmet>
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
     );
 };
 
@@ -71,10 +69,9 @@ export const OrganizationSchema: React.FC = () => {
     };
 
     return (
-        <Helmet>
-            <script type="application/ld+json">
-                {JSON.stringify(schema)}
-            </script>
-        </Helmet>
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
     );
 };

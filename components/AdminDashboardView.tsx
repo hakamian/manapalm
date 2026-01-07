@@ -18,7 +18,7 @@ import {
     generateCampaignIdea,
     generateArticleDraft
 } from '../services/geminiService';
-import AutoCEOView from '../src/features/admin/AutoCEOView';
+// import AutoCEOView from '../src/features/admin/AutoCEOView'; // TODO: Recreate this component if needed
 import { POINT_ALLOCATIONS, BARKAT_LEVELS } from '../services/gamificationService';
 import { dbAdapter } from '../services/dbAdapter';
 import {

@@ -2,7 +2,7 @@
 import React, { useMemo } from 'react';
 import { useAppState, useAppDispatch } from '../AppContext';
 import { View, Product } from '../types';
-import ProductCard from '../src/features/shop/components/ProductCard';
+import ProductCard from './ProductCard';
 import { MagnifyingGlassIcon, DocumentTextIcon, ShoppingCartIcon } from './icons'; // Using local icons map
 
 const SearchResultsView: React.FC = () => {
