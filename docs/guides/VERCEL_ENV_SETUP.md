@@ -5,28 +5,51 @@
 
 ---
 
-## 📋 کلیدهای شما
+## 📋 کلیدهای مورد نیاز
 
-من کلیدهای زیر را برای شما آماده کردم:
 
-### 1. Supabase
-```
-VITE_SUPABASE_URL=https://sbjrayzghjfsmmuygwbw.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNianJheXpnaGpmc21tdXlnd2J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjQ3MTY1NDQsImV4cCI6MjA4MDI5MjU0NH0.W7B-Dr1hiUNl9ok4_PUTPdJG8pJsBXtoOwWciItoF3Q
-```
 
-### 2. Gemini AI
-```
-GEMINI_API_KEY=AIzaSyDwWhL4B3QB0M4HxyPh-h0wQlg-ISgXVVk
-```
+- **Supabase:** `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`
 
-### 3. ZarinPal (Sandbox)
-```
-ZARINPAL_MERCHANT_ID=00000000-0000-0000-0000-000000000000
-ZARINPAL_SANDBOX=true
-```
+- **AI Providers:** `GEMINI_API_KEY`, `VITE_GEMINI_API_KEY`, `NEXT_PUBLIC_GEMINI_API_KEY`, `OPENROUTER_API_KEY`, `OPENAI_API_KEY`, `API_KEY`
+
+- **Media/CDN:** `NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME`, `VITE_CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`
+
+- **Payments:** `ZARINPAL_MERCHANT_ID`, `ZARINPAL_SANDBOX`
+
+
+
+> ✅ تمام این متغیرها در `.env.example` لیست شده‌اند. کافی است فایل را به `.env.local` کپی و مقادیر واقعی را جایگزین کنید.
+
+
+
+### نحوه دریافت مقادیر
+
+
+
+1. **Supabase** → Dashboard → Settings → API → Project URL & anon/service keys
+
+2. **Gemini** → [Google AI Studio](https://aistudio.google.com/apikey) → Create API Key
+
+3. **OpenRouter/OpenAI** → داشبورد مربوطه
+
+4. **Cloudinary** → Dashboard → Programmable Media → API Keys
+
+5. **ZarinPal** → Sandbox (کد صفر) یا Merchant واقعی از داشبورد پرداخت‌یار
+
+
 
 ---
+
+
+
+
+
+
+
+
+
+
 
 ## 🔧 مراحل تنظیم در Vercel
 
@@ -59,26 +82,77 @@ ZARINPAL_SANDBOX=true
 
 **متغیرهایی که باید اضافه کنید:**
 
+
+
 ```
-Key: VITE_SUPABASE_URL
-Value: https://sbjrayzghjfsmmuygwbw.supabase.co
 
-Key: VITE_SUPABASE_ANON_KEY
-Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNianJheXpnaGpmc21tdXlnd2J3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM3MjU2NzgsImV4cCI6MjA0OTMwMTY3OH0.A7_rHrRypeOVpMKyEDEd2w_x_msAcBi1QBbPQmRYdJU
+Key: NEXT_PUBLIC_SUPABASE_URL          → https://sbjrayzghjfsmmuygwbw.supabase.co
 
-Key: GEMINI_API_KEY
-Value: AIzaSyDwWhL4B3QB0M4HxyPh-h0wQlg-ISgXVVk
+Key: NEXT_PUBLIC_SUPABASE_ANON_KEY     → <Supabase anon key>
 
-Key: ZARINPAL_MERCHANT_ID
-Value: 00000000-0000-0000-0000-000000000000
+Key: VITE_SUPABASE_URL                 → https://sbjrayzghjfsmmuygwbw.supabase.co
 
-Key: ZARINPAL_SANDBOX
-Value: true
+Key: VITE_SUPABASE_ANON_KEY            → <Supabase anon key>
+
+Key: SUPABASE_SERVICE_ROLE_KEY         → <Supabase service role key> (Server-only)
+
+
+
+Key: GEMINI_API_KEY                    → <Server-side Gemini key>
+
+Key: VITE_GEMINI_API_KEY               → <Client Gemini key for local dev>
+
+Key: NEXT_PUBLIC_GEMINI_API_KEY        → <Client Gemini key for local dev>
+
+Key: OPENROUTER_API_KEY                → <OpenRouter key>
+
+Key: OPENAI_API_KEY                    → <OpenAI key> (optional)
+
+Key: API_KEY                           → <Fallback key if required>
+
+
+
+Key: NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME → <Cloudinary cloud name>
+
+Key: VITE_CLOUDINARY_CLOUD_NAME        → <Cloudinary cloud name>
+
+Key: CLOUDINARY_API_KEY                → <Cloudinary API key>
+
+Key: CLOUDINARY_API_SECRET             → <Cloudinary API secret>
+
+
+
+Key: ZARINPAL_MERCHANT_ID              → 00000000-0000-0000-0000-000000000000 (Sandbox) یا Merchant واقعی
+
+Key: ZARINPAL_SANDBOX                  → true (Sandbox) / false (Production)
+
 ```
+
+
+
+بعد از افزودن تمام متغیرها، در ترمینال اجرای پروژه این دستور را بزنید تا تنظیمات به شکل خودکار بررسی شوند:
+
+
+
+```bash
+
+npm run verify:env
+
+```
+
+
+
+اگر خروجی اسکریپت "✅ Environment variables verified" بود، می‌توانید سراغ Redeploy بروید.
+
+
 
 ---
 
+
+
 ### گام 4: Redeploy پروژه
+
+
 
 بعد از اضافه کردن **تمام** متغیرها:
 

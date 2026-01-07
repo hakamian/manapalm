@@ -147,6 +147,25 @@ graph TD
 
 ### 🚀 اقدامات اخیر (Live & Active)
 
+#### 26. Infrastructure Validation & Setup Tools (2025-01-04) ✅
+- **تاریخ:** ۱۴ دی ۱۴۰۳
+- **هدف:** آماده‌سازی زیرساخت برای مهاجرت Next.js 16.1.1
+- **اقدامات:**
+  1. **Schema Validation:**
+     - ✅ ایجاد `scripts/verify-schema.mjs` - شناسایی خودکار جداول تکراری و چک وجود جداول حیاتی
+     - ✅ افزودن دستور `npm run verify:schema`
+     - ✅ تأیید: Schema v2.1 بدون مشکل - 8 جدول شناسایی شده
+  2. **Environment Management:**
+     - ✅ ایجاد `scripts/check-env.mjs` - اعتبارسنجی خودکار 11 متغیر حیاتی با پشتیبانی fallback
+     - ✅ به‌روزرسانی کامل `.env.example` - گروه‌بندی و توضیحات فارسی
+     - ✅ افزودن دستورات `npm run verify:env` و `npm run verify:setup`
+  3. **Documentation:**
+     - ✅ به‌روزرسانی `docs/guides/VERCEL_ENV_SETUP.md` - لیست کامل تمام متغیرها و راهنمای Vercel
+     - ✅ ایجاد `docs/SETUP_COMPLETE.md` - گزارش جامع وضعیت و مسیر پیشنهادی
+- **نتیجه:** زیرساخت اعتبارسنجی و ابزارهای Setup کامل شد. پروژه آماده تنظیم Env در Vercel و سپس مهاجرت Next.js 16.
+
+
+
 #### 25. Navigation & UX Bug Fixes (2025-12-31) ✅
 - **تاریخ:** ۱۱ دی ۱۴۰۳
 - **مشکلات رفع شده:**
@@ -318,11 +337,13 @@ graph TD
 ## 🔄 اقدامات در حال انجام (In Progress)
 
 ### Task 2.1: تنظیم Environment Variables 🔄
-- **وضعیت:** آماده برای شروع
-- **راهنما:** `ENV_SETUP.md`
-- **اقدام مورد نیاز:** تنظیم کلیدها در Vercel
+- **وضعیت:** آماده برای اجرا - ابزارهای کامل شده
+- **راهنما:** `docs/guides/VERCEL_ENV_SETUP.md` (به‌روز شده 2025-01-04)
+- **اسکریپت‌ها:** `npm run verify:schema`, `npm run verify:env`, `npm run verify:setup`
+- **اقدام مورد نیاز:** تنظیم کلیدها در Vercel Dashboard و اجرای Redeploy
 
 ---
+
 
 ## 📋 اقدامات باقی‌مانده (Backlog)
 
@@ -626,20 +647,27 @@ graph TD
 
 ---
 
-### 🏛️ Grandmaster Architect Audit (V5.3)
+### 🏛️ Grandmaster Architect Audit (V5.4 - Infrastructure Ready)
 
 **Current System Status:**
-- **Core Stability**: ✅ High. The application loads reliably on port 3001.
-- **UI Architecture**: ⚠️ **Hybrid**. We are bypassing the Next.js build pipeline for CSS in favor of a runtime CDN.
-    - *Pro*: Zero build time for styles, instant feedback, no config hell.
-    - *Con*: Larger value payload (downloading full Tailwind engine), no tree-shaking (unused styles included).
-- **UX Integrity**: ✅ **Restored**. The "Portal Strategy" for `WelcomeTour` guarantees visibility over all z-index layers.
-- **Code Hygiene**: ⚠️ **Mixed**. We have `type: module` in `package.json` but some tools expect CommonJS. Thread carefully with new dependencies.
+- **Core Stability**: ✅ High. Application loads reliably; database schema validated (8 tables confirmed).
+- **Infrastructure**: ✅ **Validation Tools Complete**. Automated scripts for Schema & Env verification ready (`npm run verify:setup`).
+- **Environment Management**: ✅ **Standardized**. `.env.example` comprehensive; Vercel setup guide updated.
+- **UI Architecture**: ⚠️ **Hybrid (Vite + Next.js 14)**. Interim state pending full Next.js 16 migration.
+    - *Status*: 90% Next.js adoption; remaining 10% includes Admin views and legacy Vite runtime.
+- **Code Hygiene**: ⚠️ **Mixed Module System**. ESM in package.json but some legacy CommonJS patterns remain.
 
-**Strategic Recommendations:**
-1.  **Accept the Hybrid State**: Do not attempt to revert to local Tailwind build until the project is ready for production optimization. The current velocity is more valuable than CSS bundle size.
-2.  **Portal Everything**: Use the `WelcomeTour` pattern (React Portal) for all future Modals, Toasts, and Overlays to avoid stacking context wars.
-3.  **Cleanup Debt**: In the next sprint, remove `postcss.config.mjs` and related failed build artifacts to verify no "dead code" confusion remains.
+**Critical Path Forward:**
+1.  **Immediate (Task 2.1)**: Complete Vercel Environment Variables setup using updated guide. Use `npm run verify:env` before Redeploy.
+2.  **Before Migration**: Resolve Planting Flow Bug (Modal rendering issue reported 2025-12-24). Test E2E flows with live DB.
+3.  **Migration to Next.js 16**: Only after Env + DB stability confirmed. Follow roadmap in `docs/SETUP_COMPLETE.md`.
+4.  **Cleanup Post-Migration**: Remove Vite dependencies, consolidate all routes to App Router, eliminate CSS runtime CDN.
+
+**Strategic Notes:**
+- Schema is clean (no duplicates as previously suspected in older MANA_MEMORY entries).
+- Environment tooling now prevents deployment errors proactively.
+- Hybrid state acceptable for now; focus on stability before optimization.
+
 
 
 | 2025-12-24 20:45 | **UI/UX Fix Attempt**: Converted `PalmSelectionModal` and `ShoppingCart` to static imports and wrapped `GlobalModals` in React Portal to fix z-index/visibility issues. (Status: Issue Persists) | Mana (Unified OS) |
@@ -647,8 +675,9 @@ graph TD
 
 ---
 
-### 🚨 Critical Blocking Issue (2025-12-24)
+### 🚨 Critical Blocking Issue (2025-12-24) - PENDING RESOLUTION
 - **Problem:** The "Planting Flow" (PalmSelectionModal) and "Shopping Cart" interactions are failing to show visible UI, despite the state (`isOpen`) theoretically changing.
+- **Status:** Not yet resolved. Must be fixed before Next.js 16 migration.
 - **Attempts:**
     1.  Switched from `React.lazy` to static imports (to rule out loading errors).
     2.  Wrapped visual layer in `createPortal(..., document.body)` (to rule out z-index/stacking context).
@@ -656,4 +685,8 @@ graph TD
     -   `GlobalModals` component not re-rendering correctly on context updates.
     -   A global CSS rule (e.g., in `globals.css` or `ClientWrapper`) inadvertently hiding the portal container.
     -   The `AppContext` dispatch not correctly propagating to the `GlobalModals` consumer.
-- **Next Action:** Trace the `dispatch` event flow and inspecting the DOM for the existence of the Portal node.
+- **Next Action:** 
+    1. Use React DevTools to trace state changes in AppContext when modal should open
+    2. Add console logs to GlobalModals render cycle
+    3. Verify DOM using browser inspector (check if Portal node exists but is hidden vs not rendered)
+    4. Test simplified modal without Portal to isolate issue

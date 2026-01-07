@@ -13,7 +13,10 @@
     "next:build": "next build",
     "preview": "vite preview",
     "server": "node local-server.js",
-    "next:start": "next start"
+    "next:start": "next start",
+    "verify:schema": "node scripts/verify-schema.mjs",
+    "verify:env": "node scripts/check-env.mjs",
+    "verify:setup": "npm run verify:schema && npm run verify:env"
   },
   "dependencies": {
     "@google/genai": "^1.33.0",
