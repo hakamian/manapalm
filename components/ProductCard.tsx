@@ -10,17 +10,35 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, onAddToCart, onClick }: ProductCardProps) {
+
+  // Handle both 'image' (from types) and 'imageUrl' (legacy/potential typo)
+
+  const imageSrc = product.image || (product as any).imageUrl;
+
+
+
   return (
+
     <div 
+
       className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+
       onClick={onClick}
+
     >
-      {product.imageUrl && (
+
+      {imageSrc && (
+
         <img 
-          src={product.imageUrl} 
+
+          src={imageSrc} 
+
           alt={product.name}
+
           className="w-full h-48 object-cover"
+
         />
+
       )}
       
       <div className="p-4">
