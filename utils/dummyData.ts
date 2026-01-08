@@ -3,7 +3,7 @@
 import React from 'react';
 // FIX: Import Deed and DirectMessage types
 // FIX: Import Product type to resolve error.
-import { User, CommunityProject, TimelineEvent, MentorshipRequest, Conversation, CREATIVE_ACT_STORAGE_LIMIT, View, Order, Notification, CommunityEvent, CommunityPost, ProjectProposal, LiveActivity, Deed, DirectMessage, PalmType, Product, MicrofinanceProject, Review } from '../types.ts';
+import { User, CommunityProject, TimelineEvent, MentorshipRequest, Conversation, CREATIVE_ACT_STORAGE_LIMIT, View, Order, Notification, CommunityEvent, CommunityPost, ProjectProposal, LiveActivity, Deed, DirectMessage, PalmType, Product, MicrofinanceProject, Review, Campaign } from '../types.ts';
 import { SproutIcon, BookOpenIcon, UserPlusIcon } from '../components/icons';
 
 // Use local assets for a premium look
@@ -30,13 +30,23 @@ export const INITIAL_PRODUCTS: Product[] = [
 
         id: 'p_contribution_sapling',
 
+
+
         name: 'سهم در نهال‌کاری (نهال امید)',
+
+
 
         price: 200000,
 
+
+
         category: 'نخل میراث',
 
-        image: 'https://images.unsplash.com/photo-1628126235206-5260b9ea6441?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', // Young plant, artistic light
+
+
+        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875042/Gemini_Generated_Image_7b34e97b34e97b34_2_zythle.png',
+
+
 
         popularity: 98,
 
@@ -96,7 +106,11 @@ export const INITIAL_PRODUCTS: Product[] = [
 
         id: 'p_heritage_meaning', name: 'نخل معنا', price: 30000000, category: 'نخل میراث',
 
-        image: 'https://images.unsplash.com/photo-1597466599360-3b9775841aec?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3', // Majestic palm, golden hour, fantasy feel
+
+
+        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875044/Gemini_Generated_Image_gm29jpgm29jpgm29_yjcxkb.png',
+
+
 
         popularity: 100, dateAdded: getPastDate(10), stock: 10,
 
@@ -128,15 +142,27 @@ export const INITIAL_PRODUCTS: Product[] = [
 
         id: 'p_heritage_group',
 
+
+
         name: 'نخل گروهی',
+
+
 
         price: 15000000,
 
+
+
         points: 75000,
+
+
 
         category: 'نخل میراث',
 
-        image: 'https://images.unsplash.com/photo-1535202677944-77732a871234?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', // Grove of palms, community feel
+
+
+        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875044/Gemini_Generated_Image_ou56srou56srou56_nc2bcs.png',
+
+
 
         popularity: 80,
 
@@ -158,15 +184,27 @@ export const INITIAL_PRODUCTS: Product[] = [
 
         id: 'p_heritage_iran',
 
+
+
         name: 'نخل ایران',
+
+
 
         price: 9000000,
 
+
+
         points: 45000,
+
+
 
         category: 'نخل میراث',
 
-        image: 'https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', // Desert landscape, epic feel
+
+
+        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875045/Gemini_Generated_Image_tdq3istdq3istdq3_bglhb0.png',
+
+
 
         popularity: 95,
 
@@ -200,13 +238,23 @@ export const INITIAL_PRODUCTS: Product[] = [
 
         id: 'p_heritage_memorial',
 
+
+
         name: 'نخل یادبود',
+
+
 
         price: 8900000,
 
+
+
         category: 'نخل میراث',
 
-        image: 'https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', // Sunset, peaceful, memory
+
+
+        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875045/Gemini_Generated_Image_uj2rf2uj2rf2uj2r_mne2wd.png',
+
+
 
         popularity: 92,
 
@@ -230,7 +278,11 @@ export const INITIAL_PRODUCTS: Product[] = [
 
         id: 'p_heritage_occasion', name: 'نخل مناسبت', price: 8800000, category: 'نخل میراث',
 
-        image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', // Starry night, celebration
+
+
+        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875046/Gemini_Generated_Image_xfq6sgxfq6sgxfq6_ouukqu.png',
+
+
 
         popularity: 90, dateAdded: getPastDate(2), stock: 15,
 
@@ -244,15 +296,27 @@ export const INITIAL_PRODUCTS: Product[] = [
 
         id: 'p_heritage_birthday',
 
+
+
         name: 'نخل تولد',
+
+
 
         price: 8600000,
 
+
+
         points: 43000,
+
+
 
         category: 'نخل میراث',
 
-        image: 'https://images.unsplash.com/photo-1496317556649-f930d733eea3?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', // Sunrise, new beginning
+
+
+        image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875048/Gemini_Generated_Image_xygki6xygki6xygk_w3rtvt.png',
+
+
 
         popularity: 93,
 
@@ -270,9 +334,11 @@ export const INITIAL_PRODUCTS: Product[] = [
 
     },
 
-    { id: 'p_heritage_memory', name: 'نخل خاطره', price: 8500000, points: 42500, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', popularity: 91, dateAdded: getPastDate(18), stock: 25, description: 'ثبت یک خاطره خوش و ماندگار در دل طبیعت.', type: 'physical', isActive: true, tags: ['memory'] },
+    { id: 'p_heritage_memory', name: 'نخل ازدواج', price: 8500000, points: 42500, category: 'نخل میراث', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875042/Gemini_Generated_Image_5wpcrn5wpcrn5wpc_oyspdy.png', popularity: 91, dateAdded: getPastDate(18), stock: 25, description: 'ثبت پیوند عشق و زندگی مشترک با کاشت یک نخل جاودان.', type: 'physical', isActive: true, tags: ['memory', 'love'] },
 
-    { id: 'p_heritage_gift', name: 'نخل هدیه', price: 8500000, category: 'نخل میراث', image: 'https://images.unsplash.com/photo-1549465220-1a8b9238cd48?q=80&w=800&auto=format&fit=crop&ixlib=rb-4.0.3', popularity: 89, dateAdded: getPastDate(40), stock: 4, description: 'یک هدیه متفاوت و ماندگار برای کسانی که دوستشان دارید.', type: 'physical', isActive: true, points: 42500, tags: ['family', 'gratitude'] },
+
+
+    { id: 'p_heritage_gift', name: 'نخل هدیه', price: 8500000, category: 'نخل میراث', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875042/Gemini_Generated_Image_6ght726ght726ght_q3cte8.png', popularity: 89, dateAdded: getPastDate(40), stock: 4, description: 'یک هدیه متفاوت و ماندگار برای کسانی که دوستشان دارید.', type: 'physical', isActive: true, points: 42500, tags: ['family', 'gratitude'] },
 
     // --- MANAPALM ORGANIC PRODUCTS ---
     {
@@ -368,14 +434,15 @@ export const INITIAL_PRODUCTS: Product[] = [
 
     // --- SERVICES & UPGRADES ---
     { id: 'upgrade_storage_100', name: 'بسته فضای ذخیره‌سازی +۱۰۰ مگابایت', price: 25000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1544396821-4dd40b938ad3?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'فضای ذخیره‌سازی خود را برای ثبت خاطرات و تصاویر بیشتر افزایش دهید. این بسته ۱۰۰ مگابایت به ظرفیت حساب شما اضافه می‌کند.', type: 'upgrade', points: 50, tags: ['growth'], isActive: false },
-    { id: 'p_reflection_unlock', name: 'نخل تامل', price: 100000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1499209971185-a6188b871be9?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'با کاشت این نخل، یک بار استفاده از قابلیت «آینه هوشمند تاملات» را برای تحلیل عمیق یادداشت‌های روزانه‌تان دریافت کنید.', type: 'service', points: 200, tags: ['growth', 'self-discovery'], isActive: false },
+    { id: 'p_reflection_unlock', name: 'نخل تامل', price: 100000, category: 'ارتقا', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875044/Gemini_Generated_Image_gm29jpgm29jpgm29_yjcxkb.png', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'با کاشت این نخل، یک بار استفاده از قابلیت «آینه هوشمند تاملات» را برای تحلیل عمیق یادداشت‌های روزانه‌تان دریافت کنید.', type: 'service', points: 200, tags: ['growth', 'self-discovery'], isActive: false },
     { id: 'p_ambassador_pack', name: 'بسته سفیر', price: 50000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'قابلیت «سفیر قصه‌گو» را فعال کنید تا داستان کاشت نخل خود را با یک تصویر و متن هنری خلق شده توسط AI در شبکه‌های اجتماعی به اشتراک بگذارید.', type: 'service', points: 100, tags: ['community', 'creativity'], isActive: false },
-    { id: 'p_coaching_lab_access', name: 'نخل دانش', price: 150000, category: 'ارتقا', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819379/manapalm/services/service-coaching-lab.jpg', popularity: 90, dateAdded: getPastDate(1), stock: 999, description: 'با کاشت این نخل ویژه، به مدت یک ماه دسترسی نامحدود به «آزمایشگاه کوچینگ معنا» دریافت کنید و در کنار کمک به اهداف اجتماعی، مهارت‌های کوچینگ خود را تقویت نمایید.', type: 'service', points: 300, tags: ['growth', 'coaching', 'self-discovery'], isActive: false },
+    { id: 'p_coaching_lab_access', name: 'نخل دانش', price: 150000, category: 'ارتقا', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875044/Gemini_Generated_Image_gcoh0ggcoh0ggcoh_ylxozn.png', popularity: 90, dateAdded: getPastDate(1), stock: 999, description: 'با کاشت این نخل ویژه، به مدت یک ماه دسترسی نامحدود به «آزمایشگاه کوچینگ معنا» دریافت کنید و در کنار کمک به اهداف اجتماعی، مهارت‌های کوچینگ خود را تقویت نمایید.', type: 'service', points: 300, tags: ['growth', 'coaching', 'self-discovery'], isActive: false },
     { id: 'p_heritage_language', name: 'نخل زبان هوشمانا (آزمون تعیین سطح)', price: 75000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'با کاشت این نخل، قفل آزمون تعیین سطح آکادمی زبان هوشمانا را باز کرده و در مسیر رشد زبانی و اجتماعی قدم بگذارید.', type: 'service', points: 150, tags: ['growth', 'self-discovery'], isActive: false },
     { id: 'p_mana_pack', name: 'بسته معنا (۱۰۰۰ امتیاز)', price: 49000, category: 'ارتقا', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819381/manapalm/services/service-mana-pack.jpg', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'با خرید این بسته، ۱۰۰۰ امتیاز معنا به حساب خود اضافه کنید تا به ابزارهای هوشمند دسترسی پیدا کنید.', type: 'service', points: 0, isActive: false },
     { id: 'p_hoshmana_live_weekly', name: 'بسته هفتگی هوشمانا لایو', price: 150000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(1), stock: 999, description: 'دسترسی هفتگی (۶۰ دقیقه) به تمام ابزارهای گفتگوی زنده: همراه معنا، مربی معنا و هم‌صحبت انگلیسی.', type: 'service', points: 300, tags: ['growth', 'coaching', 'self-discovery'], isActive: false },
-    { id: 'p_unlock_video_gen', name: 'نخل رویا (فعال‌سازی ویدیو)', price: 350000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(0), stock: 999, description: 'با کاشت این نخل، موتور «رویاساز متحرک» را فعال کنید تا ایده‌هایتان را به ویدیوهای سینمایی تبدیل نمایید.', type: 'service', points: 700, tags: ['creativity', 'ai'], unlocksFeatureId: 'videoGen', isActive: false },
-    { id: 'p_unlock_deep_chat', name: 'نخل خرد (فعال‌سازی حکیم دانا)', price: 200000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(0), stock: 999, description: 'دسترسی به «حکیم دانا» برای گفتگوهای عمیق فلسفی و تحلیل‌های پیچیده.', type: 'service', points: 400, tags: ['growth', 'ai'], unlocksFeatureId: 'thinking', isActive: false },
+    { id: 'p_unlock_video_gen', name: 'نخل رویا (فعال‌سازی ویدیو)', price: 350000, category: 'ارتقا', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875044/Gemini_Generated_Image_f1wu4pf1wu4pf1wu_mz5swe.png', popularity: 100, dateAdded: getPastDate(0), stock: 999, description: 'با کاشت این نخل، موتور «رویاساز متحرک» را فعال کنید تا ایده‌هایتان را به ویدیوهای سینمایی تبدیل نمایید.', type: 'service', points: 700, tags: ['creativity', 'ai'], unlocksFeatureId: 'videoGen', isActive: false },
+
+    { id: 'p_unlock_deep_chat', name: 'نخل خرد (فعال‌سازی حکیم دانا)', price: 200000, category: 'ارتقا', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875042/Gemini_Generated_Image_a8dalja8dalja8da_a1xxf1.png', popularity: 100, dateAdded: getPastDate(0), stock: 999, description: 'دسترسی به «حکیم دانا» برای گفتگوهای عمیق فلسفی و تحلیل‌های پیچیده.', type: 'service', points: 400, tags: ['growth', 'ai'], unlocksFeatureId: 'thinking', isActive: false },
     { id: 'p_unlock_image_edit', name: 'نخل نقش', price: 150000, category: 'ارتقا', image: 'https://images.unsplash.com/photo-1513364776144-60967b0f800f?q=80&w=800&auto=format&fit=crop', popularity: 100, dateAdded: getPastDate(0), stock: 999, description: 'ابزار ویرایش جادویی تصاویر را فعال کنید.', type: 'service', points: 300, tags: ['creativity', 'ai'], unlocksFeatureId: 'imageEdit', isActive: false },
     {
         id: 'campaign_website_service',
@@ -677,8 +744,82 @@ export const PROVINCE_DATA: { [key: string]: { name: string } } = {
     'bushehr': { name: 'بوشهر' },
 };
 
+// NEW: Initial Campaigns for Crowdfunding
+
+export const INITIAL_CAMPAIGNS: Campaign[] = [
+
+    {
+
+        id: 'camp_hope_grove',
+
+        title: 'کمپین نخلستان امید (روستای محروم)',
+
+        description: 'کاشت ۱۰۰ نخل برای اشتغال‌زایی و احیای نخلستان‌های خشک شده در روستای محروم. با این کار، زندگی را به این منطقه بازمی‌گردانیم.',
+
+        goal: 2000000000, // 2 Billion Rials
+
+        current: 450000000,
+
+        unit: 'ریال',
+
+        ctaText: 'مشارکت در امید',
+
+        rewardPoints: 500
+
+    },
+
+    {
+
+        id: 'camp_carbon_offset',
+
+        title: 'هر ۱۰,۰۰۰ کیلومتر یک نخل',
+
+        description: 'آیا می‌دانید خودروی شما چقدر کربن تولید می‌کند؟ با کاشت یک نخل به ازای هر ۱۰,۰۰۰ کیلومتر رانندگی، اثرات زیست‌محیطی خود را خنثی کنید.',
+
+        goal: 1000, // 1000 Palms
+
+        current: 124,
+
+        unit: 'نخل',
+
+        ctaText: 'خنثی‌سازی کربن',
+
+        rewardPoints: 1000
+
+    },
+
+    {
+
+        id: 'camp_memorial_grove',
+
+        title: 'رویش دوباره (یادبود عزیزان)',
+
+        description: 'ایجاد یک باغ یادبود دیجیتال و فیزیکی برای کسانی که دیگر در میان ما نیستند اما یادشان سبز است. هر نخل به نام یک عزیز کاشته می‌شود.',
+
+        goal: 500, // 500 Palms
+
+        current: 312,
+
+        unit: 'نخل',
+
+        ctaText: 'کاشت یادبود',
+
+        rewardPoints: 2000
+
+    }
+
+];
+
+
+
 export const PALM_TYPES_DATA: PalmType[] = [
+
     { id: 'p_heritage_meaning', name: 'نخل معنا', price: 30000000, points: 150000, description: 'کاشت نخلی برای یافتن و بزرگداشت معنای شخصی زندگی.', tags: ['growth', 'self-discovery'] },
+
+    { id: 'p_heritage_memory', name: 'نخل ازدواج', price: 8500000, points: 42500, description: 'ثبت پیوند عشق و زندگی مشترک با کاشت یک نخل جاودان.', tags: ['memory', 'love'] },
+
+    { id: 'p_heritage_gift', name: 'نخل هدیه', price: 8500000, points: 42500, description: 'یک هدیه متفاوت و ماندگار برای کسانی که دوستشان دارید.', tags: ['family', 'gratitude'] },
+
     { id: 'p_heritage_iran', name: 'نخل ایران', price: 9000000, points: 45000, description: 'برای سربلندی و آبادانی ایران، یک نخل در خاک وطن بکارید.', tags: ['community', 'patriotism'] },
     { id: 'p_heritage_memorial', name: 'نخل یادبود', price: 8900000, points: 44500, description: 'زنده نگه داشتن یاد و خاطره عزیزان با هدیه کردن یک زندگی جدید به طبیعت.', tags: ['legacy', 'family', 'memory'] },
     { id: 'p_heritage_occasion', name: 'نخل مناسبت', price: 8800000, points: 44000, description: 'جشن گرفتن یک رویداد خاص مانند سالگرد ازدواج یا فارغ‌التحصیلی.', tags: ['celebration', 'memory'] },

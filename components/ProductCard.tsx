@@ -1,7 +1,12 @@
 'use client';
 
 import React from 'react';
+
 import { Product } from '../types';
+
+import { ShoppingCartIcon, SparklesIcon } from './icons';
+
+
 
 interface ProductCardProps {
   product: Product;
@@ -10,50 +15,69 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product, onAddToCart, onClick }: ProductCardProps) {
-
-  // Handle both 'image' (from types) and 'imageUrl' (legacy/potential typo)
-
   const imageSrc = product.image || (product as any).imageUrl;
-
-
+  const realImageSrc = product.realImage;
 
   return (
-
     <div 
-
-      className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-
+      className="group relative bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden shadow-xl hover:shadow-emerald-500/20 hover:border-emerald-500/30 transition-all duration-500 cursor-pointer flex flex-col h-full"
       onClick={onClick}
-
     >
+      {/* Image Container */}
+      <div className="relative w-full aspect-[4/3] overflow-hidden bg-gray-900">
+        {/* Primary Image (2D / Artistic) */}
+        {imageSrc && (
+          <img 
+            src={imageSrc} 
+            alt={product.name}
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-in-out ${realImageSrc ? 'group-hover:opacity-0 group-hover:scale-105' : 'group-hover:scale-110'}`}
+          />
+        )}
+        
+        {/* Secondary Image (Real Photo) - Shows on Hover */}
+        {realImageSrc && (
+          <img 
+            src={realImageSrc} 
+            alt={`${product.name} (Real)`}
+            className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 scale-105 group-hover:scale-100 transition-all duration-700 ease-in-out"
+          />
+        )}
 
-      {imageSrc && (
-
-        <img 
-
-          src={imageSrc} 
-
-          alt={product.name}
-
-          className="w-full h-48 object-cover"
-
-        />
-
-      )}
+        {/* Overlay Badge */}
+        <div className="absolute top-3 right-3">
+            <span className="bg-black/60 backdrop-blur-md text-white text-xs font-medium px-3 py-1 rounded-full border border-white/10">
+                {product.category}
+            </span>
+        </div>
+        
+        {/* Real Photo Badge Indicator */}
+        {realImageSrc && (
+            <div className="absolute bottom-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <span className="bg-emerald-600/80 backdrop-blur-md text-white text-[10px] font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                    <SparklesIcon className="w-3 h-3" />
+                    تصویر واقعی
+                </span>
+            </div>
+        )}
+      </div>
       
-      <div className="p-4">
-        <h3 className="font-bold text-lg mb-2 text-gray-900">{product.name}</h3>
+      {/* Content */}
+      <div className="p-5 flex flex-col flex-grow">
+        <h3 className="font-bold text-lg mb-2 text-white group-hover:text-emerald-400 transition-colors">{product.name}</h3>
         
         {product.description && (
-          <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+          <p className="text-gray-400 text-sm mb-4 line-clamp-2 flex-grow">
             {product.description}
           </p>
         )}
         
-        <div className="flex items-center justify-between">
-          <span className="text-emerald-600 font-bold text-xl">
-            {product.price.toLocaleString('fa-IR')} تومان
-          </span>
+        <div className="mt-auto flex items-center justify-between pt-4 border-t border-white/5">
+          <div className="flex flex-col">
+              <span className="text-xs text-gray-500">قیمت</span>
+              <span className="text-emerald-400 font-bold text-lg">
+                {product.price === 0 ? 'رایگان' : `${product.price.toLocaleString('fa-IR')} تومان`}
+              </span>
+          </div>
           
           {onAddToCart && (
             <button
@@ -61,20 +85,17 @@ export default function ProductCard({ product, onAddToCart, onClick }: ProductCa
                 e.stopPropagation();
                 onAddToCart(product);
               }}
-              className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white p-3 rounded-xl transition-all shadow-lg shadow-emerald-900/20 group-active:scale-95"
+
+              aria-label="افزودن به سبد خرید"
+
             >
-              افزودن به سبد
+
+              <ShoppingCartIcon className="w-5 h-5" />
+
             </button>
           )}
         </div>
-        
-        {product.category && (
-          <div className="mt-3">
-            <span className="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
-              {product.category}
-            </span>
-          </div>
-        )}
       </div>
     </div>
   );

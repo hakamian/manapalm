@@ -4,7 +4,7 @@ import { useAppState, useAppDispatch } from '../AppContext';
 import { View, User } from '../types';
 import { SproutIcon, CompassIcon, UsersIcon, CheckCircleIcon, SparklesIcon, CpuChipIcon, ArrowLeftIcon, HandshakeIcon, LeafIcon, QuoteIcon, MegaphoneIcon, HeartIcon, BookOpenIcon, SunIcon, BriefcaseIcon } from './icons';
 import CollectiveImpactSection from './CollectiveImpactSection';
-import CampaignSection from './CampaignSection';
+import CampaignList from './campaigns/CampaignList';
 import FAQ from './FAQ';
 import HeroCard from './home/HeroCard';
 import SpringOfMeaning from './home/SpringOfMeaning';
@@ -16,7 +16,7 @@ import SEOHead from './seo/SEOHead';
 import { OrganizationSchema } from './seo/SchemaMarkup';
 import { LocalBusinessSchema, FAQSchema } from './seo/RichSnippets';
 import SmartImage from './ui/SmartImage'; // New import
-import { REFERENCE_DATE_STR } from '../utils/dummyData';
+import { REFERENCE_DATE_STR, INITIAL_CAMPAIGNS } from '../utils/dummyData';
 
 // --- Helper Hooks ---
 const useScrollAnimate = (threshold = 0.2) => {
@@ -492,128 +492,82 @@ const HomeView: React.FC = () => {
     }, [user]);
 
     const guides = [
-        { icon: HandshakeIcon, title: 'میراث خود را بکارید', description: 'لحظات مهم زندگی خود را با کاشتن یک نخل نمادین، جاودانه کنید.', cta: { text: 'مشاهده میراث‌ها', page: View.HallOfHeritage }, color: 'amber' },
-        { icon: BookOpenIcon, title: 'در آکادمی معنا بیاموزید', description: 'با شرکت در دوره‌های آموزشی، دانش خود را برای خلق تأثیری عمیق‌تر افزایش دهید.', cta: { text: 'مشاهده دوره‌ها', page: View.Courses }, color: 'sky' },
-        { icon: UsersIcon, title: 'به باغ عمومی بپیوندید', description: 'با آخرین فعالیت‌های اعضای خانواده نخلستان معنا همراه شوید و در گفتگوها مشارکت نمایید.', cta: { text: 'ورود به باغ عمومی', page: View.OurGrove }, color: 'teal' }
+        { icon: HandshakeIcon, title: 'میراث خود را بکارید', description: 'لحظات مهم زندگی خود را با کاشتن یک نخل نمادین، جاودانه کنید.', cta: { text: 'مشاهده نخل‌ها', action: () => dispatch({ type: 'START_PLANTING_FLOW' }) }, color: 'text-green-400', bgColor: 'bg-green-400/10', borderColor: 'border-green-400/20' },
+        { icon: CompassIcon, title: 'سفر قهرمانی', description: 'نقشه راه رشد شخصی و معنوی خود را با ابزارهای هوشمند دنبال کنید.', cta: { text: 'شروع سفر', action: () => onNavigate(View.HEROS_JOURNEY_INTRO) }, color: 'text-amber-400', bgColor: 'bg-amber-400/10', borderColor: 'border-amber-400/20' },
+        { icon: UsersIcon, title: 'کانون جامعه', description: 'با دیگر همسفران آشنا شوید و در پروژه‌های جمعی مشارکت کنید.', cta: { text: 'پیوستن به جمع', action: () => onNavigate(View.CommunityHub) }, color: 'text-blue-400', bgColor: 'bg-blue-400/10', borderColor: 'border-blue-400/20' },
     ];
 
-    // --- Dynamic FAQ injection ---
-    const FAQ_DATA = [
-        { question: 'نخلستان معنا چیست؟', answer: 'یک کسب و کار اجتماعی که با کاشت نخل، ایجاد معنا و اشتغال‌زایی می‌کند.' },
-        { question: 'چگونه می‌توانم مشارکت کنم؟', answer: 'با خرید نخل، شرکت در دوره‌ها یا انتشار محتوا در کانون.' },
-        { question: 'پول من کجا می‌رود؟', answer: '۹۰٪ برای کاشت و نگهداری نخل‌ها و ۱۰٪ برای توسعه پلتفرم.' }
-    ];
+    // Structured Data for SEO
+    const organizationData = OrganizationSchema;
+    const localBusinessData = LocalBusinessSchema;
 
     return (
-        <main>
-            <SEOHead title="خانه" description="نخلستان معنا: کاشت نخل، ایجاد معنا، و اشتغال‌زایی اجتماعی." />
-            <OrganizationSchema />
-            <LocalBusinessSchema />
-            <FAQSchema items={FAQ_DATA} />
+        <div className="min-h-screen bg-mana-bg pb-20">
+            <SEOHead
+                title="نخلستان معنا | پلتفرم جامع رشد فردی و اثرگذاری اجتماعی"
+                description="با کاشت نخل در نخلستان معنا، هم به طبیعت کمک کنید و هم مسیر رشد شخصی خود را با ابزارهای هوشمند و کوچینگ معنا دنبال نمایید."
+                keywords={['کاشت درخت', 'نخل', 'خیریه', 'رشد فردی', 'کوچینگ', 'مسئولیت اجتماعی', 'هوش مصنوعی']}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationData) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessData) }}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQSchema) }}
+            />
 
             {showWelcomeMat && (
-                <WelcomeMat onEnter={handleCloseWelcome} onSelectIntent={handleWelcomeIntent} />
+                <WelcomeMat
+                    onClose={handleCloseWelcome}
+                    onSelectIntent={handleWelcomeIntent}
+                />
             )}
+
             <HeroSection onStartJourneyClick={onStartJourneyClick} user={user} />
-            <CollectiveImpactSection />
-            <HowItWorksSection onStartPlantingFlow={onStartPlantingFlow} />
-            <CampaignSection campaign={campaign} onCTAClick={onStartPlantingFlow} />
 
-            <SpringOfMeaning allUsers={allUsers} allInsights={user ? user.timeline || [] : []} setPage={handleSetPage} />
-
-            <CrossroadsOfMeaning onNavigate={onNavigate} onStartPlantingFlow={onStartPlantingFlow} />
-
-            <SpecializedConsultingSection onNavigate={onNavigate} />
-
-            {/* Quick Access Section */}
-            <section className="container mx-auto px-4 pt-16 pb-8">
+            <div className="container mx-auto px-4 -mt-20 relative z-20">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white dark:bg-stone-800 p-6 rounded-2xl shadow-lg border border-stone-200 dark:border-stone-700 hover:border-amber-500 transition-all cursor-pointer" onClick={() => handleSetPage(View.CommunityHub)}>
-                        <div className="bg-amber-100 dark:bg-amber-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                            <UsersIcon className="w-6 h-6 text-amber-600 dark:text-amber-400" />
-                        </div>
-                        <h3 className="text-xl font-bold text-stone-800 dark:text-stone-100">کانون جامعه</h3>
-                        <p className="text-stone-600 dark:text-stone-400 mt-2 text-sm">به گفتگوها بپیوندید و از آخرین اخبار مطلع شوید.</p>
-                    </div>
-                    <div className="bg-white dark:bg-stone-800 p-6 rounded-2xl shadow-lg border border-stone-200 dark:border-stone-700 hover:border-green-500 transition-all cursor-pointer" onClick={() => handleSetPage(View.PathOfMeaning)}>
-                        <div className="bg-green-100 dark:bg-green-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                            <CompassIcon className="w-6 h-6 text-green-600 dark:text-green-400" />
-                        </div>
-                        <h3 className="text-xl font-bold text-stone-800 dark:text-stone-100">مسیر معنا</h3>
-                        <p className="text-stone-600 dark:text-stone-400 mt-2 text-sm">سفر قهرمانی خود را ادامه دهید و ماموریت‌های جدید را کشف کنید.</p>
-                    </div>
-                    <div className="bg-white dark:bg-stone-800 p-6 rounded-2xl shadow-lg border border-stone-200 dark:border-stone-700 hover:border-blue-500 transition-all cursor-pointer" onClick={() => {
-                        if (user) {
-                            handleSetPage(View['ai-tools']);
-                        } else {
-                            dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true });
-                        }
-                    }}>
-                        <div className="bg-blue-100 dark:bg-blue-900/30 w-12 h-12 rounded-full flex items-center justify-center mb-4">
-                            <SparklesIcon className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                        </div>
-                        <h3 className="text-xl font-bold text-stone-800 dark:text-stone-100">آزمایشگاه معنا</h3>
-                        <p className="text-stone-600 dark:text-stone-400 mt-2 text-sm">با ابزارهای هوشمند، خلاقیت خود را شکوفا کنید.</p>
-                    </div>
+                    {guides.map((guide, index) => (
+                        <ManaGuideCard key={index} {...guide} delay={index * 100} />
+                    ))}
                 </div>
-            </section>
+            </div>
 
-            {/* --- Personalized Path Section --- */}
-            <section className="container mx-auto px-4 animate-on-scroll">
-                <div className="max-w-4xl mx-auto">
-                    {!user ? (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {guides.map(guide => <ManaGuideCard key={guide.title} {...guide} setPage={handleSetPage} />)}
-                        </div>
-                    ) : !user.profileCompletion.extra ? (
-                        <NextStepCard user={user} setPage={handleSetPage} />
-                    ) : lastPlantedPalm ? (
-                        <LastHeritageCard heritageItem={lastPlantedPalm} />
-                    ) : (
-                        <FirstHeritagePrompt setPage={handleSetPage} />
-                    )}
-                </div>
-            </section>
+            <div className="mt-20 space-y-24">
+                {/* 1. Spring of Meaning (Daily Engagement) */}
+                <SpringOfMeaning onNavigate={onNavigate} />
 
-            {/* --- Heroes of the Week --- */}
-            {displayedHeroes.length > 0 && (
-                <section className="bg-stone-900/90 dark:bg-black/80 backdrop-blur-sm py-16 text-white animate-on-scroll">
-                    <div className="container mx-auto px-4">
-                        <div className="text-center mb-10">
-                            <h2 className="text-3xl font-bold">قهرمانان هفته نخلستان</h2>
-                            <p className="mt-2 text-stone-300">تقدیر از اعضایی که بیشترین تاثیر را در این هفته داشته‌اند.</p>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto items-end">
-                            {[0, 1, 2].map((index) => {
-                                const rankOrder = [2, 1, 3];
-                                const rank = rankOrder[index];
-                                const heroToShow = displayedHeroes[rank - 1];
+                {/* 2. Collective Impact (Social Proof) */}
+                <CollectiveImpactSection />
 
-                                if (!heroToShow) return <div key={index}></div>;
+                {/* 3. Campaigns (New) */}
+                <CampaignList campaigns={INITIAL_CAMPAIGNS} />
 
-                                return (
-                                    <HeroCard
-                                        key={heroToShow.user.id}
-                                        hero={heroToShow}
-                                        rank={rank}
-                                        currentUser={user}
-                                        onAppreciate={handleAppreciateUser}
-                                        onMessage={handleSetPage}
-                                        onLogin={() => dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })}
-                                        appreciated={appreciatedHeroIds.includes(heroToShow.user.id)}
-                                    />
-                                );
-                            })}
-                        </div>
-                    </div>
-                </section>
-            )}
+                {/* 4. Crossroads (Navigation) */}
+                <CrossroadsOfMeaning onNavigate={onNavigate} onStartPlantingFlow={onStartPlantingFlow} />
 
-            <TestimonialsSection />
+                {/* 5. Specialized Consulting */}
+                <SpecializedConsultingSection onNavigate={onNavigate} />
 
-            <FAQ user={user} />
-            <PartnersSection />
-        </main>
+                {/* 6. FAQ */}
+                <FAQ />
+            </div>
+
+            {/* Floating Action Button for Mobile */}
+            <div className="fixed bottom-24 left-6 md:hidden z-40">
+                <button
+                    onClick={onStartPlantingFlow}
+                    className="bg-mana-primary text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center animate-bounce"
+                >
+                    <SproutIcon className="w-8 h-8" />
+                </button>
+            </div>
+        </div>
     );
 };
 

@@ -17,7 +17,11 @@ export interface Product {
     name: string;
     description?: string;
     price: number;
+
     image: string; // mapped to image_url in DB
+
+    realImage?: string; // Secondary image for hover effect (Real photo)
+
     category: 'physical' | 'digital' | 'donation' | 'service' | 'heritage' | 'نخل میراث' | 'محصولات دیجیتال' | 'محصولات خرما' | 'صنایع دستی' | 'ارتقا';
 
     // Impact fields

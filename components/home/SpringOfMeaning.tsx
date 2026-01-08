@@ -14,7 +14,7 @@ interface SpringOfMeaningProps {
     activeHeritageId?: string | null;
 }
 
-const SpringOfMeaning: React.FC<SpringOfMeaningProps> = ({ allUsers, allInsights, setPage, activeHeritageId }) => {
+const SpringOfMeaning: React.FC<SpringOfMeaningProps> = ({ allUsers = [], allInsights = [], setPage, activeHeritageId }) => {
     const { user: currentUser } = useAppState();
     const [installmentModalItem, setInstallmentModalItem] = useState<HeritageItem | null>(null);
     const heritageTypes = useMemo(() => heritageItems.filter(item => !item.isCommunity && item.id !== 'beginning_palm'), []);
@@ -36,13 +36,16 @@ const SpringOfMeaning: React.FC<SpringOfMeaningProps> = ({ allUsers, allInsights
     const heritageStats = useMemo(() => {
         const stats: { [key: string]: number } = {};
         heritageTypes.forEach(h => stats[h.id] = 0);
-        allUsers.forEach(user => {
-            user.timeline?.forEach(event => {
-                if (event.type === 'palm_planted' && stats[event.details.id] !== undefined) {
-                    stats[event.details.id]++;
-                }
+        
+        if (allUsers && Array.isArray(allUsers)) {
+            allUsers.forEach(user => {
+                user.timeline?.forEach(event => {
+                    if (event.type === 'palm_planted' && stats[event.details.id] !== undefined) {
+                        stats[event.details.id]++;
+                    }
+                });
             });
-        });
+        }
         return stats;
     }, [allUsers, heritageTypes]);
 

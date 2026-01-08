@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { Vazirmatn } from 'next/font/google';
 import './globals.css';
 import { Providers } from './providers';
+import ClientLayout from '../components/layout/ClientLayout';
 
 const vazirmatn = Vazirmatn({
   subsets: ['arabic'],
@@ -48,13 +49,23 @@ export default function RootLayout({
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#10b981" />
-        <link rel="icon" href="/icon-192x192.png" />
-        <link rel="apple-touch-icon" href="/icon-512x512.png" />
+        {/* Cloudinary Script for Upload Widget */}
+        <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript" async></script>
       </head>
-      <body className="bg-gradient-to-br from-gray-900 via-gray-800 to-emerald-950 min-h-screen text-white">
+      <body className="bg-gray-900 min-h-screen text-white overflow-x-hidden selection:bg-amber-500/30 selection:text-amber-100">
+        {/* Atmospheric Background */}
+        <div className="aurora-bg">
+          <div className="aurora-blob blob-1"></div>
+          <div className="aurora-blob blob-2"></div>
+          <div className="aurora-blob blob-3"></div>
+        </div>
+        <div className="noise-overlay"></div>
 
-        <Providers>{children}</Providers>
-
+        <Providers>
+          <ClientLayout>
+            {children}
+          </ClientLayout>
+        </Providers>
       </body>
     </html>
   );
