@@ -4,6 +4,8 @@ import { useAppState, useAppDispatch } from '../AppContext';
 import { View } from '../types';
 import { SproutIcon, BriefcaseIcon, CloudIcon, UserCircleIcon, PresentationChartLineIcon, TrophyIcon } from './icons';
 
+import InfographicOverlay from './ui/InfographicOverlay';
+
 const useAnimatedCounter = (endValue: number, duration = 2000) => {
     const [count, setCount] = useState(0);
     useEffect(() => {
@@ -113,24 +115,74 @@ const CollectiveImpactSection: React.FC = () => {
                         هر نخل، <span className="text-white font-medium">یک سنگر سبز</span> در برابر بیابان‌زایی و فقر است.
                     </p>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {stats.map((stat, index) => (
-                        <InteractiveStatCard
-                            key={stat.label}
-                            label={stat.label}
-                            communityValue={stat.communityValue}
-                            personalValue={stat.personalValue}
-                            isLoggedIn={mounted && !!user}
-                            hasPlanted={mounted && hasPlanted}
-                            onLoginClick={onAuthClick}
-                            onNavigateToProfileTab={onNavigateToProfileTab}
-                            onStartPlantingFlow={onStartPlantingFlow}
-                            colorClass={stat.colorClass}
-                            icon={stat.icon}
-                            isVisible={isSectionVisible}
-                            delay={index * 150}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+
+                    {/* Left: Infographic */}
+
+                    <div className={`transition-all duration-1000 delay-300 ${isSectionVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
+
+                        <InfographicOverlay
+
+                            imageSrc="https://res.cloudinary.com/dk2x11rvs/image/upload/v1767886988/Gemini_Generated_Image_s9nxwgs9nxwgs9nx.png"
+
+                            alt="Collective Impact Radial Chart"
+
+                            hotspots={[
+
+                                { id: 'c1', x: 25, y: 30, title: 'محیط زیست', description: 'احیای پوشش گیاهی و جذب کربن', align: 'left' },
+
+                                { id: 'c2', x: 75, y: 30, title: 'اشتغال پایدار', description: 'ایجاد شغل برای جوانان بومی', align: 'right' },
+
+                                { id: 'c3', x: 50, y: 80, title: 'چرخه خیریه', description: 'حمایت از خانواده‌های نیازمند', align: 'center' },
+
+                            ]}
+
                         />
-                    ))}
+
+                    </div>
+
+
+
+                    {/* Right: Stats Cards */}
+
+                    <div className="flex flex-col gap-6">
+
+                        {stats.map((stat, index) => (
+
+                            <InteractiveStatCard
+
+                                key={stat.label}
+
+                                label={stat.label}
+
+                                communityValue={stat.communityValue}
+
+                                personalValue={stat.personalValue}
+
+                                isLoggedIn={mounted && !!user}
+
+                                hasPlanted={mounted && hasPlanted}
+
+                                onLoginClick={onAuthClick}
+
+                                onNavigateToProfileTab={onNavigateToProfileTab}
+
+                                onStartPlantingFlow={onStartPlantingFlow}
+
+                                colorClass={stat.colorClass}
+
+                                icon={stat.icon}
+
+                                isVisible={isSectionVisible}
+
+                                delay={index * 150 + 500}
+
+                            />
+
+                        ))}
+
+                    </div>
+
                 </div>
                 <div className={`text-center mt-16 transition-all duration-700 delay-500 ${isSectionVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
                     <button onClick={() => onNavigate(View.TransparencyDashboard)} className="inline-flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 px-8 rounded-full text-lg transition-all border border-gray-600 hover:border-gray-500 shadow-lg">

@@ -16,7 +16,10 @@ import SEOHead from './seo/SEOHead';
 import { OrganizationSchema } from './seo/SchemaMarkup';
 import { LocalBusinessSchema, FAQSchema } from './seo/RichSnippets';
 import SmartImage from './ui/SmartImage'; // New import
+
 import { REFERENCE_DATE_STR, INITIAL_CAMPAIGNS } from '../utils/dummyData';
+
+import InfographicOverlay from './ui/InfographicOverlay';
 
 // --- Helper Hooks ---
 const useScrollAnimate = (threshold = 0.2) => {
@@ -198,45 +201,67 @@ const HeroSection: React.FC<{ onStartJourneyClick: () => void, user: User | null
 };
 
 const HowItWorksSection: React.FC<{ onStartPlantingFlow: () => void }> = ({ onStartPlantingFlow }) => {
+
     const [ref, isVisible] = useScrollAnimate(0.2);
-    const steps = [
-        { icon: <SproutIcon className="w-10 h-10" />, title: "۱. نیت خود را انتخاب کنید", description: "میراث شما برای چیست؟ یادبود، تولد، یا یک تصمیم جدید؟" },
-        { icon: <SparklesIcon className="w-10 h-10" />, title: "۲. سند را شخصی‌سازی کنید", description: "یک پیام ماندگار بنویسید. هوش مصنوعی ما آن را شاعرانه می‌کند." },
-        { icon: <CheckCircleIcon className="w-10 h-10" />, title: "۳. نخل شما کاشته می‌شود", description: "کشاورزان ما نخل را می‌کارند و شما سند دیجیتال و گزارش رشد آن را دریافت می‌کنید." },
-    ];
+
     return (
-        <section ref={ref} className="bg-mana-bg py-32 relative">
+
+        <section ref={ref} className="bg-mana-bg py-24 relative">
+
             <div className="container mx-auto px-6 relative z-10">
-                <div className={`text-center mb-20 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-                    <h2 className="text-4xl md:text-6xl font-black mb-6">مسیر جاودانگی در <span className="text-gradient-gold">۳ قدم</span></h2>
+
+                <div className={`text-center mb-16 transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+
+                    <h2 className="text-4xl md:text-5xl font-black mb-6">مسیر جاودانگی در <span className="text-gradient-gold">یک نگاه</span></h2>
+
                     <p className="text-xl text-gray-400 font-light">ساده، شفاف و تاثیرگذار در مقیاس جهانی.</p>
+
                 </div>
 
-                <div className="flex flex-col lg:flex-row items-center justify-between text-center max-w-6xl mx-auto gap-12 lg:gap-8">
-                    {steps.map((step, index) => (
-                        <React.Fragment key={index}>
-                            <div className={`flex flex-col items-center lg:flex-1 p-8 rounded-3xl glass-panel border border-white/5 transition-all duration-700 ${isVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-10'}`} style={{ animationDelay: `${index * 200}ms` }}>
-                                <div className="text-mana-primary mx-auto mb-6 bg-mana-primary/10 p-5 rounded-2xl shadow-glow-green border border-mana-primary/20">{step.icon}</div>
-                                <h3 className="text-2xl font-bold mb-4 text-white tracking-tight">{step.title}</h3>
-                                <p className="text-gray-400 text-base leading-relaxed font-light">{step.description}</p>
-                            </div>
-                            {index < steps.length - 1 && (
-                                <div className={`hidden lg:block opacity-30 ${isVisible ? 'animate-fade-in' : 'opacity-0'}`} style={{ animationDelay: `${index * 200 + 300}ms` }}>
-                                    <ArrowLeftIcon className="w-8 h-8 text-mana-primary" />
-                                </div>
-                            )}
-                        </React.Fragment>
-                    ))}
+
+
+                <div className={`max-w-5xl mx-auto transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+
+                    <InfographicOverlay
+
+                        imageSrc="https://res.cloudinary.com/dk2x11rvs/image/upload/v1767886988/Gemini_Generated_Image_3idbpz3idbpz3idb.png"
+
+                        alt="How it works infographic"
+
+                        hotspots={[
+
+                            { id: 'h1', x: 15, y: 40, title: '۱. انتخاب نیت', description: 'انتخاب نوع نخل (یادبود، تولد، ...)', align: 'left' },
+
+                            { id: 'h2', x: 38, y: 65, title: '۲. کاشت نهال', description: 'کاشت فیزیکی توسط باغبان', align: 'center' },
+
+                            { id: 'h3', x: 62, y: 35, title: '۳. رشد و مراقبت', description: 'آبیاری هوشمند و نگهداری', align: 'center' },
+
+                            { id: 'h4', x: 85, y: 60, title: '۴. میراث جاودان', description: 'دریافت ثمر و سند دیجیتال', align: 'right' },
+
+                        ]}
+
+                    />
+
                 </div>
 
-                <div className={`text-center mt-24 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+
+
+                <div className={`text-center mt-16 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+
                     <button onClick={onStartPlantingFlow} className="bg-mana-primary hover:bg-mana-primary-dark text-white font-bold py-4 px-12 rounded-2xl text-xl transition-all duration-500 shadow-premium hover:shadow-glow-green hover:scale-105">
+
                         شروع میراث‌سازی
+
                     </button>
+
                 </div>
+
             </div>
+
         </section>
+
     );
+
 };
 
 const TestimonialsSection: React.FC = () => (

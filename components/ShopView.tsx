@@ -1,7 +1,12 @@
 import React from 'react';
+
 import { useAppState, useAppDispatch } from '../AppContext';
+
 import ProductCard from './ProductCard';
+
 import { Product } from '../types';
+
+import InfographicOverlay from './ui/InfographicOverlay';
 
 const ShopView: React.FC = () => {
     const { products } = useAppState();
@@ -20,11 +25,45 @@ const ShopView: React.FC = () => {
                         فروشگاه نخلستان
                     </h1>
                     <p className="max-w-xl mt-5 mx-auto text-xl text-gray-500">
+
                         انتخاب کنید، بکارید و جاودانه شوید.
+
                     </p>
+
                 </div>
 
+
+
+                {/* Anatomy of Meaning Infographic */}
+
+                <div className="mb-16 max-w-4xl mx-auto">
+
+                    <InfographicOverlay
+
+                        imageSrc="https://res.cloudinary.com/dk2x11rvs/image/upload/v1767886988/Gemini_Generated_Image_qfaxmgqfaxmgqfax.png"
+
+                        alt="Anatomy of a Meaningful Palm"
+
+                        hotspots={[
+
+                            { id: 'a1', x: 50, y: 85, title: 'ریشه‌ها: ارزش‌ها', description: 'تاریخ و اصالت', align: 'center' },
+
+                            { id: 'a2', x: 50, y: 50, title: 'تنه: استقامت', description: 'رشد و پایداری', align: 'center' },
+
+                            { id: 'a3', x: 80, y: 25, title: 'برگ‌ها: بخشش', description: 'سخاوت و سایه‌گستری', align: 'left' },
+
+                            { id: 'a4', x: 20, y: 35, title: 'میوه: اثرگذاری', description: 'خیریه و تاثیر اجتماعی', align: 'right' },
+
+                        ]}
+
+                    />
+
+                </div>
+
+
+
                 <div className="grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-6 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
+
                     {products.map((product) => (
                         <ProductCard 
                             key={product.id} 

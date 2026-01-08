@@ -1,0 +1,8 @@
+feat: add 3d infographics to home and shop views
+
+- Add InfographicOverlay component
+- Update HomeView with 'How It Works' infographic
+- Update CollectiveImpactSection with Radial infographic
+- Add 'Anatomy of Palm' infographic to ShopView
+
+🤖 Generated with Pochi
