@@ -40,7 +40,7 @@ const ShopView: React.FC = () => {
 
                     <InfographicOverlay
 
-                        imageSrc="https://res.cloudinary.com/dk2x11rvs/image/upload/v1767886988/Gemini_Generated_Image_qfaxmgqfaxmgqfax.png"
+                        imageSrc="https://images.unsplash.com/photo-1597466599360-3b9775841aec?q=80&w=1200&auto=format&fit=crop"
 
                         alt="Anatomy of a Meaningful Palm"
 

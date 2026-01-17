@@ -123,7 +123,7 @@ const CollectiveImpactSection: React.FC = () => {
 
                         <InfographicOverlay
 
-                            imageSrc="https://res.cloudinary.com/dk2x11rvs/image/upload/v1767886988/Gemini_Generated_Image_s9nxwgs9nxwgs9nx.png"
+                            imageSrc="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1200&auto=format&fit=crop"
 
                             alt="Collective Impact Radial Chart"
 

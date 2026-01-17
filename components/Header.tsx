@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { View, NavCategory } from '../types';
 import { useAppState, useAppDispatch, setLoggingOut } from '../AppContext';
+import { useCart } from '../contexts/CartContext';
 import SmartLink from './ui/SmartLink';
 import { supabase } from '../services/supabaseClient';
 import { dbAdapter } from '../services/dbAdapter';
@@ -176,7 +177,8 @@ const NotificationsPanel: React.FC<{ onClose: () => void; }> = ({ onClose }) => 
 };
 
 const Header: React.FC = () => {
-    const { user, cartItems, wishlist, notifications, siteConfig, liveActivities } = useAppState();
+    const { user, wishlist, notifications, siteConfig, liveActivities } = useAppState();
+    const { cartItems, toggleCart } = useCart().state;
     const dispatch = useAppDispatch();
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -376,7 +378,7 @@ const Header: React.FC = () => {
                                     </span>
                                 )}
                             </button>
-                            <button id="nav-cart" onClick={() => dispatch({ type: 'TOGGLE_CART', payload: true })} className="relative text-white hover:text-green-300 transition-colors duration-200" aria-label={`Shopping cart with ${cartItemCount} items`}>
+                            <button id="nav-cart" onClick={() => toggleCart()} className="relative text-white hover:text-green-300 transition-colors duration-200" aria-label={`Shopping cart with ${cartItemCount} items`}>
                                 <ShoppingCartIcon />
                                 {cartItemCount > 0 && (
                                     <span className="absolute -top-2 -right-2 flex items-center justify-center h-5 w-5 rounded-full bg-red-600 text-xs font-bold text-white">

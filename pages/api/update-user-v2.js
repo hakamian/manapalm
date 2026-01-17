@@ -29,47 +29,94 @@ export default async function handler(req, res) {
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
     try {
-        const { user } = req.body;
+        const { user: updateData } = req.body;
 
-        if (!user || !user.id) {
+        if (!updateData || !updateData.id) {
             return res.status(400).json({ success: false, error: 'Missing user data' });
         }
 
-        console.log('🔄 Syncing user profile to DB:', user.id);
+        // 🛡️ SECURITY CHECK: Verify Token and Identity
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+            return res.status(401).json({ success: false, error: 'Missing authorization header' });
+        }
+
+        const token = authHeader.split(' ')[1];
+        const { data: { user: authUser }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+        if (authError || !authUser) {
+            console.error('❌ Auth error:', authError);
+            return res.status(401).json({ success: false, error: 'Invalid or expired token' });
+        }
+
+        // Check if requester is admin
+        const { data: adminProfile } = await supabaseAdmin
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', authUser.id)
+            .single();
+
+        const isAdmin = adminProfile?.is_admin === true;
+
+        // If not admin, user can ONLY update their own profile
+        if (!isAdmin && authUser.id !== updateData.id) {
+            console.warn(`🚫 Unauthorized attempt by ${authUser.id} to update ${updateData.id}`);
+            return res.status(403).json({ success: false, error: 'Forbidden: Cannot update other user profiles' });
+        }
+
+        // If not admin, restrict sensitive fields from being changed by the user
+        if (!isAdmin) {
+            const { data: currentProfile } = await supabaseAdmin
+                .from('profiles')
+                .select('points, mana_points, is_admin, is_guardian, is_grove_keeper, level')
+                .eq('id', authUser.id)
+                .single();
+
+            if (currentProfile) {
+                updateData.points = currentProfile.points;
+                updateData.manaPoints = currentProfile.mana_points;
+                updateData.isAdmin = currentProfile.is_admin;
+                updateData.isGuardian = currentProfile.is_guardian;
+                updateData.isGroveKeeper = currentProfile.is_grove_keeper;
+                updateData.level = currentProfile.level;
+            }
+        }
+
+        console.log('🔄 Syncing user profile to DB:', updateData.id);
 
         // Build metadata object with all user-specific data
         // We preserve existing data structure used in mapProfileToUser (database.ts)
         const metadata = {
-            ...(user.metadata || {}), // Preserve existing if provided
-            addresses: user.addresses || [],
-            messages: user.messages || [],
-            recentViews: user.recentViews || [],
-            timeline: user.timeline || [],
-            coursePersonalizations: user.coursePersonalizations || {},
-            discReport: user.discReport || null,
-            profileCompletion: user.profileCompletion || { initial: false, additional: false, extra: false },
-            unlockedTools: user.unlockedTools || [],
-            purchasedCourseIds: user.purchasedCourseIds || [],
-            conversations: user.conversations || [],
-            notifications: user.notifications || [],
-            reflectionAnalysesRemaining: user.reflectionAnalysesRemaining || 0,
-            ambassadorPacksRemaining: user.ambassadorPacksRemaining || 0,
-            hoshmanaLiveAccess: user.hoshmanaLiveAccess || null,
+            ...(updateData.metadata || {}), // Preserve existing if provided
+            addresses: updateData.addresses || [],
+            messages: updateData.messages || [],
+            recentViews: updateData.recentViews || [],
+            timeline: updateData.timeline || [],
+            coursePersonalizations: updateData.coursePersonalizations || {},
+            discReport: updateData.discReport || null,
+            profileCompletion: updateData.profileCompletion || { initial: false, additional: false, extra: false },
+            unlockedTools: updateData.unlockedTools || [],
+            purchasedCourseIds: updateData.purchasedCourseIds || [],
+            conversations: updateData.conversations || [],
+            notifications: updateData.notifications || [],
+            reflectionAnalysesRemaining: updateData.reflectionAnalysesRemaining || 0,
+            ambassadorPacksRemaining: updateData.ambassadorPacksRemaining || 0,
+            hoshmanaLiveAccess: updateData.hoshmanaLiveAccess || null,
         };
 
         // Prepare profile update
         const profileUpdate = {
-            id: user.id,
-            full_name: user.fullName || user.name,
-            email: user.email,
-            phone: user.phone,
-            avatar_url: user.avatar,
-            points: user.points || 0,
-            mana_points: user.manaPoints || 0,
-            level: user.level || 'جوانه',
-            is_admin: user.isAdmin || false,
-            is_guardian: user.isGuardian || false,
-            is_grove_keeper: user.isGroveKeeper || false,
+            id: updateData.id,
+            full_name: updateData.fullName || updateData.name,
+            email: updateData.email,
+            phone: updateData.phone,
+            avatar_url: updateData.avatar,
+            points: updateData.points || 0,
+            mana_points: updateData.manaPoints || 0,
+            level: updateData.level || 'جوانه',
+            is_admin: updateData.isAdmin || false,
+            is_guardian: updateData.isGuardian || false,
+            is_grove_keeper: updateData.isGroveKeeper || false,
             updated_at: new Date().toISOString(),
             metadata: metadata
         };
@@ -93,7 +140,7 @@ export default async function handler(req, res) {
         console.log('📥 DB Response (Saved):', JSON.stringify(savedData?.metadata?.addresses));
         return res.status(200).json({
             success: true,
-            debug: `Sent ${user.addresses?.length || 0}, Saved ${savedData?.metadata?.addresses?.length || 0}`
+            debug: `Sent ${updateData.addresses?.length || 0}, Saved ${savedData?.metadata?.addresses?.length || 0}`
         });
 
     } catch (error) {

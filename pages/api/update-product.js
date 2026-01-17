@@ -27,7 +27,33 @@ export default async function handler(req, res) {
 
     const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
+    // 🛡️ SECURITY CHECK: Verify Admin status
     try {
+        const authHeader = req.headers.authorization;
+        if (!authHeader) {
+            return res.status(401).json({ error: 'Missing authorization header' });
+        }
+
+        const token = authHeader.split(' ')[1];
+        const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+        if (authError || !user) {
+            console.error('❌ Auth error:', authError);
+            return res.status(401).json({ error: 'Invalid or expired token' });
+        }
+
+        // Check if user is admin in profiles table
+        const { data: profile, error: profileError } = await supabaseAdmin
+            .from('profiles')
+            .select('is_admin')
+            .eq('id', user.id)
+            .single();
+
+        if (profileError || !profile?.is_admin) {
+            console.warn('🚫 Unauthorized attempt by user:', user.id);
+            return res.status(403).json({ error: 'Unauthorized: Admin access required' });
+        }
+
         const { action, id, updates, product } = req.body;
 
         console.log('📦 Product API called:', { action, id });

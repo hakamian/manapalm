@@ -45,6 +45,7 @@ const CommunityProjectsPage = React.lazy(() => import('../CommunityProjectsPage'
 const MicrofinanceView = React.lazy(() => import('../MicrofinanceView'));
 const SmartConsultantView = React.lazy(() => import('../SmartConsultantView'));
 const BusinessMentorView = React.lazy(() => import('../BusinessMentorView'));
+const CheckoutView = React.lazy(() => import('../CheckoutView'));
 const PaymentCallbackView = React.lazy(() => import('../PaymentCallbackView'));
 const SearchResultsView = React.lazy(() => import('../SearchResultsView'));
 const PublicStoryView = React.lazy(() => import('../seo/PublicStoryView')); // New Import
@@ -146,6 +147,7 @@ const MainContent: React.FC = () => {
             case View.Microfinance: return <MicrofinanceView />;
             case View.SMART_CONSULTANT: return <SmartConsultantView />;
             case View.BUSINESS_MENTOR: return <BusinessMentorView />;
+            case View.Checkout: return <CheckoutView />;
             case View.PAYMENT_CALLBACK: return <PaymentCallbackView />;
             case View.SearchResults: return <SearchResultsView />;
             case View.PublicStory: return <PublicStoryView />; // New route

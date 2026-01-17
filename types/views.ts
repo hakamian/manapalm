@@ -48,6 +48,7 @@ export enum View {
     SMART_CONSULTANT = 'SMART_CONSULTANT',
     BUSINESS_MENTOR = 'BUSINESS_MENTOR',
     'ai-tools' = 'AI_TOOLS',
+    Checkout = 'CHECKOUT',
     PAYMENT_CALLBACK = 'PAYMENT_CALLBACK',
     SearchResults = 'SEARCH_RESULTS',
     PublicStory = 'PUBLIC_STORY',

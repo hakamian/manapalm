@@ -2,29 +2,36 @@
 
 import React from 'react';
 import { useAppState, useAppDispatch } from '../AppContext';
+import { useCart } from '../contexts/CartContext';
+import { View } from '../types';
 import Modal from './Modal';
 
 export default function ShoppingCartModal() {
-  const { isCartOpen, cartItems } = useAppState();
-  const dispatch = useAppDispatch();
+  const { isCartOpen, cartItems, toggleCart, removeFromCart } = useCart().state ? { ...useCart().state, ...useCart() } : ({} as any);
+  // Fallback to AppContext if CartContext not available (should not happen)
+  const appState = useAppState();
+  const appDispatch = useAppDispatch();
 
-  if (!isCartOpen) return null;
+  const activeCartItems = cartItems || appState.cartItems;
+  const activeIsCartOpen = isCartOpen !== undefined ? isCartOpen : appState.isCartOpen;
 
-  const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  if (!activeIsCartOpen) return null;
+
+  const totalPrice = activeCartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
     <Modal
-      isOpen={isCartOpen}
-      onClose={() => dispatch({ type: 'TOGGLE_CART' })}
+      isOpen={activeIsCartOpen}
+      onClose={() => toggleCart ? toggleCart(false) : appDispatch({ type: 'TOGGLE_CART', payload: false })}
       title="سبد خرید"
     >
-      {cartItems.length === 0 ? (
+      {activeCartItems.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           سبد خرید شما خالی است
         </div>
       ) : (
         <div className="space-y-4">
-          {cartItems.map((item) => (
+          {activeCartItems.map((item) => (
             <div key={item.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
               {item.imageUrl && (
                 <img src={item.imageUrl} alt={item.name} className="w-16 h-16 object-cover rounded" />
@@ -39,7 +46,7 @@ export default function ShoppingCartModal() {
                 </p>
               </div>
               <button
-                onClick={() => dispatch({ type: 'REMOVE_FROM_CART', payload: item.id })}
+                onClick={() => removeFromCart ? removeFromCart(item.id) : appDispatch({ type: 'REMOVE_FROM_CART', payload: item.id })}
                 className="text-red-500 hover:text-red-700"
               >
                 حذف
@@ -57,8 +64,10 @@ export default function ShoppingCartModal() {
 
             <button
               onClick={() => {
-                dispatch({ type: 'TOGGLE_CART' });
-                dispatch({ type: 'SET_VIEW', payload: 'Checkout' as any });
+                if (toggleCart) toggleCart(false);
+                else appDispatch({ type: 'TOGGLE_CART', payload: false });
+                
+                appDispatch({ type: 'SET_VIEW', payload: View.Checkout });
               }}
               className="w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition"
             >

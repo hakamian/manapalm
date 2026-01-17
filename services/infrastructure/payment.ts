@@ -18,10 +18,8 @@ export const requestPayment = async (amount: number, description: string, user: 
         if (!response.ok) throw new Error("Network response was not ok");
         return await response.json();
     } catch (error) {
-        console.warn("Backend payment service unavailable. Simulating success.");
-        const mockAuthority = `MOCK_AUTH_${Date.now()}`;
-        const callbackUrl = `${window.location.origin}${window.location.pathname}?view=PAYMENT_CALLBACK&Status=OK&Authority=${mockAuthority}`;
-        return { success: true, url: callbackUrl };
+        console.error("Payment request failed:", error);
+        return { success: false, error: "خطا در اتصال به درگاه پرداخت. لطفا دوباره تلاش کنید." };
     }
 };
 
@@ -35,11 +33,10 @@ export const verifyPayment = async (amount: number, authority: string) => {
         if (!response.ok) throw new Error("Network response was not ok");
         return await response.json();
     } catch (error) {
-        console.warn("Backend verification service unavailable. Simulating success.");
+        console.error("Payment verification failed:", error);
         return {
-            success: true,
-            refId: `REF-${Math.floor(Math.random() * 1000000)}`,
-            message: 'تراکنش با موفقیت انجام شد (شبیه‌سازی).'
+            success: false,
+            message: 'خطا در تایید تراکنش. اگر مبلغی از حساب شما کسر شده، به زودی بازگشت داده خواهد شد.'
         };
     }
 };

@@ -202,9 +202,15 @@ export const dbAdapter = {
                 return;
             }
 
+            const { data: { session } } = await supabase!.auth.getSession();
+            const token = session?.access_token;
+
             const response = await fetch('/api/update-user-v2', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
                 body: JSON.stringify({ user })
             });
 
@@ -547,14 +553,29 @@ export const dbAdapter = {
         console.log("🔄 Creating product via API:", product.name);
 
         try {
+            const { data: { session } } = await supabase!.auth.getSession();
+            const token = session?.access_token;
+
+            const response = await fetch('/api/update-product', {
+                method: 'P        try {
+            const { data: { session } } = await supabase!.auth.getSession();
+            const token = session?.access_token;
+
+            const response = await fetch('/api/update-product', {
+                method: '        try {
+            const { data: { session } } = await supabase!.auth.getSession();
+            const token = session?.access_token;
+
             const response = await fetch('/api/update-product', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
                 body: JSON.stringify({ action: 'create', product })
             });
 
             const result = await response.json();
-
             if (!response.ok) {
                 console.error("❌ API Error:", result.error);
                 throw new Error(result.error);
@@ -587,9 +608,15 @@ export const dbAdapter = {
         console.log("🔄 Updating product via API:", { id, updates });
 
         try {
+            const { data: { session } } = await supabase!.auth.getSession();
+            const token = session?.access_token;
+
             const response = await fetch('/api/update-product', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
                 body: JSON.stringify({ id, updates })
             });
 
@@ -620,9 +647,15 @@ export const dbAdapter = {
         console.log("🔄 Deleting product via API:", id);
 
         try {
+            const { data: { session } } = await supabase!.auth.getSession();
+            const token = session?.access_token;
+
             const response = await fetch('/api/update-product', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': token ? `Bearer ${token}` : ''
+                },
                 body: JSON.stringify({ action: 'delete', id })
             });
 
