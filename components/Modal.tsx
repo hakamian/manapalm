@@ -5,9 +5,10 @@ interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
     children: React.ReactNode;
+    title?: string;
 }
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
     useEffect(() => {
         const handleEsc = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
@@ -34,20 +35,21 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children }) => {
             >
                 {/* Mobile Grabber Handle */}
                 <div className="absolute top-2 left-1/2 -translate-x-1/2 w-10 h-1.5 bg-stone-300 dark:bg-stone-600 rounded-full md:hidden"></div>
-                
-                <button 
-                    onClick={onClose} 
+
+                <button
+                    onClick={onClose}
                     className="absolute top-3 right-3 text-stone-400 hover:text-stone-600 dark:hover:text-stone-200 p-1 bg-stone-100/50 dark:bg-stone-700/50 rounded-full z-10"
                     aria-label="بستن"
                 >
-                    <XIcon className="w-5 h-5"/>
+                    <XIcon className="w-5 h-5" />
                 </button>
 
                 <div className="pt-6 md:pt-0">
-                  {children}
+                    {title && <h2 className="text-xl font-bold mb-4 pr-8 md:pr-0">{title}</h2>}
+                    {children}
                 </div>
             </div>
-             <style>{`
+            <style>{`
                 @keyframes scale-in {
                     from { transform: scale(0.95); opacity: 0; }
                     to { transform: scale(1); opacity: 1; }

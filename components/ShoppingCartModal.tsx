@@ -1,40 +1,36 @@
 'use client';
 
 import React from 'react';
-import { useAppState, useAppDispatch } from '../AppContext';
+import { useAppDispatch } from '../AppContext';
 import { useCart } from '../contexts/CartContext';
 import { View } from '../types';
 import Modal from './Modal';
 
 export default function ShoppingCartModal() {
-  const { isCartOpen, cartItems, toggleCart, removeFromCart } = useCart().state ? { ...useCart().state, ...useCart() } : ({} as any);
-  // Fallback to AppContext if CartContext not available (should not happen)
-  const appState = useAppState();
+  const { state, toggleCart, removeFromCart } = useCart();
+  const { isCartOpen, cartItems } = state;
   const appDispatch = useAppDispatch();
 
-  const activeCartItems = cartItems || appState.cartItems;
-  const activeIsCartOpen = isCartOpen !== undefined ? isCartOpen : appState.isCartOpen;
+  if (!isCartOpen) return null;
 
-  if (!activeIsCartOpen) return null;
-
-  const totalPrice = activeCartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const totalPrice = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
   return (
     <Modal
-      isOpen={activeIsCartOpen}
-      onClose={() => toggleCart ? toggleCart(false) : appDispatch({ type: 'TOGGLE_CART', payload: false })}
+      isOpen={isCartOpen}
+      onClose={() => toggleCart(false)}
       title="سبد خرید"
     >
-      {activeCartItems.length === 0 ? (
+      {cartItems.length === 0 ? (
         <div className="text-center py-8 text-gray-500">
           سبد خرید شما خالی است
         </div>
       ) : (
         <div className="space-y-4">
-          {activeCartItems.map((item) => (
+          {cartItems.map((item) => (
             <div key={item.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-              {item.imageUrl && (
-                <img src={item.imageUrl} alt={item.name} className="w-16 h-16 object-cover rounded" />
+              {item.image && (
+                <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded" />
               )}
               <div className="flex-1">
                 <h4 className="font-medium">{item.name}</h4>
@@ -46,7 +42,7 @@ export default function ShoppingCartModal() {
                 </p>
               </div>
               <button
-                onClick={() => removeFromCart ? removeFromCart(item.id) : appDispatch({ type: 'REMOVE_FROM_CART', payload: item.id })}
+                onClick={() => removeFromCart(item.id)}
                 className="text-red-500 hover:text-red-700"
               >
                 حذف
@@ -64,9 +60,7 @@ export default function ShoppingCartModal() {
 
             <button
               onClick={() => {
-                if (toggleCart) toggleCart(false);
-                else appDispatch({ type: 'TOGGLE_CART', payload: false });
-                
+                toggleCart(false);
                 appDispatch({ type: 'SET_VIEW', payload: View.Checkout });
               }}
               className="w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition"

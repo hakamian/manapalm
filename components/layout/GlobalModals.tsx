@@ -30,7 +30,6 @@ interface GlobalModalsProps {
 const GlobalModals: React.FC<GlobalModalsProps> = ({ onLoginSuccess }) => {
     const {
         isAuthModalOpen,
-        isCartOpen,
         isOrderSuccessModalOpen,
         lastOrderDeeds,
         lastOrderPointsEarned,
@@ -56,7 +55,6 @@ const GlobalModals: React.FC<GlobalModalsProps> = ({ onLoginSuccess }) => {
 
     console.log('GlobalModals Render Debug:', {
         isPalmSelectionModalOpen,
-        isCartOpen,
         isDeedPersonalizationModalOpen,
         palmTypesCount: palmTypes?.length
     });

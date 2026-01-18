@@ -178,7 +178,8 @@ const NotificationsPanel: React.FC<{ onClose: () => void; }> = ({ onClose }) => 
 
 const Header: React.FC = () => {
     const { user, wishlist, notifications, siteConfig, liveActivities } = useAppState();
-    const { cartItems, toggleCart } = useCart().state;
+    const { state: cartState, toggleCart } = useCart();
+    const { cartItems } = cartState;
     const dispatch = useAppDispatch();
     const [isScrolled, setIsScrolled] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);

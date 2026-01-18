@@ -1,6 +1,6 @@
 # 🧠 MANA Memory - حافظه بلند مدت پروژه نخلستان معنا
 
-> **آخرین به‌روزرسانی:** 2025-01-04 | Unified Meaning OS V7.1 (Audit & Env Fix)
+> **آخرین به‌روزرسانی:** 2025-01-18 | Unified Meaning OS V7.2 (Auth Modernization)
 > **وضعیت سیستم:** Anti-Gravity Environment | Active | Reality-Check Mode
 
 ---
@@ -780,3 +780,29 @@ graph TD
     2. Add console logs to GlobalModals render cycle
     3. Verify DOM using browser inspector (check if Portal node exists but is hidden vs not rendered)
     4. Test simplified modal without Portal to isolate issue
+
+---
+
+## 🕵️ Architecture Audit & Deep Scan (2026-01-18)
+
+**Status:** 🔴 CRITICAL ALERTS ACTIVE
+
+#### 1. Middleware Inactive (Security Risk)
+- **Finding:** `proxy.ts` exists in root but Next.js ignores it.
+- **Impact:** Server-side auth checks & cookie handling are effectively **OFF**.
+- **Fix:** Rename `proxy.ts` -> `middleware.ts`.
+
+#### 2. API Schizophrenia (Dead Code)
+- **Finding:** Duplicate API logic in `root/api/` (Dead) vs `pages/api/` (Live).
+- **Impact:** Confusion during debugging. Fixing code in `root/api` changes nothing.
+- **Fix:** Delete `root/api` after verifying contents against `pages/api`.
+
+#### 3. Context State Split (UI Bug Source)
+- **Finding:** `CartContext` exists, but `GlobalModals` and `AppContext` still manage `isCartOpen`.
+- **Impact:** Race conditions where Cart opens in state A but closes in state B.
+- **Fix:** Migrate all Cart UI state to `CartContext`.
+
+#### 4. Type System Mirage
+- **Finding:** `types/supabase.ts` (Auto-generated) exists but is unused. App relies on manual `types/index.ts`.
+- **Impact:** High risk of breaking backend connection if Schema changes.
+- **Fix:** Refactor `dbAdapter` to use generated types.
