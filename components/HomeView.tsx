@@ -230,13 +230,13 @@ const HowItWorksSection: React.FC<{ onStartPlantingFlow: () => void }> = ({ onSt
 
                         hotspots={[
 
-                            { id: 'h1', x: 15, y: 40, title: '۱. انتخاب نیت', description: 'انتخاب نوع نخل (یادبود، تولد، ...)', align: 'left' },
+                            { id: 'h1', x: 20, y: 40, title: '۱. انتخاب نیت', description: 'انتخاب نوع نخل (یادبود، تولد، ...)', align: 'left' },
 
-                            { id: 'h2', x: 38, y: 65, title: '۲. کاشت نهال', description: 'کاشت فیزیکی توسط باغبان', align: 'center' },
+                            { id: 'h2', x: 40, y: 60, title: '۲. کاشت نهال', description: 'کاشت فیزیکی توسط باغبان', align: 'center' },
 
-                            { id: 'h3', x: 62, y: 35, title: '۳. رشد و مراقبت', description: 'آبیاری هوشمند و نگهداری', align: 'center' },
+                            { id: 'h3', x: 60, y: 40, title: '۳. رشد و مراقبت', description: 'آبیاری هوشمند و نگهداری', align: 'center' },
 
-                            { id: 'h4', x: 85, y: 60, title: '۴. میراث جاودان', description: 'دریافت ثمر و سند دیجیتال', align: 'right' },
+                            { id: 'h4', x: 80, y: 60, title: '۴. میراث جاودان', description: 'دریافت ثمر و سند دیجیتال', align: 'right' },
 
                         ]}
 

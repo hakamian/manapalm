@@ -46,13 +46,13 @@ const ShopView: React.FC = () => {
 
                         hotspots={[
 
-                            { id: 'a1', x: 50, y: 85, title: 'ریشه‌ها: ارزش‌ها', description: 'تاریخ و اصالت', align: 'center' },
+                            { id: 'a1', x: 50, y: 80, title: 'ریشه‌ها: ارزش‌ها', description: 'تاریخ و اصالت', align: 'center' },
 
-                            { id: 'a2', x: 50, y: 50, title: 'تنه: استقامت', description: 'رشد و پایداری', align: 'center' },
+                            { id: 'a2', x: 50, y: 55, title: 'تنه: استقامت', description: 'رشد و پایداری', align: 'center' },
 
-                            { id: 'a3', x: 80, y: 25, title: 'برگ‌ها: بخشش', description: 'سخاوت و سایه‌گستری', align: 'left' },
+                            { id: 'a3', x: 75, y: 30, title: 'برگ‌ها: بخشش', description: 'سخاوت و سایه‌گستری', align: 'left' },
 
-                            { id: 'a4', x: 20, y: 35, title: 'میوه: اثرگذاری', description: 'خیریه و تاثیر اجتماعی', align: 'right' },
+                            { id: 'a4', x: 25, y: 35, title: 'میوه: اثرگذاری', description: 'خیریه و تاثیر اجتماعی', align: 'right' },
 
                         ]}
 

@@ -129,11 +129,11 @@ const CollectiveImpactSection: React.FC = () => {
 
                             hotspots={[
 
-                                { id: 'c1', x: 25, y: 30, title: 'محیط زیست', description: 'احیای پوشش گیاهی و جذب کربن', align: 'left' },
+                                { id: 'c1', x: 30, y: 35, title: 'محیط زیست', description: 'احیای پوشش گیاهی و جذب کربن', align: 'left' },
 
-                                { id: 'c2', x: 75, y: 30, title: 'اشتغال پایدار', description: 'ایجاد شغل برای جوانان بومی', align: 'right' },
+                                { id: 'c2', x: 70, y: 35, title: 'اشتغال پایدار', description: 'ایجاد شغل برای جوانان بومی', align: 'right' },
 
-                                { id: 'c3', x: 50, y: 80, title: 'چرخه خیریه', description: 'حمایت از خانواده‌های نیازمند', align: 'center' },
+                                { id: 'c3', x: 50, y: 75, title: 'چرخه خیریه', description: 'حمایت از خانواده‌های نیازمند', align: 'center' },
 
                             ]}
 
