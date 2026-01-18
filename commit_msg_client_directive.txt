@@ -1,0 +1,8 @@
+fix: add missing 'use client' directives to components using hooks
+
+- Add 'use client' to HomeView.tsx, CollectiveImpactSection.tsx, ShopView.tsx, and InfographicOverlay.tsx.
+- This ensures components render correctly in Next.js production environment.
+
+🤖 Generated with [Pochi](https://getpochi.com)
+
+Co-Authored-By: Pochi <noreply@getpochi.com>
