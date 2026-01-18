@@ -220,23 +220,23 @@ const HowItWorksSection: React.FC<{ onStartPlantingFlow: () => void }> = ({ onSt
 
 
 
-                <div className={`max-w-5xl mx-auto transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+                <div className={`max-w-3xl mx-auto transition-all duration-1000 delay-300 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
 
                     <InfographicOverlay
 
-                        imageSrc="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?q=80&w=1200&auto=format&fit=crop"
+                        imageSrc="https://res.cloudinary.com/dk2x11rvs/image/upload/v1768717489/Gemini_Generated_Image_gmovvkgmovvkgmov_rswheb.png"
 
-                        alt="How it works infographic"
+                        alt="Interest to Heritage Infographic"
 
                         hotspots={[
 
-                            { id: 'h1', x: 20, y: 40, title: '۱. انتخاب نیت', description: 'انتخاب نوع نخل (یادبود، تولد، ...)', align: 'left' },
+                            { id: 'h1', x: 50, y: 15, title: 'علاقه و آگاهی', description: 'شناخت مسیر و انتخاب نیت معنادار', align: 'center' },
 
-                            { id: 'h2', x: 40, y: 60, title: '۲. کاشت نهال', description: 'کاشت فیزیکی توسط باغبان', align: 'center' },
+                            { id: 'h2', x: 50, y: 40, title: 'کاشت و مراقبت', description: 'کاشت فیزیکی نهال و نگهداری مستمر', align: 'center' },
 
-                            { id: 'h3', x: 60, y: 40, title: '۳. رشد و مراقبت', description: 'آبیاری هوشمند و نگهداری', align: 'center' },
+                            { id: 'h3', x: 50, y: 65, title: 'رشد و باروری', description: 'ثمردهی نخل و ایجاد اشتغال بومی', align: 'center' },
 
-                            { id: 'h4', x: 80, y: 60, title: '۴. میراث جاودان', description: 'دریافت ثمر و سند دیجیتال', align: 'right' },
+                            { id: 'h4', x: 50, y: 88, title: 'برداشت و میراث', description: 'دریافت ثمره و جاودانگی نام شما', align: 'center' },
 
                         ]}
 
