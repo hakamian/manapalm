@@ -331,10 +331,6 @@ export const dbAdapter = {
                 created_at: new Date().toISOString()
             }));
 
-            // We use 'upsert' assuming ID might be auto-generated or handled. 
-            // Since we don't have item IDs in the order object usually (only product ID), 
-            // we really should just INSERT. explicit IDs might be missing.
-            // However, typical flow is fresh insert.
             const { error: itemsError } = await supabase!.from('order_items').insert(itemsToInsert);
             if (itemsError) console.warn('Warning: Could not save order_items (Non-critical):', itemsError.message);
         }
@@ -557,16 +553,6 @@ export const dbAdapter = {
             const token = session?.access_token;
 
             const response = await fetch('/api/update-product', {
-                method: 'P        try {
-            const { data: { session } } = await supabase!.auth.getSession();
-            const token = session?.access_token;
-
-            const response = await fetch('/api/update-product', {
-                method: '        try {
-            const { data: { session } } = await supabase!.auth.getSession();
-            const token = session?.access_token;
-
-            const response = await fetch('/api/update-product', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -576,6 +562,7 @@ export const dbAdapter = {
             });
 
             const result = await response.json();
+
             if (!response.ok) {
                 console.error("❌ API Error:", result.error);
                 throw new Error(result.error);
