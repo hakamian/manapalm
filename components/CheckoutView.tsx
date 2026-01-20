@@ -82,26 +82,31 @@ const CheckoutView: React.FC = () => {
 
     const saveAddressToProfile = async () => {
         // Only save if it's a physical order and we have an address
-        if (needsPhysicalShipping && shippingInfo.address) {
-            // Check if address already exists to avoid duplicates (simple check)
+        if (needsPhysicalShipping && shippingInfo.address && user) {
+            // Check if address already exists to avoid duplicates (simple check by full string)
             const exists = user.addresses?.some(a => a.fullAddress === shippingInfo.address);
             if (!exists) {
-                // In a real app, you'd call an API. Here we just dispatch to local state mockup
                 const newAddress = {
                     id: `addr-${Date.now()}`,
-                    title: 'خانه',
+                    title: 'آدرس جدید',
                     recipientName: shippingInfo.fullName,
                     phone: shippingInfo.phone,
-                    province: 'تهران', // Mock
-                    city: 'تهران', // Mock - in real app parse or ask user
+                    province: 'پیش‌فرض', // Can be enhanced with a city selector later
+                    city: 'پیش‌فرض',
                     fullAddress: shippingInfo.address,
                     postalCode: '0000000000',
                     isDefault: true
                 };
 
-                // Optimistically update user state
-                // This is a mockup dispatch, in real app update DB via dbAdapter.updateUser
-                console.log("📍 Address saved to profile:", newAddress);
+                const updatedAddresses = [newAddress, ...(user.addresses || [])];
+
+                // Dispatch UPDATE_USER which triggers DB sync in AppContext reducer
+                dispatch({
+                    type: 'UPDATE_USER',
+                    payload: { addresses: updatedAddresses }
+                });
+
+                console.log("📍 Address saved to profile and syncing to DB:", newAddress);
             }
         }
     };

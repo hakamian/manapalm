@@ -18,7 +18,6 @@ export default async function handler(req, res) {
     const { createClient } = await import('@supabase/supabase-js');
 
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !serviceRoleKey) {
@@ -58,9 +57,13 @@ export default async function handler(req, res) {
 
         const isAdmin = adminProfile?.is_admin === true;
 
+        // 🚨 IMPROVEMENT 2: ENHANCED SECURITY LOGGING
         // If not admin, user can ONLY update their own profile
         if (!isAdmin && authUser.id !== updateData.id) {
-            console.warn(`🚫 Unauthorized attempt by ${authUser.id} to update ${updateData.id}`);
+            console.warn(`🚨 [SECURITY ALERT] IDOR Attempt detected!`);
+            console.warn(`   - Attacker ID: ${authUser.id}`);
+            console.warn(`   - Target ID: ${updateData.id}`);
+            console.warn(`   - IP: ${req.headers['x-forwarded-for'] || req.socket.remoteAddress}`);
             return res.status(403).json({ success: false, error: 'Forbidden: Cannot update other user profiles' });
         }
 
@@ -73,6 +76,19 @@ export default async function handler(req, res) {
                 .single();
 
             if (currentProfile) {
+                // Check if user tried to modify sensitive fields
+                const attemptedPrivilegeEscalation =
+                    (updateData.points !== undefined && updateData.points !== currentProfile.points) ||
+                    (updateData.isAdmin !== undefined && updateData.isAdmin !== currentProfile.is_admin);
+
+                if (attemptedPrivilegeEscalation) {
+                    console.warn(`🚨 [SECURITY ALERT] Privilege Escalation Attempt detected!`);
+                    console.warn(`   - User: ${authUser.id}`);
+                    console.warn(`   - Attempted Points: ${updateData.points} (Real: ${currentProfile.points})`);
+                    console.warn(`   - Attempted Admin: ${updateData.isAdmin}`);
+                }
+
+                // Force overwrite with SSOT (Truth from DB)
                 updateData.points = currentProfile.points;
                 updateData.manaPoints = currentProfile.mana_points;
                 updateData.isAdmin = currentProfile.is_admin;
@@ -82,10 +98,37 @@ export default async function handler(req, res) {
             }
         }
 
+        // ✅ IMPROVEMENT 1: SERVER-SIDE DATA VALIDATION (Zod-like Native Implementation)
+        // Validate Address Structure
+        if (updateData.addresses && Array.isArray(updateData.addresses)) {
+            const validAddresses = updateData.addresses.filter(addr => {
+                const isValid =
+                    addr.fullAddress && typeof addr.fullAddress === 'string' && addr.fullAddress.length > 5 &&
+                    addr.recipientName && typeof addr.recipientName === 'string' &&
+                    addr.phone && typeof addr.phone === 'string' && addr.phone.length >= 10;
+
+                if (!isValid) {
+                    console.warn(`⚠️ Invalid address filtered out for user ${updateData.id}:`, addr);
+                }
+                return isValid;
+            });
+            updateData.addresses = validAddresses;
+        }
+
+        // Validate Phone Format (Basic Iranian Mobile regex)
+        if (updateData.phone) {
+            const phoneRegex = /^(\+98|0)?9\d{9}$/;
+            if (!phoneRegex.test(updateData.phone)) {
+                // Use saved phone if provided is invalid, or just keep it (policy decision)
+                // For now, we allow it but log warning
+                console.warn(`⚠️ Potentially invalid phone number for user ${updateData.id}: ${updateData.phone}`);
+            }
+        }
+
+
         console.log('🔄 Syncing user profile to DB:', updateData.id);
 
         // Build metadata object with all user-specific data
-        // We preserve existing data structure used in mapProfileToUser (database.ts)
         const metadata = {
             ...(updateData.metadata || {}), // Preserve existing if provided
             addresses: updateData.addresses || [],
@@ -122,7 +165,6 @@ export default async function handler(req, res) {
         };
 
         // Upsert profile
-        // Log the exact payload being sent to Supabase
         console.log('📤 Sending to DB (Payload):', JSON.stringify(profileUpdate.metadata.addresses));
 
         // Upsert profile and SELECT the result to confirm persistence

@@ -12,8 +12,6 @@ const TermsView = dynamic(() => import('../../components/TermsView'), {
 
 export default function TermsPage() {
   return (
-    <ClientWrapper>
-      <TermsView />
-    </ClientWrapper>
+    <TermsView />
   );
 }

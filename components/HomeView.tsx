@@ -549,14 +549,14 @@ const HomeView: React.FC = () => {
 
             {showWelcomeMat && (
                 <WelcomeMat
-                    onClose={handleCloseWelcome}
+                    onEnter={handleCloseWelcome}
                     onSelectIntent={handleWelcomeIntent}
                 />
             )}
 
             <HeroSection onStartJourneyClick={onStartJourneyClick} user={user} />
 
-            <div className="container mx-auto px-4 -mt-20 relative z-20">
+            <div className="container mx-auto px-4 mt-20 relative z-20">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {guides.map((guide, index) => (
                         <ManaGuideCard key={index} {...guide} delay={index * 100} />
@@ -565,8 +565,15 @@ const HomeView: React.FC = () => {
             </div>
 
             <div className="mt-20 space-y-24">
+                {/* 0. How It Works (Infographic) */}
+                <HowItWorksSection onStartPlantingFlow={onStartPlantingFlow} />
+
                 {/* 1. Spring of Meaning (Daily Engagement) */}
-                <SpringOfMeaning onNavigate={onNavigate} />
+                <SpringOfMeaning
+                    allUsers={allUsers}
+                    allInsights={allUsers.flatMap(u => u.timeline || [])}
+                    setPage={onNavigate}
+                />
 
                 {/* 2. Collective Impact (Social Proof) */}
                 <CollectiveImpactSection />
@@ -581,7 +588,7 @@ const HomeView: React.FC = () => {
                 <SpecializedConsultingSection onNavigate={onNavigate} />
 
                 {/* 6. FAQ */}
-                <FAQ />
+                <FAQ user={user} />
             </div>
 
             {/* Floating Action Button for Mobile */}

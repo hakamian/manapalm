@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import { View, DailyChestReward, PointLog } from '../../types';
 import { useAppState, useAppDispatch } from '../../AppContext';
-import { REFERENCE_DATE_STR } from '../../utils/dummyData';
+import { REFERENCE_DATE_STR, INITIAL_USERS } from '../../utils/dummyData';
 import DailyMysteryChest from '../DailyMysteryChest';
 import GlobalModals from './GlobalModals';
 import AIChatWidget from '../AIChatWidget';
@@ -14,9 +14,11 @@ import CommandPalette from '../CommandPalette';
 import WhatsNewModal from '../WhatsNewModal';
 import { useRouteSync } from '../../hooks/useRouteSync';
 import SEOIndex from '../seo/SEOIndex';
+import { dbAdapter } from '../../services/dbAdapter';
 
 // Lazy Load UI Components
-const Header = dynamic(() => import('../Header'), { ssr: false });
+import Header from '../Header';
+import Footer from '../Footer';
 const LiveActivityBanner = dynamic(() => import('../LiveActivityBanner'), { ssr: false });
 const BottomNavBar = dynamic(() => import('../BottomNavBar'), { ssr: false });
 
@@ -39,7 +41,7 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
 
     const { user, allUsers, products, liveActivities } = state;
     const hasBanner = liveActivities && liveActivities.length > 0;
-    
+
     // Determine if we are in admin view based on pathname or state
     // In Next.js migration, we should prefer pathname checks eventually
     const isAdminView = state.currentView === View.AdminDashboard || state.currentView === View.AutoCEO || pathname?.startsWith('/admin');
@@ -92,9 +94,34 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
     };
 
     const handleLoginSuccess = (loginData: any) => {
-        // Login logic is handled in AuthModal usually, but if needed here:
-        // This callback might be redundant if AuthModal dispatches directly
-        // Keeping it for compatibility with GlobalModals prop signature
+        console.log("🔑 Authenticating via handleLoginSuccess:", loginData);
+
+        // If it's the mock OTP login (12345), we use the pre-defined test user
+        if (loginData.fullName === 'کاربر گرامی' || loginData.phone === '09120000000') {
+            const testUserId = 'user_test_manapalm';
+            let testUser = allUsers.find(u => u.id === testUserId) || INITIAL_USERS.find(u => u.id === testUserId);
+
+            if (testUser) {
+                console.log("🧪 Mock Login Success: Hydrating session for", testUser.name);
+                dbAdapter.setCurrentUserId(testUser.id);
+                dispatch({
+                    type: 'LOGIN_SUCCESS',
+                    payload: { user: testUser, orders: [] }
+                });
+
+                // Close any open auth modals
+                dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: false });
+
+                // Navigate to profile
+                dispatch({ type: 'SET_VIEW', payload: View.UserProfile });
+                return;
+            }
+        }
+
+        // Standard login (usually handled by onAuthStateChange, but fallback here)
+        if (loginData.user) {
+            dispatch({ type: 'SET_USER', payload: loginData.user });
+        }
     };
 
     return (
@@ -105,11 +132,13 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
 
             <LiveActivityBanner />
             <Header />
-            
-            <div className="relative z-10 min-h-screen">
-                 {/* This is where the Next.js page content will be injected */}
+
+            <div className={`relative z-10 min-h-screen ${!isAdminView ? 'pt-28 md:pt-36' : ''}`}>
+                {/* This is where the Next.js page content will be injected */}
                 {children}
             </div>
+
+            {!isAdminView && mounted && <Footer />}
 
             {mounted && user && canClaimChest && (
                 <DailyMysteryChest

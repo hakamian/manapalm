@@ -12,8 +12,6 @@ const ContactView = dynamic(() => import('../../components/ContactView'), {
 
 export default function ContactPage() {
   return (
-    <ClientWrapper>
-      <ContactView />
-    </ClientWrapper>
+    <ContactView />
   );
 }

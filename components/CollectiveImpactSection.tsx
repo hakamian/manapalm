@@ -5,7 +5,7 @@ import { useAppState, useAppDispatch } from '../AppContext';
 import { View } from '../types';
 import { SproutIcon, BriefcaseIcon, CloudIcon, UserCircleIcon, PresentationChartLineIcon, TrophyIcon } from './icons';
 
-import InfographicOverlay from './ui/InfographicOverlay';
+import ImpactInfographic from './ui/ImpactInfographic';
 
 const useAnimatedCounter = (endValue: number, duration = 2000) => {
     const [count, setCount] = useState(0);
@@ -120,26 +120,8 @@ const CollectiveImpactSection: React.FC = () => {
 
                     {/* Left: Infographic */}
 
-                    <div className={`transition-all duration-1000 delay-300 ${isSectionVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
-
-                        <InfographicOverlay
-
-                            imageSrc="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?q=80&w=1200&auto=format&fit=crop"
-
-                            alt="Collective Impact Radial Chart"
-
-                            hotspots={[
-
-                                { id: 'c1', x: 30, y: 35, title: 'محیط زیست', description: 'احیای پوشش گیاهی و جذب کربن', align: 'left' },
-
-                                { id: 'c2', x: 70, y: 35, title: 'اشتغال پایدار', description: 'ایجاد شغل برای جوانان بومی', align: 'right' },
-
-                                { id: 'c3', x: 50, y: 75, title: 'چرخه خیریه', description: 'حمایت از خانواده‌های نیازمند', align: 'center' },
-
-                            ]}
-
-                        />
-
+                    <div className={`transition-all duration-1000 delay-300 w-full ${isSectionVisible ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
+                        <ImpactInfographic />
                     </div>
 
 

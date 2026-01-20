@@ -95,15 +95,11 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
       if (res.success) {
         // If existing user, log them in. If new, ask for password setup (optional) or just log in.
         // For this logic, we assume backend returns a session or we create one.
-        // SIMULATION: If verifying OTP for login
+        // SUCCESS FEEDBACK
+        setLoading(false);
+        setStep('phone_entry'); // Reset for next time
 
-        // If mode was password but they chose to recover/register via OTP:
-        // We can redirect to set_password if it's a new user logic, 
-        // but for simplicity, let's treat verifyOTP success as Login Success.
-
-        // Check if user exists in Supabase (this logic would usually be server-side)
-        // Here we just proceed to login success.
-        onLoginSuccess({ phone, fullName: res.fullName }); // fullName might come from DB
+        onLoginSuccess({ phone, fullName: res.fullName });
         onClose();
       } else {
         setError('کد وارد شده اشتباه است');

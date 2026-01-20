@@ -12,8 +12,6 @@ const ShopView = dynamic(() => import('../../components/ShopView'), {
 
 export default function ShopPage() {
   return (
-    <ClientWrapper>
-      <ShopView />
-    </ClientWrapper>
+    <ShopView />
   );
 }

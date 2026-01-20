@@ -12,8 +12,6 @@ const UserProfileView = dynamic(() => import('../../components/UserProfileView')
 
 export default function ProfilePage() {
   return (
-    <ClientWrapper>
-      <UserProfileView />
-    </ClientWrapper>
+    <UserProfileView />
   );
 }

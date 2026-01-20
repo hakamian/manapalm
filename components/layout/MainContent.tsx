@@ -51,6 +51,10 @@ const SearchResultsView = React.lazy(() => import('../SearchResultsView'));
 const PublicStoryView = React.lazy(() => import('../seo/PublicStoryView')); // New Import
 const CampaignLandingView = React.lazy(() => import('../CampaignLandingView'));
 const TermsView = React.lazy(() => import('../TermsView'));
+const ShopView = React.lazy(() => import('../ShopView'));
+const HeritagePage = React.lazy(() => import('../HeritagePage'));
+const AboutView = React.lazy(() => import('../AboutView'));
+const ContactView = React.lazy(() => import('../ContactView'));
 import UserProfileView from '../UserProfileView';
 // const UserProfileView = React.lazy(() => import('../UserProfileView'));
 
@@ -122,7 +126,7 @@ const MainContent: React.FC = () => {
             case View.DIRECT_MESSAGES: return <DirectMessagesView />;
             case View.TransparencyDashboard: return <TransparencyDashboardView />;
             case View.AIPortal:
-            case View.AI_CREATION_STUDIO: return <AIStudioView />;
+            case View.AI_CREATION_STUDIO: return <AIStudioView user={user} />;
             case View.AutoCEO:
                 // SECURITY GUARD
                 if (!user || !user.isAdmin) return <HomeView />;
@@ -162,6 +166,10 @@ const MainContent: React.FC = () => {
             case View['community-projects']:
                 return <CommunityProjectsPage user={user} allCommunityProjects={[]} onContribute={() => { }} onLoginClick={() => dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })} />;
             case View.UserProfile: return <UserProfileView />;
+            case View.Shop: return <ShopView />;
+            case View.HallOfHeritage: return <HeritagePage />;
+            case View.About: return <AboutView />;
+            case View.Contact: return <ContactView />;
             default: return <HomeView />;
         }
     };

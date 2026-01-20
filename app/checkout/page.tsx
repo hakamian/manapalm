@@ -12,8 +12,6 @@ const CheckoutView = dynamic(() => import('../../components/CheckoutView'), {
 
 export default function CheckoutPage() {
   return (
-    <ClientWrapper>
-      <CheckoutView />
-    </ClientWrapper>
+    <CheckoutView />
   );
 }

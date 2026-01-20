@@ -14,8 +14,6 @@ const AboutView = dynamic(() => import('../../components/AboutView'), {
 
 export default function AboutPage() {
   return (
-    <ClientWrapper>
-      <AboutView />
-    </ClientWrapper>
+    <AboutView />
   );
 }

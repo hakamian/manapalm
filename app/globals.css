@@ -44,7 +44,7 @@ body {
   width: 100vw;
   height: 100vh;
   z-index: -1;
-  background: #0f172a;
+  background: #050505;
   overflow: hidden;
 }
 
@@ -56,31 +56,11 @@ body {
   border-radius: 50%;
 }
 
-.blob-1 {
-  top: -10%;
-  left: -10%;
-  width: 50vw;
-  height: 50vh;
-  background: radial-gradient(circle, rgba(74, 222, 128, 0.3) 0%, transparent 70%);
-  animation-delay: 0s;
-}
-
-.blob-2 {
-  bottom: -20%;
-  right: -10%;
-  width: 60vw;
-  height: 60vh;
-  background: radial-gradient(circle, rgba(251, 191, 36, 0.2) 0%, transparent 70%);
-  animation-delay: -5s;
-}
-
+/* Blobs removed for unified dark theme */
+.blob-1,
+.blob-2,
 .blob-3 {
-  top: 40%;
-  left: 30%;
-  width: 40vw;
-  height: 40vh;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
-  animation-delay: -10s;
+  display: none;
 }
 
 @keyframes float {
@@ -166,6 +146,7 @@ body {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -173,11 +154,14 @@ body {
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: scale(1);
     opacity: 0.8;
     box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
   }
+
   50% {
     transform: scale(1.2);
     opacity: 1;
@@ -228,7 +212,7 @@ body {
   .glass {
     @apply bg-white/80 backdrop-blur-md border border-white/20 shadow-lg;
   }
-  
+
   .glass-dark {
     @apply bg-gray-900/80 backdrop-blur-md border border-gray-700/20 shadow-lg;
   }
@@ -237,10 +221,12 @@ body {
 /* --- AUTH MODAL v7.1 DESIGN --- */
 .auth-container {
   --form-width: 320px;
-  --aspect-ratio: 1.5; /* Slightly taller for better spacing */
+  --aspect-ratio: 1.5;
+  /* Slightly taller for better spacing */
   --login-box-color: #1a1a1a;
   --input-color: #2a2a2a;
-  --button-color: #10b981; /* mana-primary */
+  --button-color: #10b981;
+  /* mana-primary */
   --footer-color: rgba(255, 255, 255, 0.5);
   display: flex;
   justify-content: center;
@@ -264,27 +250,31 @@ body {
   width: 150%;
   height: 150%;
   transform: translate(-50%, -50%);
-  background: conic-gradient(
-    from 0deg,
-    transparent 0%,
-    transparent 10%,
-    #10b981 40%,
-    #fbbf24 50%, 
-    #10b981 60%,
-    transparent 90%
-  );
+  background: conic-gradient(from 0deg,
+      transparent 0%,
+      transparent 10%,
+      #10b981 40%,
+      #fbbf24 50%,
+      #10b981 60%,
+      transparent 90%);
   animation: spin 4s linear infinite;
   z-index: -1;
 }
 
 @keyframes spin {
-  0% { transform: translate(-50%, -50%) rotate(0deg); }
-  100% { transform: translate(-50%, -50%) rotate(360deg); }
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  100% {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
 }
 
 .auth-login-box {
   background: rgba(20, 20, 20, 0.95);
-  border-radius: 22px; /* Slightly smaller than container */
+  border-radius: 22px;
+  /* Slightly smaller than container */
   padding: 30px;
   width: calc(100% - 4px);
   height: calc(100% - 4px);
@@ -300,14 +290,14 @@ body {
 .auth-logo-frame {
   width: 70px;
   height: 70px;
-  background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(0,0,0,0.5));
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.5));
   border-radius: 20px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 20px;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
 }
 
 .auth-input {
@@ -394,4 +384,31 @@ body {
 
 .auth-google-btn:hover {
   background: #f1f5f9;
+}
+
+/* --- NEW COMPONENT UTILITIES --- */
+@keyframes pulse-soft {
+
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 8s infinite ease-in-out;
+}
+
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.text-shadow-sm {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }

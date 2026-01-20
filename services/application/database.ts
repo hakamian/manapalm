@@ -141,6 +141,12 @@ export const dbAdapter = {
     },
 
     async getUserById(id: string): Promise<User | null> {
+        // 🧪 Handle Test/Mock IDs with high priority
+        if (id && (id === 'user_test_manapalm' || id === 'user_admin_hh' || id.startsWith('user_gen_'))) {
+            const mockUser = INITIAL_USERS.find(u => u.id === id);
+            if (mockUser) return mockUser;
+        }
+
         if (!this.isLive()) {
             return INITIAL_USERS.find(u => u.id === id) || null;
         }
@@ -160,7 +166,11 @@ export const dbAdapter = {
                 }
 
                 if (!data) {
-                    console.log("⚠️ [DB StallTrace] User profile not found in DB for:", id);
+                    // Fallback to initial users if not found in DB (e.g. migration period)
+                    const fallback = INITIAL_USERS.find(u => u.id === id);
+                    if (fallback) return fallback;
+
+                    console.log("⚠️ [DB StallTrace] User profile not found in DB or Initial data for:", id);
                     return null;
                 }
 
@@ -207,7 +217,7 @@ export const dbAdapter = {
 
             const response = await fetch('/api/update-user-v2', {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': token ? `Bearer ${token}` : ''
                 },
@@ -554,7 +564,7 @@ export const dbAdapter = {
 
             const response = await fetch('/api/update-product', {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': token ? `Bearer ${token}` : ''
                 },
@@ -600,7 +610,7 @@ export const dbAdapter = {
 
             const response = await fetch('/api/update-product', {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': token ? `Bearer ${token}` : ''
                 },
@@ -639,7 +649,7 @@ export const dbAdapter = {
 
             const response = await fetch('/api/update-product', {
                 method: 'POST',
-                headers: { 
+                headers: {
                     'Content-Type': 'application/json',
                     'Authorization': token ? `Bearer ${token}` : ''
                 },

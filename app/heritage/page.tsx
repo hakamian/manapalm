@@ -13,8 +13,6 @@ const HallOfHeritageView = dynamic(() => import('../../components/HallOfHeritage
 
 export default function HeritagePage() {
   return (
-    <ClientWrapper>
-      <HallOfHeritageView />
-    </ClientWrapper>
+    <HallOfHeritageView />
   );
 }
