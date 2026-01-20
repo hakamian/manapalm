@@ -36,30 +36,20 @@ const ShopView: React.FC = () => {
 
 
 
-                {/* Anatomy of Meaning Infographic */}
-
+                {/* Cycle of Impact Infographic */}
                 <div className="mb-16 max-w-4xl mx-auto">
-
                     <InfographicOverlay
-
-                        imageSrc="https://images.unsplash.com/photo-1597466599360-3b9775841aec?q=80&w=1200&auto=format&fit=crop"
-
-                        alt="Anatomy of a Meaningful Palm"
-
+                        imageSrc="https://res.cloudinary.com/dk2x11rvs/image/upload/v1768908658/Gemini_Generated_Image_mpvjtqmpvjtqmpvj_vup9c0.png"
+                        alt="The Cycle of Impact - anatomy of a meaningful palm"
                         hotspots={[
-
-                            { id: 'a1', x: 50, y: 80, title: 'ریشه‌ها: ارزش‌ها', description: 'تاریخ و اصالت', align: 'center' },
-
-                            { id: 'a2', x: 50, y: 55, title: 'تنه: استقامت', description: 'رشد و پایداری', align: 'center' },
-
-                            { id: 'a3', x: 75, y: 30, title: 'برگ‌ها: بخشش', description: 'سخاوت و سایه‌گستری', align: 'left' },
-
-                            { id: 'a4', x: 25, y: 35, title: 'میوه: اثرگذاری', description: 'خیریه و تاثیر اجتماعی', align: 'right' },
-
+                            { id: 'i1', x: 50, y: 85, title: 'ریشه: نیت و معنا', description: 'خرید شما با نیت شخصی آغاز می‌شود و معنا می‌آفریند.', align: 'center' },
+                            { id: 'i2', x: 65, y: 75, title: 'ریشه: مهار فرسایش خاک', description: 'ریشه‌های نخل از بیابان‌زایی و فرسایش خاک جلوگیری می‌کنند.', align: 'left' },
+                            { id: 'i3', x: 50, y: 55, title: 'تنه: کاشت درخت نخل', description: 'هر خرید منجر به کاشت یک نخل واقعی در مناطق محروم می‌شود.', align: 'center' },
+                            { id: 'i4', x: 35, y: 45, title: 'برگ: کمک به محیط زیست', description: 'نخل‌های شما دی‌اکسید کربن را جذب و اکسیژن تولید می‌کنند.', align: 'right' },
+                            { id: 'i5', x: 65, y: 25, title: 'ثمر: سلامت و تغذیه', description: 'محصول نخل‌های شما به تامین سلامت و معیشت جامعه کمک می‌کند.', align: 'left' },
+                            { id: 'i6', x: 50, y: 10, title: 'هاله: میراث جاودان', description: 'نام و اثر شما برای نسل‌های آینده ماندگار می‌شود.', align: 'center' },
                         ]}
-
                     />
-
                 </div>
 
 
@@ -67,14 +57,14 @@ const ShopView: React.FC = () => {
                 <div className="grid grid-cols-1 gap-y-10 sm:grid-cols-2 gap-x-6 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
 
                     {products.map((product) => (
-                        <ProductCard 
-                            key={product.id} 
-                            product={product} 
+                        <ProductCard
+                            key={product.id}
+                            product={product}
                             onAddToCart={handleAddToCart}
                         />
                     ))}
                 </div>
-                
+
                 {products.length === 0 && (
                     <div className="text-center py-20">
                         <p className="text-gray-500 text-lg">محصولی یافت نشد. لطفاً بعداً دوباره سر بزنید.</p>
