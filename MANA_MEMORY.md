@@ -127,7 +127,7 @@ graph TD
 
 | بخش | وضعیت | درصد تکمیل | آخرین تغییر |
 |-----|-------|-----------|-------------|
-| **Frontend (Next.js 14)** | ✅ تکمیل (Architecture Cleaned) | 100% | 2026-01-19 |
+| **Frontend (Next.js 14)** | ✅ تکمیل (Architecture Cleaned) | 100% | 2026-01-20 |
 | **Database Schema** | ✅ تکمیل و تأیید شده | 100% | 2025-12-11 |
 | **Database Adapter** | ✅ تکمیل (Mock & Live Hybrid) | 100% | 2026-01-19 |
 | **Auth System** | ✅ تکمیل (Fixed OTP Mock) | 100% | 2026-01-19 |
@@ -140,6 +140,15 @@ graph TD
 ## ✅ اقدامات انجام شده (Completed)
 
 ### 🚀 اقدامات اخیر (Live & Active)
+
+#### 38. Infographic Update & Icon Restoration (2026-01-20) ✅
+- **تاریخ:** ۳۰ دی ۱۴۰۴
+- **هدف:** به‌روزرسانی تصویر بصری مسیر جاودانگی و رفع خطاهای بیلد ناشی از آیکون‌های مفقود.
+- **اقدامات:**
+  1. **Infographic Update:** تصویر بخش "How it Works" در `HomeView.tsx` با آدرس جدید کلودیناری (مسیر جاودانگی) به‌روزرسانی شد.
+  2. **Icon Restoration:** بازیابی و بازنویسی آیکون‌های مفقود در `CommunicationIcons.tsx` شامل آیکون‌های شبکه‌های اجتماعی (تلگرام، یوتیوب، واتس‌اپ، گوگل، لینکدین) و آیکون‌های تعاملی (`ChatBubbleLeftRightIcon`, `ChatBubbleBottomCenterTextIcon`).
+  3. **Build Stabilization:** رفع خطاهای `Export not found` در `FAQ.tsx` و `ReflectionAnalysisUnlockModal.tsx` با صادرات صحیح و کامل آیکون‌ها از فایل مرکزی `icons.tsx`.
+- **نتیجه:** اینفوگرافیک با طراحی جدید لود می‌شود و تمامی خطاهای بیلد مربوط به آیکون‌ها برطرف شد.
 
 #### 37. Header Visibility & Layout Cleanup (2026-01-19) ✅
 - **تاریخ:** ۲۹ دی ۱۴۰۴
@@ -695,6 +704,7 @@ graph TD
 
 | تاریخ | تغییر | توسط |
 |-------|-------|------|
+| 2026-01-20 14:40 | **Infographic & Icons**: Updated "Path of Immortality" image and restored missing social/communication icons to fix build errors. | Mana (Unified OS) |
 | 2026-01-19 14:15 | **Layout Fix**: Removed redundant `ClientWrapper` from all sub-pages, moved Header/Footer to root-only, added padding. | Mana (Unified OS) |
 | 2026-01-19 13:45 | **Auth Fix**: Implemented OTP 12345 login handshake in `ClientLayout` to hydrate test session. | Mana (Unified OS) |
 | 2025-01-18 10:30 | **Visual**: Implemented interactive `ImpactInfographic` with Desktop/Mobile cinematic images. | Mana (Unified OS) |

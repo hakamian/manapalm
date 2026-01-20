@@ -125,7 +125,11 @@ export const DoubleCheckIcon = React.memo((props: React.SVGProps<SVGSVGElement>)
 
 export const CheckCircleIcon = React.memo((props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    {/* Circle with glow */}
+    <circle cx="12" cy="12" r="9" strokeOpacity="0.3" strokeWidth="1" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75" />
+    {/* Success sparkles */}
+    <path d="M19 8l.5.5m-15 0l-.5-.5m10 11l.5.5m-5 0l-.5-.5" strokeOpacity="0.4" strokeWidth="1" />
   </svg>
 ));
 
@@ -149,7 +153,12 @@ export const FunnelIcon = React.memo((props: React.SVGProps<SVGSVGElement>) => (
 
 export const BellIcon = React.memo((props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
+    {/* Bell Body */}
     <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
+    {/* Clapper Highlight */}
+    <circle cx="12" cy="19" r="1" fill="currentColor" fillOpacity="0.2" stroke="none" />
+    {/* Sound waves (subtle) */}
+    <path d="M19 10a5 5 0 0 1 1 2m-15-2a5 5 0 0 0-1 2" strokeOpacity="0.2" strokeWidth="1" />
   </svg>
 ));
 
@@ -168,7 +177,13 @@ export const EyeIcon = React.memo((props: React.SVGProps<SVGSVGElement>) => (
 
 export const LockClosedIcon = React.memo((props: React.SVGProps<SVGSVGElement>) => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+    {/* Shackle */}
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75" />
+    {/* Lock Body */}
+    <rect x="6.75" y="10.5" width="10.5" height="9" rx="2" strokeLinecap="round" strokeLinejoin="round" />
+    {/* Keyhole */}
+    <path d="M12 13.5v2.25" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" strokeOpacity="0.5" />
+    <circle cx="12" cy="13.5" r="0.5" fill="currentColor" />
   </svg>
 ));
 

@@ -6,6 +6,7 @@ import { View } from '../types';
 import { SproutIcon, BriefcaseIcon, CloudIcon, UserCircleIcon, PresentationChartLineIcon, TrophyIcon } from './icons';
 
 import ImpactInfographic from './ui/ImpactInfographic';
+import PremiumButton from './ui/PremiumButton';
 
 const useAnimatedCounter = (endValue: number, duration = 2000) => {
     const [count, setCount] = useState(0);
@@ -168,10 +169,14 @@ const CollectiveImpactSection: React.FC = () => {
 
                 </div>
                 <div className={`text-center mt-16 transition-all duration-700 delay-500 ${isSectionVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-                    <button onClick={() => onNavigate(View.TransparencyDashboard)} className="inline-flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white font-semibold py-3 px-8 rounded-full text-lg transition-all border border-gray-600 hover:border-gray-500 shadow-lg">
+                    <PremiumButton
+                        onClick={() => onNavigate(View.TransparencyDashboard)}
+                        variant="gold"
+                        className="text-lg"
+                    >
                         <PresentationChartLineIcon className="w-6 h-6" />
                         <span>مشاهده شفافیت مالی و اثرگذاری</span>
-                    </button>
+                    </PremiumButton>
                 </div>
             </div>
         </section>

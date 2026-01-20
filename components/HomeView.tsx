@@ -21,6 +21,7 @@ import SmartImage from './ui/SmartImage'; // New import
 import { REFERENCE_DATE_STR, INITIAL_CAMPAIGNS } from '../utils/dummyData';
 
 import InfographicOverlay from './ui/InfographicOverlay';
+import PremiumButton from './ui/PremiumButton';
 
 // --- Helper Hooks ---
 const useScrollAnimate = (threshold = 0.2) => {
@@ -177,16 +178,25 @@ const HeroSection: React.FC<{ onStartJourneyClick: () => void, user: User | null
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-6 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-                    <button onClick={onStartJourneyClick} className="glass-panel hover:bg-mana-primary/20 text-white font-bold py-5 px-12 rounded-2xl text-xl transition-all duration-500 transform hover:scale-105 hover:shadow-mana-primary/20 border-mana-primary/30 group">
+                    <PremiumButton
+                        onClick={onStartJourneyClick}
+                        variant="shiny"
+                        size="lg"
+                        className="rounded-2xl group shadow-mana-primary/20"
+                    >
                         <span className="flex items-center gap-3">
                             {mounted && user ? 'ادامه سفر قهرمانی' : 'همین حالا نخل خود را بکارید'}
                             <ArrowLeftIcon className="w-6 h-6 transform group-hover:-translate-x-2 transition-transform" />
                         </span>
-                    </button>
+                    </PremiumButton>
                     {!(mounted && user) && (
-                        <button className="bg-white/5 hover:bg-white/10 text-white font-semibold py-5 px-10 rounded-2xl text-xl transition-all border border-white/10 backdrop-blur-md">
+                        <PremiumButton
+                            variant="glass"
+                            size="lg"
+                            className="rounded-2xl"
+                        >
                             داستان نخلستان
-                        </button>
+                        </PremiumButton>
                     )}
                 </div>
             </div>
@@ -225,7 +235,7 @@ const HowItWorksSection: React.FC<{ onStartPlantingFlow: () => void }> = ({ onSt
 
                     <InfographicOverlay
 
-                        imageSrc="https://res.cloudinary.com/dk2x11rvs/image/upload/v1768717489/Gemini_Generated_Image_gmovvkgmovvkgmov_rswheb.png"
+                        imageSrc="https://res.cloudinary.com/dk2x11rvs/image/upload/v1768905595/Gemini_Generated_Image_psyf3epsyf3epsyf_uckzp1.png"
 
                         alt="Interest to Heritage Infographic"
 
@@ -248,13 +258,14 @@ const HowItWorksSection: React.FC<{ onStartPlantingFlow: () => void }> = ({ onSt
 
 
                 <div className={`text-center mt-16 transition-all duration-1000 delay-500 ${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-
-                    <button onClick={onStartPlantingFlow} className="bg-mana-primary hover:bg-mana-primary-dark text-white font-bold py-4 px-12 rounded-2xl text-xl transition-all duration-500 shadow-premium hover:shadow-glow-green hover:scale-105">
-
+                    <PremiumButton
+                        onClick={onStartPlantingFlow}
+                        variant="gold"
+                        size="lg"
+                        className="rounded-2xl px-16"
+                    >
                         شروع میراث‌سازی
-
-                    </button>
-
+                    </PremiumButton>
                 </div>
 
             </div>
