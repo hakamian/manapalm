@@ -37,7 +37,7 @@ const ShopView: React.FC = () => {
 
 
                 {/* Cycle of Impact Infographic */}
-                <div className="mb-16 max-w-4xl mx-auto">
+                <div className="mb-16 max-w-md mx-auto">
                     <InfographicOverlay
                         imageSrc="https://res.cloudinary.com/dk2x11rvs/image/upload/v1768908658/Gemini_Generated_Image_mpvjtqmpvjtqmpvj_vup9c0.png"
                         alt="The Cycle of Impact - anatomy of a meaningful palm"
