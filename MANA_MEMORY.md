@@ -1,6 +1,6 @@
 # 🧠 MANA Memory - حافظه بلند مدت پروژه نخلستان معنا
 
-> **آخرین به‌روزرسانی:** 2025-01-18 | Unified Meaning OS V7.2 (Auth Modernization)
+> **آخرین به‌روزرسانی:** 2026-01-21 | Unified Meaning OS V7.3 (SEO & Performance Overhaul)
 > **وضعیت سیستم:** Anti-Gravity Environment | Active | Reality-Check Mode
 
 ---
@@ -143,7 +143,7 @@ graph TD
 
 | بخش | وضعیت | درصد تکمیل | آخرین تغییر |
 |-----|-------|-----------|-------------|
-| **Frontend (Next.js 14)** | ✅ تکمیل (Architecture Cleaned) | 100% | 2026-01-20 |
+| **Frontend (Next.js 14)** | ✅ تکمیل (SEO & Performance Optimized) | 100% | 2026-01-21 |
 | **Database Schema** | ✅ تکمیل و تأیید شده | 100% | 2025-12-11 |
 | **Database Adapter** | ✅ تکمیل (Mock & Live Hybrid) | 100% | 2026-01-19 |
 | **Auth System** | ✅ تکمیل (Fixed OTP Mock) | 100% | 2026-01-19 |
@@ -156,6 +156,28 @@ graph TD
 ## ✅ اقدامات انجام شده (Completed)
 
 ### 🚀 اقدامات اخیر (Live & Active)
+
+#### 41. SEO Mastery & Performance Overhaul (2026-01-21) ✅
+- **تاریخ:** ۱ بهمن ۱۴۰۴
+- **هدف:** تبدیل اپلیکیشن به یک موجودیت سئو-محور و آماده برای موتورهای جستجو (Google-Ready).
+- **اقدامات:**
+  1. **SSR Activation:** حذف `ssr: false` از تمامی صفحات کلیدی (`Home`, `Shop`, `About`, `Heritage`, `Contact`, `Terms`). حالا محتوای سایت توسط کراولرهای گوگل قابل خواندن است.
+  2. **Next.js Metadata API:** جایگزینی سیستم قدیمی `SEOHead` با متادیتای نیتیو نکست‌جی‌اس. هر صفحه اکنون دارای Title، Description و Keywords اختصاصی و استاندارد است.
+  3. **Structured Data (Schema):** 
+     - پیاده‌سازی `Product Schema` (ItemList) در فروشگاه برای نمایش قیمت و عکس در گوگل.
+     - پیاده‌سازی `Breadcrumb Schema` برای نمایش مسیر راه در نتایج جستجو.
+     - به‌روزرسانی `Organization Schema` با پروفایل‌های واقعی شبکه‌های اجتماعی و اطلاعات تماس.
+  4. **Image Optimization:** جایگزینی تمام تگ‌های `<img>` در `ProductCard` با کامپوننت `<Image />` نکست‌جی‌اس برای لود تنبل (Lazy Load) و فرمت خودکار WebP.
+  5. **Domain Sync:** یکپارچه‌سازی دامنه در `robots.txt` و `sitemap.xml` بر روی `manapalm.com`.
+- **نتیجه:** سایت اکنون از لحاظ فنی در سطح استانداردهای بالای گوگل (Core Web Vitals) قرار دارد.
+
+#### 40. Infographic Fine-Tuning (2026-01-21) ✅
+- **تاریخ:** ۱ بهمن ۱۴۰۴
+- **هدف:** بهبود تعادل بصری در نمایشگرهای بزرگ (Desktop).
+- **اقدامات:**
+  1. **Resizing:** کاهش عرض اینفوگرافیک "مسیر جاودانگی" در صفحه اصلی به `max-w-lg`.
+  2. **Shop Infographic:** کاهش عرض اینفوگرافیک "چرخه تاثیر" در فروشگاه به `max-w-md` برای نمایش متناسب‌تر تصاویر عمودی ۹:۱۶ در دسکتاپ.
+- **نتیجه:** چیدمان صفحات اکنون حرفه‌ای‌تر و متمرکزتر شده است.
 
 #### 39. Shop Infographic & Cycle of Impact (2026-01-20) ✅
 - **تاریخ:** ۳۰ دی ۱۴۰۴
@@ -728,6 +750,7 @@ graph TD
 
 | تاریخ | تغییر | توسط |
 |-------|-------|------|
+| 2026-01-21 18:50 | **SEO & Performance**: Enabled SSR, Metadata API, Schema Markup, and Next/Image. Resized infographics for desktop. | Mana (Unified OS) |
 | 2026-01-20 14:40 | **Infographic & Icons**: Updated "Path of Immortality" image and restored missing social/communication icons to fix build errors. | Mana (Unified OS) |
 | 2026-01-19 14:15 | **Layout Fix**: Removed redundant `ClientWrapper` from all sub-pages, moved Header/Footer to root-only, added padding. | Mana (Unified OS) |
 | 2026-01-19 13:45 | **Auth Fix**: Implemented OTP 12345 login handshake in `ClientLayout` to hydrate test session. | Mana (Unified OS) |
