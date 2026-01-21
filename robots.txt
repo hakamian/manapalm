@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Point crawlers to the sitemap.
-Sitemap: https://nakhlestan-mana.com/sitemap.xml
+Sitemap: https://manapalm.com/sitemap.xml

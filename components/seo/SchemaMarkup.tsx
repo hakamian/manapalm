@@ -12,8 +12,8 @@ interface ProductSchemaProps {
     reviewCount?: number;
 }
 
-export const ProductSchema: React.FC<ProductSchemaProps> = ({ 
-    name, description, image, price, currency = 'IRR', availability = 'InStock', rating = 5, reviewCount = 100 
+export const ProductSchema: React.FC<ProductSchemaProps> = ({
+    name, description, image, price, currency = 'IRR', availability = 'InStock', rating = 5, reviewCount = 100
 }) => {
     const schema = {
         "@context": "https://schema.org/",
@@ -53,19 +53,42 @@ export const OrganizationSchema: React.FC = () => {
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "نخلستان معنا",
+        "alternateName": "Mana Palm",
         "url": "https://manapalm.com",
-        "logo": "https://picsum.photos/seed/nakhlestan-logo/512/512",
+        "logo": "https://manapalm.com/icon-512x512.png",
         "sameAs": [
-            "https://www.instagram.com/nakhlestan",
-            "https://twitter.com/nakhlestan"
+            "https://www.instagram.com/manapalm_com",
+            "https://t.me/manapalm",
+            "https://www.linkedin.com/company/manapalm"
         ],
         "contactPoint": {
             "@type": "ContactPoint",
-            "telephone": "+98-21-00000000",
-            "contactType": "Customer Service",
+            "telephone": "+98-912-000-0000",
+            "contactType": "sales",
             "areaServed": "IR",
             "availableLanguage": "Persian"
-        }
+        },
+        "description": "پلتفرم جامع معنا و مسئولیت اجتماعی از طریق کاشت نخل و توسعه پایدار کشاورزی."
+    };
+
+    return (
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+    );
+};
+
+export const BreadcrumbSchema: React.FC<{ items: { name: string, item: string }[] }> = ({ items }) => {
+    const schema = {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": items.map((item, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "name": item.name,
+            "item": item.item.startsWith('http') ? item.item : `https://manapalm.com${item.item}`
+        }))
     };
 
     return (

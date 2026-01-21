@@ -9,6 +9,7 @@ import ProductCard from './ProductCard';
 import { Product } from '../types';
 
 import InfographicOverlay from './ui/InfographicOverlay';
+import { BreadcrumbSchema } from './seo/SchemaMarkup';
 
 const ShopView: React.FC = () => {
     const { products } = useAppState();
@@ -19,8 +20,40 @@ const ShopView: React.FC = () => {
         dispatch({ type: 'TOGGLE_CART', payload: true });
     };
 
+    // SEO: Product List Schema (JSON-LD)
+    const productSchema = {
+        "@context": "https://schema.org",
+        "@type": "ItemList",
+        "itemListElement": products.map((product, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "item": {
+                "@type": "Product",
+                "name": product.name,
+                "description": product.description,
+                "image": product.image || (product as any).imageUrl,
+                "offers": {
+                    "@type": "Offer",
+                    "price": product.price,
+                    "priceCurrency": "IRR",
+                    "availability": "https://schema.org/InStock"
+                }
+            }
+        }))
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 py-24 px-4 sm:px-6 lg:px-8">
+            <BreadcrumbSchema
+                items={[
+                    { name: 'خانه', item: '/' },
+                    { name: 'فروشگاه', item: '/shop' }
+                ]}
+            />
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(productSchema) }}
+            />
             <div className="max-w-7xl mx-auto">
                 <div className="text-center mb-12">
                     <h1 className="text-4xl font-extrabold text-gray-900 sm:text-5xl sm:tracking-tight lg:text-6xl">

@@ -1,4 +1,3 @@
-
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
@@ -7,9 +6,14 @@
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://manapalm.com/our-story</loc>
+    <loc>https://manapalm.com/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://manapalm.com/shop</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
     <loc>https://manapalm.com/heritage</loc>
@@ -17,38 +21,13 @@
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://manapalm.com/courses</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.9</priority>
-  </url>
-  <url>
-    <loc>https://manapalm.com/community-projects</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>https://manapalm.com/community</loc>
-    <changefreq>daily</changefreq>
+    <loc>https://manapalm.com/contact</loc>
+    <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://manapalm.com/garden-of-heroes</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://manapalm.com/ai-tools</loc>
+    <loc>https://manapalm.com/terms</loc>
     <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  <url>
-    <loc>https://manapalm.com/ecolodge</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.5</priority>
-  </url>
-  <url>
-    <loc>https://manapalm.com/digital-heritage-architect</loc>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.3</priority>
   </url>
 </urlset>

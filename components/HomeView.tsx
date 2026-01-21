@@ -540,11 +540,7 @@ const HomeView: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-mana-bg pb-20">
-            <SEOHead
-                title="نخلستان معنا | پلتفرم جامع رشد فردی و اثرگذاری اجتماعی"
-                description="با کاشت نخل در نخلستان معنا، هم به طبیعت کمک کنید و هم مسیر رشد شخصی خود را با ابزارهای هوشمند و کوچینگ معنا دنبال نمایید."
-                keywords={['کاشت درخت', 'نخل', 'خیریه', 'رشد فردی', 'کوچینگ', 'مسئولیت اجتماعی', 'هوش مصنوعی']}
-            />
+
             <script
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationData) }}
