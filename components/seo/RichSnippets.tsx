@@ -7,10 +7,10 @@ export const LocalBusinessSchema: React.FC = () => {
         "@context": "https://schema.org",
         "@type": "NGO",
         "name": "نخلستان معنا",
-        "alternateName": "Nakhlestan Ma'na",
+        "alternateName": "Mana Palm Enterprise",
         "url": "https://manapalm.com",
-        "logo": "https://picsum.photos/seed/nakhlestan-logo/512/512",
-        "description": "یک کسب و کار اجتماعی برای کاشت نخل، ایجاد اشتغال پایدار و توسعه معنا در زندگی.",
+        "logo": "https://res.cloudinary.com/dk2x11rvs/image/upload/v1765131783/manapal-logo-3d_zpdvkd.png",
+        "description": "نخلستان معنا: پلتفرم جامع کاشت نخل، خرید خرما ارگانیک و مسئولیت اجتماعی برای توسعه پایدار و اشتغال‌زایی معنادار.",
         "address": {
             "@type": "PostalAddress",
             "streetAddress": "نخلستان مرکزی",

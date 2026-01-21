@@ -70,7 +70,7 @@ CREATE TABLE public.products (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
 
--- 4. ORDERS
+-- 4. ORDERS (Extended with Delivery Information)
 CREATE TABLE public.orders (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     user_id TEXT REFERENCES public.profiles(id) ON DELETE SET NULL,
@@ -79,6 +79,12 @@ CREATE TABLE public.orders (
     items JSONB DEFAULT '[]'::jsonb, -- Snapshot of products at purchase
     status_history JSONB DEFAULT '[]'::jsonb,
     deeds JSONB DEFAULT '[]'::jsonb, -- Relational impact items (palms etc)
+    
+    -- Delivery Type & Addresses
+    delivery_type TEXT DEFAULT 'digital' CHECK (delivery_type IN ('physical', 'digital', 'hybrid')),
+    physical_address JSONB DEFAULT NULL, -- {recipientName, phone, province, city, fullAddress, postalCode}
+    digital_address JSONB DEFAULT NULL, -- {email, phone, telegramId}
+    
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now())
 );
@@ -92,6 +98,36 @@ CREATE TABLE public.order_items (
     price_at_time BIGINT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- 5.1. SHIPMENTS (Physical Delivery Tracking)
+CREATE TABLE public.shipments (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    order_id UUID REFERENCES public.orders(id) ON DELETE CASCADE,
+    carrier TEXT NOT NULL CHECK (carrier IN ('post', 'tipax', 'chapar', 'peyk', 'self')),
+    tracking_code TEXT,
+    shipping_cost BIGINT DEFAULT 0,
+    estimated_delivery TIMESTAMP WITH TIME ZONE,
+    shipped_at TIMESTAMP WITH TIME ZONE,
+    delivered_at TIMESTAMP WITH TIME ZONE,
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'shipped', 'in_transit', 'delivered', 'returned')),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+-- 5.2. CERTIFICATE DELIVERIES (Digital Document Tracking)
+CREATE TABLE public.certificate_deliveries (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    order_id UUID REFERENCES public.orders(id) ON DELETE CASCADE,
+    deed_id TEXT NOT NULL,
+    channel TEXT NOT NULL CHECK (channel IN ('sms', 'email', 'telegram')),
+    recipient TEXT NOT NULL, -- phone/email/telegram_id
+    status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'sent', 'delivered', 'failed')),
+    message_id TEXT, -- External message ID for tracking
+    sent_at TIMESTAMP WITH TIME ZONE,
+    error_message TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+
 
 -- 6. PAYMENTS
 CREATE TABLE public.payments (

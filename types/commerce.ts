@@ -22,7 +22,7 @@ export interface Product {
 
     realImage?: string; // Secondary image for hover effect (Real photo)
 
-    category: 'physical' | 'digital' | 'donation' | 'service' | 'heritage' | 'نخل میراث' | 'محصولات دیجیتال' | 'محصولات خرما' | 'صنایع دستی' | 'ارتقا';
+    category: 'physical' | 'digital' | 'donation' | 'service' | 'heritage' | 'نخل میراث' | 'محصولات دیجیتال' | 'محصولات خرما' | 'صنایع دستی' | 'ارتقا' | 'محصولات ارگانیک';
 
     // Impact fields
     impactCategoryId?: string;
@@ -61,6 +61,37 @@ export interface CartItem extends Product {
     bonusPoints?: number;
 }
 
+// --- Shipping & Delivery Types ---
+export type DeliveryType = 'physical' | 'digital' | 'hybrid';
+
+export interface PhysicalAddress {
+    id?: string;
+    recipientName: string;
+    phone: string;
+    province: string;
+    city: string;
+    fullAddress: string;
+    postalCode: string;
+    plaque?: string;
+    floor?: string;
+    isDefault?: boolean;
+}
+
+export interface DigitalAddress {
+    email?: string;
+    phone: string; // For SMS delivery
+    telegramId?: string;
+}
+
+export interface ShipmentInfo {
+    trackingCode?: string;
+    carrier: 'post' | 'tipax' | 'chapar' | 'peyk' | 'self';
+    estimatedDelivery?: string;
+    shippedAt?: string;
+    deliveredAt?: string;
+    shippingCost: number;
+}
+
 export interface Order {
     id: string;
     userId: string;
@@ -70,14 +101,21 @@ export interface Order {
     totalAmount: number;
     paymentRef?: string;
     createdAt: string;
-    items: CartItem[]; // joined view
+    items: CartItem[];
     statusHistory?: { status: OrderStatus; date: string }[];
 
-    // Legacy mapping (now required for backward compat)
+    // Delivery Information
+    deliveryType: DeliveryType;
+    physicalAddress?: PhysicalAddress;
+    digitalAddress?: DigitalAddress;
+    shipment?: ShipmentInfo;
+
+    // Legacy mapping (backward compat)
     total: number;
-    date?: string; // map to createdAt
+    date?: string;
     deeds?: Deed[];
 }
+
 
 export interface UserImpactLog {
     id: string;

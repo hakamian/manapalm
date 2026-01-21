@@ -48,6 +48,51 @@ export const ProductSchema: React.FC<ProductSchemaProps> = ({
     );
 };
 
+interface ArticleSchemaProps {
+    title: string;
+    description: string;
+    image: string;
+    author: string;
+    datePublished: string;
+    url: string;
+}
+
+export const ArticleSchema: React.FC<ArticleSchemaProps> = ({
+    title, description, image, author, datePublished, url
+}) => {
+    const schema = {
+        "@context": "https://schema.org",
+        "@type": "BlogPosting",
+        "headline": title,
+        "description": description,
+        "image": image,
+        "author": {
+            "@type": "Person",
+            "name": author
+        },
+        "publisher": {
+            "@type": "Organization",
+            "name": "نخلستان معنا",
+            "logo": {
+                "@type": "ImageObject",
+                "url": "https://res.cloudinary.com/dk2x11rvs/image/upload/v1765131783/manapal-logo-3d_zpdvkd.png"
+            }
+        },
+        "datePublished": datePublished,
+        "mainEntityOfPage": {
+            "@type": "WebPage",
+            "@id": url
+        }
+    };
+
+    return (
+        <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+        />
+    );
+};
+
 export const OrganizationSchema: React.FC = () => {
     const schema = {
         "@context": "https://schema.org",
@@ -55,7 +100,7 @@ export const OrganizationSchema: React.FC = () => {
         "name": "نخلستان معنا",
         "alternateName": "Mana Palm",
         "url": "https://manapalm.com",
-        "logo": "https://manapalm.com/icon-512x512.png",
+        "logo": "https://res.cloudinary.com/dk2x11rvs/image/upload/v1765131783/manapal-logo-3d_zpdvkd.png",
         "sameAs": [
             "https://www.instagram.com/manapalm_com",
             "https://t.me/manapalm",

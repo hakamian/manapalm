@@ -171,6 +171,58 @@ graph TD
   5. **Domain Sync:** یکپارچه‌سازی دامنه در `robots.txt` و `sitemap.xml` بر روی `manapalm.com`.
 - **نتیجه:** سایت اکنون از لحاظ فنی در سطح استانداردهای بالای گوگل (Core Web Vitals) قرار دارد.
 
+#### 42. Smart Order System & Shipping Integration (2026-01-21) ✅
+- **تاریخ:** ۱ بهمن ۱۴۰۴
+- **هدف:** پیاده‌سازی سیستم سفارش هوشمند با تشخیص خودکار نوع تحویل، اعتبارسنجی آدرس، و یکپارچه‌سازی با سرویس‌های پستی ایران.
+- **اقدامات:**
+  1. **Types جدید (`types/commerce.ts`):**
+     - `PhysicalAddress`: آدرس پستی کامل (استان، شهر، کد پستی ۱۰ رقمی)
+     - `DigitalAddress`: آدرس مجازی (ایمیل، موبایل، تلگرام)
+     - `ShipmentInfo`: اطلاعات ارسال با کد رهگیری
+     - `DeliveryType`: نوع تحویل (`physical` | `digital` | `hybrid`)
+  2. **Checkout Validation Service (`services/application/checkoutService.ts`):**
+     - تشخیص خودکار نوع تحویل از روی محتوای سبد خرید
+     - محصولات فیزیکی (خرما، صنایع دستی) → آدرس پستی اجباری
+     - محصولات دیجیتال (نخل میراث) → آدرس مجازی اجباری
+     - سفارش ترکیبی → هر دو آدرس اجباری
+     - محاسبه هزینه ارسال بر اساس استان مقصد
+  3. **Shipping Service (`services/infrastructure/shippingService.ts`):**
+     - پشتیبانی از ۴ روش ارسال: پست پیشتاز، تیپاکس، چاپار، پیک موتوری
+     - نرخ‌گیری پویا بر اساس استان و وزن
+     - تخمین وزن محصولات بر اساس دسته‌بندی
+     - آماده برای اتصال به API های واقعی شرکت‌های پستی
+  4. **Certificate Delivery Service (`services/application/certificateDeliveryService.ts`):**
+     - ارسال سند دیجیتال نخل از طریق SMS، ایمیل، و تلگرام
+     - تولید QR Code برای هر سند
+     - قالب ایمیل HTML زیبا با طراحی نخلستان
+  5. **UI Components:**
+     - `AddressForm.tsx`: فرم آدرس دوگانه (فیزیکی و مجازی) با طراحی Glassmorphism
+     - `ShippingMethodSelector.tsx`: انتخابگر روش ارسال با نمایش قیمت و زمان تحویل
+  6. **CheckoutView بازنویسی شده:**
+     - فرآیند ۳ مرحله‌ای (آدرس → ارسال → پرداخت)
+     - نمایش پویای مراحل بر اساس نوع سفارش
+     - ذخیره خودکار آدرس جدید در پروفایل کاربر
+     - ارسال رایگان برای سفارش‌های بالای ۵۰۰ هزار تومان
+  7. **Database Migration (Supabase):**
+     - افزودن ستون‌های `delivery_type`, `physical_address`, `digital_address` به جدول `orders`
+     - ایجاد جدول `shipments` برای پیگیری مرسولات پستی
+     - ایجاد جدول `certificate_deliveries` برای پیگیری ارسال سندهای دیجیتال
+     - تنظیم RLS Policies و ایندکس‌های بهینه‌ساز
+- **فایل‌های تغییر یافته/ایجاد شده:**
+  - `types/commerce.ts` - Types جدید
+  - `services/application/checkoutService.ts` - سرویس اعتبارسنجی
+  - `services/infrastructure/shippingService.ts` - سرویس حمل و نقل
+  - `services/application/certificateDeliveryService.ts` - سرویس ارسال سند
+  - `components/checkout/AddressForm.tsx` - فرم آدرس
+  - `components/checkout/ShippingMethodSelector.tsx` - انتخابگر روش ارسال
+  - `components/CheckoutView.tsx` - صفحه تسویه حساب (بازنویسی کامل)
+  - `supabase_schema.sql` - اسکیپت Migration
+  - `utils/dummyData.ts` - محصولات ارگانیک جدید
+  - `components/ShopView.tsx` - بازطراحی فروشگاه با دسته‌بندی ارگانیک
+- **نتیجه:** سیستم سفارش اکنون هوشمندانه تشخیص می‌دهد که هر کاربر به چه نوع آدرسی نیاز دارد و فرآیند خرید را بهینه می‌کند.
+
+
+
 #### 40. Infographic Fine-Tuning (2026-01-21) ✅
 - **تاریخ:** ۱ بهمن ۱۴۰۴
 - **هدف:** بهبود تعادل بصری در نمایشگرهای بزرگ (Desktop).

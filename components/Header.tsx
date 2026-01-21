@@ -271,8 +271,14 @@ const Header: React.FC = () => {
                 <div className="container mx-auto px-6 h-full flex items-center">
                     <div className="flex items-center justify-between w-full">
                         <div className="flex items-center">
-                            <img src="https://picsum.photos/seed/nakhlestan-logo/40/40" alt="Logo" className="rounded-full" />
-                            <SmartLink view={View.Home} className="text-xl font-bold text-white mr-4 cursor-pointer">نخلستان معنا</SmartLink>
+                            <SmartLink view={View.Home} className="flex items-center gap-3 group transition-transform duration-300 hover:scale-105 active:scale-95">
+                                <img
+                                    src="https://res.cloudinary.com/dk2x11rvs/image/upload/v1765131783/manapal-logo-3d_zpdvkd.png"
+                                    alt="Mana Palm Logo"
+                                    className="h-10 w-auto drop-shadow-[0_0_15px_rgba(16,185,129,0.3)] group-hover:drop-shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all"
+                                />
+                                <span className="text-xl font-black text-white tracking-tight">نخلستان معنا</span>
+                            </SmartLink>
                         </div>
 
                         {/* Desktop Mega Menu */}

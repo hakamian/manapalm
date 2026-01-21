@@ -1,53 +1,11 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { Article } from '../types';
+import { mockArticles } from '../utils/articlesData';
 
-// --- Mock Data ---
-const mockArticles: Article[] = [
-    {
-        id: 'a1', title: '۵ روش نوین برای آبیاری نخلستان‌ها', author: 'دکتر علی رضایی', date: '۱۴۰۳/۰۵/۱۰', category: 'کشاورزی پایدار', image: 'https://picsum.photos/seed/irrigation/800/600',
-        excerpt: 'با افزایش بحران آب، استفاده از روش‌های نوین آبیاری نه تنها یک انتخاب، بلکه یک ضرورت است. در این مقاله به بررسی ۵ تکنیک پیشرفته می‌پردازیم که می‌تواند مصرف آب را تا ۷۰٪ کاهش دهد.',
-        content: 'متن کامل مقاله در اینجا قرار می‌گیرد. یکی از این روش‌ها آبیاری قطره‌ای زیرسطحی است که مستقیماً آب را به ریشه گیاه می‌رساند و از تبخیر جلوگیری می‌کند. روش دیگر استفاده از سنسورهای رطوبت خاک برای بهینه‌سازی زمان آبیاری است. این سنسورها به ما کمک می‌کنند تا فقط در صورت نیاز واقعی گیاه، آبیاری را انجام دهیم.', type: 'official', likes: 125, authorImage: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819371/manapalm/avatars/avatar-male.jpg'
-    },
-    {
-        id: 'a2', title: 'چگونه مدل Gemini به کسب‌وکارهای اجتماعی کمک می‌کند؟', author: 'مهندس سارا محمدی', date: '۱۴۰۳/۰۵/۰۸', category: 'هوش مصنوعی', image: 'https://picsum.photos/seed/gemini-social/800/600',
-        excerpt: 'هوش مصنوعی دیگر تنها در انحصار شرکت‌های بزرگ نیست. مدل‌های قدرتمندی مانند Gemini می‌توانند به کسب‌وکارهای اجتماعی در بازاریابی، مدیریت و تحلیل داده‌ها کمک شایانی کنند.',
-        content: 'در این مقاله، به بررسی کاربردهای عملی مدل Gemini برای سازمان‌های غیرانتفاعی و کسب‌وکارهای اجتماعی می‌پردازیم. از تولید محتوای جذاب برای کمپین‌های جذب سرمایه گرفته تا تحلیل بازخورد مشتریان برای بهبود خدمات، Gemini می‌تواند به عنوان یک همکار هوشمند و خستگی‌ناپذیر عمل کند. ما موارد مطالعاتی واقعی را بررسی می‌کنیم.', type: 'official', likes: 210, authorImage: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819369/manapalm/avatars/avatar-female.jpg'
-    },
-    {
-        id: 'cs1', title: 'داستان نخل من: هدیه‌ای برای پدربزرگ', author: 'مریم صالحی', date: '۱۴۰۳/۰۵/۰۷', category: 'داستان جامعه', image: 'https://picsum.photos/seed/grandpa-story/800/600',
-        excerpt: 'وقتی به دنبال هدیه‌ای متفاوت برای تولد ۸۰ سالگی پدربزرگم بودم، با نخلستان معنا آشنا شدم. کاشت یک نخل به نام او، بهترین راه برای قدردانی از ریشه‌های محکمی بود که به ما داده است.',
-        content: 'متن کامل داستان در اینجا قرار می‌گیرد...', type: 'community', likes: 350, authorImage: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819369/manapalm/avatars/avatar-female.jpg'
-    },
-    {
-        id: 'a3', title: 'داستان نخلستان معنا: از یک ایده تا یک جنبش', author: 'تیم نخلستان معنا', date: '۱۴۰۳/۰۵/۰۵', category: 'کسب و کار اجتماعی', image: 'https://picsum.photos/seed/our-story/800/600',
-        excerpt: 'سفری از دل یک نیت خیرخواهانه برای کاشت یک نخل تا ایجاد یک اکوسیستم پایدار که زندگی ده‌ها خانواده را متحول کرده و به محیط زیست جانی دوباره بخشیده است.',
-        content: 'متن کامل مقاله در اینجا قرار می‌گیرد...', type: 'official', likes: 180, authorImage: 'https://picsum.photos/seed/nakhlestan-logo/40/40'
-    },
-    {
-        id: 'cs2', title: 'یک نخل برای یک عادت: ۳۰ روز بدون سیگار', author: 'رضا قاسمی', date: '۱۴۰۳/۰۵/۰۳', category: 'داستان جامعه', image: 'https://picsum.photos/seed/habit-story/800/600',
-        excerpt: 'تصمیم گرفتم به ازای هر ماه که سیگار را ترک می‌کنم، یک نخل بکارم. امروز اولین ماه تمام شد و اولین نخلم را کاشتم. این نخل نماد اراده و شروع یک زندگی جدید برای من است.',
-        content: 'متن کامل داستان در اینجا قرار می‌گیرد...', type: 'community', likes: 421, authorImage: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819371/manapalm/avatars/avatar-male.jpg'
-    },
-    {
-        id: 'a4', title: 'خرما: فراتر از یک میوه، یک سبک زندگی سالم', author: 'مریم حسینی', date: '۱۴۰۳/۰۵/۰۲', category: 'سبک زندگی', image: 'https://picsum.photos/seed/date-lifestyle/800/600',
-        excerpt: 'خرما، این طلای شیرین جنوب، سرشار از مواد مغذی است. بیاموزید چگونه این میوه پرانرژی را در رژیم غذایی روزانه خود بگنجانید.',
-        content: 'متن کامل مقاله در اینجا قرار می‌گیرد...', type: 'official', likes: 95, authorImage: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819369/manapalm/avatars/avatar-female.jpg'
-    },
-    {
-        id: 'a5', title: 'نقش کشاورزی ارگانیک در حفظ تنوع زیستی', author: 'دکتر علی رضایی', date: '۱۴۰۳/۰۴/۲۸', category: 'کشاورزی پایدار', image: 'https://picsum.photos/seed/organic-farming/800/600',
-        excerpt: 'کشاورزی ارگانیک تنها به معنای عدم استفاده از سموم شیمیایی نیست، بلکه رویکردی جامع برای احیای خاک، حفظ گونه‌های جانوری و ساختن آینده‌ای سالم‌تر برای سیاره ما است.',
-        content: 'متن کامل مقاله در اینجا قرار می‌گیرد...', type: 'official', likes: 140, authorImage: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819371/manapalm/avatars/avatar-male.jpg'
-    },
-    {
-        id: 'a6', title: 'کوچینگ معنا: چگونه هدف واقعی خود را در زندگی پیدا کنیم؟', author: 'مهندس سارا محمدی', date: '۱۴۰۳/۰۴/۲۵', category: 'سبک زندگی', image: 'https://picsum.photos/seed/coaching-meaning/800/600',
-        excerpt: 'در دنیای پرشتاب امروز، بسیاری از ما احساس گم‌گشتگی می‌کنیم. کوچینگ معنا به شما کمک می‌کند تا با شناخت ارزش‌های درونی خود، قطب‌نمای زندگی‌تان را پیدا کرده و در مسیر درست حرکت کنید.',
-        content: 'متن کامل مقاله در اینجا قرار می‌گیرد...', type: 'official', likes: 195, authorImage: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1766819369/manapalm/avatars/avatar-female.jpg'
-    }
-];
-
-const categories: ('همه' | Article['category'])[] = ['همه', 'کشاورزی پایدار', 'کسب و کار اجتماعی', 'هوش مصنوعی', 'سبک زندگی', 'داستان جامعه'];
+const categories: ('همه' | Article['category'])[] = ['همه', 'معنا', 'کشاورزی پایدار', 'کسب و کار اجتماعی', 'هوش مصنوعی', 'سبک زندگی', 'داستان جامعه'];
 
 const ITEMS_PER_PAGE = 4;
 
@@ -62,10 +20,16 @@ const ArticleCard: React.FC<{ article: Article }> = ({ article }) => (
             <p className="text-sm text-green-400 mb-2">{article.category}</p>
             <h3 className="text-xl font-bold text-white mb-3 h-16">{article.title}</h3>
             <p className="text-gray-400 text-sm leading-relaxed mb-4 h-24 overflow-hidden">{article.excerpt}</p>
-            <div className="border-t border-gray-700 pt-4 flex justify-between items-center text-xs text-gray-500">
+            <div className="flex justify-between items-center text-xs text-gray-500 mb-4">
                 <span>نویسنده: {article.author}</span>
                 <span>{article.date}</span>
             </div>
+            <Link
+                href={`/articles/${article.id}`}
+                className="block text-center bg-gray-700 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded transition-colors"
+            >
+                ادامه مطلب
+            </Link>
         </div>
     </div>
 );
@@ -84,9 +48,12 @@ const FeaturedArticleCard: React.FC<{ article: Article }> = ({ article }) => (
                 <span className="mx-2">|</span>
                 <span>{article.date}</span>
             </div>
-            <button className="mt-6 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-md transition-colors self-start">
+            <Link
+                href={`/articles/${article.id}`}
+                className="mt-6 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-md transition-colors self-start"
+            >
                 ادامه مطلب
-            </button>
+            </Link>
         </div>
     </div>
 );
