@@ -1,4 +1,6 @@
 
+'use client';
+
 import React, { Suspense, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useAppState, useAppDispatch } from '../../AppContext';

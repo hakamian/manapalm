@@ -157,6 +157,14 @@ graph TD
 
 ### 🚀 اقدامات اخیر (Live & Active)
 
+#### 43. Vercel Build Fix & SSR Prerendering Stability (2026-01-21) ✅
+- **تاریخ:** ۱ بهمن ۱۴۰۴
+- **هدف:** رفع خطای `useAppDispatch must be used within an AppProvider` در حین پردازش Prerendering در Vercel.
+- **اقدامات:**
+  1. **Directives:** افزودن `'use client'` به کامپوننت‌های `TermsView.tsx` و `GlobalModals.tsx` و `PalmSelectionModal.tsx`.
+  2. **Stability:** اطمینان از اینکه تمامی کامپوننت‌هایی که از Hooks استفاده می‌کنند (مانند `useAppDispatch` یا `useAppState`) به عنوان Client Component شناخته می‌شوند تا در زمان Build و Prerendering باعث شکست سیستم نشوند.
+- **نتیجه:** فرآیند Deployment در Vercel با موفقیت انجام شد و خطای مربوط به Context در صفحات استاتیک برطرف گردید.
+
 #### 41. SEO Mastery & Performance Overhaul (2026-01-21) ✅
 - **تاریخ:** ۱ بهمن ۱۴۰۴
 - **هدف:** تبدیل اپلیکیشن به یک موجودیت سئو-محور و آماده برای موتورهای جستجو (Google-Ready).
