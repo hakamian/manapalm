@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../services/supabaseClient';
 import { sendOTP, verifyOTP } from '../services/otp';
 
@@ -12,6 +12,145 @@ interface AuthModalProps {
 
 type AuthMode = 'otp' | 'password';
 type AuthStep = 'phone_entry' | 'otp_verify' | 'password_entry' | 'set_password';
+
+const OTP_LENGTH = 5;
+
+// Modern OTP Input Component with square boxes
+function OTPInput({
+  value,
+  onChange,
+  onComplete,
+  disabled = false
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  onComplete: () => void;
+  disabled?: boolean;
+}) {
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [otpDigits, setOtpDigits] = useState<string[]>(Array(OTP_LENGTH).fill(''));
+
+  // Sync external value to internal state
+  useEffect(() => {
+    const digits = value.split('').slice(0, OTP_LENGTH);
+    const padded = [...digits, ...Array(OTP_LENGTH - digits.length).fill('')];
+    setOtpDigits(padded);
+  }, [value]);
+
+  // Web OTP API - Auto-read SMS on mobile
+  useEffect(() => {
+    if ('OTPCredential' in window) {
+      const ac = new AbortController();
+
+      navigator.credentials.get({
+        // @ts-ignore - OTP is valid but not in TS types
+        otp: { transport: ['sms'] },
+        signal: ac.signal
+      }).then((otp: any) => {
+        if (otp?.code) {
+          const code = otp.code.replace(/\D/g, '').slice(0, OTP_LENGTH);
+          onChange(code);
+          if (code.length === OTP_LENGTH) {
+            setTimeout(() => onComplete(), 100);
+          }
+        }
+      }).catch(() => {
+        // User declined or API not available
+      });
+
+      return () => ac.abort();
+    }
+  }, [onChange, onComplete]);
+
+  // Focus first input on mount
+  useEffect(() => {
+    inputRefs.current[0]?.focus();
+  }, []);
+
+  const handleChange = useCallback((index: number, digit: string) => {
+    // Only allow single digit
+    const cleanDigit = digit.replace(/\D/g, '').slice(-1);
+
+    const newDigits = [...otpDigits];
+    newDigits[index] = cleanDigit;
+    setOtpDigits(newDigits);
+
+    const newValue = newDigits.join('');
+    onChange(newValue);
+
+    // Move to next input
+    if (cleanDigit && index < OTP_LENGTH - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+
+    // Auto-submit when last digit is entered
+    if (cleanDigit && index === OTP_LENGTH - 1 && newValue.length === OTP_LENGTH) {
+      setTimeout(() => onComplete(), 150);
+    }
+  }, [otpDigits, onChange, onComplete]);
+
+  const handleKeyDown = useCallback((index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      if (!otpDigits[index] && index > 0) {
+        // Move to previous input
+        inputRefs.current[index - 1]?.focus();
+        const newDigits = [...otpDigits];
+        newDigits[index - 1] = '';
+        setOtpDigits(newDigits);
+        onChange(newDigits.join(''));
+      }
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    } else if (e.key === 'ArrowRight' && index < OTP_LENGTH - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  }, [otpDigits, onChange]);
+
+  const handlePaste = useCallback((e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, OTP_LENGTH);
+    onChange(pastedData);
+
+    if (pastedData.length === OTP_LENGTH) {
+      inputRefs.current[OTP_LENGTH - 1]?.focus();
+      setTimeout(() => onComplete(), 150);
+    } else {
+      inputRefs.current[pastedData.length]?.focus();
+    }
+  }, [onChange, onComplete]);
+
+  return (
+    <div className="flex justify-center gap-2 sm:gap-3 dir-ltr" onPaste={handlePaste}>
+      {Array.from({ length: OTP_LENGTH }).map((_, index) => (
+        <input
+          key={index}
+          ref={(el) => { inputRefs.current[index] = el; }}
+          type="text"
+          inputMode="numeric"
+          autoComplete={index === 0 ? "one-time-code" : "off"}
+          maxLength={1}
+          value={otpDigits[index] || ''}
+          onChange={(e) => handleChange(index, e.target.value)}
+          onKeyDown={(e) => handleKeyDown(index, e)}
+          disabled={disabled}
+          className={`
+            w-12 h-14 sm:w-14 sm:h-16
+            text-center text-2xl sm:text-3xl font-bold
+            bg-white/5 border-2 rounded-xl
+            text-white font-mono
+            transition-all duration-200
+            focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500
+            ${otpDigits[index] ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-white/20'}
+            ${disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-white/40'}
+          `}
+          style={{
+            caretColor: 'transparent',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
 
 export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
   const [phone, setPhone] = useState('');
@@ -71,8 +210,6 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
     setLoading(true);
     setError('');
     try {
-      // In a real scenario, this calls your backend API
-      // For now, we simulate success or use the mock sendOTP
       const res = await sendOTP(phone);
       if (res.success) {
         setStep('otp_verify');
@@ -87,18 +224,18 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
     }
   };
 
-  const handleVerifyOTP = async () => {
+  const handleVerifyOTP = useCallback(async () => {
+    if (otp.length !== OTP_LENGTH) {
+      setError('لطفا کد ۵ رقمی را کامل وارد کنید');
+      return;
+    }
     setLoading(true);
     setError('');
     try {
       const res = await verifyOTP(phone, otp);
       if (res.success) {
-        // If existing user, log them in. If new, ask for password setup (optional) or just log in.
-        // For this logic, we assume backend returns a session or we create one.
-        // SUCCESS FEEDBACK
         setLoading(false);
-        setStep('phone_entry'); // Reset for next time
-
+        setStep('phone_entry');
         onLoginSuccess({ phone, fullName: res.fullName });
         onClose();
       } else {
@@ -109,7 +246,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
     } finally {
       setLoading(false);
     }
-  };
+  }, [otp, phone, onLoginSuccess, onClose]);
 
   const handlePasswordLogin = async () => {
     if (!supabase) {
@@ -121,12 +258,11 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
     setError('');
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: `${phone}@manapalm.local`, // Assuming phone-based email mapping for Supabase
+        email: `${phone}@manapalm.local`,
         password: password,
       });
 
       if (error) {
-        // Fallback: maybe they used real email? For now, Stick to phone logic.
         throw error;
       }
 
@@ -246,41 +382,67 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
           )}
 
           {step === 'otp_verify' && (
-            <div className="space-y-4 w-full animate-fade-in-up">
-              <div className="text-center text-white/80 text-sm mb-4">
+            <div className="space-y-6 w-full animate-fade-in-up">
+              <div className="text-center text-white/80 text-sm mb-2">
                 کد ارسال شده به {' '}<span className="text-emerald-400 font-mono dir-ltr">{phone}</span>{' '} را وارد کنید
               </div>
 
-              <input
-                type="text"
-                placeholder="- - - - -"
+              {/* Modern OTP Input with square boxes */}
+              <OTPInput
                 value={otp}
-                onChange={(e) => setOtp(e.target.value)}
-                className="auth-input text-center text-2xl tracking-[1rem] font-mono"
-                maxLength={5}
+                onChange={setOtp}
+                onComplete={handleVerifyOTP}
+                disabled={loading}
               />
 
+              {/* Timer and resend */}
               <div className="flex justify-between items-center text-xs text-gray-400 px-1">
-                <span>{timer > 0 ? `${Math.floor(timer / 60)}:${(timer % 60).toString().padStart(2, '0')}` : ''}</span>
+                <span className="flex items-center gap-1">
+                  {timer > 0 && (
+                    <>
+                      <svg className="w-4 h-4 text-emerald-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}
+                    </>
+                  )}
+                </span>
                 {timer === 0 && (
-                  <button onClick={handleSendOTP} className="text-emerald-400 hover:text-emerald-300">
+                  <button onClick={handleSendOTP} className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
                     ارسال مجدد کد
                   </button>
                 )}
               </div>
 
+              {/* Hint for Web OTP */}
+              <p className="text-center text-white/40 text-[10px]">
+                💡 در موبایل، کد به‌صورت خودکار از پیامک خوانده می‌شود
+              </p>
+
               <button
                 onClick={handleVerifyOTP}
-                disabled={loading}
-                className="auth-button mt-6"
+                disabled={loading || otp.length !== OTP_LENGTH}
+                className={`auth-button mt-4 ${otp.length !== OTP_LENGTH ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {loading ? 'در حال بررسی...' : 'تایید و ورود'}
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                    </svg>
+                    در حال بررسی...
+                  </span>
+                ) : 'تایید و ورود'}
               </button>
+
               <button
-                onClick={() => setStep('phone_entry')}
-                className="w-full text-center text-xs text-gray-500 hover:text-gray-300 mt-4"
+                onClick={() => { setStep('phone_entry'); setOtp(''); }}
+                className="w-full text-center text-xs text-gray-500 hover:text-gray-300"
               >
-                اصلاح شماره موبایل
+                ← اصلاح شماره موبایل
               </button>
             </div>
           )}
