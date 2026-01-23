@@ -45,7 +45,11 @@ const UserProfileView: React.FC = () => {
     const dispatch = useAppDispatch();
     const { updateProfile } = useAppActions();
 
-    const onUpdate = (updatedUser: Partial<User>) => updateProfile(updatedUser as User);
+    const onUpdate = (updatedFields: Partial<User>) => {
+        if (user) {
+            updateProfile({ ...user, ...updatedFields });
+        }
+    };
     const onNavigate = (view: View) => dispatch({ type: 'SET_VIEW', payload: view });
     const onStartPlantingFlow = () => dispatch({ type: 'START_PLANTING_FLOW' });
     const onUpdateTimelineEvent = (deedId: string, memory: { text?: string, image?: string }) => dispatch({ type: 'UPDATE_TIMELINE_EVENT', payload: { deedId, memory } });
