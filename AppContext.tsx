@@ -408,7 +408,15 @@ const AppContext = createContext<{ state: AppState; dispatch: React.Dispatch<Act
 export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [state, dispatch] = useReducer(appReducer, initialState);
 
-
+    // 💾 Global Persistence Engine: Keep LocalStorage in sync with App State in real-time
+    useEffect(() => {
+        if (state.user && state.user.id) {
+            const storageKey = `user_backup_${state.user.id}`;
+            localStorage.setItem(storageKey, JSON.stringify(state.user));
+            localStorage.setItem('last_active_user_id', state.user.id);
+            // console.log("💾 [Persistence] Real-time memory sync completed");
+        }
+    }, [state.user]);
 
     useEffect(() => {
         console.log("💎 AppProvider Mounted. Current storage user ID:", dbAdapter.getCurrentUserId());
