@@ -55,7 +55,21 @@ const mapProfileToUser = (profile: any): User => {
         }
     }
 
-    const addresses = (metadata as any)?.addresses || [];
+    let addresses = (metadata as any)?.addresses || [];
+
+    // 🛡️ RECOVERY: If server returns empty addresses but we have a local backup, use the backup.
+    // This prevents addresses from disappearing during hydration or sync delays.
+    if (addresses.length === 0 && typeof localStorage !== 'undefined') {
+        try {
+            const localBackup = JSON.parse(localStorage.getItem(`user_backup_${profile.id}`) || 'null');
+            if (localBackup && localBackup.addresses && localBackup.addresses.length > 0) {
+                console.log(`📡 [DB] Recovered ${localBackup.addresses.length} addresses from LocalStorage for ${profile.id}`);
+                addresses = localBackup.addresses;
+            }
+        } catch (e) {
+            console.error("❌ Failed to recover addresses from backup", e);
+        }
+    }
 
     return {
         id: profile.id,

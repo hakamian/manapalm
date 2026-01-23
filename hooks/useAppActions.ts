@@ -1,8 +1,8 @@
-
 import { useAppDispatch, useAppState } from '../AppContext';
 import { userService } from '../services/application/userService';
 import { orderService } from '../services/application/orderService';
 import { communityService } from '../services/application/communityService';
+import { dbAdapter } from '../services/application/database';
 import { Review, Order, User } from '../types';
 
 /**
@@ -73,9 +73,6 @@ export const useAppActions = () => {
                 });
                 dispatch({ type: 'UPDATE_USER', payload: finalUser });
             }
-            // Note: PLACE_ORDER in reducer already handles state updates, but if we move 
-            // logic completely here, we could just dispatch update actions.
-            // For now, we keep the order placement synchronized.
         },
 
         /**
@@ -85,14 +82,12 @@ export const useAppActions = () => {
             if (!user) return;
             const { updatedUser, reviewWithStatus } = await communityService.submitReview(user, review);
             dispatch({ type: 'UPDATE_USER', payload: updatedUser });
-            // Add review to state list if needed
         },
 
         investInMicrofinance: async (projectId: string, amount: number, method: 'wallet' | 'points') => {
             const result = await communityService.investInProject(state, projectId, amount, method);
             if (result) {
                 dispatch({ type: 'UPDATE_USER', payload: result.updatedUser });
-                // We might need an action to update projects locally
             }
         },
 
@@ -114,13 +109,16 @@ export const useAppActions = () => {
          * Profile & Identity
          */
         updateProfile: async (updatedUser: User) => {
+            console.log("🛠️ [Actions] updateProfile starting for:", updatedUser.id);
             dispatch({ type: 'UPDATE_USER', payload: updatedUser });
             try {
-                const confirmedUser = await userService.updateBarkatPoints(updatedUser, 0, 'بروزرسانی پروفایل'); // Hack to use userService's save
-                // Alternative: Use dbAdapter directly if available
-                // const confirmedUser = await dbAdapter.saveUser(updatedUser);
-            } catch (err) {
-                console.error("❌ Failed to persist profile update:", err);
+                const confirmedUser = await dbAdapter.saveUser(updatedUser);
+                if (confirmedUser) {
+                    console.log("✅ [Actions] Profile confirmed by DB");
+                    dispatch({ type: 'UPDATE_USER', payload: confirmedUser });
+                }
+            } catch (err: any) {
+                console.error("❌ Failed to persist profile update:", err.message);
             }
         }
     };
