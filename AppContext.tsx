@@ -509,13 +509,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     }
                 }
 
-                console.log("🚀 [StallTrace] Dispatching LOAD_INITIAL_DATA");
+                const finalUser = currentUser || (currentUserId ? JSON.parse(localStorage.getItem(`user_backup_${currentUserId}`) || 'null') : null);
+
+                console.log("🚀 [StallTrace] Dispatching LOAD_INITIAL_DATA. User presence:", !!finalUser);
                 dispatch({
                     type: 'LOAD_INITIAL_DATA',
                     payload: {
                         communityPosts: posts,
                         products: products.length > 0 ? products : INITIAL_PRODUCTS,
-                        user: currentUser,
+                        user: finalUser,
                         orders: userOrders
                     }
                 });

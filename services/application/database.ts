@@ -183,7 +183,7 @@ export const dbAdapter = {
             }
         };
 
-        return withTimeout(fetchUser(), 5000, null);
+        return withTimeout(fetchUser(), 12000, null);
     },
 
     async saveUser(user: User): Promise<User | null> {
