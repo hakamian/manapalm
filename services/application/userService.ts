@@ -17,11 +17,10 @@ export const userService = {
         if (amount < 0) {
             await dbAdapter.spendBarkatPoints(Math.abs(amount));
         } else {
-            // Grant points (negative spend in adapter terms if supported, or just saveUser)
             await dbAdapter.spendBarkatPoints(-amount);
         }
 
-        const updatedUser = {
+        const dataToSave = {
             ...user,
             points: user.points + amount,
             pointsHistory: [
@@ -35,20 +34,17 @@ export const userService = {
             ]
         };
 
-        await dbAdapter.saveUser(updatedUser);
-        return updatedUser;
+        const savedUser = await dbAdapter.saveUser(dataToSave);
+        return savedUser || dataToSave;
     },
 
-    /**
-     * Deducts or grants Mana points with history logging.
-     */
     updateManaPoints: async (user: User, points: number, actionLabel: string): Promise<User> => {
         // SECURE CALL
         if (points > 0) {
             await dbAdapter.spendManaPoints(points);
         }
 
-        const updatedUser = {
+        const dataToSave = {
             ...user,
             manaPoints: user.manaPoints - points,
             pointsHistory: [
@@ -62,29 +58,23 @@ export const userService = {
             ]
         };
 
-        await dbAdapter.saveUser(updatedUser);
-        return updatedUser;
+        const savedUser = await dbAdapter.saveUser(dataToSave);
+        return savedUser || dataToSave;
     },
 
-    /**
-     * Unlocks the Meaning Palm for a user.
-     */
     unlockMeaningPalm: async (user: User): Promise<User | null> => {
         if (user.manaPoints < 15000) return null;
 
         await dbAdapter.spendManaPoints(15000);
-        const updatedUser = {
+        const dataToSave = {
             ...user,
             manaPoints: user.manaPoints - 15000,
             hasUnlockedMeaningPalm: true
         };
-        await dbAdapter.saveUser(updatedUser);
-        return updatedUser;
+        const savedUser = await dbAdapter.saveUser(dataToSave);
+        return savedUser || dataToSave;
     },
 
-    /**
-     * Checks for level-ups and achievements after any profile/point change.
-     */
     processGamificationUpdates: async (user: User): Promise<{ updatedUser: User, newAchievements: Achievement[], leveledUp: boolean }> => {
         let updatedUser = { ...user };
         const newAchievements = checkAchievements(updatedUser);
@@ -146,7 +136,8 @@ export const userService = {
         }
 
         if (newAchievements.length > 0 || leveledUp) {
-            await dbAdapter.saveUser(updatedUser);
+            const savedUser = await dbAdapter.saveUser(updatedUser);
+            if (savedUser) updatedUser = savedUser;
         }
 
         return { updatedUser, newAchievements, leveledUp };

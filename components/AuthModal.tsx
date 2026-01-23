@@ -15,7 +15,7 @@ type AuthStep = 'phone_entry' | 'otp_verify' | 'password_entry' | 'set_password'
 
 const OTP_LENGTH = 5;
 
-// Modern OTP Input Component with square boxes
+// Modern OTP Input Component with square boxes - RTL compatible
 function OTPInput({
   value,
   onChange,
@@ -62,7 +62,7 @@ function OTPInput({
     }
   }, [onChange, onComplete]);
 
-  // Focus first input on mount
+  // Focus first input on mount (rightmost in RTL visual, but index 0 in logical order)
   useEffect(() => {
     inputRefs.current[0]?.focus();
   }, []);
@@ -78,7 +78,7 @@ function OTPInput({
     const newValue = newDigits.join('');
     onChange(newValue);
 
-    // Move to next input
+    // Move to next input (visually left in RTL, but index + 1)
     if (cleanDigit && index < OTP_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
     }
@@ -92,16 +92,18 @@ function OTPInput({
   const handleKeyDown = useCallback((index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Backspace') {
       if (!otpDigits[index] && index > 0) {
-        // Move to previous input
+        // Move to previous input (visually right in RTL)
         inputRefs.current[index - 1]?.focus();
         const newDigits = [...otpDigits];
         newDigits[index - 1] = '';
         setOtpDigits(newDigits);
         onChange(newDigits.join(''));
       }
-    } else if (e.key === 'ArrowLeft' && index > 0) {
+    } else if (e.key === 'ArrowRight' && index > 0) {
+      // In RTL, ArrowRight goes to previous logical index (visually right)
       inputRefs.current[index - 1]?.focus();
-    } else if (e.key === 'ArrowRight' && index < OTP_LENGTH - 1) {
+    } else if (e.key === 'ArrowLeft' && index < OTP_LENGTH - 1) {
+      // In RTL, ArrowLeft goes to next logical index (visually left)
       inputRefs.current[index + 1]?.focus();
     }
   }, [otpDigits, onChange]);
@@ -120,7 +122,7 @@ function OTPInput({
   }, [onChange, onComplete]);
 
   return (
-    <div className="flex justify-center gap-2 sm:gap-3 dir-ltr" onPaste={handlePaste}>
+    <div className="flex flex-row-reverse justify-center gap-2 sm:gap-3" dir="ltr" onPaste={handlePaste}>
       {Array.from({ length: OTP_LENGTH }).map((_, index) => (
         <input
           key={index}
@@ -129,6 +131,7 @@ function OTPInput({
           inputMode="numeric"
           autoComplete={index === 0 ? "one-time-code" : "off"}
           maxLength={1}
+          dir="ltr"
           value={otpDigits[index] || ''}
           onChange={(e) => handleChange(index, e.target.value)}
           onKeyDown={(e) => handleKeyDown(index, e)}

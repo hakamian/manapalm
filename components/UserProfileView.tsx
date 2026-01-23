@@ -10,6 +10,7 @@ import {
 } from './icons';
 import { getNextLevelInfo } from '../services/gamificationService';
 import { useAppState, useAppDispatch } from '../AppContext';
+import { useAppActions } from '../hooks/useAppActions';
 import MenteeBriefingModal from './MenteeBriefingModal';
 import GroveKeeperDashboard from './GroveKeeperDashboard';
 import DeedDisplay from './DeedDisplay';
@@ -42,8 +43,9 @@ import RecentViewsTab from './profile/RecentViewsTab';
 const UserProfileView: React.FC = () => {
     const { user, allUsers, orders, profileInitialTab, products, wishlist, notifications } = useAppState();
     const dispatch = useAppDispatch();
+    const { updateProfile } = useAppActions();
 
-    const onUpdate = (updatedUser: Partial<User>) => dispatch({ type: 'UPDATE_USER', payload: updatedUser });
+    const onUpdate = (updatedUser: Partial<User>) => updateProfile(updatedUser as User);
     const onNavigate = (view: View) => dispatch({ type: 'SET_VIEW', payload: view });
     const onStartPlantingFlow = () => dispatch({ type: 'START_PLANTING_FLOW' });
     const onUpdateTimelineEvent = (deedId: string, memory: { text?: string, image?: string }) => dispatch({ type: 'UPDATE_TIMELINE_EVENT', payload: { deedId, memory } });
@@ -144,7 +146,7 @@ const UserProfileView: React.FC = () => {
                 <div className="text-center">
                     <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto mb-4"></div>
                     <p className="mb-4">در حال بارگذاری پروفایل...</p>
-                    <button 
+                    <button
                         onClick={() => dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })}
                         className="text-sm text-green-400 hover:text-green-300 underline"
                     >

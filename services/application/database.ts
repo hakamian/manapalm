@@ -186,74 +186,77 @@ export const dbAdapter = {
         return withTimeout(fetchUser(), 5000, null);
     },
 
-    async saveUser(user: User): Promise<void> {
+    async saveUser(user: User): Promise<User | null> {
         if (!this.isLive()) {
             console.log("[Mock DB] User saved:", user.id);
-            return;
+            return user;
         }
 
         if (user.id.startsWith('user_') && typeof localStorage !== 'undefined' && localStorage.getItem('supabase.auth.token')) {
             console.warn("⚠️ Blocked save of temporary user over active session:", user.id);
-            return;
+            return null;
         }
 
         try {
             const userId = user.id;
-            const storageId = this.getCurrentUserId();
-
-            console.log("🚀 Syncing User to Server API:", {
-                id: userId,
-                currentStorageId: storageId,
-                addresses: user.addresses?.length
-            });
-
-            if (!userId || userId === 'null') {
-                console.error("❌ Cannot save user: Invalid ID");
-                return;
-            }
-
             const { data: { session } } = await supabase!.auth.getSession();
             const token = session?.access_token;
+
+            console.log('📤 [Client Auth] Checking Session for User:', userId);
+
+            if (!token) {
+                console.warn('⚠️ [Client Auth] No token found. Saving to LocalStorage fallback.');
+                if (typeof localStorage !== 'undefined') {
+                    localStorage.setItem('nakhlestan_current_user_id', user.id);
+                    localStorage.setItem(`user_backup_${user.id}`, JSON.stringify(user));
+                }
+                return user;
+            }
+
+            console.log('✅ [Client Auth] Token found, sending request...');
 
             const response = await fetch('/api/update-user-v2', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : ''
+                    'Authorization': `Bearer ${token}`,
+                    'X-Mana-Token': token
                 },
                 body: JSON.stringify({ user })
             });
 
-            const text = await response.text();
-            let result;
-            try {
-                result = JSON.parse(text);
-            } catch (e) {
-                console.error('❌ Server returned non-JSON:', text);
-                throw new Error('پاسخ سرور معتبر نیست');
-            }
+            const result = await response.json();
 
             if (result.success) {
                 console.log("✅ User successfully saved via Server API", result.debug || '');
-                // 🛡️ CRITICAL: Force update local storage ID and backup to prevent refresh jumps
+
+                // 🛡️ Map the result from DB back to User type
+                const savedUser = mapProfileToUser(result.user);
+
                 if (typeof localStorage !== 'undefined') {
-                    localStorage.setItem('nakhlestan_current_user_id', user.id);
-                    localStorage.setItem(`user_backup_${user.id}`, JSON.stringify(user));
+                    localStorage.setItem('nakhlestan_current_user_id', savedUser.id);
+                    localStorage.setItem(`user_backup_${savedUser.id}`, JSON.stringify(savedUser));
                 }
+                return savedUser;
             } else {
-                console.error('❌ Server API Error:', result.error || 'Unknown error', result);
+                console.error('❌ Server API Error:', result.error || 'Unknown error');
+                return null;
             }
         } catch (e: any) {
             console.error('❌ Critical Error in saveUser:', e.message);
-            // Fallback to local storage for safety if API fails
-            if (typeof localStorage !== 'undefined') {
-                localStorage.setItem(`user_backup_${user.id}`, JSON.stringify(user));
-            }
+            return null;
         }
     },
 
     async spendBarkatPoints(amount: number): Promise<boolean> {
         if (!this.isLive()) return true;
+
+        const { data: { session } } = await supabase!.auth.getSession();
+        if (!session?.access_token) {
+            console.log("ℹ️ [Client Auth] Dummy user: Skipping remote point sync.");
+            return true;
+        }
+
         try {
             const { error } = await supabase!.rpc('spend_points', { amount });
             if (error) throw error;
@@ -266,6 +269,13 @@ export const dbAdapter = {
 
     async spendManaPoints(amount: number): Promise<boolean> {
         if (!this.isLive()) return true;
+
+        const { data: { session } } = await supabase!.auth.getSession();
+        if (!session?.access_token) {
+            console.log("ℹ️ [Client Auth] Dummy user: Skipping remote mana sync.");
+            return true;
+        }
+
         try {
             const { error } = await supabase!.rpc('spend_mana', { amount });
             if (error) throw error;
@@ -299,6 +309,9 @@ export const dbAdapter = {
             total: o.total_amount,
             status: o.status,
             items: safeParse(o.items, []),
+            deliveryType: o.delivery_type || 'digital',
+            physicalAddress: safeParse(o.physical_address, null),
+            digitalAddress: safeParse(o.digital_address, null),
             createdAt: o.created_at,
             date: o.created_at,
             statusHistory: safeParse(o.status_history, [{ status: o.status, date: o.created_at }]),

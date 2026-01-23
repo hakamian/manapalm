@@ -21,7 +21,10 @@ export default async function handler(req, res) {
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !serviceRoleKey) {
-        console.error('❌ Missing Supabase credentials');
+        console.error('❌ Missing Supabase credentials:', {
+            hasUrl: !!supabaseUrl,
+            hasKey: !!serviceRoleKey
+        });
         return res.status(500).json({ success: false, error: 'Server configuration error' });
     }
 
@@ -34,19 +37,30 @@ export default async function handler(req, res) {
             return res.status(400).json({ success: false, error: 'Missing user data' });
         }
 
-        // 🛡️ SECURITY CHECK: Verify Token and Identity
+        // 🛡️ SECURITY CHECK: Verify Token and Identity (Dual Header Support)
         const authHeader = req.headers.authorization;
-        if (!authHeader) {
-            return res.status(401).json({ success: false, error: 'Missing authorization header' });
+        const customTokenHeader = req.headers['x-mana-token'];
+
+        console.log('🔐 [API Auth] Header Status:', {
+            auth: !!authHeader,
+            custom: !!customTokenHeader
+        });
+
+        const token = authHeader?.split(' ')[1] || customTokenHeader;
+
+        if (!token) {
+            console.error('❌ [API Auth] No token found in any header');
+            return res.status(401).json({ success: false, error: 'احراز هویت انجام نشد. لطفاً دوباره وارد شوید.' });
         }
 
-        const token = authHeader.split(' ')[1];
         const { data: { user: authUser }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
         if (authError || !authUser) {
-            console.error('❌ Auth error:', authError);
-            return res.status(401).json({ success: false, error: 'Invalid or expired token' });
+            console.error('❌ [API Auth] Supabase rejected token:', authError?.message || 'User not found');
+            return res.status(401).json({ success: false, error: 'Invalid or expired token', detailed_error: authError?.message });
         }
+
+        console.log('✅ [API Auth] Token verified for user:', authUser.id);
 
         // Check if requester is admin
         const { data: adminProfile } = await supabaseAdmin
@@ -148,6 +162,8 @@ export default async function handler(req, res) {
         };
 
         // Prepare profile update
+        console.log('🔄 [API] Syncing User to DB:', updateData.id);
+
         const profileUpdate = {
             id: updateData.id,
             full_name: updateData.fullName || updateData.name,
@@ -164,8 +180,12 @@ export default async function handler(req, res) {
             metadata: metadata
         };
 
-        // Upsert profile
-        console.log('📤 Sending to DB (Payload):', JSON.stringify(profileUpdate.metadata.addresses));
+        // 🛡️ SECURITY: Log the actual structure going to Supabase (Omit sensitive if needed)
+        console.log('📤 [API] Final DB Payload:', JSON.stringify({
+            id: profileUpdate.id,
+            name: profileUpdate.full_name,
+            addresses_count: profileUpdate.metadata.addresses?.length
+        }));
 
         // Upsert profile and SELECT the result to confirm persistence
         const { data: savedData, error } = await supabaseAdmin
@@ -175,13 +195,20 @@ export default async function handler(req, res) {
             .single();
 
         if (error) {
-            console.error('❌ Supabase upsert error:', error);
+            console.error('❌ [API] Supabase Error:', error.message, '| Hint:', error.hint);
             return res.status(500).json({ success: false, error: error.message });
         }
 
-        console.log('📥 DB Response (Saved):', JSON.stringify(savedData?.metadata?.addresses));
+        if (!savedData) {
+            console.error('⚠️ [API] Success returned but no data found in response.');
+            return res.status(500).json({ success: false, error: 'تغییرات ثبت شد اما بازیابی نشد' });
+        }
+
+        console.log('✅ [API] Success! DB Name is now:', savedData.full_name);
+
         return res.status(200).json({
             success: true,
+            user: savedData, // Send back the version from DB to keep UI in sync
             debug: `Sent ${updateData.addresses?.length || 0}, Saved ${savedData?.metadata?.addresses?.length || 0}`
         });
 

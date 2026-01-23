@@ -3,7 +3,7 @@ import { useAppDispatch, useAppState } from '../AppContext';
 import { userService } from '../services/application/userService';
 import { orderService } from '../services/application/orderService';
 import { communityService } from '../services/application/communityService';
-import { Review, Order } from '../types';
+import { Review, Order, User } from '../types';
 
 /**
  * useAppActions Hook
@@ -108,6 +108,20 @@ export const useAppActions = () => {
             if (!user) return;
             const updatedUser = await userService.updateBarkatPoints(user, amount, reason);
             dispatch({ type: 'UPDATE_USER', payload: updatedUser });
+        },
+
+        /**
+         * Profile & Identity
+         */
+        updateProfile: async (updatedUser: User) => {
+            dispatch({ type: 'UPDATE_USER', payload: updatedUser });
+            try {
+                const confirmedUser = await userService.updateBarkatPoints(updatedUser, 0, 'بروزرسانی پروفایل'); // Hack to use userService's save
+                // Alternative: Use dbAdapter directly if available
+                // const confirmedUser = await dbAdapter.saveUser(updatedUser);
+            } catch (err) {
+                console.error("❌ Failed to persist profile update:", err);
+            }
         }
     };
 };

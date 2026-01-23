@@ -125,6 +125,7 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
 
     const handleProfileSave = (e: React.FormEvent) => {
         e.preventDefault();
+        console.log("💾 [EditProfile] Save button clicked! Data:", { firstName, lastName, email });
         setError('');
         setSuccessMessage('');
         setIsSaving(true);
@@ -191,6 +192,7 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
         };
 
         setTimeout(() => {
+            console.log("📤 [EditProfile] Calling onUpdate with finalized data...");
             onUpdate(updatedUser);
             setIsSaving(false);
             setSuccessMessage('اطلاعات با موفقیت ذخیره شد.');
@@ -202,7 +204,7 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
                     : newPointsHistory[0].action;
                 dispatch({ type: 'SHOW_POINTS_TOAST', payload: { points: totalPointsToAdd, action: toastAction } });
             }
-        }, 1000);
+        }, 100);
     };
 
     return (

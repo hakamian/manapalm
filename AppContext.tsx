@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useReducer, ReactNode, useEffect, useRef } from 'react';
-import { AppState, Action, View, Deed, TimelineEvent, Order, CartItem, WebDevProject, AIConfig, TargetLanguage, Review, User, SmartAction, Campaign, CommunityPost, DeedUpdate } from './types';
+import { AppState, Action, View, Deed, TimelineEvent, Order, CartItem, WebDevProject, AIConfig, TargetLanguage, Review, User, SmartAction, Campaign, CommunityPost, DeedUpdate, Product } from './types';
 import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS, INITIAL_DEEDS, PALM_TYPES_DATA, INITIAL_PROPOSALS, INITIAL_LIVE_ACTIVITIES, INITIAL_PRODUCTS, INITIAL_NOTIFICATIONS, INITIAL_MENTORSHIP_REQUESTS, INITIAL_MICROFINANCE_PROJECTS, INITIAL_REVIEWS } from './utils/dummyData';
 import { dbAdapter } from './services/dbAdapter';
 import { supabase, mapSupabaseUser } from './services/supabaseClient';
@@ -471,8 +471,19 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     }
                 }
 
-                const currentUserId = dbAdapter.getCurrentUserId();
-                console.log("🚀 [StallTrace] currentUserId from storage:", currentUserId);
+                const storageId = dbAdapter.getCurrentUserId();
+                let currentUserId = storageId;
+
+                // 🛡️ Proactively check for Supabase session if storage ID is missing
+                if (!currentUserId && supabase) {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session?.user) {
+                        currentUserId = session.user.id;
+                        console.log("🔐 [StallTrace] Recovered currentUserId from active session:", currentUserId);
+                    }
+                }
+
+                console.log("🚀 [StallTrace] currentUserId for hydration:", currentUserId);
 
                 console.log("🚀 [StallTrace] Skipping heavy initial fetch (Optimized)");
                 // const [posts, products] = await Promise.all([
@@ -543,26 +554,36 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 const realId = session.user.id;
                 dbAdapter.setCurrentUserId(realId);
 
-                // 🛡️ Immediate Fallback Identity: Use mapped Google user as a baseline 
-                // so the app never shows 'null' while loading DB profile.
-                const fallbackUser = mapSupabaseUser(session.user);
+                // 🛡️ Improved Identity Logic:
+                // 1. First, try to fetch the actual rich profile from DB (SSOT)
+                // 2. If it exists, use IT as the primary identity.
+                // 3. ONLY use fallback if DB profile doesn't exist yet.
 
-                dispatch({
-                    type: 'LOGIN_SUCCESS',
-                    payload: { user: fallbackUser as User, orders: [] }
-                });
-
-                // Try to load detailed profile from DB
                 try {
                     const appUser = await dbAdapter.getUserById(realId);
+
                     if (appUser) {
-                        dispatch({ type: 'SET_USER', payload: appUser });
+                        console.log("✅ [AuthEvent] Found rich DB profile, using as primary identity:", appUser.id);
+                        dispatch({
+                            type: 'LOGIN_SUCCESS',
+                            payload: { user: appUser, orders: [] } // Use DB user as truth
+                        });
                     } else {
-                        console.log("🌱 Creating profile record for new user:", realId);
+                        console.log("🌱 [AuthEvent] New user detected, creating profile record...");
+                        const fallbackUser = mapSupabaseUser(session.user);
+                        dispatch({
+                            type: 'LOGIN_SUCCESS',
+                            payload: { user: fallbackUser as User, orders: [] }
+                        });
                         await dbAdapter.saveUser(fallbackUser as User);
                     }
                 } catch (err) {
-                    console.error("❌ Failed to sync detailed profile, staying with fallback identity.", err);
+                    console.error("❌ Failed to sync profile, falling back to auth metadata.", err);
+                    const fallbackUser = mapSupabaseUser(session.user);
+                    dispatch({
+                        type: 'LOGIN_SUCCESS',
+                        payload: { user: fallbackUser as User, orders: [] }
+                    });
                 }
 
                 // Close modal and potential redirect
