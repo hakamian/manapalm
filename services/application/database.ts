@@ -155,8 +155,19 @@ export const dbAdapter = {
     },
 
     async getUserById(id: string): Promise<User | null> {
-        // 🧪 Handle Test/Mock IDs with high priority
+        // 🧪 Handle Test/Mock IDs: Check LocalStorage backup FIRST, then fallback to INITIAL_USERS
         if (id && (id === 'user_test_manapalm' || id === 'user_admin_hh' || id.startsWith('user_gen_'))) {
+            if (typeof localStorage !== 'undefined') {
+                const localBackup = localStorage.getItem(`user_backup_${id}`);
+                if (localBackup) {
+                    try {
+                        console.log("💾 [DB] Loading Mock User from LocalStorage backup:", id);
+                        return JSON.parse(localBackup);
+                    } catch (e) {
+                        console.error("❌ Failed to parse mock user backup", e);
+                    }
+                }
+            }
             const mockUser = INITIAL_USERS.find(u => u.id === id);
             if (mockUser) return mockUser;
         }

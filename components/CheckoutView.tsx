@@ -159,6 +159,31 @@ const CheckoutView: React.FC = () => {
             const orderId = `order-${Date.now()}`;
             const description = `خرید ${cartItems.length} محصول از نخلستان معنا`;
 
+            // 🌟 AGENT 4: Tree Gifting Integration 
+            // If the order contains a Heritage Palm, we initiate the tree gift creation
+            const heritageItem = cartItems.find(item => item.category === 'نخل میراث' || item.type === 'heritage');
+
+            if (heritageItem) {
+                const giftingResult = await fetch('/api/create-tree-gift', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: user.id,
+                        treeVariety: 'مضافتی', // Default or from item
+                        occasionId: undefined, // Could be from item metadata
+                        recipientName: physicalAddress.recipientName,
+                        recipientPhone: physicalAddress.phone,
+                        giftMessage: 'کاشت نخل زندگی',
+                        amount: total
+                    })
+                });
+                const giftingData = await giftingResult.json();
+                if (!giftingData.success) {
+                    throw new Error(giftingData.error || 'خطا در رزرو نخل');
+                }
+                console.log('🌳 Tree reserved successfully:', giftingData.giftId);
+            }
+
             // Create Order Object
             const newOrder: Order = {
                 id: orderId,
@@ -198,7 +223,7 @@ const CheckoutView: React.FC = () => {
                 );
                 if (!addressExists) {
                     const updatedAddresses = [
-                        { ...physicalAddress, id: `addr-${Date.now()}`, isDefault: true },
+                        { ...physicalAddress, id: `addr-${Date.now()}`, title: 'آدرس جدید', isDefault: true },
                         ...(user.addresses || []).map(a => ({ ...a, isDefault: false }))
                     ];
                     dispatch({ type: 'UPDATE_USER', payload: { addresses: updatedAddresses } });
@@ -259,7 +284,7 @@ const CheckoutView: React.FC = () => {
                             <React.Fragment key={step.key}>
                                 <div className={`flex items-center gap-2 whitespace-nowrap ${isActive ? 'text-emerald-400' : isPast ? 'text-emerald-600' : 'text-gray-500'}`}>
                                     <div className={`w-10 h-10 rounded-full flex items-center justify-center text-lg border-2 transition-all ${isActive ? 'border-emerald-400 bg-emerald-400/20' :
-                                            isPast ? 'border-emerald-600 bg-emerald-600' : 'border-gray-600 bg-gray-800'
+                                        isPast ? 'border-emerald-600 bg-emerald-600' : 'border-gray-600 bg-gray-800'
                                         }`}>
                                         {isPast ? '✓' : step.icon}
                                     </div>

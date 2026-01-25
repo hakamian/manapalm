@@ -126,6 +126,8 @@ export interface UserAddress {
     city: string;
     fullAddress: string;
     postalCode: string;
+    plaque?: string;
+    floor?: string;
     isDefault: boolean;
 }
 

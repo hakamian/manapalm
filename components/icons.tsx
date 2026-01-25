@@ -69,6 +69,7 @@ export const UsersGroupIcon = UsersIcon;
 export const UserGroupIcon = UsersIcon;
 export const TrendingUpIcon = ArrowTrendingUpIcon;
 export const CheckBadgeIcon = BadgeCheckIcon;
+export const HistoryIcon = ClockForwardIcon;
 
 export const CubeTransparentIcon = React.memo((props: React.SVGProps<SVGSVGElement>) => (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>

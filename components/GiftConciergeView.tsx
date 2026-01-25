@@ -89,12 +89,12 @@ const GiftConciergeView: React.FC = () => {
                 </button>
 
                 <header className="text-center mb-12">
-                    <div className="inline-block p-4 bg-gray-800 rounded-full mb-4 border-2 border-amber-500/50 shadow-[0_0_20px_rgba(245,158,11,0.3)]">
-                        <GiftIcon className="w-12 h-12 text-amber-400" />
+                    <div className="inline-block p-4 bg-gray-800 rounded-full mb-4 border-2 border-emerald-500/50 shadow-[0_0_20px_rgba(16,185,129,0.3)]">
+                        <SparklesIcon className="w-12 h-12 text-emerald-400" />
                     </div>
-                    <h1 className="text-4xl font-bold mb-4">مشاور هوشمند هدیه</h1>
-                    <p className="text-lg text-gray-300 max-w-2xl mx-auto">
-                        نمی‌دانید کدام نخل برای عزیزتان مناسب‌تر است؟ به من بگویید برای چه کسی و چه مناسبتی هدیه می‌خواهید، تا بهترین گزینه را همراه با یک متن تقدیمی زیبا به شما پیشنهاد دهم.
+                    <h1 className="text-4xl font-bold mb-4">ترجمانِ نیت‌های سبز</h1>
+                    <p className="text-lg text-gray-300 max-w-2xl mx-auto font-light leading-relaxed">
+                        کدام نخل، راویِ احساس شماست؟ از پیوندِ خود با عزیزتان بگویید تا من، از میانِ ریشه‌ها، گویاترین نخل و زیباترین واژه‌ها را برای هدیه‌ی شما برگزینم.
                     </p>
                 </header>
 

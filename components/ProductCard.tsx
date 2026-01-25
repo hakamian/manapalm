@@ -12,11 +12,23 @@ import Image from 'next/image';
 
 interface ProductCardProps {
   product: Product;
+  isWishlisted?: boolean;
   onAddToCart?: (product: Product) => void;
+  onToggleWishlist?: (productId: string) => void;
+  onViewDetails?: () => void;
   onClick?: () => void;
+  user?: any;
 }
 
-export default function ProductCard({ product, onAddToCart, onClick }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  isWishlisted,
+  onAddToCart,
+  onToggleWishlist,
+  onViewDetails,
+  onClick,
+  user
+}: ProductCardProps) {
   const imageSrc = product.image || (product as any).imageUrl;
   const realImageSrc = product.realImage;
 

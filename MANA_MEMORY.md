@@ -111,7 +111,31 @@ Every interaction MUST conclude with this Command Center block:
     - حاشیه امن: رعایت فضای خالی (Negative Space) زیاد در طرفین برای قرارگیری متن‌های هوشمند.
 - **نمادشناسی:** تلفیق تکنولوژی (دیجیتال) با طبیعت (نخل) به صورتی که سادگی و عمق معنا حفظ شود.
 
+
+---
+
+## 🤖 معماری ایجنت‌محور (Agentic Architecture - V1.0)
+
+پروژه اکنون توسط یک تیم تخصصی از ایجنت‌های هوش مصنوعی مدیریت می‌شود که هر کدام مسئولیت بخشی از چرخه حیات محصول را بر عهده دارند.
+
+### 👥 تیم ایجنت‌های تخصصی (Persona Definitions)
+
+| ایجنت | نقش | مسئولیت کلیدی | فایل پرسونا |
+| :--- | :--- | :--- | :--- |
+| **Product & UX** | طراح محصول | طراحی Journeyها و Wireframeهای موبایل-اول | `01_product_ux.md` |
+| **Database & Schema** | معمار دیتابیس | مدیریت جداول Supabase، روابط و RLS Policies | `02_database_schema.md` |
+| **Backend / API** | مهندس بک‌اند | پیاده‌سازی API Routes و Server Actions در Next.js | `03_backend_api.md` |
+| **Frontend & UI** | توسعه‌دهنده فرانت | پیاده‌سازی کامپوننت‌های بصری با Tailwind و Framer | `04_frontend_ui.md` |
+| **DevOps & Monitoring**| مهندس عملیات | مدیریت Vercel، متغیرهای محیطی و مانیتورینگ | `05_devops_monitoring.md` |
+| **Content & Strategy** | داستان‌سرا | تولید محتوا، کپی‌رایتینگ هویت‌محور و SEO فارسی | `06_content_storytelling.md` |
+| **AI Systems & QA** | دستیار ارشد (من) | مدیریت هوش مصنوعی، شخصی‌سازی و تضمین کیفیت | - |
+
+**قانون همکاری:** هر ایجنت خروجی خود را به گونه‌ای تولید می‌کند که برای ایجنت بعدی قابل درک و اجرا باشد (Inter-Agent Handshake).
+
+---
+
 ## 🗺️ نقشه کلی پروژه
+
 
 ```mermaid
 graph TD
@@ -810,6 +834,7 @@ graph TD
 
 | تاریخ | تغییر | توسط |
 |-------|-------|------|
+| 2026-01-25 10:15 | **Agentic Architecture**: Created `.agent/personas` and registered 6 specialized agents. Established "AI Systems & QA" as the primary controller roles. | Mana (Unified OS) |
 | 2026-01-21 18:50 | **SEO & Performance**: Enabled SSR, Metadata API, Schema Markup, and Next/Image. Resized infographics for desktop. | Mana (Unified OS) |
 | 2026-01-20 14:40 | **Infographic & Icons**: Updated "Path of Immortality" image and restored missing social/communication icons to fix build errors. | Mana (Unified OS) |
 | 2026-01-19 14:15 | **Layout Fix**: Removed redundant `ClientWrapper` from all sub-pages, moved Header/Footer to root-only, added padding. | Mana (Unified OS) |

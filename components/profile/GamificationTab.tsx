@@ -5,6 +5,8 @@ import { SproutIcon, LeafIcon, SunIcon, ArrowLeftIcon, CheckCircleIcon, FirstPal
 import { getNextLevelInfo, getLevelForPoints, POINT_ALLOCATIONS } from '../../services/gamificationService';
 import { ACHIEVEMENTS } from '../../services/domain/achievements';
 import { useAppDispatch } from '../../AppContext';
+import PointsDashboard from './PointsDashboard';
+import { commerceService } from '../../services/application/commerceService';
 
 interface GamificationTabProps {
     user: User;
@@ -72,8 +74,15 @@ const ActiveChallengeCard: React.FC<{
 
 const GamificationTab: React.FC<GamificationTabProps> = ({ user, animatedBarkatProgress, animatedManaProgress, onNavigate, setActiveTab, onStartPlantingFlow }) => {
     const [activeSection, setActiveSection] = useState<'status' | 'battles'>('status');
+    const [pointsLedger, setPointsLedger] = useState<any[]>([]);
     const nextLevelInfo = getNextLevelInfo(user.points, user.manaPoints || 0);
     const currentLevel = getLevelForPoints(user.points, user.manaPoints || 0);
+
+    React.useEffect(() => {
+        if (user?.id) {
+            commerceService.getPointsLedger(user.id).then(setPointsLedger);
+        }
+    }, [user?.id]);
 
     const getActionForAchievement = (achId: string) => {
         switch (achId) {
@@ -124,6 +133,9 @@ const GamificationTab: React.FC<GamificationTabProps> = ({ user, animatedBarkatP
 
             {activeSection === 'status' && (
                 <>
+                    {/* Points Dashboard */}
+                    <PointsDashboard user={user} pointsLedger={pointsLedger} />
+
                     <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-6 rounded-lg border border-gray-700 relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-green-500 via-yellow-400 to-indigo-500"></div>
                         <h3 className="text-xl font-bold mb-4 flex items-center gap-2">

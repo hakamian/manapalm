@@ -54,11 +54,11 @@ const PlantingModal: React.FC<PlantingModalProps> = ({ isOpen, onClose, user, pa
 
             let prompt;
             if (isImproving) {
-                prompt = `Rewrite the following text into a single, very short (max 10-12 words), poetic sentence in Persian suitable for a palm planting deed. Original text: "${message}". Respond ONLY with the improved Persian text. Do not use quotes.`;
+                prompt = `قلم را بردار و این متن را به یک جمله کوتاه (حداکثر ۱۰ تا ۱۲ کلمه)، بسیار عمیق، شاعرانه و ماندگار به زبان فارسی برای شناسنامه کاشت نخل تبدیل کن. جمله‌ای که وقتی سال‌ها بعد خوانده شود، هنوز بوی اصالت و عشق بدهد. متن اصلی: "${message}". فقط متن نهایی را بدون هیچ توضیح یا علامتی بفرست.`;
             } else {
                 prompt = isDecisionPalm
-                    ? `کاربر تصمیمی گرفته است: '${message || 'یک هدف جدید'}'. این تصمیم برای '${recipientName || 'خودم'}' است. این را به یک جمله کوتاه (حداکثر ۱۰ کلمه) و انگیزشی برای ثبت در سند تبدیل کن. فقط متن نهایی.`
-                    : `یک جمله بسیار کوتاه (حداکثر ۱۰ کلمه)، شاعرانه و ماندگار برای شناسنامه '${palmType.title}' که به '${recipientName || 'عزیز'}' تقدیم می‌شود بنویس. متن باید آماده چاپ و بدون توضیحات اضافه باشد.`;
+                    ? `کاربر تصمیمی سرنوشت‌ساز گرفته است: '${message || 'یک آغاز نوین'}'. این تصمیم برای '${recipientName || 'خودش'}' است. این را به یک جمله کوتاه (حداکثر ۱۰ کلمه)، حماسی و انگیزشی تبدیل کن که گویی بر سنگ حک شده است. فقط متن نهایی.`
+                    : `یک شناسنامه برای '${palmType.title}' که به '${recipientName || 'عزیزی'}' تقدیم می‌شود. یک جمله‌ی کوتاه، لبریز از معنا و استعاره‌های اصیل فارسی (مثل ریشه، سایه، ثمر) بنویس که پیوند این نخل با نیت کاربر را جاودانه کند. حداکثر ۱۰ کلمه. فقط متن نهایی.`;
             }
 
             const response = await callProxy('generateContent', 'models/gemini-2.0-flash', {

@@ -241,13 +241,13 @@ const HowItWorksSection: React.FC<{ onStartPlantingFlow: () => void }> = ({ onSt
 
                         hotspots={[
 
-                            { id: 'h1', x: 50, y: 15, title: 'علاقه و آگاهی', description: 'شناخت مسیر و انتخاب نیت معنادار', align: 'center' },
+                            { id: 'h1', x: 50, y: 15, title: 'کاشتِ نیت', description: 'انتخاب مقصدی زلال برای اثرگذاری', align: 'center' },
 
-                            { id: 'h2', x: 50, y: 40, title: 'کاشت و مراقبت', description: 'کاشت فیزیکی نهال و نگهداری مستمر', align: 'center' },
+                            { id: 'h2', x: 50, y: 40, title: 'ریشه‌دوانی', description: 'آغازِ حیات نخل در دستان گرم باغبان', align: 'center' },
 
-                            { id: 'h3', x: 50, y: 65, title: 'رشد و باروری', description: 'ثمردهی نخل و ایجاد اشتغال بومی', align: 'center' },
+                            { id: 'h3', x: 50, y: 65, title: 'شکوهِ سبز', description: 'باروری نخل و برکت بر سفره‌ی بومیان', align: 'center' },
 
-                            { id: 'h4', x: 50, y: 88, title: 'برداشت و میراث', description: 'دریافت ثمره و جاودانگی نام شما', align: 'center' },
+                            { id: 'h4', x: 50, y: 88, title: 'برداشتِ معنا', description: 'جاودانگی نام تو در طعمِ شیرینِ میراث', align: 'center' },
 
                         ]}
 
@@ -283,32 +283,32 @@ const TestimonialsSection: React.FC = () => (
             <h2 className="text-4xl font-bold text-white mb-8">صدای خانواده نخلستان</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
                 <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 hover:border-green-500 transition-colors">
-                    <p className="text-gray-300 italic mb-4">"کاشت نخل به یاد مادرم، بهترین تصمیمی بود که گرفتم. حالا هر بار که به آن فکر می‌کنم، حس می‌کنم ریشه‌هایش در قلب من هم رشد می‌کنند."</p>
+                    <p className="text-gray-300 italic mb-4">"کاشت نخل به یاد مادرم، آرامشی از جنس ابدیت به من داد. حالا حس می‌کنم سبزترین لبخند او در نخلستان جوانه زده است."</p>
                     <div className="flex items-center justify-center gap-3">
                         <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">م</div>
                         <div className="text-right">
                             <p className="font-bold text-white text-sm">مریم کاویانی</p>
-                            <p className="text-xs text-gray-500">حامی سطح ۲</p>
+                            <p className="text-xs text-gray-500">نگهبانِ خاطره</p>
                         </div>
                     </div>
                 </div>
                 <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 hover:border-green-500 transition-colors">
-                    <p className="text-gray-300 italic mb-4">"به عنوان مدیرعامل، دنبال راهی برای CSR واقعی بودم. نخلستان معنا هم شفاف بود و هم اثرگذار. تیم ما حالا احساس تعلق بیشتری دارد."</p>
+                    <p className="text-gray-300 italic mb-4">"در دنیای اعداد، نخلستان معنا به ما یاد داد که سود واقعی در گره خوردن با ریشه‌های زمین است. مسئولیتی که چشیدنی است."</p>
                     <div className="flex items-center justify-center gap-3">
                         <div className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold">ع</div>
                         <div className="text-right">
                             <p className="font-bold text-white text-sm">علی رضایی</p>
-                            <p className="text-xs text-gray-500">مدیرعامل شرکت تکنو</p>
+                            <p className="text-xs text-gray-500">راهبرِ تحول سازمانی</p>
                         </div>
                     </div>
                 </div>
                 <div className="bg-gray-900 p-6 rounded-xl border border-gray-700 hover:border-green-500 transition-colors">
-                    <p className="text-gray-300 italic mb-4">"دوره کوچینگ زندگی من رو تغییر داد. فکر می‌کردم فقط دارم نخل می‌کارم، ولی خودم رو پیدا کردم."</p>
+                    <p className="text-gray-300 italic mb-4">"فکر می‌کردم نخل می‌کارم، اما نخلستان معنا وجود مرا دوباره شخم زد. اینجا سفر از خاک به معنا آغاز می‌شود."</p>
                     <div className="flex items-center justify-center gap-3">
                         <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">س</div>
                         <div className="text-right">
                             <p className="font-bold text-white text-sm">سارا محمدی</p>
-                            <p className="text-xs text-gray-500">دانشجوی آکادمی</p>
+                            <p className="text-xs text-gray-500">رهجوی مسیرِ آگاهی</p>
                         </div>
                     </div>
                 </div>
