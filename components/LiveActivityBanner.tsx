@@ -2,7 +2,8 @@
 
 import React from 'react';
 import { useAppState, useAppDispatch } from '../AppContext';
-import { View } from '../types';
+import { View, LiveActivity } from '../types';
+import * as Icons from './icons';
 
 const LiveActivityBanner: React.FC = () => {
     const { user, liveActivities } = useAppState();
@@ -45,17 +46,19 @@ const LiveActivityBanner: React.FC = () => {
                 <div className="w-full flex items-center justify-between h-full">
                     <div className="marquee-container flex-grow h-full overflow-hidden relative">
                         <div className="marquee-content absolute top-0 left-0 h-full flex items-center whitespace-nowrap">
-                            {marqueeItems.map((activity, index) => (
-                                <div key={`${activity.id}-${index}`} className="flex items-center mx-8">
-                                    <div className="flex items-center gap-3">
-                                        {activity.icon && React.isValidElement(activity.icon)
-                                            ? React.cloneElement(activity.icon as any, { className: 'w-4 h-4 text-emerald-400' })
-                                            : null
-                                        }
-                                        <span className="font-medium text-emerald-50/90 tracking-wide">{activity.text}</span>
+                            {marqueeItems.map((activity: LiveActivity, index) => {
+                                // Resolve icon component from name
+                                const IconComponent = (Icons as any)[activity.iconName] || Icons.SparklesIcon;
+
+                                return (
+                                    <div key={`${activity.id}-${index}`} className="flex items-center mx-8">
+                                        <div className="flex items-center gap-3">
+                                            <IconComponent className="w-4 h-4 text-emerald-400" />
+                                            <span className="font-medium text-emerald-50/90 tracking-wide">{activity.text}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                     <div className="flex-shrink-0 pr-4 pl-6 h-full flex items-center">

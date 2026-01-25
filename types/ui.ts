@@ -18,7 +18,7 @@ export interface NavCategory {
 
 export interface LiveActivity {
     id: string;
-    icon: React.ReactNode;
+    iconName: string;
     text: string;
 }
 

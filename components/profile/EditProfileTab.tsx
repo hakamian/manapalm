@@ -477,28 +477,44 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
                             </div>
 
                             <div className="max-w-md mx-auto space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm text-gray-300 font-medium">رمز عبور جدید</label>
-                                    <input
-                                        type="password"
-                                        value={newPassword}
-                                        onChange={e => setNewPassword(e.target.value)}
-                                        className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-amber-500 outline-none text-left dir-ltr"
-                                        placeholder="••••••"
-                                        autoComplete="new-password"
-                                    />
+                                {/* Display Mobile Number */}
+                                <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-blue-900/30 flex items-center justify-center text-blue-400">
+                                            <SparklesIcon className="w-4 h-4" />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs text-gray-400">شماره موبایل (محرمانه)</p>
+                                            <p className="text-lg font-mono font-bold text-white tracking-widest dir-ltr">{user.phone || 'ثبت نشده'}</p>
+                                        </div>
+                                    </div>
+                                    <span className="text-xs bg-green-900/50 text-green-400 px-2 py-1 rounded border border-green-700/50">تایید شده</span>
                                 </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm text-gray-300 font-medium">تکرار رمز عبور</label>
-                                    <input
-                                        type="password"
-                                        value={confirmPassword}
-                                        onChange={e => setConfirmPassword(e.target.value)}
-                                        className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-amber-500 outline-none text-left dir-ltr"
-                                        placeholder="••••••"
-                                        autoComplete="new-password"
-                                    />
-                                </div>
+
+                                <div className="space-y-2 pt-4 border-t border-gray-700/50">
+                                    <div className="space-y-2">
+                                        <label className="text-sm text-gray-300 font-medium">رمز عبور جدید</label>
+                                        <input
+                                            type="password"
+                                            value={newPassword}
+                                            onChange={e => setNewPassword(e.target.value)}
+                                            className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-amber-500 outline-none text-left dir-ltr"
+                                            placeholder="••••••"
+                                            autoComplete="new-password"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm text-gray-300 font-medium">تکرار رمز عبور</label>
+                                        <input
+                                            type="password"
+                                            value={confirmPassword}
+                                            onChange={e => setConfirmPassword(e.target.value)}
+                                            className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-amber-500 outline-none text-left dir-ltr"
+                                            placeholder="••••••"
+                                            autoComplete="new-password"
+                                        />
+                                    </div>
+                                </div> {/* Closing the wrapper div added in previous step */}
 
                                 <button
                                     type="button"

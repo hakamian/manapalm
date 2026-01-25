@@ -1,51 +1,56 @@
-// Mock OTP Service
-// In production, integrate with KavehNegar or similar.
-
 interface OTPResponse {
     success: boolean;
     error?: string;
-    fullName?: string; // Simulated return of user info
+    fullName?: string;
 }
 
-// In-memory store for demo (resets on refresh)
-const otpStore: Record<string, string> = {};
-
 export const sendOTP = async (phone: string): Promise<OTPResponse> => {
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+        const response = await fetch('/api/otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'send', mobile: phone }),
+        });
 
-    if (!phone.startsWith('09') || phone.length !== 11) {
-        return { success: false, error: 'شماره موبایل معتبر نیست' };
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            return {
+                success: false,
+                error: data.message || 'خطا در ارسال پیامک. لطفا دقایقی دیگر تلاش کنید.'
+            };
+        }
+
+        return { success: true };
+    } catch (err) {
+        console.error("OTP send error:", err);
+        return { success: false, error: 'خطای ارتباط با سرور. لطفا وضعیت اینترنت خود را بررسی کنید.' };
     }
-
-    // For testing purposes, we default to 12345 so you don't need to look at logs
-    otpStore[phone] = '12345';
-
-    // Log for developer
-    console.log(`[OTP-MOCK] Code for ${phone}: 12345`);
-
-    return { success: true };
 };
 
 export const verifyOTP = async (phone: string, code: string): Promise<OTPResponse> => {
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    try {
+        const response = await fetch('/api/otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'verify', mobile: phone, code }),
+        });
 
-    // Hardcoded bypass for testing
-    if (code === '12345') {
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            return {
+                success: false,
+                error: data.message || 'کد وارد شده اشتباه است.'
+            };
+        }
+
         return {
             success: true,
-            fullName: 'کاربر گرامی'
+            fullName: 'کاربر گرامی' // Default until rich profile resolved
         };
+    } catch (err) {
+        console.error("OTP verify error:", err);
+        return { success: false, error: 'خطای ارتباط با سرور.' };
     }
-
-    const validCode = otpStore[phone];
-
-    if (code === validCode) {
-        return {
-            success: true,
-            fullName: 'کاربر گرامی'
-        };
-    }
-
-    return { success: false, error: 'کد وارد شده صحیح نیست' };
 };
