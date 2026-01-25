@@ -218,47 +218,34 @@ body {
   }
 }
 
-/* --- AUTH MODAL v7.1 DESIGN --- */
 .auth-container {
-  --form-width: 320px;
-  --aspect-ratio: 1.5;
-  /* Slightly taller for better spacing */
-  --login-box-color: #1a1a1a;
-  --input-color: #2a2a2a;
-  --button-color: #10b981;
-  /* mana-primary */
-  --footer-color: rgba(255, 255, 255, 0.5);
+  --form-width: 800px;
   display: flex;
-  justify-content: center;
-  align-items: center;
   position: relative;
   overflow: hidden;
-  background: var(--login-box-color);
-  border-radius: 24px;
-  width: calc(var(--form-width) + 2px);
-  height: auto;
-  min-height: calc(var(--form-width) * var(--aspect-ratio));
+  background: rgba(10, 10, 10, 0.85);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 32px;
+  width: 100%;
+  max-width: var(--form-width);
+  min-height: 520px;
   z-index: 8;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 30px 100px -20px rgba(0, 0, 0, 0.8);
 }
 
-.auth-container::before {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 150%;
-  height: 150%;
-  transform: translate(-50%, -50%);
-  background: conic-gradient(from 0deg,
-      transparent 0%,
-      transparent 10%,
-      #10b981 40%,
-      #fbbf24 50%,
-      #10b981 60%,
-      transparent 90%);
-  animation: spin 4s linear infinite;
-  z-index: -1;
+.auth-visual-side {
+  flex: 1;
+  background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.6)), url('https://res.cloudinary.com/dk2x11rvs/image/upload/v1769335277/Gemini_Generated_Image_3d_palm_oasis_v2_f8z8z8.jpg');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: none; /* Mobile */
+}
+
+@media (min-width: 768px) {
+  .auth-visual-side { display: flex; flex-direction: column; justify-content: flex-end; padding: 40px; }
 }
 
 @keyframes spin {
@@ -272,19 +259,14 @@ body {
 }
 
 .auth-login-box {
-  background: rgba(20, 20, 20, 0.95);
-  border-radius: 22px;
-  /* Slightly smaller than container */
-  padding: 30px;
-  width: calc(100% - 4px);
-  height: calc(100% - 4px);
-  position: relative;
-  z-index: 10;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  flex: 1;
+  max-width: 400px;
+  padding: 40px;
   display: flex;
   flex-direction: column;
   justify-content: center;
+  position: relative;
+  z-index: 10;
 }
 
 .auth-logo-frame {

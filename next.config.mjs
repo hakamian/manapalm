@@ -9,11 +9,13 @@ const nextConfig = {
     NEXT_PUBLIC_SUPABASE_ANON_KEY: process.env.VITE_SUPABASE_ANON_KEY,
   },
   images: {
-    remotePatterns: [
-      { protocol: 'https', hostname: 'picsum.photos' },
-      { protocol: 'https', hostname: 'images.unsplash.com' },
-      { protocol: 'https', hostname: 'res.cloudinary.com' },
-      { protocol: 'https', hostname: 'sbjrayzghjfsmmuygwbw.supabase.co' },
+    unoptimized: true,
+    domains: [
+      'picsum.photos',
+      'images.unsplash.com',
+      'res.cloudinary.com',
+      'sbjrayzghjfsmmuygwbw.supabase.co',
+      'ui-avatars.com'
     ],
   },
   async redirects() {

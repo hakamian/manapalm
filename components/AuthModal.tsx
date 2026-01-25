@@ -122,7 +122,7 @@ function OTPInput({
   }, [onChange, onComplete]);
 
   return (
-    <div className="flex flex-row-reverse justify-center gap-2 sm:gap-3" dir="ltr" onPaste={handlePaste}>
+    <div className="flex flex-row justify-center gap-2 sm:gap-3" dir="ltr" onPaste={handlePaste}>
       {Array.from({ length: OTP_LENGTH }).map((_, index) => (
         <input
           key={index}
@@ -155,18 +155,21 @@ function OTPInput({
   );
 }
 
+import {
+  XMarkIcon, GoogleIcon, PhoneIcon, LockClosedIcon,
+  SparklesIcon, UserPlusIcon, HeartIcon, ChartBarIcon
+} from './icons';
+
 export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [password, setPassword] = useState('');
-  const [fullName, setFullName] = useState('');
-  const [mode, setMode] = useState<AuthMode>('otp'); // 'otp' is default for ease
+  const [mode, setMode] = useState<AuthMode>('otp');
   const [step, setStep] = useState<AuthStep>('phone_entry');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [timer, setTimer] = useState(0);
 
-  // Reset state when modal opens
   useEffect(() => {
     if (isOpen) {
       setStep('phone_entry');
@@ -178,7 +181,6 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
     }
   }, [isOpen]);
 
-  // Timer countdown
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (timer > 0) {
@@ -188,16 +190,11 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
   }, [timer]);
 
   const handleGoogleLogin = async () => {
-    if (!supabase) {
-      setError('خطای اتصال به سرویس احراز هویت (Supabase Client Init Failed)');
-      return;
-    }
+    if (!supabase) return;
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/`,
-        },
+        options: { redirectTo: `${window.location.origin}/` },
       });
       if (error) throw error;
     } catch (err: any) {
@@ -216,7 +213,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
       const res = await sendOTP(phone);
       if (res.success) {
         setStep('otp_verify');
-        setTimer(120); // 2 minutes
+        setTimer(120);
       } else {
         setError(res.error || 'خطا در ارسال پیامک');
       }
@@ -237,8 +234,6 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
     try {
       const res = await verifyOTP(phone, otp);
       if (res.success) {
-        setLoading(false);
-        setStep('phone_entry');
         onLoginSuccess({ phone, fullName: res.fullName });
         onClose();
       } else {
@@ -252,11 +247,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
   }, [otp, phone, onLoginSuccess, onClose]);
 
   const handlePasswordLogin = async () => {
-    if (!supabase) {
-      setError('خطای اتصال به سرور (Supabase unavailable)');
-      return;
-    }
-
+    if (!supabase) return;
     setLoading(true);
     setError('');
     try {
@@ -264,17 +255,9 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
         email: `${phone}@manapalm.local`,
         password: password,
       });
-
-      if (error) {
-        throw error;
-      }
-
+      if (error) throw error;
       if (data.user) {
-        onLoginSuccess({
-          phone,
-          email: data.user.email,
-          fullName: data.user.user_metadata?.full_name
-        });
+        onLoginSuccess({ phone, email: data.user.email, fullName: data.user.user_metadata?.full_name });
         onClose();
       }
     } catch (err: any) {
@@ -284,65 +267,106 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
     }
   };
 
-  // Render Helpers
-  const renderLogo = () => (
-    <div className="auth-logo-frame mb-6">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5">
-        <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" strokeOpacity="0.5" />
-        <path d="M12 18V12L15 9" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M9 12C9 12 10.5 14 12 14C13.5 14 15 12 15 12" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M12 6V8" strokeLinecap="round" />
-      </svg>
-    </div>
-  );
-
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in zoom-in duration-300">
-      <div className="auth-container">
-        <div className="auth-login-box">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in transition-all duration-500">
+      <div className="auth-container max-w-4xl w-full flex flex-row-reverse shadow-[0_0_100px_rgba(0,0,0,0.8)] border border-white/5 overflow-hidden rounded-[2.5rem]">
+
+        {/* Visual Narrative Side (Desktop Only) */}
+        <div className="auth-visual-side hidden md:flex flex-col justify-end p-12 relative overflow-hidden flex-1 bg-[#020617]">
+          {/* Background Image / Overlay */}
+          <div className="absolute inset-0 z-0 overflow-hidden">
+            <img
+              src="https://res.cloudinary.com/dk2x11rvs/image/upload/v1769335277/Gemini_Generated_Image_3d_palm_oasis_v2_f8z8z8.jpg"
+              className="w-full h-full object-cover opacity-60 scale-105 animate-pulse-soft"
+              alt="Mana Palm Oasis"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/40 to-transparent"></div>
+          </div>
+
+          <div className="relative z-10 space-y-8 animate-fade-in-up">
+            <div className="inline-flex items-center gap-2 bg-emerald-500/20 backdrop-blur-md px-4 py-2 rounded-full border border-emerald-500/30">
+              <SparklesIcon className="w-5 h-5 text-emerald-400" />
+              <span className="text-emerald-400 font-bold text-sm">جامعه ۱۲۰۰+ نفری</span>
+            </div>
+
+            <div>
+              <h2 className="text-4xl font-black text-white leading-tight mb-4">
+                میراث معنوی خود را <br />
+                <span className="text-emerald-400 italic">آغاز کنید...</span>
+              </h2>
+              <p className="text-gray-400 leading-relaxed text-lg font-light max-w-sm">
+                با ورود به نخلستان معنا، شما به جنبش بزرگ احیای زمین و جستجوی عمق در زندگی می‌پیوندید.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-6 pt-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-white font-bold text-2xl tracking-tighter">۱۲۸۰+</span>
+                <span className="text-gray-500 text-xs uppercase tracking-widest">نخل کاشته شده</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-white font-bold text-2xl tracking-tighter">۳۵۰۰+</span>
+                <span className="text-gray-500 text-xs uppercase tracking-widest">ساعت تامل</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Login Form Side */}
+        <div className="auth-login-box flex-1 bg-white/5 md:bg-transparent backdrop-blur-2xl md:backdrop-blur-none p-8 md:p-12 relative flex flex-col justify-center max-w-[440px] mx-auto min-h-[580px]">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-white/50 hover:text-white transition-colors"
+            className="absolute top-8 left-8 text-white/30 hover:text-white transition-colors p-2 bg-white/10 hover:bg-white/20 rounded-full z-[100] group"
+            title="بستن"
           >
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <XMarkIcon className="w-6 h-6 transform group-hover:rotate-90 transition-transform duration-300" />
           </button>
 
-          {renderLogo()}
-
-          <h2 className="text-xl font-bold text-center text-white mb-1">خوش آمدید</h2>
-          <p className="text-xs text-center text-gray-400 mb-8">به نخلستان معنا بپیوندید</p>
+          <div className="mb-10 text-center md:text-right">
+            <div className="w-16 h-16 bg-emerald-500/10 rounded-2xl flex items-center justify-center mb-6 mx-auto md:mx-0 border border-emerald-500/20">
+              <img src="https://res.cloudinary.com/dk2x11rvs/image/upload/v1765131783/manapal-logo-3d_zpdvkd.png" className="w-10 h-10" alt="Logo" />
+            </div>
+            <h1 className="text-3xl font-black text-white mb-2">خوش برگشتید</h1>
+            <p className="text-gray-400 text-sm">برای ادامه مسیر معنا، وارد حساب کاربری خود شوید</p>
+          </div>
 
           {error && (
-            <div className="bg-red-500/10 border border-red-500/50 text-red-200 text-xs p-3 rounded-lg mb-4 text-center">
+            <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs p-4 rounded-2xl mb-8 flex items-center gap-3 animate-shake">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
               {error}
             </div>
           )}
 
           {step === 'phone_entry' && (
-            <div className="space-y-4 w-full animate-fade-in-up">
-              <div>
+            <div className="space-y-6 animate-fade-in">
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-emerald-500 transition-colors">
+                  <PhoneIcon className="w-5 h-5" />
+                </div>
                 <input
                   type="tel"
                   placeholder="شماره موبایل (۰۹...)"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  className="auth-input text-center tracking-widest"
+                  className="w-full bg-white/5 border border-white/10 focus:border-emerald-500/50 focus:bg-white/10 py-4 pl-12 pr-6 rounded-2xl text-white text-lg tracking-[0.2em] outline-none transition-all placeholder:tracking-normal placeholder:text-gray-600"
                   maxLength={11}
+                  autoFocus
                 />
               </div>
 
               {mode === 'password' && (
-                <div>
+                <div className="relative group animate-fade-in-down">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-emerald-500 transition-colors">
+                    <LockClosedIcon className="w-5 h-5" />
+                  </div>
                   <input
                     type="password"
                     placeholder="رمز عبور"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="auth-input text-center"
+                    className="w-full bg-white/5 border border-white/10 focus:border-emerald-500/50 focus:bg-white/10 py-4 pl-12 pr-6 rounded-2xl text-white outline-none transition-all placeholder:text-gray-600"
                   />
                 </div>
               )}
@@ -350,47 +374,48 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
               <button
                 onClick={mode === 'otp' ? handleSendOTP : handlePasswordLogin}
                 disabled={loading}
-                className="auth-button"
+                className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-black py-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-3"
               >
                 {loading ? (
-                  <span className="animate-pulse">لطفا صبر کنید...</span>
+                  <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
                 ) : (
-                  mode === 'otp' ? 'دریافت کد تایید' : 'ورود'
+                  <>
+                    <span>{mode === 'otp' ? 'دریافت کد تایید' : 'ورود به نخلستان'}</span>
+                  </>
                 )}
               </button>
 
-              <div className="auth-divider">یا</div>
+              <div className="relative flex items-center justify-center py-2">
+                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
+                <span className="relative px-4 bg-transparent text-[10px] text-gray-600 font-bold uppercase tracking-widest leading-none">یا ورود با</span>
+              </div>
 
-              <button onClick={handleGoogleLogin} className="auth-google-btn">
-                <svg className="w-5 h-5" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" />
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
-                </svg>
-                ورود با گوگل
+              <button
+                onClick={handleGoogleLogin}
+                className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95"
+              >
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
+                <span>حساب گوگل</span>
               </button>
 
-              <div className="text-center mt-4">
+              <div className="text-center pt-4">
                 <button
                   onClick={() => setMode(mode === 'otp' ? 'password' : 'otp')}
-                  className="text-xs text-white/60 hover:text-white transition-colors border-b border-transparent hover:border-white/40 pb-0.5"
+                  className="text-xs text-gray-500 hover:text-emerald-400 transition-colors font-medium border-b border-transparent hover:border-emerald-500/50 pb-1"
                 >
-                  {mode === 'otp'
-                    ? 'ورود با رمز عبور'
-                    : 'ورود با پیامک (فراموشی رمز)'}
+                  {mode === 'otp' ? 'ورود با رمز عبور' : 'ورود با پیامک (فراموشی رمز)'}
                 </button>
               </div>
             </div>
           )}
 
           {step === 'otp_verify' && (
-            <div className="space-y-6 w-full animate-fade-in-up">
-              <div className="text-center text-white/80 text-sm mb-2">
-                کد ارسال شده به {' '}<span className="text-emerald-400 font-mono dir-ltr">{phone}</span>{' '} را وارد کنید
+            <div className="space-y-8 animate-fade-in">
+              <div className="text-center space-y-2">
+                <h2 className="text-white font-bold text-xl">تایید شماره موبایل</h2>
+                <p className="text-gray-500 text-sm">کد ۵ رقمی به شماره <span className="text-emerald-400 dir-ltr font-mono">{phone}</span> پیامک شد</p>
               </div>
 
-              {/* Modern OTP Input with square boxes */}
               <OTPInput
                 value={otp}
                 onChange={setOtp}
@@ -398,57 +423,41 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
                 disabled={loading}
               />
 
-              {/* Timer and resend */}
-              <div className="flex justify-between items-center text-xs text-gray-400 px-1">
-                <span className="flex items-center gap-1">
-                  {timer > 0 && (
-                    <>
-                      <svg className="w-4 h-4 text-emerald-500 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
+              <div className="flex justify-between items-center px-2">
+                <div className="text-xs text-gray-500 font-mono">
+                  {timer > 0 ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
                       {Math.floor(timer / 60)}:{(timer % 60).toString().padStart(2, '0')}
-                    </>
+                    </div>
+                  ) : (
+                    <button onClick={handleSendOTP} className="text-emerald-400 hover:text-white transition-colors">ارسال دوباره کد</button>
                   )}
-                </span>
-                {timer === 0 && (
-                  <button onClick={handleSendOTP} className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                    ارسال مجدد کد
-                  </button>
-                )}
+                </div>
+                <button
+                  onClick={() => { setStep('phone_entry'); setOtp(''); }}
+                  className="text-xs text-gray-600 hover:text-white underline underline-offset-4"
+                >
+                  تغییر شماره
+                </button>
               </div>
-
-              {/* Hint for Web OTP */}
-              <p className="text-center text-white/40 text-[10px]">
-                💡 در موبایل، کد به‌صورت خودکار از پیامک خوانده می‌شود
-              </p>
 
               <button
                 onClick={handleVerifyOTP}
                 disabled={loading || otp.length !== OTP_LENGTH}
-                className={`auth-button mt-4 ${otp.length !== OTP_LENGTH ? 'opacity-50 cursor-not-allowed' : ''}`}
+                className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-black py-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-3 mt-4"
               >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                    </svg>
-                    در حال بررسی...
-                  </span>
-                ) : 'تایید و ورود'}
-              </button>
-
-              <button
-                onClick={() => { setStep('phone_entry'); setOtp(''); }}
-                className="w-full text-center text-xs text-gray-500 hover:text-gray-300"
-              >
-                ← اصلاح شماره موبایل
+                {loading ? <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div> : 'تایید و ورود'}
               </button>
             </div>
           )}
+
+          <div className="mt-auto pt-8 text-center">
+            <p className="text-[10px] text-gray-600 leading-relaxed">
+              با ورود به نخلستان، شما <span className="text-gray-400">قوانین و مقررات</span> و <br />
+              <span className="text-gray-400">حریم خصوصی</span> سایت ما را می‌پذیرید.
+            </p>
+          </div>
         </div>
       </div>
     </div>

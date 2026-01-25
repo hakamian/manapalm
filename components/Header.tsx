@@ -294,20 +294,43 @@ const Header: React.FC = () => {
                                             {categoryItem.children.map(child => {
                                                 const IconComponent = ICON_MAP[child.icon] || SparklesIcon;
                                                 return (
-                                                    child.view ? (
-                                                        <SmartLink
+                                                    child.view || (child as any).isCartTrigger ? (
+                                                        <div
                                                             key={child.title}
-                                                            view={child.view}
-                                                            className="flex items-start p-3 rounded-lg hover:bg-green-800/50 transition-colors duration-200 w-72"
+                                                            onClick={() => {
+                                                                if ((child as any).isCartTrigger) {
+                                                                    console.log("🛒 MegaMenu: Toggling Cart");
+                                                                    dispatch({ type: 'TOGGLE_CART', payload: true });
+                                                                }
+                                                            }}
+                                                            className="cursor-pointer"
                                                         >
-                                                            <div className="flex-shrink-0 text-green-400 mt-1">
-                                                                <IconComponent className="w-6 h-6" />
-                                                            </div>
-                                                            <div className="mr-4">
-                                                                <p className="font-semibold text-white">{child.title}</p>
-                                                                <p className="text-sm text-gray-400">{child.description}</p>
-                                                            </div>
-                                                        </SmartLink>
+                                                            {child.view ? (
+                                                                <SmartLink
+                                                                    view={child.view as View}
+                                                                    className="flex items-start p-3 rounded-lg hover:bg-green-800/50 transition-colors duration-200 w-72"
+                                                                >
+                                                                    <div className="flex-shrink-0 text-green-400 mt-1">
+                                                                        <IconComponent className="w-6 h-6" />
+                                                                    </div>
+                                                                    <div className="mr-4">
+                                                                        <p className="font-semibold text-white">{child.title}</p>
+                                                                        <p className="text-sm text-gray-400">{child.description}</p>
+                                                                    </div>
+                                                                </SmartLink>
+                                                            ) : (
+                                                                // Render a div that looks like SmartLink if only isCartTrigger is true
+                                                                <div className="flex items-start p-3 rounded-lg hover:bg-green-800/50 transition-colors duration-200 w-72">
+                                                                    <div className="flex-shrink-0 text-green-400 mt-1">
+                                                                        <IconComponent className="w-6 h-6" />
+                                                                    </div>
+                                                                    <div className="mr-4">
+                                                                        <p className="font-semibold text-white">{child.title}</p>
+                                                                        <p className="text-sm text-gray-400">{child.description}</p>
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                     ) : null
                                                 )
                                             })}
@@ -382,10 +405,19 @@ const Header: React.FC = () => {
                                     </span>
                                 )}
                             </button>
-                            <button id="nav-cart" onClick={() => dispatch({ type: 'TOGGLE_CART', payload: true })} className="relative text-white hover:text-green-300 transition-colors duration-200" aria-label={`Shopping cart with ${cartItems.length} items`}>
-                                <ShoppingCartIcon />
+                            <button
+                                id="nav-cart"
+                                onClick={() => {
+                                    console.log("🛒 Header: Toggling Cart to true");
+                                    dispatch({ type: 'TOGGLE_CART', payload: true });
+                                }}
+                                className="flex items-center gap-2 relative bg-white/5 hover:bg-white/10 px-3 py-1.5 rounded-full text-white hover:text-green-300 transition-all duration-200 border border-white/10"
+                                aria-label={`Shopping cart with ${cartItems.length} items`}
+                            >
+                                <ShoppingCartIcon className="w-5 h-5" />
+                                <span className="text-xs font-bold hidden sm:inline-block">سبد خرید</span>
                                 {cartItems.length > 0 && (
-                                    <span className="absolute -top-2 -right-2 flex items-center justify-center h-5 w-5 rounded-full bg-red-600 text-xs font-bold text-white">
+                                    <span className="flex items-center justify-center h-4 min-w-[1rem] px-1 rounded-full bg-emerald-500 text-[10px] font-black text-white">
                                         {cartItems.length}
                                     </span>
                                 )}
@@ -444,12 +476,27 @@ const Header: React.FC = () => {
                                 <ul className="space-y-2">
                                     {categoryItem.children.map(child => {
                                         const IconComponent = ICON_MAP[child.icon] || SparklesIcon;
-                                        return child.view ? (
+                                        return child.view || (child as any).isCartTrigger ? (
                                             <li key={child.title}>
-                                                <SmartLink view={child.view} className="flex items-center p-2 rounded-md hover:bg-gray-800 transition-colors" onClick={() => setIsMenuOpen(false)}>
-                                                    <IconComponent className="w-6 h-6 text-gray-400" />
-                                                    <span className="mr-3 text-white">{child.title}</span>
-                                                </SmartLink>
+                                                <div onClick={() => {
+                                                    if ((child as any).isCartTrigger) {
+                                                        dispatch({ type: 'TOGGLE_CART', payload: true });
+                                                        setIsMenuOpen(false);
+                                                    }
+                                                }}>
+                                                    {child.view ? (
+                                                        <SmartLink view={child.view as View} className="flex items-center p-2 rounded-md hover:bg-gray-800 transition-colors" onClick={() => setIsMenuOpen(false)}>
+                                                            <IconComponent className="w-6 h-6 text-gray-400" />
+                                                            <span className="mr-3 text-white">{child.title}</span>
+                                                        </SmartLink>
+                                                    ) : (
+                                                        // Render a div that looks like SmartLink if only isCartTrigger is true
+                                                        <div className="flex items-center p-2 rounded-md hover:bg-gray-800 transition-colors">
+                                                            <IconComponent className="w-6 h-6 text-gray-400" />
+                                                            <span className="mr-3 text-white">{child.title}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </li>
                                         ) : null
                                     })}

@@ -5,7 +5,7 @@ interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
     children: React.ReactNode;
-    title?: string;
+    title?: React.ReactNode;
 }
 
 const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
@@ -45,7 +45,11 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, children, title }) => {
                 </button>
 
                 <div className="pt-6 md:pt-0">
-                    {title && <h2 className="text-xl font-bold mb-4 pr-8 md:pr-0">{title}</h2>}
+                    {title && (
+                        <div className="text-xl font-bold mb-6 pl-10 md:pl-12 text-right">
+                            {title}
+                        </div>
+                    )}
                     {children}
                 </div>
             </div>

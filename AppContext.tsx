@@ -21,6 +21,7 @@ const initialNavigation = [
             { view: View.OurGrove, icon: 'TreeIcon', title: 'نخلستان ما', description: 'تاثیر جمعی و نقشه زنده نخلستان را ببینید.' },
             { view: View.Shop, icon: 'ShoppingCartIcon', title: 'فروشگاه', description: 'محصولات ارگانیک و صنایع دستی محلی.' },
             { view: View.Corporate, icon: 'BuildingOfficeIcon', title: 'همکاری سازمانی', description: 'با سازمان خود در این جنبش شریک شوید.' },
+            { view: undefined, icon: 'ShoppingCartIcon', title: 'مشاهده سبد خرید', description: 'بررسی آیتم‌ها و تکمیل فرآیند برکت.', isCartTrigger: true },
         ]
     },
     {
@@ -188,28 +189,19 @@ const initialState: AppState = {
 
 
 function appReducer(state: AppState, action: Action): AppState {
-    let newState = { ...state };
-
     switch (action.type) {
         case 'SET_USER':
             console.log("⚛️ Reducer: SET_USER", action.payload?.id || 'null');
             return { ...state, user: action.payload };
+
         case 'UPDATE_USER':
-            console.log("⚛️ Reducer: UPDATE_USER", action.payload);
             if (state.user) {
-                // 🛡️ Ensure we are updating the SAME user, not clobbering with a temporary one
                 const updatedUser = { ...state.user, ...action.payload };
                 const updatedAllUsers = state.allUsers.map(u => u.id === updatedUser.id ? updatedUser : u);
-
-                console.log("📝 UPDATE_USER Syncing to DB:", {
-                    id: updatedUser.id,
-                    addresses: updatedUser.addresses?.length || 0
-                });
-
-                dbAdapter.saveUser(updatedUser);
                 return { ...state, user: updatedUser, allUsers: updatedAllUsers };
             }
             return state;
+
         case 'SAVE_COURSE_PERSONALIZATION':
             if (state.user) {
                 const { courseId, personalization } = action.payload;
@@ -219,18 +211,31 @@ function appReducer(state: AppState, action: Action): AppState {
                 return { ...state, user: updatedUser, allUsers: updatedAllUsers };
             }
             return state;
+
         case 'SET_VIEW': return { ...state, currentView: action.payload };
         case 'TOGGLE_AUTH_MODAL': return { ...state, isAuthModalOpen: action.payload };
         case 'TOGGLE_CART': return { ...state, isCartOpen: action.payload };
+
         case 'ADD_TO_CART': {
             const { product, quantity, deedDetails, paymentPlan } = action.payload;
             const existingItemIndex = state.cartItems.findIndex(item => item.id === product.id);
             let newCartItems;
-            if (existingItemIndex > -1) { newCartItems = state.cartItems.map((item, index) => index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item); } else { newCartItems = [...state.cartItems, { ...product, productId: product.id, quantity, deedDetails, paymentPlan }]; }
+            if (existingItemIndex > -1) {
+                newCartItems = state.cartItems.map((item, index) =>
+                    index === existingItemIndex ? { ...item, quantity: item.quantity + quantity } : item
+                );
+            } else {
+                newCartItems = [...state.cartItems, { ...product, productId: product.id, quantity, deedDetails, paymentPlan }];
+            }
             return { ...state, cartItems: newCartItems, isCartOpen: true };
         }
-        case 'REMOVE_FROM_CART': return { ...state, cartItems: state.cartItems.filter(item => item.id !== action.payload) };
-        case 'SET_CART_ITEMS': return { ...state, cartItems: action.payload };
+
+        case 'REMOVE_FROM_CART':
+            return { ...state, cartItems: state.cartItems.filter(item => item.id !== action.payload) };
+
+        case 'SET_CART_ITEMS':
+            return { ...state, cartItems: action.payload };
+
         case 'PLACE_ORDER': {
             const { updatedUser, pointsEarned, newNotifications } = orderService.processOrderPlacement(state, action.payload);
             return {
@@ -245,6 +250,7 @@ function appReducer(state: AppState, action: Action): AppState {
                 notifications: [...newNotifications, ...state.notifications]
             };
         }
+
         case 'LOGIN_SUCCESS':
             console.log("⚛️ Reducer: LOGIN_SUCCESS", action.payload.user?.id);
             return {
@@ -253,89 +259,157 @@ function appReducer(state: AppState, action: Action): AppState {
                 orders: action.payload.orders,
                 isAuthModalOpen: action.payload.keepOpen ? true : false
             };
+
         case 'LOGOUT':
             return { ...state, user: null, orders: [], cartItems: [], currentView: View.Home };
+
         case 'SET_DAILY_CHALLENGE': return { ...state, dailyChallenge: action.payload };
         case 'SET_IS_GENERATING_CHALLENGE': return { ...state, isGeneratingChallenge: action.payload };
-        case 'MARK_NOTIFICATION_READ': return { ...state, notifications: state.notifications.map(n => n.id === action.payload ? { ...n, read: true, isRead: true } : n) };
-        case 'MARK_ALL_NOTIFICATIONS_READ': return { ...state, notifications: state.notifications.map(n => ({ ...n, read: true, isRead: true })) };
-        case 'CLOSE_DEED_MODALS': return { ...state, isOrderSuccessModalOpen: false, isPalmSelectionModalOpen: false, isDeedPersonalizationModalOpen: false };
+
+        case 'MARK_NOTIFICATION_READ':
+            return { ...state, notifications: state.notifications.map(n => n.id === action.payload ? { ...n, read: true, isRead: true } : n) };
+
+        case 'MARK_ALL_NOTIFICATIONS_READ':
+            return { ...state, notifications: state.notifications.map(n => ({ ...n, read: true, isRead: true })) };
+
+        case 'CLOSE_DEED_MODALS':
+            return { ...state, isOrderSuccessModalOpen: false, isPalmSelectionModalOpen: false, isDeedPersonalizationModalOpen: false };
+
         case 'SET_WELCOME_MODAL': return { ...state, isWelcomeModalOpen: action.payload };
         case 'SET_PROFILE_TAB_AND_NAVIGATE': return { ...state, currentView: View.UserProfile, profileInitialTab: action.payload, isCartOpen: false };
         case 'HIDE_POINTS_TOAST': return { ...state, pointsToast: null };
         case 'SHOW_POINTS_TOAST': return { ...state, pointsToast: action.payload };
-        case 'SELECT_PALM_FOR_DEED': return { ...state, selectedPalmForPersonalization: action.payload, isPalmSelectionModalOpen: false, isDeedPersonalizationModalOpen: true };
+
+        case 'SELECT_PALM_FOR_DEED':
+            return { ...state, selectedPalmForPersonalization: action.payload, isPalmSelectionModalOpen: false, isDeedPersonalizationModalOpen: true };
+
         case 'PERSONALIZE_DEED_AND_ADD_TO_CART': {
             const { palm, quantity, deedDetails, selectedPlan } = action.payload;
             const paymentPlan = selectedPlan > 1 ? { installments: selectedPlan } : undefined;
-            const cartItem = { id: `${palm.id}-${Date.now()}`, productId: palm.id, name: palm.name, price: palm.price, quantity: quantity, image: `https://picsum.photos/seed/${palm.id}/400/400`, stock: 999, type: 'heritage', points: palm.points, popularity: 100, dateAdded: new Date().toISOString(), deedDetails, paymentPlan };
+            const cartItem = {
+                id: `${palm.id}-${Date.now()}`,
+                productId: palm.id,
+                name: palm.name,
+                price: palm.price,
+                quantity: quantity,
+                image: `https://picsum.photos/seed/${palm.id}/400/400`,
+                stock: 999,
+                type: 'heritage',
+                points: palm.points,
+                popularity: 100,
+                dateAdded: new Date().toISOString(),
+                deedDetails,
+                paymentPlan
+            };
             return { ...state, cartItems: [...state.cartItems, cartItem as any], isDeedPersonalizationModalOpen: false, isCartOpen: true };
         }
+
         case 'SHOW_COMPANION_UNLOCK_MODAL': return { ...state, isCompanionUnlockModalOpen: action.payload };
-        case 'START_COMPANION_PURCHASE':
+
+        case 'START_COMPANION_PURCHASE': {
             const companionProduct = state.products.find(p => p.id === 'p_companion_unlock');
-            if (companionProduct) { return { ...state, isCompanionUnlockModalOpen: false, cartItems: [...state.cartItems, { ...companionProduct, quantity: 1, productId: companionProduct.id } as any], isCartOpen: true }; }
+            if (companionProduct) {
+                return { ...state, isCompanionUnlockModalOpen: false, cartItems: [...state.cartItems, { ...companionProduct, quantity: 1, productId: companionProduct.id } as any], isCartOpen: true };
+            }
             return state;
+        }
+
         case 'SHOW_COMPANION_TRIAL_MODAL': return { ...state, isCompanionTrialModalOpen: action.payload };
         case 'SHOW_REFLECTION_UNLOCK_MODAL': return { ...state, isReflectionAnalysisUnlockModalOpen: action.payload };
-        case 'START_REFLECTION_PURCHASE':
+
+        case 'START_REFLECTION_PURCHASE': {
             const reflectionProduct = state.products.find(p => p.id === 'p_reflection_unlock');
-            if (reflectionProduct) { return { ...state, isReflectionAnalysisUnlockModalOpen: false, cartItems: [...state.cartItems, { ...reflectionProduct, quantity: 1, productId: reflectionProduct.id } as any], isCartOpen: true }; }
+            if (reflectionProduct) {
+                return { ...state, isReflectionAnalysisUnlockModalOpen: false, cartItems: [...state.cartItems, { ...reflectionProduct, quantity: 1, productId: reflectionProduct.id } as any], isCartOpen: true };
+            }
             return state;
+        }
+
         case 'SHOW_AMBASSADOR_UNLOCK_MODAL': return { ...state, isAmbassadorUnlockModalOpen: action.payload };
-        case 'START_AMBASSADOR_PURCHASE':
+
+        case 'START_AMBASSADOR_PURCHASE': {
             const ambassadorProduct = state.products.find(p => p.id === 'p_ambassador_pack');
-            if (ambassadorProduct) { return { ...state, isAmbassadorUnlockModalOpen: false, cartItems: [...state.cartItems, { ...ambassadorProduct, quantity: 1, productId: ambassadorProduct.id } as any], isCartOpen: true }; }
+            if (ambassadorProduct) {
+                return { ...state, isAmbassadorUnlockModalOpen: false, cartItems: [...state.cartItems, { ...ambassadorProduct, quantity: 1, productId: ambassadorProduct.id } as any], isCartOpen: true };
+            }
             return state;
-        case 'SHOW_SOCIAL_POST_GENERATOR_MODAL': return { ...state, isSocialPostGeneratorModalOpen: action.payload.isOpen, socialPostGeneratorData: { deed: action.payload.deed } };
+        }
+
+        case 'SHOW_SOCIAL_POST_GENERATOR_MODAL':
+            return { ...state, isSocialPostGeneratorModalOpen: action.payload.isOpen, socialPostGeneratorData: { deed: action.payload.deed } };
+
         case 'TOGGLE_MEANING_PALM_ACTIVATION_MODAL': return { ...state, isMeaningPalmActivationModalOpen: action.payload };
-        case 'UNLOCK_MEANING_PALM':
-            return { ...state, isMeaningPalmActivationModalOpen: false };
+        case 'UNLOCK_MEANING_PALM': return { ...state, isMeaningPalmActivationModalOpen: false };
+
         case 'OPEN_FUTURE_VISION_MODAL': return { ...state, isFutureVisionModalOpen: true, futureVisionDeed: action.payload };
         case 'CLOSE_FUTURE_VISION_MODAL': return { ...state, isFutureVisionModalOpen: false, futureVisionDeed: null };
+
         case 'OPEN_VOICE_OF_PALM_MODAL': return { ...state, isVoiceOfPalmModalOpen: true, voiceOfPalmDeed: action.payload };
         case 'CLOSE_VOICE_OF_PALM_MODAL': return { ...state, isVoiceOfPalmModalOpen: false, voiceOfPalmDeed: null };
+
         case 'SUBSCRIBE_MONTHLY': return state;
+
         case 'ADD_TIMELINE_EVENT':
-            if (state.user) { const updatedTimeline = [action.payload, ...(state.user.timeline || [])]; const updatedUser = { ...state.user, timeline: updatedTimeline }; dbAdapter.saveUser(updatedUser); return { ...state, user: updatedUser }; }
+            if (state.user) {
+                const updatedTimeline = [action.payload, ...(state.user.timeline || [])];
+                return { ...state, user: { ...state.user, timeline: updatedTimeline } };
+            }
             return state;
+
         case 'UPDATE_TIMELINE_EVENT':
-            if (state.user) { const updatedTimeline = (state.user.timeline || []).map(event => event.deedId === action.payload.deedId ? { ...event, ...action.payload.memory } : event); const updatedUser = { ...state.user, timeline: updatedTimeline }; dbAdapter.saveUser(updatedUser); return { ...state, user: updatedUser }; }
+            if (state.user) {
+                const updatedTimeline = (state.user.timeline || []).map(event =>
+                    event.deedId === action.payload.deedId ? { ...event, ...action.payload.memory } : event
+                );
+                return { ...state, user: { ...state.user, timeline: updatedTimeline } };
+            }
             return state;
-        case 'TOGGLE_WISHLIST': if (state.wishlist.includes(action.payload)) { return { ...state, wishlist: state.wishlist.filter(id => id !== action.payload) }; } else { return { ...state, wishlist: [...state.wishlist, action.payload] }; }
-        case 'DONATE_POINTS':
-            return state; // Handling logic moved to components
-        case 'ADD_POST': dbAdapter.savePost(action.payload); return { ...state, communityPosts: [action.payload, ...state.communityPosts] };
+
+        case 'TOGGLE_WISHLIST':
+            if (state.wishlist.includes(action.payload)) {
+                return { ...state, wishlist: state.wishlist.filter(id => id !== action.payload) };
+            } else {
+                return { ...state, wishlist: [...state.wishlist, action.payload] };
+            }
+
+        case 'DONATE_POINTS': return state;
+        case 'ADD_POST': return { ...state, communityPosts: [action.payload, ...state.communityPosts] };
         case 'UPDATE_APP_SETTINGS': return { ...state, appSettings: { ...state.appSettings, ...action.payload } };
-        case 'UPDATE_API_SETTINGS': const newHistory = [...state.apiSettingsHistory, { settings: state.apiSettings, timestamp: new Date().toISOString() }]; return { ...state, apiSettings: { ...state.apiSettings, ...action.payload }, apiSettingsHistory: newHistory };
+
+        case 'UPDATE_API_SETTINGS': {
+            const newHistory = [...state.apiSettingsHistory, { settings: state.apiSettings, timestamp: new Date().toISOString() }];
+            return { ...state, apiSettings: { ...state.apiSettings, ...action.payload }, apiSettingsHistory: newHistory };
+        }
+
         case 'UPDATE_AI_CONFIG': return { ...state, aiConfig: { ...state.aiConfig, ...action.payload } };
         case 'UPDATE_NAVIGATION': return { ...state, siteConfig: { ...state.siteConfig, navigation: action.payload } };
         case 'UPDATE_CAMPAIGN': return { ...state, campaign: action.payload };
         case 'UPDATE_PALM_TYPES': return { ...state, palmTypes: action.payload };
+
         case 'UPDATE_PRODUCT':
-            dbAdapter.updateProduct(action.payload.id, action.payload.data);
             return {
                 ...state,
                 products: state.products.map(p => p.id === action.payload.id ? { ...p, ...action.payload.data } : p)
             };
+
         case 'ADD_PRODUCT':
-            dbAdapter.createProduct(action.payload.product);
             return {
                 ...state,
                 products: [action.payload.product, ...state.products]
             };
+
         case 'DELETE_PRODUCT':
-            dbAdapter.deleteProduct(action.payload.id);
             return {
                 ...state,
                 products: state.products.filter(p => p.id !== action.payload.id)
             };
+
         case 'START_PLANTING_FLOW': return { ...state, isPalmSelectionModalOpen: true };
+
         case 'QUICK_PAY': {
             const { palm, quantity, deedDetails, selectedPlan } = action.payload;
             const qpOrder = orderService.createQuickOrder(state.user, palm, quantity, deedDetails, selectedPlan);
             const { updatedUser, pointsEarned, newNotifications } = orderService.processOrderPlacement(state, qpOrder);
-
             return {
                 ...state,
                 orders: [...state.orders, qpOrder],
@@ -347,12 +421,27 @@ function appReducer(state: AppState, action: Action): AppState {
                 notifications: [...newNotifications, ...state.notifications]
             };
         }
-        case 'CONFIRM_PLANTING': const updatedDeeds = state.allDeeds.map(deed => deed.id === action.payload.deedId ? { ...deed, isPlanted: true, plantedPhotoUrl: `data:image/jpeg;base64,${action.payload.photoBase64}` } : deed); return { ...state, allDeeds: updatedDeeds };
-        case 'ADD_DEED_UPDATE': const deedsWithUpdate = state.allDeeds.map(deed => deed.id === action.payload.deedId ? { ...deed, updates: [...(deed.updates || []), action.payload.update] } : deed); return { ...state, allDeeds: deedsWithUpdate };
+
+        case 'CONFIRM_PLANTING': {
+            const updatedDeeds = state.allDeeds.map(deed =>
+                deed.id === action.payload.deedId ? { ...deed, isPlanted: true, plantedPhotoUrl: `data:image/jpeg;base64,${action.payload.photoBase64}` } : deed
+            );
+            return { ...state, allDeeds: updatedDeeds };
+        }
+
+        case 'ADD_DEED_UPDATE': {
+            const deedsWithUpdate = state.allDeeds.map(deed =>
+                deed.id === action.payload.deedId ? { ...deed, updates: [...(deed.updates || []), action.payload.update] } : deed
+            );
+            return { ...state, allDeeds: deedsWithUpdate };
+        }
+
         case 'ADD_PROPOSAL': return { ...state, proposals: [action.payload, ...state.proposals] };
-        case 'UPDATE_PROPOSAL': return { ...state, proposals: state.proposals.map(p => p.id === action.payload.id ? { ...p, ...action.payload } : p) };
-        case 'SPEND_MANA_POINTS':
-            return state; // Handling logic moved to components
+
+        case 'UPDATE_PROPOSAL':
+            return { ...state, proposals: state.proposals.map(p => p.id === action.payload.id ? { ...p, ...action.payload } : p) };
+
+        case 'SPEND_MANA_POINTS': return state;
         case 'SET_ENGLISH_SCENARIO': return { ...state, currentEnglishScenario: action.payload };
         case 'SET_CURRENT_VOCABULARY_TOPIC': return { ...state, currentVocabularyTopic: action.payload };
         case 'START_COACHING_SESSION': return { ...state, coachingSession: action.payload };
@@ -360,42 +449,57 @@ function appReducer(state: AppState, action: Action): AppState {
         case 'CLAIM_GIFT_PALM': return { ...state, onboardingStep: 'certificate' };
         case 'END_TOUR': return { ...state, onboardingStep: 'none' };
         case 'SET_SELECTED_LANGUAGE': return { ...state, selectedLanguage: action.payload };
-        case 'INVEST_IN_PROJECT':
-            return state; // Handling logic moved to components
-        case 'ADD_REVIEW':
-            return state; // Handling logic moved to components
-        case 'LIKE_REVIEW': { const { reviewId } = action.payload; const updatedReviews = state.reviews.map(r => r.id === reviewId ? { ...r, helpfulCount: r.helpfulCount + 1 } : r); return { ...state, reviews: updatedReviews }; }
-        case 'UPDATE_REVIEW_STATUS': { const { reviewId, status } = action.payload; const updatedReviews = state.reviews.map(r => r.id === reviewId ? { ...r, status: status as 'approved' | 'rejected' | 'pending' } : r); return { ...state, reviews: updatedReviews }; }
-        case 'DELETE_REVIEW': { const { reviewId } = action.payload; const updatedReviews = state.reviews.filter(r => r.id !== reviewId); return { ...state, reviews: updatedReviews }; }
-        case 'ADD_GENERATED_COURSE': { const newCourse = action.payload; return { ...state, generatedCourses: [...(state.generatedCourses || []), newCourse] }; }
+        case 'INVEST_IN_PROJECT': return state;
+        case 'ADD_REVIEW': return state;
+
+        case 'LIKE_REVIEW': {
+            const { reviewId } = action.payload;
+            const updatedReviews = state.reviews.map(r => r.id === reviewId ? { ...r, helpfulCount: r.helpfulCount + 1 } : r);
+            return { ...state, reviews: updatedReviews };
+        }
+
+        case 'UPDATE_REVIEW_STATUS': {
+            const { reviewId, status } = action.payload;
+            const updatedReviews = state.reviews.map(r => r.id === reviewId ? { ...r, status: status as 'approved' | 'rejected' | 'pending' } : r);
+            return { ...state, reviews: updatedReviews };
+        }
+
+        case 'DELETE_REVIEW': {
+            const { reviewId } = action.payload;
+            const updatedReviews = state.reviews.filter(r => r.id !== reviewId);
+            return { ...state, reviews: updatedReviews };
+        }
+
+        case 'ADD_GENERATED_COURSE': {
+            const newCourse = action.payload;
+            return { ...state, generatedCourses: [...(state.generatedCourses || []), newCourse] };
+        }
+
         case 'SET_BOTTOM_NAV_VISIBLE': return { ...state, isBottomNavVisible: action.payload };
-        // Duplicate SET_PROFILE_TAB_AND_NAVIGATE removed
+
         case 'LOAD_INITIAL_DATA':
-            // 🛡️ CRITICAL GUARD: Never overwrite an already authenticated user with null/default data.
-            // This fixes the case where Google Auth finishes before Initial Load.
             if (state.user && !action.payload.user) {
                 console.log("🛡️ [AuthGate] Blocking attempt to overwrite active session with null initial data");
                 const { user, ...otherData } = action.payload;
                 return { ...state, ...otherData };
             }
             return { ...state, ...action.payload };
-        case 'LOAD_ADMIN_DATA': return { ...state, allUsers: action.payload.users, users: action.payload.users, orders: action.payload.orders };
+
+        case 'LOAD_ADMIN_DATA':
+            return { ...state, allUsers: action.payload.users, users: action.payload.users, orders: action.payload.orders };
+
         case 'ADD_GAMIFICATION_ALERT': return { ...state, gamificationAlerts: [...state.gamificationAlerts, action.payload] };
         case 'DISMISS_GAMIFICATION_ALERT': return { ...state, gamificationAlerts: state.gamificationAlerts.slice(1) };
         case 'SET_PENDING_REDIRECT': return { ...state, pendingRedirectView: action.payload };
         case 'SET_SEARCH_QUERY': return { ...state, searchQuery: action.payload };
 
-        // --- NEW EXECUTIVE OS HANDLER ---
         case 'EXECUTE_SMART_ACTION': {
             const actionData = action.payload;
             const payload = actionData.payload;
-
             if (actionData.type === 'create_campaign') {
                 const newCampaign = communityService.createCampaign(payload);
                 return { ...state, campaign: newCampaign, pointsToast: { points: 0, action: `کمپین "${payload.title}" فعال شد` } };
             }
-
-            // Other admin actions moved to component or utility
             return state;
         }
 
