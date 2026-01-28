@@ -256,6 +256,63 @@ export default async function handler(req, res) {
             return res.status(200).json({ success: true, message: 'رمز عبور با موفقیت تنظیم شد.' });
         }
 
+        // ===== REGISTER WITHOUT OTP (Emergency Mode) =====
+        if (action === 'register_without_otp') {
+            const cleanMobile = cleanNumber(mobile);
+
+            // Basic validation
+            if (!password || password.length < 6) {
+                return res.status(400).json({ success: false, message: 'رمز عبور باید حداقل ۶ کاراکتر باشد.' });
+            }
+
+            // E.164 format
+            const e164Mobile = '+98' + cleanMobile.substring(1);
+
+            // Check if user already exists
+            const { data: listData, error: listError } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+            if (listError) throw listError;
+
+            const users = (listData?.users || []);
+            const existingUser = users.find(u => u.phone === e164Mobile || u.email === `${cleanMobile}@manapalm.local`);
+
+            if (existingUser) {
+                // For security, we DO NOT allow overwriting existing users without OTP.
+                // They must use the "Forgot Password" flow (which needs SMS, currently down).
+                // Or we can assume if they know the password they can login.
+                // If they don't know the password and SMS is down, they are stuck.
+                // But we cannot let a stranger hijack an account just by registering it.
+                return res.status(409).json({
+                    success: false,
+                    message: 'این شماره قبلاً ثبت شده است. لطفاً وارد شوید.'
+                });
+            }
+
+            // Create NEW user - Auto Confirmed
+            const finalMetadata = {
+                full_name: fullName || 'کاربر جدید',
+                is_unverified_signup: true // Mark for future verification
+            };
+
+            const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+                phone: e164Mobile,
+                email: `${cleanMobile}@manapalm.local`, // Fallback email
+                password: password,
+                phone_confirm: true, // Auto-confirm phone
+                email_confirm: true,
+                user_metadata: finalMetadata
+            });
+
+            if (createError) {
+                throw createError;
+            }
+
+            return res.status(200).json({
+                success: true,
+                message: 'حساب کاربری با موفقیت ساخته شد.',
+                user: newUser.user
+            });
+        }
+
         return res.status(400).json({ message: 'Action not valid' });
     } catch (error) {
         console.error('OTP Error:', error);

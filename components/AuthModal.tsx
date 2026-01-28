@@ -11,7 +11,7 @@ interface AuthModalProps {
 }
 
 type AuthMode = 'otp' | 'password';
-type AuthStep = 'phone_entry' | 'otp_verify' | 'password_entry' | 'set_password';
+type AuthStep = 'phone_entry' | 'otp_verify' | 'password_entry' | 'set_password' | 'register_password';
 
 const OTP_LENGTH = 5;
 
@@ -246,6 +246,52 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
     }
   }, [otp, phone, onLoginSuccess, onClose]);
 
+  const handleRegister = async () => {
+    if (phone.length < 10) {
+      setError('شماره موبایل نامعتبر است');
+      return;
+    }
+    if (password.length < 6) {
+      setError('رمز عبور باید حداقل ۶ کاراکتر باشد');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await fetch('/api/otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'register_without_otp',
+          mobile: phone,
+          password: password
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        if (response.status === 409) {
+          // User exists
+          setError('این شماره قبلاً ثبت شده است. لطفاً وارد شوید.');
+        } else {
+          throw new Error(data.message || 'خطا در ثبت نام');
+        }
+        setLoading(false);
+        return;
+      }
+
+      // Auto Login
+      await handlePasswordLogin();
+
+    } catch (err: any) {
+      setError(err.message || 'خطای سیستمی');
+      setLoading(false);
+    }
+  };
+
   const handlePasswordLogin = async () => {
     if (!supabase) return;
     setLoading(true);
@@ -339,7 +385,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
             </div>
           )}
 
-          {step === 'phone_entry' && (
+          {(step === 'phone_entry' || step === 'register_password') && (
             <div className="space-y-6 animate-fade-in">
               <div className="relative group">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-emerald-500 transition-colors">
@@ -372,7 +418,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
               )}
 
               <button
-                onClick={mode === 'otp' ? handleSendOTP : handlePasswordLogin}
+                onClick={mode === 'otp' ? handleSendOTP : (step === 'register_password' ? handleRegister : handlePasswordLogin)}
                 disabled={loading}
                 className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-black py-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-3"
               >
@@ -380,10 +426,32 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
                   <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin"></div>
                 ) : (
                   <>
-                    <span>{mode === 'otp' ? 'دریافت کد تایید' : 'ورود به نخلستان'}</span>
+                    <span>
+                      {mode === 'otp' ? 'دریافت کد تایید' :
+                        step === 'register_password' ? 'ثبت نام و ورود آنی' : 'ورود به نخلستان'}
+                    </span>
                   </>
                 )}
               </button>
+
+              {mode === 'password' && (
+                <div className="text-center">
+                  <button
+                    onClick={() => {
+                      if (step === 'register_password') {
+                        setStep('phone_entry'); // Back to login
+                      } else {
+                        setStep('register_password'); // Go to register
+                      }
+                    }}
+                    className="text-xs text-emerald-400 hover:text-white transition-colors border-b border-emerald-500/30 pb-0.5"
+                  >
+                    {step === 'register_password'
+                      ? 'حساب دارید؟ ورود به سیستم'
+                      : 'هنوز ثبت‌نام نکرده‌اید؟ ساخت حساب کاربری (بدون پیامک)'}
+                  </button>
+                </div>
+              )}
 
               <div className="relative flex items-center justify-center py-2">
                 <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/5"></div></div>
@@ -400,7 +468,10 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
 
               <div className="text-center pt-4">
                 <button
-                  onClick={() => setMode(mode === 'otp' ? 'password' : 'otp')}
+                  onClick={() => {
+                    setMode(mode === 'otp' ? 'password' : 'otp');
+                    setStep('phone_entry'); // Reset step when switching major modes
+                  }}
                   className="text-xs text-gray-500 hover:text-emerald-400 transition-colors font-medium border-b border-transparent hover:border-emerald-500/50 pb-1"
                 >
                   {mode === 'otp' ? 'ورود با رمز عبور' : 'ورود با پیامک (فراموشی رمز)'}
