@@ -97,7 +97,11 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
         console.log("🔑 Authenticating via handleLoginSuccess:", loginData);
 
         // If it's the mock OTP login (12345), we use the pre-defined test user
-        if (loginData.fullName === 'کاربر گرامی' || loginData.phone === '09120000000') {
+        // 🛑 REMOVED: This was causing real users to be overwritten by the test user
+        // The real session is now established by Supabase Auth Listener in AppContext.
+
+        // Only if explicitly requested for dev testing (and phone is 09120000000)
+        if (loginData.phone === '09120000000') {
             const testUserId = 'user_test_manapalm';
             let testUser = allUsers.find(u => u.id === testUserId) || INITIAL_USERS.find(u => u.id === testUserId);
 

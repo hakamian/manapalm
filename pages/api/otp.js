@@ -197,7 +197,44 @@ export default async function handler(req, res) {
                 return res.status(400).json({ success: false, message: 'کد منقضی شده است' });
             }
 
-            return res.status(200).json({ success: true });
+            // 🔐 SECURITY UPGRADE: Generate Session Token
+            // Now that we verified the SMS code, we generate a Magic Link for the user
+            // so the frontend can establish a REAL Supabase Session.
+
+            const e164Mobile = '+98' + cleanMobile.substring(1);
+            const emailIdentifier = `${cleanMobile}@manapalm.local`;
+
+            // Find user by phone or email
+            const { data: listData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+            const user = (listData?.users || []).find(u =>
+                u.phone === e164Mobile || u.email === emailIdentifier
+            );
+
+            let sessionData = null;
+
+            if (user) {
+                // Generate Magic Link (returns email_otp we can use as a token)
+                const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
+                    type: 'magiclink',
+                    email: user.email
+                });
+
+                if (!linkError && linkData?.properties?.email_otp) {
+                    sessionData = {
+                        token: linkData.properties.email_otp,
+                        email: user.email
+                    };
+                    console.log(`🔐 [Auth] Generated Session Token for ${cleanMobile}`);
+                }
+            }
+
+            // Clean up OTP after use (Prevents replay attacks)
+            await supabase.from('otps').delete().eq('mobile', cleanMobile);
+
+            return res.status(200).json({
+                success: true,
+                session: sessionData
+            });
         }
 
         // ===== SET PASSWORD =====

@@ -236,6 +236,23 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
         try {
             const res = await verifyOTP(phone, otpToVerify);
             if (res.success) {
+                // 🔐 SECURITY UPGRADE: Estalish Real Session if token provided
+                if (res.session && supabase) {
+                    console.log("🔐 [Auth] Establishing session with magic token...");
+                    const { error: sessionError } = await supabase.auth.verifyOtp({
+                        email: res.session.email,
+                        token: res.session.token,
+                        type: 'email'
+                    });
+
+                    if (sessionError) {
+                        console.error("❌ Link verification failed:", sessionError);
+                        // Fallback: Proceed anyway (might be mock mode), but warn
+                    } else {
+                        console.log("✅ [Auth] Real Session Established!");
+                    }
+                }
+
                 onLoginSuccess({ phone, fullName: res.fullName });
                 onClose();
             } else {
@@ -243,6 +260,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
             }
         } catch (err) {
             setError('خطای سیستمی');
+            console.error(err);
         } finally {
             setLoading(false);
         }

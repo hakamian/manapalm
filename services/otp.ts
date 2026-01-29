@@ -2,6 +2,10 @@ interface OTPResponse {
     success: boolean;
     error?: string;
     fullName?: string;
+    session?: {
+        token: string;
+        email: string;
+    };
 }
 
 export const sendOTP = async (phone: string): Promise<OTPResponse> => {

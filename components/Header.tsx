@@ -104,12 +104,13 @@ const UserMenu: React.FC = () => {
                                 // 2. Dispatch local state cleanup
                                 dispatch({ type: 'LOGOUT' });
 
-                                // 3. Thoroughly wipe all potential persistent storage and reload
+                                // 3. Thoroughly wipe all potential persistent storage and navigate
                                 if (typeof window !== 'undefined') {
                                     localStorage.clear();
                                     sessionStorage.clear();
-                                    console.log("✅ Logout successful, forcing hard reload...");
-                                    window.location.reload();
+                                    console.log("✅ Logout successful, redirecting...");
+                                    // Faster than reload:
+                                    window.location.href = '/';
                                 }
                             } catch (err) {
                                 console.error("❌ Logout failed", err);
