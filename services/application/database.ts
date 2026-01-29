@@ -796,6 +796,13 @@ export const dbAdapter = {
                 }
             });
 
+            // Clear cookies
+            document.cookie.split(";").forEach((c) => {
+                document.cookie = c
+                    .replace(/^ +/, "")
+                    .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+            });
+
             // Also clear session storage
             sessionStorage.clear();
         }

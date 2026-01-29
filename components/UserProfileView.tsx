@@ -144,30 +144,21 @@ const UserProfileView: React.FC = () => {
         }
     };
 
-    if (!user) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500 mx-auto mb-4"></div>
-                    <p className="mb-4">در حال بارگذاری پروفایل...</p>
-                    <button
-                        onClick={() => dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })}
-                        className="text-sm text-green-400 hover:text-green-300 underline"
-                    >
-                        اگر طول کشید، اینجا کلیک کنید تا وارد شوید
-                    </button>
-                </div>
-            </div>
-        );
-    }
+    const toggleWishlist = (id: string) => onToggleWishlist(id);
+
+    // FIX: Hooks must be unconditional. Moving tabs useMemo before the early return.
+    const isGroveKeeper = user?.isGroveKeeper;
+    const isGuardian = user?.isGuardian;
 
     const tabs = useMemo(() => {
+        if (!user) return [];
+
         const baseTabs = [
             { id: 'dashboard', label: 'داشبورد', icon: <HomeIcon /> },
             { id: 'value-report', label: 'گزارش تاثیر (ROI)', icon: <ChartPieIcon /> },
         ];
 
-        if (user.isGroveKeeper) {
+        if (isGroveKeeper) {
             baseTabs.push({ id: 'grovekeeper', label: 'پنل نخلدار', icon: <PalmTreeIcon /> });
         }
 
@@ -193,7 +184,7 @@ const UserProfileView: React.FC = () => {
             { id: 'notifications', label: 'اعلان‌ها', icon: <BellIcon /> },
         );
 
-        if (user.isGuardian) {
+        if (isGuardian) {
             baseTabs.push({ id: 'mentorship', label: 'مربی‌گری', icon: <ShieldCheckIcon /> });
         }
 
@@ -202,7 +193,44 @@ const UserProfileView: React.FC = () => {
         );
 
         return baseTabs;
-    }, [user.isGroveKeeper, user.isGuardian]);
+    }, [user, isGroveKeeper, isGuardian]);
+
+    if (!user) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-4">
+                <div className="text-center max-w-md animate-fade-in">
+                    <div className="relative w-20 h-20 mx-auto mb-6">
+                        <div className="absolute inset-0 border-4 border-gray-700/30 rounded-full"></div>
+                        <div className="absolute inset-0 border-4 border-t-emerald-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="text-3xl filter drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]">🌴</span>
+                        </div>
+                    </div>
+
+                    <h2 className="text-xl font-bold text-white mb-3">در حال همگام‌سازی امن با نخلستان...</h2>
+                    <p className="text-gray-400 text-sm mb-8 leading-relaxed max-w-sm mx-auto">
+                        سیستم در حال برقراری ارتباط ایمن برای بازیابی دقیق نخل‌ها، امتیازات و دارایی‌های شماست.
+                        <span className="block mt-2 text-xs text-gray-500">
+                            این فرآیند لحظه‌ای برای تضمین امنیت حساب و به‌روز بودن اطلاعات شما انجام می‌شود.
+                        </span>
+                        <br />
+                        <div className="mt-6 p-4 bg-white/5 rounded-2xl border border-white/5">
+                            <p className="text-emerald-400/90 italic font-medium">
+                                "صبر، کلید رسیدن به شیرین‌ترین ثمره‌هاست. <br />همانطور که نخل برای بارور شدن نیاز به زمان دارد."
+                            </p>
+                        </div>
+                    </p>
+
+                    <button
+                        onClick={() => dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })}
+                        className="text-xs text-gray-500 hover:text-white underline decoration-dashed underline-offset-4 transition-colors bg-white/5 hover:bg-white/10 px-4 py-2 rounded-lg"
+                    >
+                        اگر انتظار طولانی شد، اینجا کلیک کنید تا مجدد وارد شوید
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
 
     const renderContent = () => {

@@ -109,14 +109,15 @@ const UserMenu: React.FC = () => {
                                     localStorage.clear();
                                     sessionStorage.clear();
                                     console.log("✅ Logout successful, forcing hard reload...");
-                                    window.location.href = '/';
+                                    window.location.reload();
                                 }
                             } catch (err) {
                                 console.error("❌ Logout failed", err);
                                 setLoggingOut(false); // Reset flag on error
                                 // Fallback: force refresh anyway
                                 if (typeof window !== 'undefined') {
-                                    window.location.href = '/';
+                                    localStorage.clear();
+                                    window.location.reload();
                                 }
                             }
                         }} className="block px-4 py-2 hover:bg-green-800 transition-colors duration-200">

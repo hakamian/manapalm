@@ -24,7 +24,7 @@ function OTPInput({
 }: {
   value: string;
   onChange: (val: string) => void;
-  onComplete: () => void;
+  onComplete: (code?: string) => void;
   disabled?: boolean;
 }) {
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
@@ -51,7 +51,7 @@ function OTPInput({
           const code = otp.code.replace(/\D/g, '').slice(0, OTP_LENGTH);
           onChange(code);
           if (code.length === OTP_LENGTH) {
-            setTimeout(() => onComplete(), 100);
+            setTimeout(() => onComplete(code), 100);
           }
         }
       }).catch(() => {
@@ -85,7 +85,7 @@ function OTPInput({
 
     // Auto-submit when last digit is entered
     if (cleanDigit && index === OTP_LENGTH - 1 && newValue.length === OTP_LENGTH) {
-      setTimeout(() => onComplete(), 150);
+      setTimeout(() => onComplete(newValue), 150);
     }
   }, [otpDigits, onChange, onComplete]);
 
@@ -115,7 +115,7 @@ function OTPInput({
 
     if (pastedData.length === OTP_LENGTH) {
       inputRefs.current[OTP_LENGTH - 1]?.focus();
-      setTimeout(() => onComplete(), 150);
+      setTimeout(() => onComplete(pastedData), 150);
     } else {
       inputRefs.current[pastedData.length]?.focus();
     }
@@ -224,15 +224,17 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
     }
   };
 
-  const handleVerifyOTP = useCallback(async () => {
-    if (otp.length !== OTP_LENGTH) {
+  const handleVerifyOTP = useCallback(async (code?: string) => {
+    const otpToVerify = typeof code === 'string' ? code : otp;
+
+    if (otpToVerify.length !== OTP_LENGTH) {
       setError('لطفا کد ۵ رقمی را کامل وارد کنید');
       return;
     }
     setLoading(true);
     setError('');
     try {
-      const res = await verifyOTP(phone, otp);
+      const res = await verifyOTP(phone, otpToVerify);
       if (res.success) {
         onLoginSuccess({ phone, fullName: res.fullName });
         onClose();
@@ -514,7 +516,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
               </div>
 
               <button
-                onClick={handleVerifyOTP}
+                onClick={() => handleVerifyOTP()}
                 disabled={loading || otp.length !== OTP_LENGTH}
                 className="w-full bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-black py-4 rounded-2xl transition-all shadow-lg shadow-emerald-500/20 active:scale-95 flex items-center justify-center gap-3 mt-4"
               >
