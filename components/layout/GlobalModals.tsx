@@ -24,6 +24,7 @@ const MeaningPalmActivationModal = React.lazy(() => import('../MeaningPalmActiva
 const FutureVisionModal = React.lazy(() => import('../FutureVisionModal'));
 const VoiceOfPalmModal = React.lazy(() => import('../VoiceOfPalmModal'));
 const GamificationAlert = React.lazy(() => import('../GamificationAlert'));
+const ProfileCompletionModal = React.lazy(() => import('../ProfileCompletionModal'));
 
 interface GlobalModalsProps {
     onLoginSuccess: (user: { phone?: string; email?: string; fullName?: string }) => void;
@@ -188,6 +189,7 @@ const GlobalModals: React.FC<GlobalModalsProps> = ({ onLoginSuccess }) => {
                     deed={voiceOfPalmDeed}
                 />
             )}
+            <ProfileCompletionModal />
             <GamificationAlert />
         </Suspense>,
         document.body
