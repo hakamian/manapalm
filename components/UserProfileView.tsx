@@ -208,7 +208,7 @@ const UserProfileView: React.FC = () => {
                     </div>
 
                     <h2 className="text-xl font-bold text-white mb-3">در حال همگام‌سازی امن با نخلستان...</h2>
-                    <p className="text-gray-400 text-sm mb-8 leading-relaxed max-w-sm mx-auto">
+                    <div className="text-gray-400 text-sm mb-8 leading-relaxed max-w-sm mx-auto">
                         سیستم در حال برقراری ارتباط ایمن برای بازیابی دقیق نخل‌ها، امتیازات و دارایی‌های شماست.
                         <span className="block mt-2 text-xs text-gray-500">
                             این فرآیند لحظه‌ای برای تضمین امنیت حساب و به‌روز بودن اطلاعات شما انجام می‌شود.
@@ -219,7 +219,7 @@ const UserProfileView: React.FC = () => {
                                 "صبر، کلید رسیدن به شیرین‌ترین ثمره‌هاست. <br />همانطور که نخل برای بارور شدن نیاز به زمان دارد."
                             </p>
                         </div>
-                    </p>
+                    </div>
 
                     <button
                         onClick={() => dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true })}
