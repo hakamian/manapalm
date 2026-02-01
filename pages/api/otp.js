@@ -1,13 +1,109 @@
 // OTP Secure Endpoint - Vercel Serverless Function
-// Handles: send, verify, set-password
+// Handles: send, verify, set-password, register_without_otp
+// Version 2.0 - Robust Phone Normalization & User Lookup
 
 import { createClient } from '@supabase/supabase-js';
 
-// Simple in-memory rate limiting (resets on cold start, but still helps)
-// For production, consider using Redis/Upstash for persistent rate limiting
+// =========================================
+// 📞 ROBUST PHONE NORMALIZATION
+// Handles all Iranian phone formats
+// =========================================
+function normalizeIranianPhone(input) {
+    if (!input) return '';
+
+    // Convert Persian/Arabic digits to English
+    const p2e = (s) => s
+        .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d).toString())
+        .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
+
+    const digits = p2e(input).replace(/\D/g, '');
+
+    // Case 1: Already has country code with +
+    if (digits.startsWith('98') && digits.length === 12) {
+        return '+' + digits; // 989222453571 → +989222453571
+    }
+
+    // Case 2: Has 0098 prefix
+    if (digits.startsWith('0098') && digits.length === 14) {
+        return '+98' + digits.substring(4); // 00989222453571 → +989222453571
+    }
+
+    // Case 3: Starts with 0 (local format)
+    if (digits.startsWith('0') && digits.length === 11) {
+        return '+98' + digits.substring(1); // 09222453571 → +989222453571
+    }
+
+    // Case 4: Starts with 9 (no prefix)
+    if (digits.startsWith('9') && digits.length === 10) {
+        return '+98' + digits; // 9222453571 → +989222453571
+    }
+
+    // Fallback: assume it needs +98
+    console.warn(`⚠️ [Phone] Unusual format, applying fallback: ${digits}`);
+    return '+98' + digits;
+}
+
+// Get clean digits only (for DB key)
+function getCleanDigits(input) {
+    const p2e = (s) => s
+        .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d).toString())
+        .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
+    return p2e(input).replace(/\D/g, '');
+}
+
+// =========================================
+// 🔍 ROBUST USER LOOKUP
+// Matches against multiple phone formats
+// =========================================
+async function findUserByPhone(supabase, e164Phone, emailIdentifier) {
+    const { data: listData, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+
+    if (error || !listData?.users) {
+        console.error("❌ Failed to list users:", error?.message);
+        return null;
+    }
+
+    const users = listData.users;
+
+    // Generate all possible formats to match
+    const e164WithPlus = e164Phone; // +989222453571
+    const e164NoPlusSign = e164Phone.replace('+', ''); // 989222453571
+    const localFormat = '0' + e164Phone.substring(3); // 09222453571
+    const shortFormat = e164Phone.substring(3); // 9222453571
+
+    const phonesToMatch = [e164WithPlus, e164NoPlusSign, localFormat, shortFormat];
+
+    console.log(`🔍 [Auth] Searching for user with phones:`, phonesToMatch);
+
+    const user = users.find(u => {
+        const userPhone = u.phone || '';
+        const userPhoneClean = userPhone.replace('+', '');
+
+        // Match phone in any format
+        if (phonesToMatch.includes(userPhone)) return true;
+        if (phonesToMatch.includes(userPhoneClean)) return true;
+
+        // Match email identifier
+        if (u.email === emailIdentifier) return true;
+
+        return false;
+    });
+
+    if (user) {
+        console.log(`✅ [Auth] Found user: ${user.id} (phone: ${user.phone})`);
+    } else {
+        console.log(`⚠️ [Auth] No user found for ${e164Phone}`);
+    }
+
+    return user;
+}
+
+// =========================================
+// ⏱️ RATE LIMITING
+// =========================================
 const rateLimitStore = new Map();
 const RATE_LIMIT_WINDOW = 10 * 60 * 1000; // 10 minutes
-const RATE_LIMIT_MAX = 5; // max 5 OTP requests per window
+const RATE_LIMIT_MAX = 5;
 
 function checkRateLimit(mobile) {
     const now = Date.now();
@@ -15,7 +111,6 @@ function checkRateLimit(mobile) {
     const record = rateLimitStore.get(key);
 
     if (!record || now - record.firstRequest > RATE_LIMIT_WINDOW) {
-        // Start new window
         rateLimitStore.set(key, { firstRequest: now, count: 1 });
         return { allowed: true, remaining: RATE_LIMIT_MAX - 1 };
     }
@@ -30,6 +125,9 @@ function checkRateLimit(mobile) {
     return { allowed: true, remaining: RATE_LIMIT_MAX - record.count };
 }
 
+// =========================================
+// 🚀 MAIN HANDLER
+// =========================================
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ message: 'Method not allowed' });
@@ -41,39 +139,24 @@ export default async function handler(req, res) {
         const smsApiKey = process.env.SMS_IR_API_KEY;
         const templateId = process.env.SMS_IR_TEMPLATE_ID;
 
-        // Defensive check
         if (!supabaseUrl || !supabaseServiceKey || !smsApiKey || !templateId) {
-            const missingVars = {
-                supabaseUrl: !supabaseUrl,
-                supabaseServiceKey: !supabaseServiceKey,
-                smsApiKey: !smsApiKey,
-                templateId: !templateId
-            };
-            console.error('❌ Missing Environment Variables:', missingVars);
-            return res.status(500).json({
-                success: false,
-                message: 'تنظیمات سرور ناقص است.',
-                missing: Object.keys(missingVars).filter(k => missingVars[k])
-            });
+            const missing = { supabaseUrl: !supabaseUrl, supabaseServiceKey: !supabaseServiceKey, smsApiKey: !smsApiKey, templateId: !templateId };
+            console.error('❌ Missing Environment Variables:', missing);
+            return res.status(500).json({ success: false, message: 'تنظیمات سرور ناقص است.' });
         }
 
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
         const { action, mobile, code, password, fullName } = req.body;
 
-        const cleanNumber = (str) => {
-            const p2e = (s) => s.replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d).toString())
-                .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d).toString());
-            return p2e(str).replace(/\D/g, '');
-        };
+        const cleanMobile = getCleanDigits(mobile || '');
+        const e164Mobile = normalizeIranianPhone(mobile || '');
+        const emailIdentifier = `${cleanMobile}@manapalm.local`;
 
         const finalApiKey = (smsApiKey || '').trim();
         const finalTemplateId = parseInt((templateId || '0').trim());
 
         // ===== SEND OTP =====
         if (action === 'send') {
-            const cleanMobile = cleanNumber(mobile);
-
-            // Check rate limit before processing
             const rateLimit = checkRateLimit(cleanMobile);
             if (!rateLimit.allowed) {
                 return res.status(429).json({
@@ -92,29 +175,23 @@ export default async function handler(req, res) {
 
             if (dbError) throw dbError;
 
-            console.log(`📡 [SMS.ir] Attempting to send OTP to ${cleanMobile}...`);
+            console.log(`📡 [SMS.ir] Attempting to send OTP to ${cleanMobile} (E.164: ${e164Mobile})`);
 
             let smsSent = false;
-            let smsErrorMsg = '';
 
+            // Layer 1: Direct SMS.ir call
             try {
-                // Controller for network timeout (4 seconds is plenty for a good connection)
                 const controller = new AbortController();
                 const timeoutId = setTimeout(() => controller.abort(), 4000);
 
                 const smsRes = await fetch('https://api.sms.ir/v1/send/verify', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-API-KEY': finalApiKey,
-                    },
+                    headers: { 'Content-Type': 'application/json', 'X-API-KEY': finalApiKey },
                     signal: controller.signal,
                     body: JSON.stringify({
                         mobile: cleanMobile,
                         templateId: finalTemplateId,
-                        parameters: [
-                            { name: "CODE", value: otpCode }
-                        ],
+                        parameters: [{ name: "CODE", value: otpCode }]
                     }),
                 });
 
@@ -122,19 +199,18 @@ export default async function handler(req, res) {
                 const smsData = await smsRes.json();
 
                 if (smsRes.ok) {
-                    console.log(`✅ [SMS.ir] Success: OTP ${otpCode} sent to ${cleanMobile}`);
+                    console.log(`✅ [SMS.ir] Success: OTP ${otpCode} sent`);
                     smsSent = true;
                 } else {
                     console.error('❌ [SMS.ir] Provider Error:', smsData);
                 }
             } catch (err) {
-                console.warn(`⚠️ [Network Issue] SMS.ir unreachable directly. Trying Supabase Edge Proxy...`);
+                console.warn(`⚠️ [Network Issue] SMS.ir unreachable. Trying Edge fallback...`);
             }
 
-            // --- LAYER 2: SUPABASE EDGE FALLBACK (Bypass Intranet) ---
+            // Layer 2: Supabase Edge Function fallback
             if (!smsSent) {
                 try {
-                    console.log(`🔄 [Edge] Attempting to proxy via Supabase Edge Function...`);
                     const edgeRes = await fetch(`${supabaseUrl}/functions/v1/send-otp`, {
                         method: 'POST',
                         headers: {
@@ -146,34 +222,23 @@ export default async function handler(req, res) {
                     });
 
                     if (edgeRes.ok) {
-                        console.log(`✅ [Edge] Success: SMS dispatched via Supabase Infrastructure.`);
+                        console.log(`✅ [Edge] SMS dispatched via Supabase.`);
                         smsSent = true;
-                    } else {
-                        const edgeData = await edgeRes.json();
-                        console.error('❌ [Edge] Failed:', edgeData);
                     }
                 } catch (edgeErr) {
                     console.error('❌ [Edge] Unreachable:', edgeErr.message);
                 }
             }
 
-            // --- STRATEGIC FALLBACK ---
-            // If SMS failed due to NETWORK (Intranet), we still allow the session to proceed 
-            // by showing the code in the terminal for the developer.
+            // Layer 3: Terminal fallback (Dev Mode)
             if (!smsSent) {
                 console.log('\n' + '='.repeat(50));
-                console.log('🔴 [Intranet-Mode] SMS DELIVERY FAILED');
+                console.log('🔴 [DEV MODE] SMS DELIVERY FAILED');
                 console.log(`📱 TARGET: ${cleanMobile}`);
                 console.log(`🔑 OTP CODE: ${otpCode}`);
-                console.log('💡 Action: Please enter the code above to continue.');
                 console.log('='.repeat(50) + '\n');
 
-                // We return true to the frontend so the modal moves to the verification step
-                return res.status(200).json({
-                    success: true,
-                    isMocked: true,
-                    note: 'سیستم به دلیل محدودیت شبکه در حالت شبیه‌ساز قرار گرفت'
-                });
+                return res.status(200).json({ success: true, isMocked: true });
             }
 
             return res.status(200).json({ success: true });
@@ -181,7 +246,6 @@ export default async function handler(req, res) {
 
         // ===== VERIFY OTP =====
         if (action === 'verify') {
-            const cleanMobile = cleanNumber(mobile);
             const { data, error } = await supabase
                 .from('otps')
                 .select('*')
@@ -197,38 +261,68 @@ export default async function handler(req, res) {
                 return res.status(400).json({ success: false, message: 'کد منقضی شده است' });
             }
 
-            // 🔐 SECURITY UPGRADE: Generate Session Token
-            // Now that we verified the SMS code, we generate a Magic Link for the user
-            // so the frontend can establish a REAL Supabase Session.
+            // 🔐 Find or Create User
+            let user = await findUserByPhone(supabase, e164Mobile, emailIdentifier);
 
-            const e164Mobile = '+98' + cleanMobile.substring(1);
-            const emailIdentifier = `${cleanMobile}@manapalm.local`;
+            if (!user) {
+                console.log(`🌱 [Auth] Creating new user for ${cleanMobile}...`);
+                const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
+                    phone: e164Mobile,
+                    email: emailIdentifier,
+                    email_confirm: true,
+                    phone_confirm: true,
+                    user_metadata: { full_name: 'کاربر گرامی' }
+                });
 
-            // Find user by phone or email
-            const { data: listData } = await supabase.auth.admin.listUsers({ perPage: 1000 });
-            const user = (listData?.users || []).find(u =>
-                u.phone === e164Mobile || u.email === emailIdentifier
-            );
+                if (createError) {
+                    // Handle "phone_exists" by retrying lookup
+                    if (createError.status === 422 || createError.message?.includes('already registered')) {
+                        console.warn("⚠️ [Auth] Phone exists, retrying lookup...");
+                        user = await findUserByPhone(supabase, e164Mobile, emailIdentifier);
+                    }
 
+                    if (!user) {
+                        console.error("❌ [Auth] Could not create or find user:", createError);
+                    }
+                } else {
+                    user = newUser.user;
+                    console.log(`✅ [Auth] Created user: ${user.id}`);
+                }
+            }
+
+            // Generate session token
             let sessionData = null;
 
             if (user) {
-                // Generate Magic Link (returns email_otp we can use as a token)
+                // 🛡️ Ensure user has an email (some users were created phone-only)
+                let userEmail = user.email;
+                if (!userEmail || !userEmail.includes('@')) {
+                    userEmail = emailIdentifier;
+                    console.log(`📧 [Auth] Updating user ${user.id} with fallback email: ${userEmail}`);
+
+                    await supabase.auth.admin.updateUserById(user.id, {
+                        email: userEmail,
+                        email_confirm: true
+                    });
+                }
+
                 const { data: linkData, error: linkError } = await supabase.auth.admin.generateLink({
                     type: 'magiclink',
-                    email: user.email
+                    email: userEmail
                 });
 
                 if (!linkError && linkData?.properties?.email_otp) {
                     sessionData = {
                         token: linkData.properties.email_otp,
-                        email: user.email
+                        email: userEmail
                     };
-                    console.log(`🔐 [Auth] Generated Session Token for ${cleanMobile}`);
+                    console.log(`🔐 [Auth] Session token generated for ${user.id}`);
+                } else {
+                    console.error("❌ Failed to generate magic link:", linkError);
                 }
             }
 
-            // Clean up OTP after use (Prevents replay attacks)
+            // Cleanup OTP
             await supabase.from('otps').delete().eq('mobile', cleanMobile);
 
             return res.status(200).json({
@@ -239,113 +333,71 @@ export default async function handler(req, res) {
 
         // ===== SET PASSWORD =====
         if (action === 'set-password') {
-            const cleanMobile = cleanNumber(mobile);
-            const verifyCode = code;
-
-            // Verify OTP one last time
             const { data: otpData, error: otpError } = await supabase
                 .from('otps')
                 .select('*')
                 .eq('mobile', cleanMobile)
-                .eq('code', verifyCode)
+                .eq('code', code)
                 .single();
 
             if (otpError || !otpData) {
-                return res.status(400).json({ success: false, message: 'کد نامعتبر است. مجدداً تلاش کنید.' });
+                return res.status(400).json({ success: false, message: 'کد نامعتبر است.' });
             }
 
-            // E.164 format for Supabase
-            const e164Mobile = '+98' + cleanMobile.substring(1);
-
-            // Check if user exists
-            const { data: listData, error: listError } = await supabase.auth.admin.listUsers({ perPage: 1000 });
-            if (listError) throw listError;
-
-            const users = (listData?.users || []);
-            const existingAuthUser = users.find(u => u.phone === e164Mobile || u.email === cleanMobile + "@mana.com");
-
+            let user = await findUserByPhone(supabase, e164Mobile, emailIdentifier);
             const finalMetadata = { full_name: fullName || cleanMobile };
 
-            if (existingAuthUser) {
-                // Update password
+            if (user) {
                 const { error: updateError } = await supabase.auth.admin.updateUserById(
-                    existingAuthUser.id,
-                    {
-                        password: password,
-                        user_metadata: { ...existingAuthUser.user_metadata, ...finalMetadata }
-                    }
+                    user.id,
+                    { password, user_metadata: { ...user.user_metadata, ...finalMetadata } }
                 );
                 if (updateError) throw updateError;
             } else {
-                // Create user
                 const { error: createError } = await supabase.auth.admin.createUser({
                     phone: e164Mobile,
-                    password: password,
+                    email: emailIdentifier,
+                    password,
                     phone_confirm: true,
+                    email_confirm: true,
                     user_metadata: finalMetadata
                 });
                 if (createError) throw createError;
             }
 
-            // Cleanup OTP
             await supabase.from('otps').delete().eq('mobile', cleanMobile);
-
-            return res.status(200).json({ success: true, message: 'رمز عبور با موفقیت تنظیم شد.' });
+            return res.status(200).json({ success: true, message: 'رمز عبور تنظیم شد.' });
         }
 
-        // ===== REGISTER WITHOUT OTP (Emergency Mode) =====
+        // ===== REGISTER WITHOUT OTP (Emergency) =====
         if (action === 'register_without_otp') {
-            const cleanMobile = cleanNumber(mobile);
-
-            // Basic validation
             if (!password || password.length < 6) {
                 return res.status(400).json({ success: false, message: 'رمز عبور باید حداقل ۶ کاراکتر باشد.' });
             }
 
-            // E.164 format
-            const e164Mobile = '+98' + cleanMobile.substring(1);
-
-            // Check if user already exists
-            const { data: listData, error: listError } = await supabase.auth.admin.listUsers({ perPage: 1000 });
-            if (listError) throw listError;
-
-            const users = (listData?.users || []);
-            const existingUser = users.find(u => u.phone === e164Mobile || u.email === `${cleanMobile}@manapalm.local`);
+            const existingUser = await findUserByPhone(supabase, e164Mobile, emailIdentifier);
 
             if (existingUser) {
-                // For security, we DO NOT allow overwriting existing users without OTP.
-                // They must use the "Forgot Password" flow (which needs SMS, currently down).
-                // Or we can assume if they know the password they can login.
-                // If they don't know the password and SMS is down, they are stuck.
-                // But we cannot let a stranger hijack an account just by registering it.
                 return res.status(409).json({
                     success: false,
                     message: 'این شماره قبلاً ثبت شده است. لطفاً وارد شوید.'
                 });
             }
 
-            // Create NEW user - Auto Confirmed
-            const finalMetadata = {
-                full_name: fullName || 'کاربر جدید',
-                is_unverified_signup: true // Mark for future verification
-            };
-
             const { data: newUser, error: createError } = await supabase.auth.admin.createUser({
                 phone: e164Mobile,
-                email: `${cleanMobile}@manapalm.local`, // Fallback email
-                password: password,
-                phone_confirm: true, // Auto-confirm phone
+                email: emailIdentifier,
+                password,
+                phone_confirm: true,
                 email_confirm: true,
-                user_metadata: finalMetadata
+                user_metadata: { full_name: fullName || 'کاربر جدید', is_unverified_signup: true }
             });
 
-            if (createError) {
-                throw createError;
-            }
+            if (createError) throw createError;
 
             return res.status(200).json({
                 success: true,
-                message: 'حساب کاربری با موفقیت ساخته شد.',
+                message: 'حساب کاربری ساخته شد.',
                 user: newUser.user
             });
         }

@@ -51,7 +51,8 @@ export const verifyOTP = async (phone: string, code: string): Promise<OTPRespons
 
         return {
             success: true,
-            fullName: 'کاربر گرامی' // Default until rich profile resolved
+            fullName: 'کاربر گرامی', // Default until rich profile resolved
+            session: data.session // ✅ Forward session data to AuthModal
         };
     } catch (err) {
         console.error("OTP verify error:", err);

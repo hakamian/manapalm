@@ -91,39 +91,29 @@ const UserMenu: React.FC = () => {
                         </li>
                     )}
                     <li>
-                        <a href="#" onClick={async (e) => {
-                            e.preventDefault();
-                            console.log("🚪 Manual Logout Initiated...");
-                            try {
-                                // 🛡️ CRITICAL: Set flag BEFORE signOut to block auth listener
-                                setLoggingOut(true);
+                        <button
+                            onClick={async () => {
+                                console.log("🚪 Manual Logout Initiated...");
+                                try {
+                                    setLoggingOut(true);
+                                    await dbAdapter.signOut();
+                                    dispatch({ type: 'LOGOUT' });
 
-                                // 1. Attempt graceful Supabase signout (clears cookies and remote session)
-                                await dbAdapter.signOut();
-
-                                // 2. Dispatch local state cleanup
-                                dispatch({ type: 'LOGOUT' });
-
-                                // 3. Thoroughly wipe all potential persistent storage and navigate
-                                if (typeof window !== 'undefined') {
-                                    localStorage.clear();
-                                    sessionStorage.clear();
-                                    console.log("✅ Logout successful, redirecting...");
-                                    // Faster than reload:
-                                    window.location.href = '/';
-                                }
-                            } catch (err) {
-                                console.error("❌ Logout failed", err);
-                                setLoggingOut(false); // Reset flag on error
-                                // Fallback: force refresh anyway
-                                if (typeof window !== 'undefined') {
-                                    localStorage.clear();
+                                    if (typeof window !== 'undefined') {
+                                        localStorage.clear();
+                                        sessionStorage.clear();
+                                        // Force hard redirect
+                                        window.location.href = '/?logout=true';
+                                    }
+                                } catch (err) {
+                                    console.error("❌ Logout failed", err);
                                     window.location.reload();
                                 }
-                            }
-                        }} className="block px-4 py-2 hover:bg-green-800 transition-colors duration-200">
-                            خروج
-                        </a>
+                            }}
+                            className="block w-full text-right px-4 py-2 hover:bg-green-800 transition-colors duration-200 text-red-300 hover:text-red-200"
+                        >
+                            خروج از حساب
+                        </button>
                     </li>
                 </ul>
             )}

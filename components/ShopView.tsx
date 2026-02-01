@@ -71,7 +71,7 @@ const ShopView: React.FC = () => {
                 </div>
 
                 {/* Section 1: Organic Products (SEO Target) */}
-                <div className="mb-24">
+                <div id="organic" className="mb-24">
                     <div className="flex items-center gap-4 mb-10 border-r-4 border-emerald-500 pr-6">
                         <div>
                             <h2 className="text-2xl md:text-3xl font-bold text-white">محصولات ارگانیک ماناپالم</h2>
@@ -134,7 +134,7 @@ const ShopView: React.FC = () => {
                 </div>
 
                 {/* Section 2: Heritage Palms */}
-                <div className="mb-24">
+                <div id="heritage" className="mb-24">
                     <div className="flex items-center gap-4 mb-10 border-r-4 border-amber-500 pr-6">
                         <div>
                             <h2 className="text-2xl md:text-3xl font-bold text-white">نخل‌های میراث</h2>

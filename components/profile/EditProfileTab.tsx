@@ -1,5 +1,5 @@
 
-import React, { useState, useRef, useMemo } from 'react';
+import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { User, PointLog } from '../../types';
 import { UserCircleIcon, CameraIcon, SparklesIcon, MapPinIcon, LockClosedIcon } from '../icons';
 import { supabase } from '../../services/supabaseClient';
@@ -28,6 +28,14 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
     const nameParts = user.fullName?.split(' ') || ['', ''];
 
     const [activeSection, setActiveSection] = useState<'basic' | 'detailed' | 'security' | 'addresses'>(initialSection === 'addresses' ? 'addresses' : (initialSection as any));
+
+    // 🔄 SYNC STATE WITH PROP: This is crucial for external navigation (e.g. from ProfileCompletionModal)
+    useEffect(() => {
+        if (initialSection) {
+            console.log("🔄 [EditProfile] Switching section via prop to:", initialSection);
+            setActiveSection(initialSection);
+        }
+    }, [initialSection]);
 
     const [firstName, setFirstName] = useState(user.firstName || nameParts[0] || '');
     const [lastName, setLastName] = useState(user.lastName || nameParts.slice(1).join(' ') || '');
