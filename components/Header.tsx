@@ -92,23 +92,20 @@ const UserMenu: React.FC = () => {
                     )}
                     <li>
                         <button
-                            onClick={async () => {
-                                console.log("🚪 Manual Logout Initiated...");
-                                try {
-                                    setLoggingOut(true);
-                                    await dbAdapter.signOut();
-                                    dispatch({ type: 'LOGOUT' });
+                            onClick={() => {
+                                console.log("🚪 Instant Logout...");
 
-                                    if (typeof window !== 'undefined') {
-                                        localStorage.clear();
-                                        sessionStorage.clear();
-                                        // Force hard redirect
-                                        window.location.href = '/?logout=true';
-                                    }
-                                } catch (err) {
-                                    console.error("❌ Logout failed", err);
-                                    window.location.reload();
+                                // 1. Clear all local state immediately
+                                if (typeof window !== 'undefined') {
+                                    localStorage.clear();
+                                    sessionStorage.clear();
                                 }
+
+                                // 2. Fire and forget - don't wait for server
+                                dbAdapter.signOut().catch(() => { });
+
+                                // 3. Instant redirect
+                                window.location.href = '/?logout=true';
                             }}
                             className="block w-full text-right px-4 py-2 hover:bg-green-800 transition-colors duration-200 text-red-300 hover:text-red-200"
                         >

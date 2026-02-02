@@ -191,7 +191,10 @@ export default async function handler(req, res) {
                     body: JSON.stringify({
                         mobile: cleanMobile,
                         templateId: finalTemplateId,
-                        parameters: [{ name: "CODE", value: otpCode }]
+                        parameters: [
+                            { name: "CODE", value: otpCode },
+                            { name: "EXPIRE_TIME", value: "5" }
+                        ]
                     }),
                 });
 

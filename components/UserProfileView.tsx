@@ -78,7 +78,13 @@ const UserProfileView: React.FC = () => {
     };
 
 
-    const [activeTab, setActiveTab] = useState(profileInitialTab || 'dashboard');
+    const [activeTab, setActiveTab] = useState(() => {
+        const subTabs = ['detailed', 'security', 'addresses'];
+        if (profileInitialTab && subTabs.includes(profileInitialTab)) {
+            return 'profile';
+        }
+        return profileInitialTab || 'dashboard';
+    });
     const [briefingMentee, setBriefingMentee] = useState<User | null>(null);
 
     // State for access modal in compass tab

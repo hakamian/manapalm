@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { User, PointLog } from '../../types';
-import { UserCircleIcon, CameraIcon, SparklesIcon, MapPinIcon, LockClosedIcon } from '../icons';
+import { UserCircleIcon, CameraIcon, SparklesIcon, MapPinIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '../icons';
 import { supabase } from '../../services/supabaseClient';
 import ToggleSwitch from '../ToggleSwitch';
 import { getAIAssistedText } from '../../services/geminiService';
@@ -55,14 +55,14 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
 
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
 
     const [isSaving, setIsSaving] = useState(false);
     const [isBioAIAssistLoading, setIsBioAIAssistLoading] = useState(false);
     const [successMessage, setSuccessMessage] = useState('');
     const [error, setError] = useState('');
 
-    const handlePasswordUpdate = async (e: React.FormEvent) => {
-        e.preventDefault();
+    const handlePasswordUpdate = async () => {
         setError('');
         setSuccessMessage('');
         setIsSaving(true);
@@ -80,12 +80,28 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
         }
 
         try {
-            const { error } = await supabase!.auth.updateUser({ password: newPassword });
-            if (error) throw error;
-            setSuccessMessage('رمز عبور با موفقیت بروزرسانی شد.');
+            // 🔐 Use API route with service role key for reliable password update
+            const response = await fetch('/api/set-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: user.id,
+                    password: newPassword,
+                    phone: user.phone
+                })
+            });
+
+            const data = await response.json();
+
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || 'خطا در بروزرسانی رمز عبور');
+            }
+
+            setSuccessMessage('رمز عبور با موفقیت ذخیره شد. حالا می‌توانید با شماره موبایل و رمز عبور وارد شوید.');
             setNewPassword('');
             setConfirmPassword('');
         } catch (err: any) {
+            console.error('Password update error:', err);
             setError(err.message || 'خطا در بروزرسانی رمز عبور');
         } finally {
             setIsSaving(false);
@@ -502,25 +518,43 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
                                 <div className="space-y-2 pt-4 border-t border-gray-700/50">
                                     <div className="space-y-2">
                                         <label className="text-sm text-gray-300 font-medium">رمز عبور جدید</label>
-                                        <input
-                                            type="password"
-                                            value={newPassword}
-                                            onChange={e => setNewPassword(e.target.value)}
-                                            className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-amber-500 outline-none text-left dir-ltr"
-                                            placeholder="••••••"
-                                            autoComplete="new-password"
-                                        />
+                                        <div className="relative">
+                                            <input
+                                                type={showPassword ? 'text' : 'password'}
+                                                value={newPassword}
+                                                onChange={e => setNewPassword(e.target.value)}
+                                                className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-amber-500 outline-none text-left dir-ltr pl-10"
+                                                placeholder="••••••"
+                                                autoComplete="new-password"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+                                            >
+                                                {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm text-gray-300 font-medium">تکرار رمز عبور</label>
-                                        <input
-                                            type="password"
-                                            value={confirmPassword}
-                                            onChange={e => setConfirmPassword(e.target.value)}
-                                            className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-amber-500 outline-none text-left dir-ltr"
-                                            placeholder="••••••"
-                                            autoComplete="new-password"
-                                        />
+                                        <div className="relative">
+                                            <input
+                                                type={showPassword ? 'text' : 'password'}
+                                                value={confirmPassword}
+                                                onChange={e => setConfirmPassword(e.target.value)}
+                                                className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-amber-500 outline-none text-left dir-ltr pl-10"
+                                                placeholder="••••••"
+                                                autoComplete="new-password"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
+                                            >
+                                                {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div> {/* Closing the wrapper div added in previous step */}
 
@@ -535,6 +569,18 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
                                 >
                                     {isSaving ? 'در حال ثبت...' : 'ثبت رمز عبور جدید'}
                                 </button>
+
+                                {/* Error/Success Messages */}
+                                {error && (
+                                    <div className="mt-4 p-3 rounded-xl bg-red-900/30 border border-red-700/50 text-red-300 text-center">
+                                        {error}
+                                    </div>
+                                )}
+                                {successMessage && (
+                                    <div className="mt-4 p-3 rounded-xl bg-green-900/30 border border-green-700/50 text-green-300 text-center">
+                                        ✅ {successMessage}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}

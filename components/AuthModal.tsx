@@ -317,8 +317,20 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
         setLoading(true);
         setError('');
         try {
+            // Normalize phone for email
+            const cleanPhone = phone.replace(/\D/g, '');
+            let localPhone = cleanPhone;
+            if (cleanPhone.startsWith('98')) {
+                localPhone = '0' + cleanPhone.substring(2);
+            } else if (cleanPhone.startsWith('9') && cleanPhone.length === 10) {
+                localPhone = '0' + cleanPhone;
+            }
+            const normalizedEmail = `${localPhone}@manapalm.local`;
+
+            console.log(`🔐 [Auth] Attempting password login with email: ${normalizedEmail}`);
+
             const { data, error } = await supabase.auth.signInWithPassword({
-                email: `${phone}@manapalm.local`,
+                email: normalizedEmail,
                 password: password,
             });
             if (error) throw error;
@@ -327,6 +339,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
                 onClose();
             }
         } catch (err: any) {
+            console.error('Password login error:', err);
             setError('شماره یا رمز عبور اشتباه است');
         } finally {
             setLoading(false);
