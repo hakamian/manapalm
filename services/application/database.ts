@@ -19,6 +19,7 @@ const safeParse = (data: any, fallback: any) => {
 
 // 🛡️ Helper to prevent hanging database calls
 const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, fallback: T): Promise<T> => {
+    const startTime = Date.now();
     let timeoutHandle: any;
     const timeoutPromise = new Promise<T>((resolve) => {
         timeoutHandle = setTimeout(() => {
@@ -30,10 +31,22 @@ const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, fallback: 
     try {
         const result = await Promise.race([promise, timeoutPromise]);
         clearTimeout(timeoutHandle);
+        const duration = Date.now() - startTime;
+
+        // Performance Monitoring Log
+        if (duration > 5000) {
+            console.log(`🐢 [DB Performance] VERY SLOW: ${duration}ms`);
+        } else if (duration > 1000) {
+            console.log(`⏳ [DB Performance] Slow: ${duration}ms`);
+        } else {
+            console.log(`⚡ [DB Performance] Fast: ${duration}ms`);
+        }
+
         return result;
     } catch (err) {
         clearTimeout(timeoutHandle);
-        console.error("❌ [DB Error]", err);
+        const duration = Date.now() - startTime;
+        console.error(`❌ [DB Error] Operation failed after ${duration}ms`, err);
         return fallback;
     }
 };
@@ -329,21 +342,29 @@ export const dbAdapter = {
             return [];
         }
 
-        return data.map((o: any) => ({
-            id: o.id,
-            userId: o.user_id,
-            totalAmount: o.total_amount,
-            total: o.total_amount,
-            status: o.status,
-            items: safeParse(o.items, []),
-            deliveryType: o.delivery_type || 'digital',
-            physicalAddress: safeParse(o.physical_address, null),
-            digitalAddress: safeParse(o.digital_address, null),
-            createdAt: o.created_at,
-            date: o.created_at,
-            statusHistory: safeParse(o.status_history, [{ status: o.status, date: o.created_at }]),
-            deeds: safeParse(o.deeds, [])
-        }));
+        return data.map((o: any) => {
+            const statusHistory = safeParse(o.status_history, []);
+            // Extract payment info from status history if it's not a top-level column
+            const paymentInfo = statusHistory.find((h: any) => h.paymentMethod) || {};
+
+            return {
+                id: o.id,
+                userId: o.user_id,
+                totalAmount: o.total_amount,
+                total: o.total_amount,
+                status: o.status,
+                items: safeParse(o.items, []),
+                deliveryType: o.delivery_type || 'digital',
+                physicalAddress: safeParse(o.physical_address, null),
+                digitalAddress: safeParse(o.digital_address, null),
+                createdAt: o.created_at,
+                date: o.created_at,
+                statusHistory: statusHistory.length > 0 ? statusHistory : [{ status: o.status, date: o.created_at }],
+                deeds: safeParse(o.deeds, []),
+                paymentMethod: o.payment_method || paymentInfo.paymentMethod,
+                paymentProof: o.payment_proof || paymentInfo.paymentProof
+            };
+        });
     },
 
     async getAllOrders(): Promise<Order[]> {
@@ -352,6 +373,15 @@ export const dbAdapter = {
 
     async saveOrder(order: Order): Promise<void> {
         if (!this.isLive()) return;
+
+        // 🛡️ SCHEMA FIX: 'payment_method' and 'payment_proof' don't exist as columns in 'orders' table.
+        // We store them in status_history to keep them in the DB without changing schema.
+        const initialHistory = {
+            status: order.status,
+            date: order.date || new Date().toISOString(),
+            paymentMethod: order.paymentMethod,
+            paymentProof: order.paymentProof
+        };
 
         const orderData = {
             id: order.id,
@@ -362,32 +392,44 @@ export const dbAdapter = {
             delivery_type: order.deliveryType,
             physical_address: order.physicalAddress,
             digital_address: order.digitalAddress,
-            status_history: order.statusHistory,
+            status_history: [initialHistory, ...(order.statusHistory || [])],
             deeds: order.deeds || [],
-            payment_method: order.paymentMethod,
-            payment_proof: order.paymentProof,
             created_at: order.date,
             updated_at: new Date().toISOString()
         };
 
-        const { error: orderError } = await supabase!.from('orders').upsert(orderData);
-        if (orderError) {
-            console.error('Error saving order:', orderError.message);
-            return;
+        const operation = (async () => {
+            const { error: orderError } = await supabase!.from('orders').upsert(orderData);
+            if (orderError) {
+                console.error('Error saving order:', orderError.message);
+                throw orderError;
+            }
+            return true;
+        })();
+
+        // Use withTimeout to prevent hanging
+        const success = await withTimeout(operation, 15000, false);
+
+        if (!success) {
+            console.warn('⚠️ [DB] saveOrder timed out or failed. Continuing with local backup.');
         }
 
         // 🛡️ Also save to normalized order_items table for reporting
-        if (order.items && order.items.length > 0) {
+        if (success && order.items && order.items.length > 0) {
             const itemsToInsert = order.items.map(item => ({
                 order_id: order.id,
-                product_id: item.id,
+                product_id: item.productId || item.id,
                 quantity: item.quantity,
                 price_at_time: item.price,
                 created_at: new Date().toISOString()
             }));
 
-            const { error: itemsError } = await supabase!.from('order_items').insert(itemsToInsert);
-            if (itemsError) console.warn('Warning: Could not save order_items (Non-critical):', itemsError.message);
+            const itemsOperation = (async () => {
+                const { error } = await supabase!.from('order_items').insert(itemsToInsert);
+                if (error) throw error;
+                return true;
+            })();
+            await withTimeout(itemsOperation, 10000, null);
         }
     },
 

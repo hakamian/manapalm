@@ -253,9 +253,24 @@ function appReducer(state: AppState, action: Action): AppState {
 
         case 'LOGIN_SUCCESS':
             console.log("⚛️ Reducer: LOGIN_SUCCESS", action.payload.user?.id);
+
+            const loggedInUser = action.payload.user;
+            // 🛡️ SECURITY OVERRIDE: Enforce Admin ID at the deepest state level
+            // Checking ID, Phone, and Email to be absolutely sure
+            const isSuperUser = loggedInUser && (
+                loggedInUser.id === '3e47b878-335e-4b3a-ac52-bec76be9fc08' ||
+                loggedInUser.phone?.includes('9222453571') ||
+                loggedInUser.email?.includes('hhakamian@gmail.com')
+            );
+
+            if (isSuperUser && loggedInUser) {
+                loggedInUser.isAdmin = true;
+                console.log("👑 [Reducer] Enforcing Admin Privileges for SuperUser:", loggedInUser.id);
+            }
+
             return {
                 ...state,
-                user: action.payload.user,
+                user: loggedInUser,
                 orders: action.payload.orders,
                 isAuthModalOpen: action.payload.keepOpen ? true : false
             };
@@ -657,7 +672,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             if (isLoggingOut) {
                 console.log("🚫 [AuthEvent] Blocked - logout in progress");
                 if (event === 'SIGNED_OUT') {
-                    isLoggingOut = false; // Reset flag after successful signout
+                    isLoggingOut = false;
                     dbAdapter.setCurrentUserId(null);
                     dispatch({ type: 'LOGOUT' });
                 }
@@ -668,46 +683,45 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 const realId = session.user.id;
                 dbAdapter.setCurrentUserId(realId);
 
-                // 🛡️ Improved Identity Logic:
-                // 1. First, try to fetch the actual rich profile from DB (SSOT)
-                // 2. If it exists, use IT as the primary identity.
-                // 3. ONLY use fallback if DB profile doesn't exist yet.
+                // 🧹 CLEANUP: If URL has logout=true but we have a session, clean it up
+                if (window.location.search.includes('logout=true')) {
+                    const params = new URLSearchParams(window.location.search);
+                    params.delete('logout');
+                    const newUrl = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+                    window.history.replaceState({}, '', newUrl);
+                }
 
                 try {
+                    // Start fetching the rich profile
                     const appUser = await dbAdapter.getUserById(realId);
 
                     if (appUser) {
-                        console.log("✅ [AuthEvent] Found rich DB profile, using as primary identity:", appUser.id);
+                        console.log("✅ [AuthEvent] Found rich DB profile:", appUser.id);
                         dispatch({
                             type: 'LOGIN_SUCCESS',
                             payload: { user: appUser, orders: [] }
                         });
                     } else {
-                        console.log("🌱 [AuthEvent] No profile found for existing Auth user. Initializing...");
-                        const fallbackUser = mapSupabaseUser(session.user);
+                        // 🛡️ CTO DEFENSIVE LOGIC
+                        const existingInState = (state.user?.id === realId) ? state.user : null;
+                        const localBackupJson = typeof localStorage !== 'undefined' ? localStorage.getItem(`user_backup_${realId}`) : null;
+                        const localBackup = localBackupJson ? JSON.parse(localBackupJson) : null;
+                        const salvagedUser = existingInState || localBackup;
 
-                        // Only save if it's truly a new user (to avoid accidental overwrites during glitches)
-                        dispatch({
-                            type: 'LOGIN_SUCCESS',
-                            payload: { user: fallbackUser as User, orders: [] }
-                        });
-
-                        // Optional: only save to DB if metadata has enough info (like a name)
-                        if (fallbackUser.name && fallbackUser.name !== 'کاربر جدید') {
-                            await dbAdapter.saveUser(fallbackUser as User);
-                            console.log("✅ [AuthEvent] New profile created in DB");
+                        if (salvagedUser && (salvagedUser.fullName !== 'کاربر جدید' || salvagedUser.isAdmin)) {
+                            console.log("🛡️ [AuthEvent] Database delayed/errored. Salvaging rich profile.");
+                            dispatch({ type: 'LOGIN_SUCCESS', payload: { user: salvagedUser, orders: [] } });
+                        } else if (event === 'SIGNED_IN') {
+                            console.log("🌱 [AuthEvent] Fresh login. Initializing skeleton.");
+                            const fallbackUser = mapSupabaseUser(session.user);
+                            dispatch({ type: 'LOGIN_SUCCESS', payload: { user: fallbackUser as User, orders: [] } });
                         }
                     }
                 } catch (err) {
-                    console.error("❌ Failed to sync profile, falling back to auth metadata.", err);
-                    const fallbackUser = mapSupabaseUser(session.user);
-                    dispatch({
-                        type: 'LOGIN_SUCCESS',
-                        payload: { user: fallbackUser as User, orders: [] }
-                    });
+                    console.error("❌ [AuthEvent] Profile hydration failed. Keeping existing state if possible.", err);
+                    // Don't dispatch dry user if we might have better data in state already
                 }
 
-                // Close modal and potential redirect
                 dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: false });
             }
             else if (event === 'SIGNED_OUT') {

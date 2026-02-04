@@ -185,6 +185,7 @@ export default function ShoppingCartModal() {
 
             {/* Footer Actions */}
             <div className="mt-auto pt-6 border-t border-white/5 space-y-3">
+              {/* Explicit Logic for Step 3 (Checkout) vs Other Steps */}
               {activeStep === 3 ? (
                 <button
                   onClick={proceedToCheckout}
@@ -198,7 +199,7 @@ export default function ShoppingCartModal() {
                   onClick={nextStep}
                   className="w-full bg-white/10 hover:bg-white/20 text-white py-4 rounded-2xl transition-all font-bold flex items-center justify-center gap-2 group"
                 >
-                  <span>{activeStep === 2 ? 'ادامه به خلاصه' : 'گزارش اثرگذاری'}</span>
+                  <span>{activeStep === 2 ? 'ادامه به تایید نهایی' : 'مشاهده گزارش اثرگذاری'}</span>
                   <ArrowLeftIcon className="w-5 h-5 transform group-hover:-translate-x-1 transition-transform" />
                 </button>
               )}

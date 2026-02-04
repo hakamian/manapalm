@@ -44,9 +44,10 @@ export default function ProductCard({
           <Image
             src={imageSrc}
             alt={product.name}
-            fill
-            className={`object-cover transition-all duration-700 ease-in-out ${realImageSrc ? 'group-hover:opacity-0 group-hover:scale-105' : 'group-hover:scale-110'}`}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            width={400}
+            height={300}
+            priority={true} // 🚀 Performance: Preload visible product images
+            className={`w-full h-full object-cover transition-all duration-700 ease-in-out ${realImageSrc ? 'group-hover:opacity-0 group-hover:scale-105' : 'group-hover:scale-110'}`}
           />
         )}
 
@@ -55,9 +56,9 @@ export default function ProductCard({
           <Image
             src={realImageSrc}
             alt={`${product.name} (Real)`}
-            fill
-            className="object-cover opacity-0 group-hover:opacity-100 scale-105 group-hover:scale-100 transition-all duration-700 ease-in-out"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+            width={400}
+            height={300}
+            className="absolute top-0 left-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 scale-105 group-hover:scale-100 transition-all duration-700 ease-in-out"
           />
         )}
 

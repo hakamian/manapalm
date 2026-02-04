@@ -42,10 +42,16 @@ export default async function handler(req, res) {
   // --- REQUEST PAYMENT ---
   if (action === 'request') {
     try {
-      const callbackUrl = `${req.headers.origin}/?view=PAYMENT_CALLBACK`;
+      const origin = req.headers.origin || 'http://localhost:3000';
+      const callbackUrl = `${origin}/?view=PAYMENT_CALLBACK`;
 
-      // 🛡️ CTO TEST MODE: If no merchant ID and explicitly allowed or in development
-      if (!MERCHANT_ID || MERCHANT_ID === 'TEST') {
+      // 🛡️ CTO TEST MODE: If no merchant ID or placeholder, explicitly allowed or in development
+      const isTestMerchant = !MERCHANT_ID ||
+        MERCHANT_ID === 'TEST' ||
+        MERCHANT_ID.includes('YOUR_MERCHANT_ID') ||
+        MERCHANT_ID === '00000000-0000-0000-0000-000000000000';
+
+      if (isTestMerchant) {
         console.log('🧪 [API] TEST MODE: Simulating payment request. Returning instant response.');
         return res.status(200).json({
           success: true,
@@ -57,33 +63,47 @@ export default async function handler(req, res) {
       console.log(`🔗 [API] Calling ZarinPal API: ${BASE_URL}/request.json`);
       const payload = {
         merchant_id: MERCHANT_ID,
-        amount: amount * 10, // Convert Toman to Rial
+        amount: Math.round(amount * 10), // Convert Toman to Rial (Toman = 10 Rial)
         callback_url: callbackUrl,
         description: description,
         metadata: { email, mobile }
       };
 
-      const response = await fetch(`${BASE_URL}/request.json`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      // 🛡️ Internal Timeout for Gateway (10s)
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
-      const data = await response.json();
-
-      if (data.data && data.data.code === 100) {
-        return res.status(200).json({
-          success: true,
-          authority: data.data.authority,
-          url: `${PAYMENT_GATEWAY_URL}${data.data.authority}`
+      try {
+        const response = await fetch(`${BASE_URL}/request.json`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal
         });
-      } else {
-        console.error('ZarinPal Request Error Data:', data);
-        return res.status(400).json({ success: false, error: data.errors });
+        clearTimeout(timeoutId);
+
+        const data = await response.json();
+
+        if (data.data && data.data.code === 100) {
+          return res.status(200).json({
+            success: true,
+            authority: data.data.authority,
+            url: `${PAYMENT_GATEWAY_URL}${data.data.authority}`
+          });
+        } else {
+          console.error('ZarinPal Request Error Data:', data);
+          return res.status(400).json({ success: false, error: data.errors });
+        }
+      } catch (innerError) {
+        clearTimeout(timeoutId);
+        throw innerError;
       }
 
     } catch (error) {
-      console.error('ZarinPal Request Network Error:', error);
+      console.error('ZarinPal Request Error:', error);
+      if (error.name === 'AbortError') {
+        return res.status(504).json({ error: 'Payment gateway timed out (10s)' });
+      }
       return res.status(500).json({ error: 'Payment Gateway Connection Failed' });
     }
   }

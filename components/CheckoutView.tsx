@@ -197,30 +197,37 @@ const CheckoutView: React.FC = () => {
                 date: new Date().toISOString()
             };
 
-            console.log('📦 [Checkout] Saving order...', orderId);
+            console.log('📦 [Checkout] Initializing order...', orderId);
+
             // 2. Save order to DB (Single save call)
+            // Added timeout protection inside dbAdapter.saveOrder
             await dbAdapter.saveOrder(newOrder);
+            console.log('✅ [Checkout] DB Order Step finished (or timed out)');
 
             // 3. 🌟 AGENT 4: Tree Gifting Integration (Run if applicable)
             const heritageItem = cartItems.find(item => item.category === 'نخل میراث' || item.type === 'heritage');
             if (heritageItem) {
                 console.log('🌳 [Checkout] Reserving heritage palm...');
-                const giftingResult = await fetch('/api/create-tree-gift', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        userId: user.id,
-                        orderId: orderId,
-                        treeVariety: 'مضافتی',
-                        recipientName: physicalAddress.recipientName,
-                        recipientPhone: physicalAddress.phone,
-                        giftMessage: 'کاشت نخل زندگی',
-                        amount: total
-                    })
-                });
-                const giftingData = await giftingResult.json();
-                if (!giftingData.success) {
-                    throw new Error(giftingData.error || 'خطا در رزرو نخل');
+                try {
+                    const giftingResult = await fetch('/api/create-tree-gift', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            userId: user.id,
+                            orderId: orderId,
+                            treeVariety: 'مضافتی',
+                            recipientName: physicalAddress.recipientName,
+                            recipientPhone: physicalAddress.phone,
+                            giftMessage: 'کاشت نخل زندگی',
+                            amount: total
+                        })
+                    });
+                    const giftingData = await giftingResult.json();
+                    if (giftingData.success) {
+                        console.log('🌳 [Checkout] Palm reserved successfully');
+                    }
+                } catch (giftErr) {
+                    console.warn('⚠️ [Checkout] Palm reservation failed (Non-critical):', giftErr);
                 }
             }
 

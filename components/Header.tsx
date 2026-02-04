@@ -93,18 +93,23 @@ const UserMenu: React.FC = () => {
                     <li>
                         <button
                             onClick={() => {
-                                console.log("🚪 Instant Logout...");
+                                console.log("🚪 Instant Logout Sequence Started...");
+                                // 🛡️ Prevent re-auth loops during redirect
+                                setLoggingOut(true);
 
-                                // 1. Clear all local state immediately
+                                // 1. Clear state immediately
                                 if (typeof window !== 'undefined') {
                                     localStorage.clear();
                                     sessionStorage.clear();
                                 }
 
-                                // 2. Fire and forget - don't wait for server
+                                // 2. Local logout
+                                dispatch({ type: 'LOGOUT' });
+
+                                // 3. Fire and forget server logout
                                 dbAdapter.signOut().catch(() => { });
 
-                                // 3. Instant redirect
+                                // 4. Instant redirect
                                 window.location.href = '/?logout=true';
                             }}
                             className="block w-full text-right px-4 py-2 hover:bg-green-800 transition-colors duration-200 text-red-300 hover:text-red-200"

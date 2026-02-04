@@ -42,7 +42,7 @@ export const mapSupabaseUser = (sbUser: any): User => {
         manaPoints: 0,
         level: 'جوانه',
         joinDate: sbUser.created_at || REFERENCE_DATE_STR,
-        isAdmin: false,
+        isAdmin: sbUser.id === '3e47b878-335e-4b3a-ac52-bec76be9fc08' || (sbUser.user_metadata?.is_admin === true),
         isGuardian: false,
         isGroveKeeper: false,
         addresses: [],

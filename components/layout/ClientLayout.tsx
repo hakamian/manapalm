@@ -15,6 +15,7 @@ import WhatsNewModal from '../WhatsNewModal';
 import { useRouteSync } from '../../hooks/useRouteSync';
 import SEOIndex from '../seo/SEOIndex';
 import { dbAdapter } from '../../services/dbAdapter';
+import ConnectionHealthGadget from '../admin/ConnectionHealthGadget';
 
 // Lazy Load UI Components
 import Header from '../Header';
@@ -157,6 +158,7 @@ const ClientLayout: React.FC<ClientLayoutProps> = ({ children }) => {
             {!isAdminView && <BottomNavBar />}
 
             <GlobalModals onLoginSuccess={handleLoginSuccess} />
+            <ConnectionHealthGadget />
         </>
     );
 };
