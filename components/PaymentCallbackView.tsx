@@ -1,3 +1,4 @@
+'use client';
 
 import React, { useEffect, useState } from 'react';
 import { useAppDispatch, useAppState } from '../AppContext';
@@ -64,7 +65,7 @@ const PaymentCallbackView: React.FC = () => {
                         : [{ status: 'پرداخت شده', date: new Date().toISOString() }];
 
                     const newOrder: Order = {
-                        id: pendingOrder.id || `order-${Date.now()}`, // Reuse ID if available
+                        id: pendingOrder.id || `order-${Date.now()}`,
                         userId: user?.id || pendingOrder.userId,
                         date: pendingOrder.date || new Date().toISOString(),
                         items: pendingOrder.items,
@@ -73,11 +74,31 @@ const PaymentCallbackView: React.FC = () => {
                         status: 'پرداخت شده',
                         statusHistory: newHistory,
                         deeds: newDeeds,
+                        deliveryType: pendingOrder.deliveryType || 'physical',
+                        physicalAddress: pendingOrder.physicalAddress,
+                        digitalAddress: pendingOrder.digitalAddress,
                         createdAt: pendingOrder.createdAt || new Date().toISOString()
                     };
 
                     // Dispatch Actions
                     dispatch({ type: 'PLACE_ORDER', payload: newOrder });
+
+                    // 📱 SEND SMS CONFIRMATION
+                    const phone = pendingOrder.physicalAddress?.phone || pendingOrder.digitalAddress?.phone || user?.phone;
+                    if (phone) {
+                        try {
+                            fetch('/api/sms', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    mobile: phone,
+                                    message: `سفارش ${newOrder.id.slice(0, 8)} ثبت شد. کد رهگیری: ${result.refId}`
+                                })
+                            }).then(r => r.json()).then(d => console.log('📱 SMS Status:', d));
+                        } catch (smsErr) {
+                            console.error('❌ Failed to send SMS:', smsErr);
+                        }
+                    }
 
                     // Cleanup
                     localStorage.removeItem('pending_order');

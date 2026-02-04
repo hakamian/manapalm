@@ -15,13 +15,22 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
     const [formData, setFormData] = useState<Partial<UserAddress>>({
         province: '',
         city: '',
+        neighborhood: '',
         fullAddress: '',
         postalCode: '',
+        plaque: '',
+        unit: '',
         recipientName: user.fullName || user.name || '',
         phone: user.phone || '',
-        title: 'خانه', // 🏠 Default title set to Home
+        title: 'خانه',
         isDefault: false
     });
+
+    const TEHRAN_NEIGHBORHOODS = [
+        'پونک', 'سعادت‌آباد', 'شهرک غرب', 'تجریش', 'نیاوران', 'فرشته', 'زعفرانیه', 'ولنجک', 'گیشا', 'یوسف‌آباد',
+        'امیرآباد', 'مرزداران', 'ستارخان', 'صادقیه', 'جنت‌آباد', 'تهرانپارس', 'نارمک', 'پیروزی', 'نیروی هوایی',
+        'افسریه', 'نازی‌آباد', 'خانی‌آباد', 'یافت‌آباد', 'شهر ری', 'چیذر', 'دولت', 'فرمانیه', 'الهیه'
+    ].sort();
 
     const IRAN_DATA: Record<string, string[]> = {
         'تهران': ['تهران', 'اسلامشهر', 'بهارستان', 'پاکدشت', 'پردیس', 'پیشوا', 'دماوند', 'رباط کریم', 'ری', 'شمیرانات', 'شهریار', 'فیروزکوه', 'قدس', 'قرچک', 'ملارد', 'ورامین'],
@@ -56,8 +65,11 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
         setFormData({
             province: '',
             city: '',
+            neighborhood: '',
             fullAddress: '',
             postalCode: '',
+            plaque: '',
+            unit: '',
             recipientName: user.fullName || user.name || '',
             phone: user.phone || '',
             title: 'خانه', // 🏠 Default
@@ -155,13 +167,64 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
                             <label className="text-sm text-gray-400 block pb-1">شهر</label>
                             <select
                                 value={formData.city}
-                                onChange={e => setFormData({ ...formData, city: e.target.value })}
+                                onChange={e => setFormData({ ...formData, city: e.target.value, neighborhood: '' })}
                                 className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500 appearance-none"
                                 disabled={!formData.province}
                             >
                                 <option value="">انتخاب شهر</option>
                                 {formData.province && IRAN_DATA[formData.province]?.map(c => <option key={c} value={c}>{c}</option>)}
                             </select>
+                        </div>
+
+                        {formData.province === 'تهران' && formData.city === 'تهران' && (
+                            <div className="space-y-2 md:col-span-2">
+                                <label className="text-sm text-gray-400 block pb-1">محله (فقط برای شهر تهران)</label>
+                                <select
+                                    value={formData.neighborhood}
+                                    onChange={e => setFormData({ ...formData, neighborhood: e.target.value })}
+                                    className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500 appearance-none"
+                                >
+                                    <option value="">انتخاب محله...</option>
+                                    {TEHRAN_NEIGHBORHOODS.map(n => <option key={n} value={n}>{n}</option>)}
+                                    <option value="سایر">سایر محله‌ها / دستی وارد می‌کنم</option>
+                                </select>
+                            </div>
+                        )}
+
+                        {(formData.neighborhood === 'سایر' || (formData.province === 'تهران' && formData.city === 'تهران' && formData.neighborhood && !TEHRAN_NEIGHBORHOODS.includes(formData.neighborhood))) && (
+                            <div className="space-y-2 md:col-span-2">
+                                <label className="text-sm text-gray-400 block pb-1">نام محله را وارد کنید</label>
+                                <input
+                                    type="text"
+                                    value={formData.neighborhood === 'سایر' ? '' : formData.neighborhood}
+                                    onChange={e => setFormData({ ...formData, neighborhood: e.target.value })}
+                                    className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500"
+                                    placeholder="مثلا پونک"
+                                />
+                            </div>
+                        )}
+
+                        <div className="grid grid-cols-2 gap-4 md:col-span-2">
+                            <div className="space-y-2">
+                                <label className="text-sm text-gray-400 block pb-1">پلاک</label>
+                                <input
+                                    type="text"
+                                    value={formData.plaque}
+                                    onChange={e => setFormData({ ...formData, plaque: e.target.value })}
+                                    className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500"
+                                    placeholder="مثلا ۱۲"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm text-gray-400 block pb-1">واحد / طبقه</label>
+                                <input
+                                    type="text"
+                                    value={formData.unit}
+                                    onChange={e => setFormData({ ...formData, unit: e.target.value })}
+                                    className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500"
+                                    placeholder="مثلا ۳ شمالی"
+                                />
+                            </div>
                         </div>
 
                         <div className="space-y-2 md:col-span-2">
@@ -228,7 +291,11 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
                                             )}
                                         </div>
                                         <p className="text-gray-300 leading-relaxed text-sm">
-                                            {address.province}، {address.city}، {address.fullAddress}
+                                            {address.province}، {address.city}
+                                            {address.neighborhood ? `، ${address.neighborhood}` : ''}
+                                            {`، ${address.fullAddress}`}
+                                            {address.plaque ? `، پلاک ${address.plaque}` : ''}
+                                            {address.unit ? `، واحد ${address.unit}` : ''}
                                         </p>
                                         <div className="flex gap-6 text-sm text-gray-400 pt-2">
                                             <span className="flex items-center gap-1">

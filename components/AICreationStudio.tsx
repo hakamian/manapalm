@@ -1,3 +1,4 @@
+'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useAppDispatch, useAppState } from '../AppContext';
@@ -68,14 +69,14 @@ const AICreationStudio: React.FC<AICreationStudioProps> = ({ initialTab = 'studi
 
     return (
         <div className="flex flex-col h-[100dvh] pt-16 bg-[#050505] text-white overflow-hidden relative">
-            
+
             {/* Top Navigation Bar (Stylish Tabs) */}
             <header className="flex-shrink-0 h-16 bg-[#09090b]/80 backdrop-blur-xl border-b border-white/5 flex items-center justify-between px-4 md:px-8 z-40 absolute top-0 left-0 right-0">
-                
+
                 {/* Left: Tool Back Button or Logo */}
                 <div className="flex items-center gap-4 min-w-[120px]">
                     {activeToolId ? (
-                        <button 
+                        <button
                             onClick={() => setActiveToolId(null)}
                             className="flex items-center gap-2 text-stone-400 hover:text-white transition-colors text-xs font-bold uppercase tracking-wider"
                         >
@@ -100,8 +101,8 @@ const AICreationStudio: React.FC<AICreationStudioProps> = ({ initialTab = 'studi
                                     onClick={() => setSelectedCategory(cat.id)}
                                     className={`
                                         px-4 py-1.5 rounded-full text-xs font-medium transition-all duration-300 whitespace-nowrap
-                                        ${selectedCategory === cat.id 
-                                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-900/20' 
+                                        ${selectedCategory === cat.id
+                                            ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-900/20'
                                             : 'text-stone-400 hover:text-white hover:bg-white/5'}
                                     `}
                                 >
@@ -114,11 +115,11 @@ const AICreationStudio: React.FC<AICreationStudioProps> = ({ initialTab = 'studi
 
                 {/* Right: Search & Points */}
                 <div className="flex items-center justify-end gap-3 min-w-[120px]">
-                    
+
                     {/* Expandable Search */}
                     {!activeToolId && activeTab === 'studio' && (
                         <div className={`relative flex items-center transition-all duration-300 ${isSearchExpanded ? 'w-48 md:w-64' : 'w-8'}`}>
-                            <button 
+                            <button
                                 onClick={toggleSearch}
                                 className={`absolute left-0 z-10 p-1.5 text-stone-400 hover:text-white transition-colors ${isSearchExpanded ? 'left-2' : ''}`}
                             >
@@ -149,18 +150,18 @@ const AICreationStudio: React.FC<AICreationStudioProps> = ({ initialTab = 'studi
 
             {/* Main Content Area */}
             <main className="flex-1 bg-[#050505] overflow-hidden relative flex flex-col pt-0">
-                
+
                 {/* Mode Switcher (Studio vs Academy) - Only show if no tool active */}
                 {!activeToolId && (
                     <div className="absolute top-20 right-6 z-30 hidden lg:flex flex-col gap-2">
-                         <button 
+                        <button
                             onClick={() => setActiveTab('studio')}
                             className={`p-3 rounded-xl transition-all duration-300 border ${activeTab === 'studio' ? 'bg-purple-600/20 border-purple-500 text-purple-400' : 'bg-stone-900 border-stone-800 text-stone-500 hover:text-stone-300'}`}
                             title="استودیو خلاقیت"
                         >
                             <SparklesIcon className="w-5 h-5" />
                         </button>
-                        <button 
+                        <button
                             onClick={() => setActiveTab('academy')}
                             className={`p-3 rounded-xl transition-all duration-300 border ${activeTab === 'academy' ? 'bg-blue-600/20 border-blue-500 text-blue-400' : 'bg-stone-900 border-stone-800 text-stone-500 hover:text-stone-300'}`}
                             title="آکادمی هوش مصنوعی"
@@ -173,15 +174,15 @@ const AICreationStudio: React.FC<AICreationStudioProps> = ({ initialTab = 'studi
                 {/* Mobile Tab Switcher */}
                 {!activeToolId && (
                     <div className="lg:hidden flex justify-center gap-4 mt-4 mb-2 px-6">
-                        <button 
-                             onClick={() => setActiveTab('studio')}
-                             className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${activeTab === 'studio' ? 'bg-purple-900/20 border-purple-500/50 text-purple-300' : 'border-transparent text-stone-500'}`}
+                        <button
+                            onClick={() => setActiveTab('studio')}
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${activeTab === 'studio' ? 'bg-purple-900/20 border-purple-500/50 text-purple-300' : 'border-transparent text-stone-500'}`}
                         >
                             استودیو
                         </button>
-                        <button 
-                             onClick={() => setActiveTab('academy')}
-                             className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${activeTab === 'academy' ? 'bg-blue-900/20 border-blue-500/50 text-blue-300' : 'border-transparent text-stone-500'}`}
+                        <button
+                            onClick={() => setActiveTab('academy')}
+                            className={`flex-1 py-2 text-xs font-bold rounded-lg border transition-all ${activeTab === 'academy' ? 'bg-blue-900/20 border-blue-500/50 text-blue-300' : 'border-transparent text-stone-500'}`}
                         >
                             آکادمی
                         </button>
@@ -191,8 +192,8 @@ const AICreationStudio: React.FC<AICreationStudioProps> = ({ initialTab = 'studi
                 {activeTab === 'studio' ? (
                     activeToolId ? (
                         <div className="flex-1 overflow-hidden relative animate-fade-in h-full">
-                            <ActiveToolRenderer 
-                                activeToolId={activeToolId} 
+                            <ActiveToolRenderer
+                                activeToolId={activeToolId}
                                 user={user}
                                 onUpdateProfile={handleUpdateProfile}
                                 onOpenStorageModal={() => setIsStorageModalOpen(true)}
@@ -201,8 +202,8 @@ const AICreationStudio: React.FC<AICreationStudioProps> = ({ initialTab = 'studi
                     ) : (
                         <div className="flex-1 overflow-y-auto h-full custom-scrollbar p-4 md:p-8 animate-fade-in">
                             <div className="max-w-7xl mx-auto mt-4">
-                                <ToolGrid 
-                                    groupedTools={groupedTools} 
+                                <ToolGrid
+                                    groupedTools={groupedTools}
                                     selectedCategory={selectedCategory}
                                     user={user}
                                     onToolSelect={handleToolSelect}
@@ -216,10 +217,10 @@ const AICreationStudio: React.FC<AICreationStudioProps> = ({ initialTab = 'studi
                     </div>
                 )}
             </main>
-            
+
             {/* Modals */}
             {demoTool && (
-                <ToolDemoModal 
+                <ToolDemoModal
                     isOpen={!!demoTool}
                     onClose={() => setDemoTool(null)}
                     tool={demoTool}
@@ -227,10 +228,10 @@ const AICreationStudio: React.FC<AICreationStudioProps> = ({ initialTab = 'studi
                         if (!user) {
                             dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: true });
                         } else {
-                             dispatch({ type: 'SPEND_MANA_POINTS', payload: { points: demoTool.unlockCost || 0, action: `باز کردن ابزار ${demoTool.title}` } });
-                             const newUnlocked = [...(user.unlockedTools || []), demoTool.id];
-                             dispatch({ type: 'UPDATE_USER', payload: { unlockedTools: newUnlocked } });
-                             setDemoTool(null);
+                            dispatch({ type: 'SPEND_MANA_POINTS', payload: { points: demoTool.unlockCost || 0, action: `باز کردن ابزار ${demoTool.title}` } });
+                            const newUnlocked = [...(user.unlockedTools || []), demoTool.id];
+                            dispatch({ type: 'UPDATE_USER', payload: { unlockedTools: newUnlocked } });
+                            setDemoTool(null);
                         }
                     }}
                     actionLabel={!user ? 'login' : 'unlock'}

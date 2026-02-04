@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { User, PointLog } from '../../types';
-import { UserCircleIcon, CameraIcon, SparklesIcon, MapPinIcon, LockClosedIcon, EyeIcon, EyeSlashIcon } from '../icons';
+import { UserCircleIcon, CameraIcon, SparklesIcon, MapPinIcon, LockClosedIcon, EyeIcon, EyeSlashIcon, EnvelopeIcon } from '../icons';
 import { supabase } from '../../services/supabaseClient';
 import ToggleSwitch from '../ToggleSwitch';
 import { getAIAssistedText } from '../../services/geminiService';
@@ -53,9 +53,12 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
     const [groveDescription, setGroveDescription] = useState(user.groveDescription || '');
     const [isCoach, setIsCoach] = useState(user.isCoach || false);
 
+    const [oldPassword, setOldPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+
+    const isPasswordSet = user.password_set === true || (user.metadata as any)?.password_set === true;
 
     const [isSaving, setIsSaving] = useState(false);
     const [isBioAIAssistLoading, setIsBioAIAssistLoading] = useState(false);
@@ -67,14 +70,20 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
         setSuccessMessage('');
         setIsSaving(true);
 
+        if (isPasswordSet && !oldPassword) {
+            setError('لطفاً رمز عبور فعلی خود را وارد کنید.');
+            setIsSaving(false);
+            return;
+        }
+
         if (newPassword !== confirmPassword) {
-            setError('رمز عبور و تکرار آن مطابقت ندارند.');
+            setError('رمز عبور جدید و تکرار آن مطابقت ندارند.');
             setIsSaving(false);
             return;
         }
 
         if (newPassword.length < 6) {
-            setError('رمز عبور باید حداقل ۶ کاراکتر باشد.');
+            setError('رمز عبور جدید باید حداقل ۶ کاراکتر باشد.');
             setIsSaving(false);
             return;
         }
@@ -87,7 +96,9 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
                 body: JSON.stringify({
                     userId: user.id,
                     password: newPassword,
-                    phone: user.phone
+                    oldPassword: oldPassword, // Send old password for verification
+                    phone: user.phone,
+                    email: email // Send the user's real email
                 })
             });
 
@@ -97,7 +108,8 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
                 throw new Error(data.message || 'خطا در بروزرسانی رمز عبور');
             }
 
-            setSuccessMessage('رمز عبور با موفقیت ذخیره شد. حالا می‌توانید با شماره موبایل و رمز عبور وارد شوید.');
+            setSuccessMessage(isPasswordSet ? 'رمز عبور با موفقیت تغییر یافت.' : 'رمز عبور با موفقیت ذخیره شد. حالا می‌توانید با شماره موبایل و رمز عبور وارد شوید.');
+            setOldPassword('');
             setNewPassword('');
             setConfirmPassword('');
         } catch (err: any) {
@@ -215,20 +227,28 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
             pointsHistory: [...newPointsHistory, ...(user.pointsHistory || [])]
         };
 
-        setTimeout(() => {
+        const executeSave = async () => {
             console.log("📤 [EditProfile] Calling onUpdate with finalized data...");
-            onUpdate(updatedUser);
-            setIsSaving(false);
-            setSuccessMessage('اطلاعات با موفقیت ذخیره شد.');
-            setTimeout(() => setSuccessMessage(''), 3000);
+            try {
+                await onUpdate(updatedUser);
+                setSuccessMessage('اطلاعات با موفقیت ذخیره شد.');
 
-            if (totalPointsToAdd > 0) {
-                const toastAction = newPointsHistory.length > 1
-                    ? `تکمیل پروفایل`
-                    : newPointsHistory[0].action;
-                dispatch({ type: 'SHOW_POINTS_TOAST', payload: { points: totalPointsToAdd, action: toastAction } });
+                if (totalPointsToAdd > 0) {
+                    const toastAction = newPointsHistory.length > 1
+                        ? `تکمیل پروفایل`
+                        : newPointsHistory[0].action;
+                    dispatch({ type: 'SHOW_POINTS_TOAST', payload: { points: totalPointsToAdd, action: toastAction } });
+                }
+            } catch (err) {
+                console.error("❌ Save failed:", err);
+                setError('متاسفانه ذخیره اطلاعات با خطا مواجه شد.');
+            } finally {
+                setIsSaving(false);
+                setTimeout(() => setSuccessMessage(''), 3000);
             }
-        }, 100);
+        };
+
+        executeSave();
     };
 
     return (
@@ -495,29 +515,61 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
                                     <LockClosedIcon className="w-6 h-6" />
                                 </div>
                                 <div>
-                                    <h3 className="text-lg font-bold text-white">تنظیم رمز عبور</h3>
-                                    <p className="text-sm text-gray-400">برای ورود بدون پیامک، رمز عبور تنظیم کنید.</p>
+                                    <h3 className="text-lg font-bold text-white">
+                                        {isPasswordSet ? 'تغییر رمز عبور' : 'تنظیم رمز عبور'}
+                                    </h3>
+                                    <p className="text-sm text-gray-400">
+                                        {isPasswordSet ? 'برای امنیت بیشتر، دوره ای رمز خود را تغییر دهید.' : 'برای ورود بدون پیامک، رمز عبور تنظیم کنید.'}
+                                    </p>
                                 </div>
                             </div>
 
                             <div className="max-w-md mx-auto space-y-4">
-                                {/* Display Mobile Number */}
-                                <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 flex items-center justify-between">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-blue-900/30 flex items-center justify-center text-blue-400">
-                                            <SparklesIcon className="w-4 h-4" />
+                                {/* Display Mobile/Email Status */}
+                                <div className="bg-gray-800/50 p-4 rounded-xl border border-gray-700 space-y-3">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-blue-900/30 flex items-center justify-center text-blue-400">
+                                                <SparklesIcon className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-400">شماره موبایل</p>
+                                                <p className="text-sm font-mono font-bold text-white tracking-widest dir-ltr">{user.phone || 'ثبت نشده'}</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="text-xs text-gray-400">شماره موبایل (محرمانه)</p>
-                                            <p className="text-lg font-mono font-bold text-white tracking-widest dir-ltr">{user.phone || 'ثبت نشده'}</p>
+                                        <span className="text-[10px] bg-green-900/50 text-green-400 px-2 py-0.5 rounded border border-green-700/50">تایید شده</span>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-2 border-t border-gray-700/50">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-8 h-8 rounded-full bg-indigo-900/30 flex items-center justify-center text-indigo-400">
+                                                <EnvelopeIcon className="w-4 h-4" />
+                                            </div>
+                                            <div>
+                                                <p className="text-xs text-gray-400">ایمیل حساب</p>
+                                                <p className="text-sm text-white font-medium">{user.email || 'ثبت نشده'}</p>
+                                            </div>
                                         </div>
                                     </div>
-                                    <span className="text-xs bg-green-900/50 text-green-400 px-2 py-1 rounded border border-green-700/50">تایید شده</span>
                                 </div>
 
-                                <div className="space-y-2 pt-4 border-t border-gray-700/50">
+                                <div className="space-y-4 pt-4 border-t border-gray-700/50">
+                                    {isPasswordSet && (
+                                        <div className="space-y-2">
+                                            <label className="text-sm text-gray-300 font-medium">رمز عبور فعلی</label>
+                                            <div className="relative">
+                                                <input
+                                                    type={showPassword ? 'text' : 'password'}
+                                                    value={oldPassword}
+                                                    onChange={e => setOldPassword(e.target.value)}
+                                                    className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-amber-500 outline-none text-left dir-ltr pl-10"
+                                                    placeholder="••••••"
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
                                     <div className="space-y-2">
-                                        <label className="text-sm text-gray-300 font-medium">رمز عبور جدید</label>
+                                        <label className="text-sm text-gray-300 font-medium">{isPasswordSet ? 'رمز عبور جدید' : 'رمز عبور'}</label>
                                         <div className="relative">
                                             <input
                                                 type={showPassword ? 'text' : 'password'}
@@ -537,7 +589,7 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm text-gray-300 font-medium">تکرار رمز عبور</label>
+                                        <label className="text-sm text-gray-300 font-medium">تکرار {isPasswordSet ? 'رمز عبور جدید' : 'رمز عبور'}</label>
                                         <div className="relative">
                                             <input
                                                 type={showPassword ? 'text' : 'password'}
@@ -547,13 +599,6 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
                                                 placeholder="••••••"
                                                 autoComplete="new-password"
                                             />
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowPassword(!showPassword)}
-                                                className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-200 transition-colors"
-                                            >
-                                                {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
-                                            </button>
                                         </div>
                                     </div>
                                 </div> {/* Closing the wrapper div added in previous step */}
@@ -567,7 +612,7 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
                                         : 'bg-amber-600 hover:bg-amber-500 text-white shadow-lg shadow-amber-900/20'
                                         }`}
                                 >
-                                    {isSaving ? 'در حال ثبت...' : 'ثبت رمز عبور جدید'}
+                                    {isSaving ? 'در حال ثبت...' : (isPasswordSet ? 'تغییر رمز عبور' : 'ثبت رمز عبور جدید')}
                                 </button>
 
                                 {/* Error/Success Messages */}

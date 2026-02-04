@@ -193,7 +193,8 @@ export default async function handler(req, res) {
                         templateId: finalTemplateId,
                         parameters: [
                             { name: "CODE", value: otpCode },
-                            { name: "EXPIRE_TIME", value: "5" }
+                            { name: "EXPIRE_TIME", value: "5" },
+                            { name: "expired_time", value: "5" }
                         ]
                     }),
                 });

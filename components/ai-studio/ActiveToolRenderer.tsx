@@ -1,3 +1,4 @@
+'use client';
 
 import React from 'react';
 import { User } from '../../types';
@@ -53,24 +54,24 @@ const ActiveToolRenderer: React.FC<ActiveToolRendererProps> = ({ activeToolId, u
             return <YouTubeContentTool />;
         case 'knowledgeRefiner':
             return <KnowledgeRefinerTool />;
-        case 'chatbot': 
+        case 'chatbot':
             return <Chatbot />;
-        case 'imageGen': 
-            return <ImageGenerator 
-                user={user} 
+        case 'imageGen':
+            return <ImageGenerator
+                user={user}
                 onUpdateProfile={onUpdateProfile}
                 creativeActsCount={user.timeline?.filter(e => e.type === 'creative_act').length || 0}
                 creativeStorageCapacity={user.creativeStorageCapacity || 0}
                 onOpenPurchaseModal={onOpenStorageModal}
             />;
-        case 'contentGen': 
-            return <ContentGenerator 
-                user={user} 
+        case 'contentGen':
+            return <ContentGenerator
+                user={user}
                 onUpdateProfile={onUpdateProfile}
             />;
         case 'videoGen':
-            return <VideoGenerator 
-                user={user} 
+            return <VideoGenerator
+                user={user}
                 onUpdateProfile={onUpdateProfile}
                 creativeActsCount={user.timeline?.filter(e => e.type === 'creative_act').length || 0}
                 creativeStorageCapacity={user.creativeStorageCapacity || 0}
@@ -85,7 +86,7 @@ const ActiveToolRenderer: React.FC<ActiveToolRendererProps> = ({ activeToolId, u
         case 'tts':
             return <TextToSpeechTool />;
         case 'codeGen':
-             return <CodeArchitectTool />;
+            return <CodeArchitectTool />;
         case 'thinking':
             return <DeepThinkingTool />;
         default: return null;

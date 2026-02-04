@@ -10,12 +10,12 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
-    domains: [
-      'picsum.photos',
-      'images.unsplash.com',
-      'res.cloudinary.com',
-      'sbjrayzghjfsmmuygwbw.supabase.co',
-      'ui-avatars.com'
+    remotePatterns: [
+      { protocol: 'https', hostname: 'picsum.photos' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      { protocol: 'https', hostname: 'res.cloudinary.com' },
+      { protocol: 'https', hostname: 'sbjrayzghjfsmmuygwbw.supabase.co' },
+      { protocol: 'https', hostname: 'ui-avatars.com' }
     ],
   },
   async redirects() {

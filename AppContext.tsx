@@ -680,16 +680,23 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                         console.log("✅ [AuthEvent] Found rich DB profile, using as primary identity:", appUser.id);
                         dispatch({
                             type: 'LOGIN_SUCCESS',
-                            payload: { user: appUser, orders: [] } // Use DB user as truth
+                            payload: { user: appUser, orders: [] }
                         });
                     } else {
-                        console.log("🌱 [AuthEvent] New user detected, creating profile record...");
+                        console.log("🌱 [AuthEvent] No profile found for existing Auth user. Initializing...");
                         const fallbackUser = mapSupabaseUser(session.user);
+
+                        // Only save if it's truly a new user (to avoid accidental overwrites during glitches)
                         dispatch({
                             type: 'LOGIN_SUCCESS',
                             payload: { user: fallbackUser as User, orders: [] }
                         });
-                        await dbAdapter.saveUser(fallbackUser as User);
+
+                        // Optional: only save to DB if metadata has enough info (like a name)
+                        if (fallbackUser.name && fallbackUser.name !== 'کاربر جدید') {
+                            await dbAdapter.saveUser(fallbackUser as User);
+                            console.log("✅ [AuthEvent] New profile created in DB");
+                        }
                     }
                 } catch (err) {
                     console.error("❌ Failed to sync profile, falling back to auth metadata.", err);

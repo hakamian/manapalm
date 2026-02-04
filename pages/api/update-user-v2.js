@@ -112,54 +112,48 @@ export default async function handler(req, res) {
             }
         }
 
-        // ✅ IMPROVEMENT 1: SERVER-SIDE DATA VALIDATION (Zod-like Native Implementation)
-        // Validate Address Structure
+        // ✅ IMPROVEMENT 1: SERVER-SIDE DATA VALIDATION (Lenient for better UX)
         if (updateData.addresses && Array.isArray(updateData.addresses)) {
-            const validAddresses = updateData.addresses.filter(addr => {
-                const isValid =
-                    addr.fullAddress && typeof addr.fullAddress === 'string' && addr.fullAddress.length > 5 &&
-                    addr.recipientName && typeof addr.recipientName === 'string' &&
-                    addr.phone && typeof addr.phone === 'string' && addr.phone.length >= 10;
-
-                if (!isValid) {
-                    console.warn(`⚠️ Invalid address filtered out for user ${updateData.id}:`, addr);
-                }
-                return isValid;
+            updateData.addresses = updateData.addresses.filter(addr => {
+                return (addr.fullAddress || addr.city) && addr.recipientName;
             });
-            updateData.addresses = validAddresses;
         }
 
-        // Validate Phone Format (Basic Iranian Mobile regex)
-        if (updateData.phone) {
-            const phoneRegex = /^(\+98|0)?9\d{9}$/;
-            if (!phoneRegex.test(updateData.phone)) {
-                // Use saved phone if provided is invalid, or just keep it (policy decision)
-                // For now, we allow it but log warning
-                console.warn(`⚠️ Potentially invalid phone number for user ${updateData.id}: ${updateData.phone}`);
-            }
-        }
+        // 🛡️ CTO DEFENSE: Fetch existing profile to preserve critical flags if missing
+        const { data: existingProfile } = await supabaseAdmin
+            .from('profiles')
+            .select('metadata')
+            .eq('id', updateData.id)
+            .single();
 
-
-        console.log('🔄 Syncing user profile to DB:', updateData.id);
+        const currentMetadata = existingProfile?.metadata || {};
 
         // Build metadata object with all user-specific data
+        // ⚔️ CTO FIX: We merge [Current DB Metadata] + [Frontend Metadata] + [Frontend Clean Data]
         const metadata = {
-            ...(updateData.metadata || {}), // Preserve existing if provided
-            addresses: updateData.addresses || [],
-            messages: updateData.messages || [],
-            recentViews: updateData.recentViews || [],
-            timeline: updateData.timeline || [],
-            coursePersonalizations: updateData.coursePersonalizations || {},
-            discReport: updateData.discReport || null,
-            profileCompletion: updateData.profileCompletion || { initial: false, additional: false, extra: false },
-            unlockedTools: updateData.unlockedTools || [],
-            purchasedCourseIds: updateData.purchasedCourseIds || [],
-            conversations: updateData.conversations || [],
-            notifications: updateData.notifications || [],
-            reflectionAnalysesRemaining: updateData.reflectionAnalysesRemaining || 0,
-            ambassadorPacksRemaining: updateData.ambassadorPacksRemaining || 0,
-            hoshmanaLiveAccess: updateData.hoshmanaLiveAccess || null,
+            ...currentMetadata,
+            ...(updateData.metadata || {}),
+            ...updateData, // Spread top level fields
+            addresses: updateData.addresses || updateData.metadata?.addresses || currentMetadata.addresses || [],
+            messages: updateData.messages || updateData.metadata?.messages || currentMetadata.messages || [],
+            recentViews: updateData.recentViews || updateData.metadata?.recentViews || currentMetadata.recentViews || [],
+            timeline: updateData.timeline || updateData.metadata?.timeline || currentMetadata.timeline || [],
+            coursePersonalizations: updateData.coursePersonalizations || updateData.metadata?.coursePersonalizations || currentMetadata.coursePersonalizations || {},
+            discReport: updateData.discReport || updateData.metadata?.discReport || currentMetadata.discReport || null,
+            profileCompletion: updateData.profileCompletion || updateData.metadata?.profileCompletion || currentMetadata.profileCompletion || { initial: false, additional: false, extra: false },
+            unlockedTools: updateData.unlockedTools || updateData.metadata?.unlockedTools || currentMetadata.unlockedTools || [],
+            purchasedCourseIds: updateData.purchasedCourseIds || updateData.metadata?.purchasedCourseIds || currentMetadata.purchasedCourseIds || [],
+            conversations: updateData.conversations || updateData.metadata?.conversations || currentMetadata.conversations || [],
+            notifications: updateData.notifications || updateData.metadata?.notifications || currentMetadata.notifications || [],
+            reflectionAnalysesRemaining: updateData.reflectionAnalysesRemaining ?? updateData.metadata?.reflectionAnalysesRemaining ?? currentMetadata.reflectionAnalysesRemaining ?? 0,
+            ambassadorPacksRemaining: updateData.ambassadorPacksRemaining ?? updateData.metadata?.ambassadorPacksRemaining ?? currentMetadata.ambassadorPacksRemaining ?? 0,
+            hoshmanaLiveAccess: updateData.hoshmanaLiveAccess || updateData.metadata?.hoshmanaLiveAccess || currentMetadata.hoshmanaLiveAccess || null,
+            password_set: updateData.password_set !== undefined ? updateData.password_set : (updateData.metadata?.password_set !== undefined ? updateData.metadata.password_set : (currentMetadata.password_set || false)),
         };
+
+        // Remove DB root columns from metadata to keep JSON clean
+        const rootColumns = ['id', 'full_name', 'email', 'phone', 'avatar_url', 'points', 'mana_points', 'level', 'is_admin', 'is_guardian', 'is_grove_keeper', 'created_at', 'updated_at', 'metadata'];
+        rootColumns.forEach(key => delete metadata[key]);
 
         // Prepare profile update
         console.log('🔄 [API] Syncing User to DB:', updateData.id);
@@ -197,6 +191,31 @@ export default async function handler(req, res) {
         if (error) {
             console.error('❌ [API] Supabase Error:', error.message, '| Hint:', error.hint);
             return res.status(500).json({ success: false, error: error.message });
+        }
+
+        // 🔄 SYNC TO AUTH METADATA: This is critical for preventing "reverting names" on login
+        // If we only update the 'profiles' table, the Supabase Session might still hold the old name in metadata.
+        try {
+            // Ensure we use the target user's metadata, not the requester's (if admin)
+            let currentTargetMetadata = {};
+            if (authUser.id === updateData.id) {
+                currentTargetMetadata = authUser.user_metadata || {};
+            } else {
+                const { data: targetUser } = await supabaseAdmin.auth.admin.getUserById(updateData.id);
+                currentTargetMetadata = targetUser?.user?.user_metadata || {};
+            }
+
+            await supabaseAdmin.auth.admin.updateUserById(updateData.id, {
+                user_metadata: {
+                    ...currentTargetMetadata,
+                    full_name: profileUpdate.full_name,
+                    name: profileUpdate.full_name, // Backup
+                    avatar_url: profileUpdate.avatar_url
+                }
+            });
+            console.log('✅ [API] Auth Metadata synced for:', updateData.id);
+        } catch (syncErr) {
+            console.warn('⚠️ [API] Auth Metadata sync failed (Profile updated anyway):', syncErr.message);
         }
 
         if (!savedData) {

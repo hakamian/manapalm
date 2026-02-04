@@ -2,12 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { PhysicalAddress, DigitalAddress } from '../../types';
-import { IRAN_PROVINCES } from '../../services/infrastructure/shippingService';
+import { IRAN_PROVINCES, TEHRAN_NEIGHBORHOODS } from '../../services/infrastructure/shippingService';
 
 interface AddressFormProps {
     type: 'physical' | 'digital' | 'both';
     initialPhysical?: PhysicalAddress;
     initialDigital?: DigitalAddress;
+    savedAddresses?: PhysicalAddress[];
     onPhysicalChange?: (address: PhysicalAddress) => void;
     onDigitalChange?: (address: DigitalAddress) => void;
     errors?: string[];
@@ -17,6 +18,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
     type,
     initialPhysical,
     initialDigital,
+    savedAddresses = [],
     onPhysicalChange,
     onDigitalChange,
     errors = []
@@ -26,11 +28,40 @@ const AddressForm: React.FC<AddressFormProps> = ({
         phone: '',
         province: '',
         city: '',
+        neighborhood: '',
         fullAddress: '',
         postalCode: '',
         plaque: '',
+        unit: '',
         floor: ''
     });
+
+    const [selectedAddressId, setSelectedAddressId] = useState<string | undefined>(
+        initialPhysical?.id || savedAddresses.find(a => a.isDefault)?.id
+    );
+
+    // Update form when initialPhysical changes (e.g. from Parent)
+    useEffect(() => {
+        if (initialPhysical) {
+            setPhysical(initialPhysical);
+            if (initialPhysical.id) setSelectedAddressId(initialPhysical.id);
+        }
+    }, [initialPhysical]);
+
+    const updatePhysical = (field: keyof PhysicalAddress, value: string) => {
+        const updated = { ...physical, [field]: value };
+        // If user manually changes something, deselect the saved address if it was one
+        setSelectedAddressId(undefined);
+        setPhysical(updated);
+        onPhysicalChange?.(updated);
+    };
+
+    const handleSelectSaved = (addr: PhysicalAddress) => {
+        setSelectedAddressId(addr.id);
+        const updated = { ...addr };
+        setPhysical(updated);
+        onPhysicalChange?.(updated);
+    };
 
     const [digital, setDigital] = useState<DigitalAddress>(initialDigital || {
         email: '',
@@ -38,11 +69,6 @@ const AddressForm: React.FC<AddressFormProps> = ({
         telegramId: ''
     });
 
-    const updatePhysical = (field: keyof PhysicalAddress, value: string) => {
-        const updated = { ...physical, [field]: value };
-        setPhysical(updated);
-        onPhysicalChange?.(updated);
-    };
 
     const updateDigital = (field: keyof DigitalAddress, value: string) => {
         const updated = { ...digital, [field]: value };
@@ -58,17 +84,52 @@ const AddressForm: React.FC<AddressFormProps> = ({
             {/* Physical Address Section */}
             {showPhysical && (
                 <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-6">
-                    <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
-                            <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                            </svg>
+                    <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center">
+                                <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 className="text-lg font-bold text-white">آدرس پستی</h3>
+                                <p className="text-sm text-gray-400">برای ارسال محصولات فیزیکی (خرما، صنایع دستی)</p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 className="text-lg font-bold text-white">آدرس پستی</h3>
-                            <p className="text-sm text-gray-400">برای ارسال محصولات فیزیکی (خرما، صنایع دستی)</p>
-                        </div>
+
+                        {/* Saved Addresses Chip List */}
+                        {savedAddresses.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {savedAddresses.map((addr) => (
+                                    <button
+                                        key={addr.id}
+                                        onClick={() => handleSelectSaved(addr)}
+                                        className={`px-4 py-2 rounded-full text-xs font-bold border transition-all ${selectedAddressId === addr.id
+                                            ? 'bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                                            : 'bg-white/5 border-white/10 text-gray-400 hover:border-emerald-500/50'
+                                            }`}
+                                    >
+                                        {addr.title || (addr.isDefault ? 'پیش‌فرض' : 'آدرس')}
+                                    </button>
+                                ))}
+                                <button
+                                    onClick={() => {
+                                        setSelectedAddressId('new');
+                                        updatePhysical('recipientName', ''); // Just to trigger a reset
+                                        setPhysical({
+                                            recipientName: '', phone: '', province: '', city: '', neighborhood: '', fullAddress: '', postalCode: '', plaque: '', unit: '', floor: ''
+                                        });
+                                    }}
+                                    className={`px-4 py-2 rounded-full text-xs font-bold border transition-all ${selectedAddressId === 'new'
+                                        ? 'bg-emerald-500 border-emerald-500 text-white'
+                                        : 'bg-white/5 border-white/10 text-gray-400'
+                                        }`}
+                                >
+                                    + آدرس جدید
+                                </button>
+                            </div>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -124,6 +185,36 @@ const AddressForm: React.FC<AddressFormProps> = ({
                             />
                         </div>
 
+                        {/* Neighborhood (Tehran Only) */}
+                        {physical.province === 'تهران' && physical.city === 'تهران' && (
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-300 mb-2">محله *</label>
+                                <select
+                                    value={physical.neighborhood || ''}
+                                    onChange={(e) => updatePhysical('neighborhood', e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                                >
+                                    <option value="" className="bg-gray-900">انتخاب محله</option>
+                                    {TEHRAN_NEIGHBORHOODS.map(n => (
+                                        <option key={n} value={n} className="bg-gray-900">{n}</option>
+                                    ))}
+                                    <option value="سایر" className="bg-gray-900">سایر محله‌ها</option>
+                                </select>
+                            </div>
+                        )}
+
+                        {physical.neighborhood === 'سایر' && (
+                            <div className="md:col-span-2">
+                                <label className="block text-sm font-medium text-gray-300 mb-2">نام محله</label>
+                                <input
+                                    type="text"
+                                    onChange={(e) => updatePhysical('neighborhood', e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
+                                    placeholder="مثلا پونک"
+                                />
+                            </div>
+                        )}
+
                         {/* Full Address */}
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-gray-300 mb-2">آدرس کامل *</label>
@@ -150,7 +241,7 @@ const AddressForm: React.FC<AddressFormProps> = ({
                             />
                         </div>
 
-                        {/* Plaque & Floor */}
+                        {/* Plaque & Unit */}
                         <div className="grid grid-cols-2 gap-4">
                             <div>
                                 <label className="block text-sm font-medium text-gray-300 mb-2">پلاک</label>
@@ -163,13 +254,13 @@ const AddressForm: React.FC<AddressFormProps> = ({
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">طبقه</label>
+                                <label className="block text-sm font-medium text-gray-300 mb-2">واحد / طبقه</label>
                                 <input
                                     type="text"
-                                    value={physical.floor || ''}
-                                    onChange={(e) => updatePhysical('floor', e.target.value)}
+                                    value={physical.unit || physical.floor || ''}
+                                    onChange={(e) => updatePhysical('unit', e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
-                                    placeholder="۳"
+                                    placeholder="واحد ۳"
                                 />
                             </div>
                         </div>

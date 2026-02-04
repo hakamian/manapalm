@@ -45,9 +45,9 @@ const UserProfileView: React.FC = () => {
     const dispatch = useAppDispatch();
     const { updateProfile } = useAppActions();
 
-    const onUpdate = (updatedFields: Partial<User>) => {
+    const onUpdate = async (updatedFields: Partial<User>) => {
         if (user) {
-            updateProfile({ ...user, ...updatedFields });
+            return await updateProfile({ ...user, ...updatedFields });
         }
     };
     const onNavigate = (view: View) => dispatch({ type: 'SET_VIEW', payload: view });
@@ -205,11 +205,18 @@ const UserProfileView: React.FC = () => {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-900 text-white px-4">
                 <div className="text-center max-w-md animate-fade-in">
-                    <div className="relative w-20 h-20 mx-auto mb-6">
-                        <div className="absolute inset-0 border-4 border-gray-700/30 rounded-full"></div>
-                        <div className="absolute inset-0 border-4 border-t-emerald-500 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <span className="text-3xl filter drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]">🌴</span>
+                    <div className="relative w-24 h-24 mx-auto mb-8">
+                        {/* 🌟 Animated Outer Ring */}
+                        <div className="absolute inset-0 rounded-full border border-emerald-500/20 shadow-[0_0_20px_rgba(16,185,129,0.1)]"></div>
+                        <div className="absolute inset-0 rounded-full border-t-2 border-emerald-500 animate-spin"></div>
+
+                        {/* 🥥 Inner Circle with Logo */}
+                        <div className="absolute inset-2 bg-gradient-to-br from-stone-800 to-black rounded-full border border-stone-700 flex items-center justify-center overflow-hidden shadow-inner">
+                            <img
+                                src="https://res.cloudinary.com/dk2x11rvs/image/upload/v1765131783/manapal-logo-3d_zpdvkd.png"
+                                alt="Mana Palm"
+                                className="w-10 h-10 object-contain drop-shadow-[0_0_10px_rgba(16,185,129,0.4)]"
+                            />
                         </div>
                     </div>
 

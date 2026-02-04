@@ -28,8 +28,8 @@ const VIEW_TO_ROUTE: Partial<Record<View, string>> = {
     [View.HallOfHeritage]: '/heritage',
 
     [View.Terms]: '/terms',
-
-    // Checkout is usually triggered programmatically, but good to have mapping
+    [View.Checkout]: '/checkout',
+    // Checkout mapping added for consistency
 
     // Add more routes here as we migrate them
 

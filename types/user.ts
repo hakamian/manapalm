@@ -115,6 +115,8 @@ export interface User {
     addresses?: UserAddress[];
     messages?: UserMessage[];
     recentViews?: string[];
+    password_set?: boolean;
+    metadata?: any;
 }
 
 export interface UserAddress {
@@ -126,7 +128,9 @@ export interface UserAddress {
     city: string;
     fullAddress: string;
     postalCode: string;
+    neighborhood?: string;
     plaque?: string;
+    unit?: string;
     floor?: string;
     isDefault: boolean;
 }

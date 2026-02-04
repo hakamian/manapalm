@@ -5,10 +5,12 @@ import { useAppState, useAppDispatch } from '../AppContext';
 import { View } from '../types';
 import Modal from './Modal';
 import { TrashIcon, ShoppingCartIcon, PlusIcon, MinusIcon, ArrowLeftIcon, SparklesIcon, LeafIcon, UsersIcon, CheckCircleIcon } from './icons';
+import { useRouter } from 'next/navigation';
 
 export default function ShoppingCartModal() {
   const { isCartOpen, cartItems } = useAppState();
   const dispatch = useAppDispatch();
+  const router = useRouter();
   const [activeStep, setActiveStep] = useState(1);
 
   console.log("🛒 ShoppingCartModal Render:", { isCartOpen, cartItemsCount: cartItems?.length });
@@ -51,6 +53,7 @@ export default function ShoppingCartModal() {
   const proceedToCheckout = () => {
     dispatch({ type: 'TOGGLE_CART', payload: false });
     dispatch({ type: 'SET_VIEW', payload: View.Checkout });
+    router.push('/checkout');
   };
 
   const nextStep = () => setActiveStep(s => Math.min(s + 1, 3));

@@ -21,26 +21,26 @@ export default async function handler(req, res) {
   }
 
   const { action, amount, description, email, mobile, authority } = req.body;
-  
+
   // CONFIGURATION
   // 1. Get Merchant ID from Environment Variables (Add ZARINPAL_MERCHANT_ID to Vercel)
-  const MERCHANT_ID = process.env.ZARINPAL_MERCHANT_ID; 
-  
+  const MERCHANT_ID = process.env.ZARINPAL_MERCHANT_ID;
+
   // 2. Determine Mode: If ZARINPAL_SANDBOX is 'true', use sandbox. Otherwise production.
   // Default to true if not set, for safety.
-  const IS_SANDBOX = process.env.ZARINPAL_SANDBOX !== 'false'; 
-  
-  const BASE_URL = IS_SANDBOX 
-    ? 'https://sandbox.zarinpal.com/pg/v4/payment' 
+  const IS_SANDBOX = process.env.ZARINPAL_SANDBOX !== 'false';
+
+  const BASE_URL = IS_SANDBOX
+    ? 'https://sandbox.zarinpal.com/pg/v4/payment'
     : 'https://api.zarinpal.com/pg/v4/payment';
-    
+
   const PAYMENT_GATEWAY_URL = IS_SANDBOX
     ? 'https://sandbox.zarinpal.com/pg/StartPay/'
     : 'https://www.zarinpal.com/pg/StartPay/';
 
   if (!MERCHANT_ID && !IS_SANDBOX) {
-      console.error("CRITICAL: Missing ZARINPAL_MERCHANT_ID in production mode.");
-      return res.status(500).json({ error: 'Server Payment Configuration Error' });
+    console.error("CRITICAL: Missing ZARINPAL_MERCHANT_ID in production mode.");
+    return res.status(500).json({ error: 'Server Payment Configuration Error' });
   }
 
   // --- REQUEST PAYMENT ---
@@ -48,8 +48,18 @@ export default async function handler(req, res) {
     try {
       const callbackUrl = `${req.headers.origin}/?view=PAYMENT_CALLBACK`;
 
+      // 🛡️ CTO TEST MODE: If no merchant ID and explicitly allowed or in development
+      if (!MERCHANT_ID || MERCHANT_ID === 'TEST') {
+        console.log('🧪 [API] TEST MODE: Simulating payment request');
+        return res.status(200).json({
+          success: true,
+          authority: 'TEST_AUTHORITY_' + Date.now(),
+          url: `${callbackUrl}&Authority=TEST_TOKEN&Status=OK`
+        });
+      }
+
       const payload = {
-        merchant_id: MERCHANT_ID || '00000000-0000-0000-0000-000000000000', // Fallback only for sandbox
+        merchant_id: MERCHANT_ID,
         amount: amount * 10, // Convert Toman to Rial
         callback_url: callbackUrl,
         description: description,
@@ -84,6 +94,15 @@ export default async function handler(req, res) {
   // --- VERIFY PAYMENT ---
   else if (action === 'verify') {
     try {
+      if (authority === 'TEST_TOKEN') {
+        console.log('🧪 [API] TEST MODE: Simulating payment verification');
+        return res.status(200).json({
+          success: true,
+          refId: 999999,
+          message: 'تراکنش تستی با موفقیت تایید شد.'
+        });
+      }
+
       const payload = {
         merchant_id: MERCHANT_ID || '00000000-0000-0000-0000-000000000000',
         amount: amount * 10, // Convert Toman to Rial

@@ -27,6 +27,7 @@ export interface Deed {
     productId: string;
     intention: string;
     name: string;
+    ownerName?: string;
     date: string;
     palmType: string;
     message?: string;

@@ -22,15 +22,17 @@ const CheckoutView: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
 
     // Address State - Initialize from user profile
-    const defaultUserAddress = user?.addresses?.[0];
+    const defaultUserAddress = user?.addresses?.find(a => a.isDefault) || user?.addresses?.[0];
     const [physicalAddress, setPhysicalAddress] = useState<PhysicalAddress>({
         recipientName: defaultUserAddress?.recipientName || user?.fullName || '',
         phone: defaultUserAddress?.phone || user?.phone || '',
         province: defaultUserAddress?.province || '',
         city: defaultUserAddress?.city || '',
+        neighborhood: defaultUserAddress?.neighborhood || '',
         fullAddress: defaultUserAddress?.fullAddress || '',
         postalCode: defaultUserAddress?.postalCode || '',
         plaque: defaultUserAddress?.plaque || '',
+        unit: defaultUserAddress?.unit || defaultUserAddress?.floor || '',
         floor: defaultUserAddress?.floor || ''
     });
 
@@ -156,35 +158,18 @@ const CheckoutView: React.FC = () => {
         setError(null);
 
         try {
-            const orderId = `order-${Date.now()}`;
+            // Generate a valid UUID v4
+            const generateUUID = () => {
+                if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                    const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            };
+            const orderId = generateUUID();
             const description = `خرید ${cartItems.length} محصول از نخلستان معنا`;
 
-            // 🌟 AGENT 4: Tree Gifting Integration 
-            // If the order contains a Heritage Palm, we initiate the tree gift creation
-            const heritageItem = cartItems.find(item => item.category === 'نخل میراث' || item.type === 'heritage');
-
-            if (heritageItem) {
-                const giftingResult = await fetch('/api/create-tree-gift', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        userId: user.id,
-                        treeVariety: 'مضافتی', // Default or from item
-                        occasionId: undefined, // Could be from item metadata
-                        recipientName: physicalAddress.recipientName,
-                        recipientPhone: physicalAddress.phone,
-                        giftMessage: 'کاشت نخل زندگی',
-                        amount: total
-                    })
-                });
-                const giftingData = await giftingResult.json();
-                if (!giftingData.success) {
-                    throw new Error(giftingData.error || 'خطا در رزرو نخل');
-                }
-                console.log('🌳 Tree reserved successfully:', giftingData.giftId);
-            }
-
-            // Create Order Object
+            // 1. Create Order Object First
             const newOrder: Order = {
                 id: orderId,
                 userId: user.id,
@@ -206,8 +191,33 @@ const CheckoutView: React.FC = () => {
                 date: new Date().toISOString()
             };
 
-            // Save pending order to DB
+            // 2. Save pending order to DB (Strict requirement for foreign keys)
             await dbAdapter.saveOrder(newOrder);
+
+            // 3. 🌟 AGENT 4: Tree Gifting Integration 
+            const heritageItem = cartItems.find(item => item.category === 'نخل میراث' || item.type === 'heritage');
+
+            if (heritageItem) {
+                const giftingResult = await fetch('/api/create-tree-gift', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userId: user.id,
+                        orderId: orderId,
+                        treeVariety: 'مضافتی',
+                        recipientName: physicalAddress.recipientName,
+                        recipientPhone: physicalAddress.phone,
+                        giftMessage: 'کاشت نخل زندگی',
+                        amount: total
+                    })
+                });
+                const giftingData = await giftingResult.json();
+                if (!giftingData.success) {
+                    throw new Error(giftingData.error || 'خطا در رزرو نخل');
+                }
+                console.log('🌳 Tree reserved successfully:', giftingData.giftId);
+            }
+
 
             // Save to localStorage for recovery after payment
             localStorage.setItem('pending_order', JSON.stringify({
@@ -309,6 +319,7 @@ const CheckoutView: React.FC = () => {
                                         validation.requiresPhysicalAddress ? 'physical' : 'digital'}
                                     initialPhysical={physicalAddress}
                                     initialDigital={digitalAddress}
+                                    savedAddresses={user?.addresses || []}
                                     onPhysicalChange={setPhysicalAddress}
                                     onDigitalChange={setDigitalAddress}
                                     errors={error ? [error] : []}

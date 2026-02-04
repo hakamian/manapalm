@@ -1,5 +1,6 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
+import LoadingSpinner from '../components/LoadingSpinner';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
@@ -13,13 +14,12 @@ export const metadata: Metadata = {
   }
 };
 
-const HomeView = dynamic(() => import('../components/HomeView'), {
-  loading: () => <div className="min-h-screen pt-20 flex items-center justify-center"><div className="animate-pulse text-emerald-400">در حال بارگذاری نخلستان...</div></div>,
-  ssr: true
+const MainContent = dynamic(() => import('../components/layout/MainContent'), {
+  loading: () => <div className="min-h-screen pt-20 flex items-center justify-center bg-gray-900"><LoadingSpinner /></div>
 });
 
 export default function HomePage() {
   return (
-    <HomeView />
+    <MainContent />
   );
 }

@@ -15,37 +15,29 @@ const ProfileCompletionModal: React.FC = () => {
         // 3. Check for specific missing fields
         // 4. Do not show if user explicitly dismissed it recently (sessionStorage?) -> User requirement: "Skip" button.
 
-        if (user && !isAuthModalOpen) {
-            const hasAddress = user.addresses && user.addresses.length > 0;
-            // Best effort check for password existence. 
-            // Since we can't request 'has_password' from Supabase easily, we rely on a metadata flag 'password_set'
-            // or we show it for everyone who hasn't dismissed it.
-            // For now, let's assume we show it if 'metadata.password_set' is falsy.
-            // If they registered via password, we should have set this flag.
-
-            // NOTE: For existing users who logged in with OTP but have no password set in metadata,
-            // we show the prompt. 
-            const hasPasswordSet = (user as any).password_set === true;
-
-            // If user has both, close.
-            if (hasAddress && hasPasswordSet) {
-                setIsOpen(false);
-                return;
-            }
-
-            // Check session storage for skip
-            const skipped = sessionStorage.getItem('profile_completion_skipped_v1');
-            if (skipped === 'true') {
-                return;
-            }
-
-            // Show modal
-            const timer = setTimeout(() => setIsOpen(true), 1500); // Small delay after login
-            return () => clearTimeout(timer);
-        } else {
+        // 🛡️ CTO HARD CHECK: Never show for admins or if already skipped in session
+        const skipped = sessionStorage.getItem('profile_completion_skipped_v1');
+        if (!user || user.isAdmin === true || skipped === 'true' || isAuthModalOpen) {
             setIsOpen(false);
+            return;
         }
-    }, [user, isAuthModalOpen]);
+
+        const hasAddress = (user.addresses && user.addresses.length > 0);
+        // Deep check for password_set in both root object and metadata
+        const hasPasswordSet = (user as any).password_set === true || (user.metadata as any)?.password_set === true;
+
+        console.log(`🔍 [ProfileModal] Check - Admin: ${user.isAdmin}, Address: ${hasAddress}, Password: ${hasPasswordSet}`);
+
+        // If user already has both, close and never show
+        if (hasAddress && hasPasswordSet) {
+            setIsOpen(false);
+            return;
+        }
+
+        // Show modal with a short delay for smooth entry
+        const timer = setTimeout(() => setIsOpen(true), 1500);
+        return () => clearTimeout(timer);
+    }, [user, isAuthModalOpen, user?.isAdmin, user?.addresses?.length]);
 
     useEffect(() => {
         if (isOpen) {
@@ -68,12 +60,12 @@ const ProfileCompletionModal: React.FC = () => {
 
     if (!shouldRender || !user) return null;
 
-    const hasAddress = user.addresses && user.addresses.length > 0;
-    const hasPasswordSet = (user as any).password_set === true;
+    const hasAddress = (user.addresses && user.addresses.length > 0);
+    const hasPasswordSet = user.password_set === true || (user.metadata as any)?.password_set === true;
 
-    // Double check to prevent flash if data updates while open
-    if (hasAddress && hasPasswordSet && isOpen) {
-        // Effect will close it, but we can early return null here if we want instant hide
+    // 🛡️ CTO SAFETY RENDER: Prevent any flash of modal for admins or complete profiles
+    if (user.isAdmin === true || (hasAddress && hasPasswordSet)) {
+        return null;
     }
 
     return (

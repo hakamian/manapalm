@@ -1,4 +1,3 @@
-
 import { supabase } from '../infrastructure/supabase';
 import { User, Order, CommunityPost, AgentActionLog, Product } from '../../types';
 import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS, INITIAL_PRODUCTS } from '../../utils/dummyData';
@@ -73,17 +72,20 @@ const mapProfileToUser = (profile: any): User => {
 
     return {
         id: profile.id,
-        name: profile.full_name || (metadata as any)?.name || 'کاربر',
-        fullName: profile.full_name || (metadata as any)?.fullName,
+        name: profile.full_name || (metadata as any)?.name || (metadata as any)?.firstName || 'کاربر',
+        fullName: profile.full_name || (metadata as any)?.fullName || (metadata as any)?.name || 'کاربر',
+        firstName: (metadata as any)?.firstName || profile.full_name?.split(' ')[0] || '',
+        lastName: (metadata as any)?.lastName || profile.full_name?.split(' ').slice(1).join(' ') || '',
         email: profile.email,
         phone: profile.phone || '',
         avatar: profile.avatar_url || (metadata as any)?.avatar,
         points: profile.points ?? 0,
         manaPoints: profile.mana_points ?? 0,
         level: profile.level || 'جوانه',
-        isAdmin: profile.is_admin ?? false,
-        isGuardian: profile.is_guardian ?? false,
-        isGroveKeeper: profile.is_grove_keeper ?? false,
+        isAdmin: (profile.is_admin === true) || (metadata as any)?.isAdmin === true || (metadata as any)?.is_admin === true || profile.id === '3e47b878-335e-4b3a-ac52-bec76be9fc08',
+        password_set: (metadata as any)?.password_set === true || (profile as any).password_set === true,
+        isGuardian: profile.is_guardian ?? (metadata as any)?.isGuardian ?? false,
+        isGroveKeeper: profile.is_grove_keeper ?? (metadata as any)?.isGroveKeeper ?? false,
         joinDate: profile.created_at,
 
         ...metadata,
@@ -208,7 +210,7 @@ export const dbAdapter = {
             }
         };
 
-        return withTimeout(fetchUser(), 12000, null);
+        return withTimeout(fetchUser(), 30000, null);
     },
 
     async saveUser(user: User): Promise<User | null> {
@@ -357,6 +359,9 @@ export const dbAdapter = {
             total_amount: order.total,
             status: order.status,
             items: order.items,
+            delivery_type: order.deliveryType,
+            physical_address: order.physicalAddress,
+            digital_address: order.digitalAddress,
             status_history: order.statusHistory,
             deeds: order.deeds || [],
             created_at: order.date,

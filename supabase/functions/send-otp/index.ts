@@ -37,7 +37,9 @@ serve(async (req) => {
                 mobile: mobile,
                 templateId: parseInt(SMS_IR_TEMPLATE_ID || '0'),
                 parameters: [
-                    { name: "CODE", value: code }
+                    { name: "CODE", value: code },
+                    { name: "EXPIRE_TIME", value: "5" },
+                    { name: "expired_time", value: "5" }
                 ],
             }),
         })

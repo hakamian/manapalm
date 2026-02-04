@@ -66,13 +66,16 @@ export type DeliveryType = 'physical' | 'digital' | 'hybrid';
 
 export interface PhysicalAddress {
     id?: string;
+    title?: string;
     recipientName: string;
     phone: string;
     province: string;
     city: string;
     fullAddress: string;
     postalCode: string;
+    neighborhood?: string;
     plaque?: string;
+    unit?: string;
     floor?: string;
     isDefault?: boolean;
 }
