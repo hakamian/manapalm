@@ -49,7 +49,7 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
     const [activeSubTab, setActiveSubTab] = useState('agent');
     const [userSearch, setUserSearch] = useState('');
     const [orderSearch, setOrderSearch] = useState('');
-    
+
     // Agent States
     const [agentAnalysis, setAgentAnalysis] = useState<string>('');
     const [executedActions, setExecutedActions] = useState<AgentActionLog[]>([]);
@@ -58,13 +58,13 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
     const [lastRunTime, setLastRunTime] = useState<string | null>(null);
     const [isVoiceEnabled, setIsVoiceEnabled] = useState(false);
     const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-    
+
     // 2FA / Approval Queue
     const [pendingApprovals, setPendingApprovals] = useState<PendingAction[]>([]);
-    
+
     // Refs
     const autoPilotIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-    const executedActionsRef = useRef<AgentActionLog[]>([]); 
+    const executedActionsRef = useRef<AgentActionLog[]>([]);
     const audioContextRef = useRef<AudioContext | null>(null);
 
     const filteredUsers = useMemo(() =>
@@ -97,16 +97,16 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
         try {
             setIsPlayingAudio(true);
             const base64Audio = await generateSpeech(text);
-            
+
             if (!audioContextRef.current) {
                 audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
             }
-            
+
             const binaryString = atob(base64Audio);
             const len = binaryString.length;
             const bytes = new Uint8Array(len);
             for (let i = 0; i < len; i++) bytes[i] = binaryString.charCodeAt(i);
-            
+
             const audioBuffer = await audioContextRef.current.decodeAudioData(bytes.buffer);
             const source = audioContextRef.current.createBufferSource();
             source.buffer = audioBuffer;
@@ -127,7 +127,7 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
             details: detail,
             timestamp: new Date().toISOString()
         };
-        
+
         // Update Local State
         const newHistory = [newLog, ...executedActions];
         setExecutedActions(newHistory);
@@ -175,9 +175,9 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
                 users.forEach(u => {
                     if (target === 'all' || (target === 'active' && u.points > 100)) {
                         const newLog: PointLog = { action: command.params.reason, points: command.params.amount, type: 'barkat', date: new Date().toISOString() };
-                        dispatch({ 
-                            type: 'UPDATE_USER', 
-                            payload: { ...u, points: u.points + command.params.amount, pointsHistory: [newLog, ...(u.pointsHistory || [])] } 
+                        dispatch({
+                            type: 'UPDATE_USER',
+                            payload: { ...u, points: u.points + command.params.amount, pointsHistory: [newLog, ...(u.pointsHistory || [])] }
                         });
                         count++;
                     }
@@ -185,24 +185,24 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
                 return logAndPersistAction('mass_grant_points', `✅ ${command.params.amount} امتیاز به ${count} کاربر اهدا شد.`);
 
             case 'create_flash_campaign':
-                dispatch({ 
-                    type: 'UPDATE_CAMPAIGN', 
-                    payload: { 
-                        id: `camp-${Date.now()}`, 
-                        title: command.params.name, 
+                dispatch({
+                    type: 'UPDATE_CAMPAIGN',
+                    payload: {
+                        id: `camp-${Date.now()}`,
+                        title: command.params.name,
                         description: 'کمپین ویژه ایجاد شده توسط مدیر هوشمند',
-                        goal: command.params.goal_amount, 
-                        current: 0, 
+                        goal: command.params.goal_amount,
+                        current: 0,
                         unit: 'نخل',
                         ctaText: 'همین حالا مشارکت کنید', // Default value
                         rewardPoints: 100 // Default value
-                    } 
+                    }
                 });
                 return logAndPersistAction('create_flash_campaign', `✅ کمپین «${command.params.name}» فعال شد.`);
 
             case 'update_site_navigation':
                 const { category, title, description, view_name, icon_name } = command.params;
-                
+
                 const newNavItem: NavItem = {
                     title: title,
                     description: description,
@@ -223,7 +223,7 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
 
                 dispatch({ type: 'UPDATE_NAVIGATION', payload: updatedNavigation });
                 return logAndPersistAction('update_site_navigation', `✅ آیتم «${title}» به منوی «${category}» اضافه شد.`);
-            
+
             default:
                 return logAndPersistAction('unknown', `⚠️ دستور ناشناخته: ${command.action}`);
         }
@@ -234,7 +234,7 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
             processAction(command);
         });
     };
-    
+
     const handleApproveAction = (id: string) => {
         const action = pendingApprovals.find(a => a.id === id);
         if (action) {
@@ -247,8 +247,8 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
         const action = pendingApprovals.find(a => a.id === id);
         setPendingApprovals(prev => prev.filter(a => a.id !== id));
         if (action) {
-             const friendlyName = ACTION_LABELS[action.action] || action.action;
-             logAndPersistAction('rejected_action', `⛔ اقدام «${friendlyName}» توسط شما لغو شد.`);
+            const friendlyName = ACTION_LABELS[action.action] || action.action;
+            logAndPersistAction('rejected_action', `⛔ اقدام «${friendlyName}» توسط شما لغو شد.`);
         }
     };
 
@@ -259,12 +259,12 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
                 action: 'mass_grant_points',
                 params: { amount: 5000, reason: 'پاداش تست ریسک', target_segment: 'all' }
             },
-             {
+            {
                 action: 'update_site_navigation',
-                params: { 
-                    category: 'آکادمی', 
-                    title: '🔥 جشنواره فروش', 
-                    description: 'تخفیف ویژه برای دوره‌ها', 
+                params: {
+                    category: 'آکادمی',
+                    title: '🔥 جشنواره فروش',
+                    description: 'تخفیف ویژه برای دوره‌ها',
                     view_name: 'shop',
                     icon_name: 'FireIcon'
                 }
@@ -278,7 +278,7 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
     const runAutonomousAgent = async () => {
         if (isAgentRunning) return;
         setIsAgentRunning(true);
-        
+
         const context = {
             totalUsers: users.length,
             totalOrders: orders.length,
@@ -294,35 +294,35 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
 
             // In a real implementation, we would call the API here with 'context'.
             // For the demo, we simulate a response that is aware of the "history" implicitly.
-            
+
             const mockPlans = [
                 { action: 'publish_announcement', params: { title: 'خبر مهم', content: 'به دلیل استقبال شما، ظرفیت سرورها افزایش یافت.', priority: 'normal' } },
                 { action: 'mass_grant_points', params: { amount: 500, reason: 'پاداش وفاداری فصلی', target_segment: 'active' } }, // High Risk
-                 { 
-                    action: 'update_site_navigation', 
-                    params: { 
-                        category: 'سفر', 
-                        title: '✨ ماموریت جدید', 
-                        description: 'چالش هفتگی فعال شد', 
+                {
+                    action: 'update_site_navigation',
+                    params: {
+                        category: 'سفر',
+                        title: '✨ ماموریت جدید',
+                        description: 'چالش هفتگی فعال شد',
                         view_name: 'path',
                         icon_name: 'StarIcon'
-                    } 
+                    }
                 },
                 null
             ];
-            
+
             // Simple logic to avoid repeating the last action if it was recent
             const lastAction = executedActionsRef.current[0]?.action;
             let randomPlan = mockPlans[Math.floor(Math.random() * mockPlans.length)];
-            
+
             if (randomPlan && randomPlan.action === lastAction) {
-                 randomPlan = null; // Skip to avoid repetition
+                randomPlan = null; // Skip to avoid repetition
             }
-            
+
             const analysisText = `تحلیل وضعیت: تعداد کاربران فعال ${context.totalUsers} نفر است. گردش مالی ${context.totalRevenue} تومان. وضعیت فعلی ${context.recentActivityLevel === 'Low' ? 'نیازمند تحریک تقاضا' : 'مطلوب'} ارزیابی می‌شود. پیشنهاد من ${randomPlan ? 'اجرای یک اقدام استراتژیک' : 'نظارت غیرفعال'} است.`;
-            
+
             setAgentAnalysis(analysisText);
-            
+
             if (randomPlan) executeAgentCommands([randomPlan]);
 
         } catch (e) {
@@ -346,17 +346,17 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
     return (
         <div>
             <div className="flex border-b border-gray-700 mb-6 overflow-x-auto">
-                 <button onClick={() => setActiveSubTab('agent')} className={`py-2 px-4 whitespace-nowrap ${activeSubTab === 'agent' ? 'border-b-2 border-amber-500 text-white' : 'text-gray-400'} flex items-center gap-2`}><BoltIcon className="w-4 h-4"/> مدیر خودکار (Auto-CEO)</button>
+                <button onClick={() => setActiveSubTab('agent')} className={`py-2 px-4 whitespace-nowrap ${activeSubTab === 'agent' ? 'border-b-2 border-amber-500 text-white' : 'text-gray-400'} flex items-center gap-2`}><BoltIcon className="w-4 h-4" /> مدیر خودکار (Auto-CEO)</button>
                 <button onClick={() => setActiveSubTab('users')} className={`py-2 px-4 whitespace-nowrap ${activeSubTab === 'users' ? 'border-b-2 border-green-500 text-white' : 'text-gray-400'}`}>کاربران</button>
                 <button onClick={() => setActiveSubTab('orders')} className={`py-2 px-4 whitespace-nowrap ${activeSubTab === 'orders' ? 'border-b-2 border-green-500 text-white' : 'text-gray-400'}`}>سفارشات</button>
                 <button onClick={() => setActiveSubTab('coCreation')} className={`py-2 px-4 whitespace-nowrap ${activeSubTab === 'coCreation' ? 'border-b-2 border-green-500 text-white' : 'text-gray-400'}`}>سفارشات هم‌آفرینی</button>
             </div>
-            
+
             {activeSubTab === 'agent' && (
                 <div className="space-y-6">
                     <div className={`bg-gradient-to-r transition-all duration-500 p-8 rounded-2xl border relative overflow-hidden shadow-xl ${isAutoPilot ? 'from-green-900/40 to-gray-900 border-green-500/50' : 'from-gray-800 to-gray-900 border-gray-700'}`}>
                         <div className="absolute top-0 right-0 w-64 h-64 bg-amber-500/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
-                        
+
                         <div className="relative z-10">
                             <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
                                 <div>
@@ -365,15 +365,15 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
                                         {isAutoPilot ? 'سیستم خودران فعال است' : 'اتاق فرماندهی هوشمند'}
                                     </h3>
                                     <p className="text-gray-400 mt-2">
-                                        {isAutoPilot 
-                                            ? 'مدیر هوشمند به صورت خودکار وضعیت را پایش و مداخله می‌کند.' 
+                                        {isAutoPilot
+                                            ? 'مدیر هوشمند به صورت خودکار وضعیت را پایش و مداخله می‌کند.'
                                             : 'هوش مصنوعی وضعیت سازمان را تحلیل کرده و منتظر دستور شماست.'}
                                     </p>
                                 </div>
-                                
+
                                 <div className="flex items-center gap-3 flex-wrap justify-end">
                                     {/* Voice Toggle */}
-                                    <button 
+                                    <button
                                         onClick={() => setIsVoiceEnabled(!isVoiceEnabled)}
                                         className={`p-3 rounded-full transition-colors border ${isVoiceEnabled ? 'bg-blue-600 border-blue-400 text-white' : 'bg-gray-700 border-gray-600 text-gray-400'}`}
                                         title={isVoiceEnabled ? 'خاموش کردن صدای مدیر' : 'روشن کردن صدای مدیر'}
@@ -382,7 +382,7 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
                                     </button>
 
                                     {/* Test Risk Trigger (Debug) */}
-                                    <button 
+                                    <button
                                         onClick={triggerHighRiskTest}
                                         className="bg-red-900/50 border border-red-600/50 hover:bg-red-800 text-red-200 font-semibold py-3 px-4 rounded-xl flex items-center gap-2 text-xs"
                                         title="شبیه‌سازی یک اقدام پرخطر برای تست صف تایید"
@@ -393,8 +393,8 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
 
                                     {/* Manual Trigger */}
                                     {!isAutoPilot && (
-                                        <button 
-                                            onClick={runAutonomousAgent} 
+                                        <button
+                                            onClick={runAutonomousAgent}
                                             disabled={isAgentRunning}
                                             className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-xl disabled:opacity-50 flex items-center gap-2 shadow-lg"
                                         >
@@ -404,7 +404,7 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
                                     )}
 
                                     {/* Auto-Pilot Toggle */}
-                                    <button 
+                                    <button
                                         onClick={() => setIsAutoPilot(!isAutoPilot)}
                                         className={`py-3 px-6 rounded-xl font-bold flex items-center gap-2 shadow-lg transition-all border ${isAutoPilot ? 'bg-green-600 border-green-400 hover:bg-green-700 text-white' : 'bg-gray-700 border-gray-600 hover:bg-gray-600 text-gray-300'}`}
                                     >
@@ -454,7 +454,7 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 {/* Analysis Box */}
                                 <div className="bg-black/30 p-6 rounded-xl border border-white/10 min-h-[150px]">
-                                    <h4 className="text-amber-300 font-bold mb-3 flex items-center gap-2"><BrainCircuitIcon className="w-5 h-5"/> تحلیل وضعیت (زنده)</h4>
+                                    <h4 className="text-amber-300 font-bold mb-3 flex items-center gap-2"><BrainCircuitIcon className="w-5 h-5" /> تحلیل وضعیت (زنده)</h4>
                                     {agentAnalysis ? (
                                         <p className="text-gray-200 leading-relaxed animate-fade-in">{agentAnalysis}</p>
                                     ) : (
@@ -464,12 +464,12 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
 
                                 {/* Actions Log */}
                                 <div className="bg-black/30 p-6 rounded-xl border border-white/10 min-h-[150px] max-h-[200px] overflow-y-auto custom-scrollbar">
-                                    <h4 className="text-green-400 font-bold mb-3 flex items-center gap-2"><CheckCircleIcon className="w-5 h-5"/> گزارش عملیات (حافظه دائم)</h4>
+                                    <h4 className="text-green-400 font-bold mb-3 flex items-center gap-2"><CheckCircleIcon className="w-5 h-5" /> گزارش عملیات (حافظه دائم)</h4>
                                     {executedActions.length > 0 ? (
                                         <ul className="space-y-2">
                                             {executedActions.slice(0, 20).map((log) => (
                                                 <li key={log.id} className="flex items-start gap-2 text-sm text-gray-200 animate-fade-in-up">
-                                                    <span className="text-xs mt-1">⚡</span> 
+                                                    <span className="text-xs mt-1">⚡</span>
                                                     <span title={new Date(log.timestamp).toLocaleString('fa-IR')}>{log.details}</span>
                                                 </li>
                                             ))}
@@ -487,13 +487,13 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
                             <p className="text-gray-400 text-xs">کاربران فعال</p>
                             <p className="text-xl font-bold text-white">{users.length.toLocaleString('fa-IR')}</p>
                         </div>
-                         <div className="bg-gray-800 p-4 rounded-lg text-center border border-gray-700">
+                        <div className="bg-gray-800 p-4 rounded-lg text-center border border-gray-700">
                             <p className="text-gray-400 text-xs">کل سفارشات</p>
                             <p className="text-xl font-bold text-white">{orders.length.toLocaleString('fa-IR')}</p>
                         </div>
-                         <div className="bg-gray-800 p-4 rounded-lg text-center border border-gray-700">
+                        <div className="bg-gray-800 p-4 rounded-lg text-center border border-gray-700">
                             <p className="text-gray-400 text-xs">گردش مالی</p>
-                            <p className="text-xl font-bold text-green-400">{orders.reduce((s,o)=>s+o.total,0).toLocaleString('fa-IR')}</p>
+                            <p className="text-xl font-bold text-green-400">{orders.reduce((s, o) => s + o.total, 0).toLocaleString('fa-IR')}</p>
                         </div>
                     </div>
                 </div>
@@ -522,10 +522,51 @@ const ManagementDashboard: React.FC<ManagementDashboardProps> = ({ users, orders
                     <input type="text" placeholder="جستجو بر اساس شناسه سفارش یا کاربر..." value={orderSearch} onChange={e => setOrderSearch(e.target.value)} className="w-full bg-gray-700 p-2 rounded-md mb-4" />
                     <div className="max-h-96 overflow-y-auto space-y-2">
                         {filteredOrders.map(order => (
-                            <div key={order.id} className="bg-gray-700/50 p-3 rounded-md">
-                                <div className="flex justify-between items-center">
-                                    <div><p>سفارش #{order.id.slice(-6)}</p><p className="text-xs text-gray-400">کاربر: {order.userId}</p></div>
-                                    <select defaultValue={order.status} className="bg-gray-600 text-xs p-1 rounded"><option>ثبت شده</option><option>در حال پردازش</option><option>ارسال شده</option><option>تحویل داده شده</option></select>
+                            <div key={order.id} className={`bg-gray-700/50 p-4 rounded-md border-r-4 ${order.status === 'awaiting_confirmation' ? 'border-amber-500 bg-amber-900/10' : 'border-transparent'}`}>
+                                <div className="flex justify-between items-start">
+                                    <div className="space-y-1">
+                                        <div className="flex items-center gap-2">
+                                            <p className="font-bold">سفارش #{order.id.slice(-6)}</p>
+                                            {order.status === 'awaiting_confirmation' && (
+                                                <span className="bg-amber-500 text-black text-[10px] px-2 py-0.5 rounded-full font-bold">در انتظار تایید پرداخت</span>
+                                            )}
+                                        </div>
+                                        <p className="text-xs text-gray-400">شناسه کاربر: {order.userId}</p>
+                                        <p className="text-xs text-green-400 font-bold">{order.total.toLocaleString('fa-IR')} تومان</p>
+
+                                        {/* Payment Details */}
+                                        {(order.paymentMethod === 'card_transfer' || order.paymentMethod === 'crypto') && (
+                                            <div className="mt-2 p-2 bg-black/30 rounded border border-white/5 text-[11px]">
+                                                <p className="text-gray-300">
+                                                    <span className="text-amber-400">روش:</span> {order.paymentMethod === 'card_transfer' ? 'کارت به کارت' : 'ارزی (تتر)'}
+                                                </p>
+                                                <p className="text-gray-300">
+                                                    <span className="text-amber-400">کد رهگیری:</span> <span className="font-mono text-white select-all">{order.paymentProof || 'ثبت نشده'}</span>
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div className="text-left space-y-2">
+                                        <select
+                                            value={order.status}
+                                            onChange={async (e) => {
+                                                const newStatus = e.target.value as any;
+                                                const updatedOrder = { ...order, status: newStatus };
+                                                await dbAdapter.saveOrder(updatedOrder);
+                                                // Normally we'd dispatch an update or re-fetch
+                                                window.location.reload(); // Quickest way to sync for now
+                                            }}
+                                            className="bg-gray-600 text-xs p-2 rounded outline-none border border-gray-500 focus:border-amber-500"
+                                        >
+                                            <option value="pending">در انتظار (Zarinpal)</option>
+                                            <option value="awaiting_confirmation">در انتظار تایید (Manual)</option>
+                                            <option value="paid">پرداخت شده</option>
+                                            <option value="shipped">ارسال شده</option>
+                                            <option value="completed">تکمیل شده</option>
+                                            <option value="cancelled">لغو شده</option>
+                                        </select>
+                                        <p className="text-[10px] text-gray-500">{new Date(order.date || order.createdAt).toLocaleString('fa-IR')}</p>
+                                    </div>
                                 </div>
                             </div>
                         ))}

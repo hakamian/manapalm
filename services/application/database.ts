@@ -364,6 +364,8 @@ export const dbAdapter = {
             digital_address: order.digitalAddress,
             status_history: order.statusHistory,
             deeds: order.deeds || [],
+            payment_method: order.paymentMethod,
+            payment_proof: order.paymentProof,
             created_at: order.date,
             updated_at: new Date().toISOString()
         };

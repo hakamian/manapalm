@@ -2,7 +2,7 @@
 import { Deed } from './content';
 import { WebDevProject } from './education';
 
-export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'completed' | 'cancelled' | 'در انتظار پرداخت' | 'پرداخت شده' | 'تحویل داده شده' | 'لغو شده';
+export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'completed' | 'cancelled' | 'awaiting_confirmation' | 'در انتظار پرداخت' | 'پرداخت شده' | 'تحویل داده شده' | 'لغو شده';
 export type ProductImpactType = 'tree' | 'hour' | 'meal' | 'unit';
 
 export interface ImpactCategory {
@@ -112,6 +112,9 @@ export interface Order {
     physicalAddress?: PhysicalAddress;
     digitalAddress?: DigitalAddress;
     shipment?: ShipmentInfo;
+
+    paymentMethod?: 'zarinpal' | 'wallet' | 'card_transfer' | 'crypto';
+    paymentProof?: string; // Tracking code or reference number
 
     // Legacy mapping (backward compat)
     total: number;

@@ -42,7 +42,8 @@ const CheckoutView: React.FC = () => {
     });
 
     const [selectedShipping, setSelectedShipping] = useState<ShippingRate | null>(null);
-    const [paymentMethod, setPaymentMethod] = useState<'zarinpal' | 'wallet'>('zarinpal');
+    const [paymentMethod, setPaymentMethod] = useState<'zarinpal' | 'wallet' | 'card_transfer' | 'crypto'>('zarinpal');
+    const [paymentProof, setPaymentProof] = useState<string>('');
 
     // Navigation helper
     const onNavigate = (view: View) => dispatch({ type: 'SET_VIEW', payload: view });
@@ -169,14 +170,16 @@ const CheckoutView: React.FC = () => {
             const orderId = generateUUID();
             const description = `خرید ${cartItems.length} محصول از نخلستان معنا`;
 
-            // 1. Create Order Object First
+            // 1. Create Order Object with correct initialization
             const newOrder: Order = {
                 id: orderId,
                 userId: user.id,
                 items: cartItems,
                 total: total,
                 totalAmount: total,
-                status: 'pending',
+                status: (paymentMethod === 'card_transfer' || paymentMethod === 'crypto') ? 'awaiting_confirmation' : 'pending',
+                paymentMethod: paymentMethod,
+                paymentProof: (paymentMethod === 'card_transfer' || paymentMethod === 'crypto') ? paymentProof : undefined,
                 deliveryType: validation.deliveryType,
                 physicalAddress: validation.requiresPhysicalAddress ? physicalAddress : undefined,
                 digitalAddress: validation.requiresDigitalAddress ? digitalAddress : undefined,
@@ -185,19 +188,23 @@ const CheckoutView: React.FC = () => {
                     shippingCost: finalShipping,
                     estimatedDelivery: new Date(Date.now() + selectedShipping.estimatedDays * 24 * 60 * 60 * 1000).toISOString()
                 } : undefined,
-                statusHistory: [{ status: 'pending', date: new Date().toISOString() }],
+                statusHistory: [{
+                    status: (paymentMethod === 'card_transfer' || paymentMethod === 'crypto') ? 'awaiting_confirmation' : 'pending',
+                    date: new Date().toISOString()
+                }],
                 deeds: [],
                 createdAt: new Date().toISOString(),
                 date: new Date().toISOString()
             };
 
-            // 2. Save pending order to DB (Strict requirement for foreign keys)
+            console.log('📦 [Checkout] Saving order...', orderId);
+            // 2. Save order to DB (Single save call)
             await dbAdapter.saveOrder(newOrder);
 
-            // 3. 🌟 AGENT 4: Tree Gifting Integration 
+            // 3. 🌟 AGENT 4: Tree Gifting Integration (Run if applicable)
             const heritageItem = cartItems.find(item => item.category === 'نخل میراث' || item.type === 'heritage');
-
             if (heritageItem) {
+                console.log('🌳 [Checkout] Reserving heritage palm...');
                 const giftingResult = await fetch('/api/create-tree-gift', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -215,38 +222,37 @@ const CheckoutView: React.FC = () => {
                 if (!giftingData.success) {
                     throw new Error(giftingData.error || 'خطا در رزرو نخل');
                 }
-                console.log('🌳 Tree reserved successfully:', giftingData.giftId);
             }
 
-
-            // Save to localStorage for recovery after payment
+            // Save to localStorage for recovery
             localStorage.setItem('pending_order', JSON.stringify({
                 ...newOrder,
                 selectedShipping
             }));
 
-            // Save new address to user profile if needed
-            if (validation.requiresPhysicalAddress && physicalAddress.fullAddress) {
-                const addressExists = user.addresses?.some(a =>
-                    a.fullAddress === physicalAddress.fullAddress &&
-                    a.postalCode === physicalAddress.postalCode
-                );
-                if (!addressExists) {
-                    const updatedAddresses = [
-                        { ...physicalAddress, id: `addr-${Date.now()}`, title: 'آدرس جدید', isDefault: true },
-                        ...(user.addresses || []).map(a => ({ ...a, isDefault: false }))
-                    ];
-                    dispatch({ type: 'UPDATE_USER', payload: { addresses: updatedAddresses } });
+            // 4. Handle Final Step based on Payment Method
+            if (paymentMethod === 'card_transfer' || paymentMethod === 'crypto') {
+                if (!paymentProof) {
+                    throw new Error('لطفاً کد رهگیری یا شماره پیگیری تراکنش را وارد کنید.');
                 }
+
+                console.log('✅ [Checkout] Manual payment submitted');
+                setIsProcessing(false);
+                dispatch({ type: 'SET_CART_ITEMS', payload: [] });
+                setError(null);
+                dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'orders' });
+                return;
             }
 
-            // Request payment
+            // Automated Payment (Zarinpal)
+            console.log('💳 [Checkout] Requesting payment gateway...');
             const result = await requestPayment(total, description, {
                 email: user.email,
                 phone: user.phone
             });
 
             if (result.success && result.url) {
+                console.log('🚀 [Checkout] Redirection to:', result.url);
                 window.location.href = result.url;
             } else {
                 throw new Error(result.error || 'خطا در اتصال به درگاه بانک');
@@ -431,22 +437,103 @@ const CheckoutView: React.FC = () => {
                                         روش پرداخت
                                     </h3>
 
-                                    <button
-                                        onClick={() => setPaymentMethod('zarinpal')}
-                                        className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${paymentMethod === 'zarinpal' ? 'border-amber-400 bg-amber-400/10' : 'border-white/10 bg-white/5'
-                                            }`}
-                                    >
-                                        <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 bg-amber-400 rounded-xl flex items-center justify-center text-black font-black text-sm">ZP</div>
-                                            <div className="text-right">
-                                                <p className="font-bold text-white">درگاه زرین‌پال</p>
-                                                <p className="text-sm text-gray-400">پشتیبانی از تمام کارت‌های شتاب</p>
+                                    <div className="space-y-4">
+                                        <button
+                                            onClick={() => setPaymentMethod('zarinpal')}
+                                            className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${paymentMethod === 'zarinpal' ? 'border-amber-400 bg-amber-400/10' : 'border-white/10 bg-white/5'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 bg-amber-400 rounded-xl flex items-center justify-center text-black font-black text-sm">ZP</div>
+                                                <div className="text-right">
+                                                    <p className="font-bold text-white">درگاه زرین‌پال</p>
+                                                    <p className="text-sm text-gray-400">پشتیبانی از تمام کارت‌های شتاب</p>
+                                                </div>
+                                            </div>
+                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'zarinpal' ? 'border-amber-400' : 'border-gray-500'}`}>
+                                                {paymentMethod === 'zarinpal' && <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>}
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            onClick={() => setPaymentMethod('card_transfer')}
+                                            className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${paymentMethod === 'card_transfer' ? 'border-emerald-400 bg-emerald-400/10' : 'border-white/10 bg-white/5'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 bg-emerald-600 rounded-xl flex items-center justify-center text-white">💳</div>
+                                                <div className="text-right">
+                                                    <p className="font-bold text-white">کارت به کارت</p>
+                                                    <p className="text-sm text-gray-400">واریز مستقیم به حساب</p>
+                                                </div>
+                                            </div>
+                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'card_transfer' ? 'border-emerald-400' : 'border-gray-500'}`}>
+                                                {paymentMethod === 'card_transfer' && <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>}
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            onClick={() => setPaymentMethod('crypto')}
+                                            className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all ${paymentMethod === 'crypto' ? 'border-blue-400 bg-blue-400/10' : 'border-white/10 bg-white/5'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-4">
+                                                <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center text-white text-xs">USDT</div>
+                                                <div className="text-right">
+                                                    <p className="font-bold text-white">پرداخت ارزی (تتر)</p>
+                                                    <p className="text-sm text-gray-400">شبکه BEP20 (Binance Smart Chain)</p>
+                                                </div>
+                                            </div>
+                                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'crypto' ? 'border-blue-400' : 'border-gray-500'}`}>
+                                                {paymentMethod === 'crypto' && <div className="w-2.5 h-2.5 rounded-full bg-blue-400"></div>}
+                                            </div>
+                                        </button>
+                                    </div>
+
+                                    {/* Manual Payment Details */}
+                                    {paymentMethod === 'card_transfer' && (
+                                        <div className="mt-4 p-5 bg-emerald-950/30 border border-emerald-500/30 rounded-xl animate-in fade-in slide-in-from-top-2">
+                                            <p className="text-emerald-300 text-sm mb-3 font-bold">لطفاً مبلغ را به کارت زیر واریز نمایید:</p>
+                                            <div className="bg-emerald-900/40 p-4 rounded-lg flex items-center justify-between group">
+                                                <span className="text-xl font-mono text-white tracking-widest">6219 8618 8499 6025</span>
+                                                <button onClick={() => navigator.clipboard.writeText('6219861884996025')} className="text-xs text-emerald-400 hover:text-white underline">کپی</button>
+                                            </div>
+                                            <p className="text-xs text-gray-400 mt-2">به نام: سید مهدی حکامیان</p>
+
+                                            <div className="mt-4 space-y-2">
+                                                <label className="text-xs text-gray-300">کد رهگیری یا شماره پیگیری تراکنش:</label>
+                                                <input
+                                                    type="text"
+                                                    value={paymentProof}
+                                                    onChange={(e) => setPaymentProof(e.target.value)}
+                                                    placeholder="مثال: 123456789"
+                                                    className="w-full bg-black/40 border border-emerald-500/30 rounded-lg p-3 text-white focus:border-emerald-400 outline-none"
+                                                />
                                             </div>
                                         </div>
-                                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${paymentMethod === 'zarinpal' ? 'border-amber-400' : 'border-gray-500'}`}>
-                                            {paymentMethod === 'zarinpal' && <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>}
+                                    )}
+
+                                    {paymentMethod === 'crypto' && (
+                                        <div className="mt-4 p-5 bg-blue-950/30 border border-blue-500/30 rounded-xl animate-in fade-in slide-in-from-top-2">
+                                            <p className="text-blue-300 text-sm mb-3 font-bold">واریز تتر (USDT) روی شبکه BEP20:</p>
+                                            <div className="bg-blue-900/40 p-3 rounded-lg flex items-center justify-between group overflow-hidden">
+                                                <span className="text-xs font-mono text-white break-all pr-2">0x2ca84105e9e3f3a91f0385acbd497923d743a342</span>
+                                                <button onClick={() => navigator.clipboard.writeText('0x2ca84105e9e3f3a91f0385acbd497923d743a342')} className="text-xs text-blue-400 hover:text-white underline flex-shrink-0">کپی</button>
+                                            </div>
+                                            <p className="text-xs text-red-400 mt-2 font-bold">هشدار: فقط واریز روی شبکه BEP20 پشتیبانی می‌شود.</p>
+
+                                            <div className="mt-4 space-y-2">
+                                                <label className="text-xs text-gray-300">هش تراکنش (TXID):</label>
+                                                <input
+                                                    type="text"
+                                                    value={paymentProof}
+                                                    onChange={(e) => setPaymentProof(e.target.value)}
+                                                    placeholder="0x..."
+                                                    className="w-full bg-black/40 border border-blue-500/30 rounded-lg p-3 text-white focus:border-blue-400 outline-none font-mono text-sm"
+                                                />
+                                            </div>
                                         </div>
-                                    </button>
+                                    )}
                                 </div>
 
                                 {/* Security Notice */}

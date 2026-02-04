@@ -1,6 +1,4 @@
 
-import { GoogleGenAI } from '@google/genai';
-
 export default async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -10,6 +8,8 @@ export default async function handler(req, res) {
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
   );
+
+  console.log(`💳 [API] Payment Request started for ${req.body.action || 'unknown action'}`);
 
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -23,11 +23,7 @@ export default async function handler(req, res) {
   const { action, amount, description, email, mobile, authority } = req.body;
 
   // CONFIGURATION
-  // 1. Get Merchant ID from Environment Variables (Add ZARINPAL_MERCHANT_ID to Vercel)
   const MERCHANT_ID = process.env.ZARINPAL_MERCHANT_ID;
-
-  // 2. Determine Mode: If ZARINPAL_SANDBOX is 'true', use sandbox. Otherwise production.
-  // Default to true if not set, for safety.
   const IS_SANDBOX = process.env.ZARINPAL_SANDBOX !== 'false';
 
   const BASE_URL = IS_SANDBOX
@@ -50,7 +46,7 @@ export default async function handler(req, res) {
 
       // 🛡️ CTO TEST MODE: If no merchant ID and explicitly allowed or in development
       if (!MERCHANT_ID || MERCHANT_ID === 'TEST') {
-        console.log('🧪 [API] TEST MODE: Simulating payment request');
+        console.log('🧪 [API] TEST MODE: Simulating payment request. Returning instant response.');
         return res.status(200).json({
           success: true,
           authority: 'TEST_AUTHORITY_' + Date.now(),
@@ -58,6 +54,7 @@ export default async function handler(req, res) {
         });
       }
 
+      console.log(`🔗 [API] Calling ZarinPal API: ${BASE_URL}/request.json`);
       const payload = {
         merchant_id: MERCHANT_ID,
         amount: amount * 10, // Convert Toman to Rial
