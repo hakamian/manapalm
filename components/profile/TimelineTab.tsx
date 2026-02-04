@@ -22,8 +22,8 @@ const fileToBase64 = (file: File): Promise<string> =>
         reader.onerror = error => reject(error);
     });
 
-const TimelineHeader: React.FC<{ user: User; onStartPlantingFlow: () => void; onNavigate: (view: View) => void; }> = ({ user, onStartPlantingFlow, onNavigate }) => {
-    const sortedTimeline = [...(user.timeline || [])].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+const TimelineHeader: React.FC<{ user: User; onStartPlantingFlow: () => void; onNavigate: (view: View) => void; mergedTimeline: any[] }> = ({ user, onStartPlantingFlow, onNavigate, mergedTimeline }) => {
+    const sortedTimeline = [...mergedTimeline].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     const lastEvent = sortedTimeline[0];
     let isActive = false;
     if (lastEvent) {
@@ -72,8 +72,35 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ user, onStartPlantingFlow, on
 
     const sortedTimeline = [...(user.timeline || [])].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+    // 🛡️ DYNAMIC TIMELINE GENERATION
+    // Generate events from Orders/Deeds directly, to ensure they show up even if metadata is stale
+    const generatedEvents = orders.flatMap(order => {
+        if (!order.deeds || order.deeds.length === 0) return [];
+        return order.deeds.map(deed => ({
+            type: 'palm_planted',
+            date: order.date || new Date().toISOString(),
+            title: `کاشت نخل: ${deed.intention}`,
+            deedId: deed.id,
+            deedIntention: deed.intention,
+            details: {
+                title: `نخل ${deed.id.substring(0, 8)}`,
+                description: `سفارش ${order.id.substring(0, 8)}`
+            },
+            // Try to find existing memory for this deed in user.timeline
+            memoryText: user.timeline?.find(e => e.deedId === deed.id)?.memoryText || '',
+            memoryImage: user.timeline?.find(e => e.deedId === deed.id)?.memoryImage || ''
+        }));
+    });
+
+    // Merge and deduplicate (prefer user.timeline if it exists, as it might have edited details)
+    const existingDeedIds = new Set(user.timeline?.map(e => e.deedId).filter(Boolean));
+    const newEvents = generatedEvents.filter(e => !existingDeedIds.has(e.deedId));
+
+    // Final merged list
+    const mergedTimeline = [...(user.timeline || []), ...newEvents].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
     const handleEditMemory = (deedId: string) => {
-        const event = user.timeline?.find(e => e.deedId === deedId);
+        const event = mergedTimeline.find(e => e.deedId === deedId); // Search in MERGED timeline
         setEditingMemoryDeedId(deedId);
         setEditingMemoryText(event?.memoryText || '');
     };
@@ -117,10 +144,10 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ user, onStartPlantingFlow, on
 
     return (
         <div>
-            <TimelineHeader user={user} onStartPlantingFlow={onStartPlantingFlow} onNavigate={onNavigate} />
+            <TimelineHeader user={user} onStartPlantingFlow={onStartPlantingFlow} onNavigate={onNavigate} mergedTimeline={mergedTimeline} />
             <h2 className="text-2xl font-bold mb-6">گاهشمار معنای شما</h2>
             <div className="relative pl-4 border-r-2 border-gray-700">
-                {sortedTimeline.map((event, index) => (
+                {mergedTimeline.map((event, index) => (
                     <div key={index} className="mb-8 pl-8 relative">
                         <div className="absolute -right-[7px] top-1 w-4 h-4 rounded-full bg-green-500 border-2 border-gray-900"></div>
                         <div className="bg-gray-800 p-4 rounded-lg border border-gray-700">
