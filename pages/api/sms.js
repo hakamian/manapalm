@@ -18,7 +18,7 @@ export default async function handler(req, res) {
         const { mobile, message, templateId: customTemplateId } = req.body;
 
         const smsApiKey = process.env.SMS_IR_API_KEY;
-        const defaultTemplateId = process.env.SMS_IR_TEMPLATE_ID || '177096';
+        const defaultTemplateId = process.env.SMS_IR_ORDER_TEMPLATE_ID || process.env.SMS_IR_TEMPLATE_ID || '177096';
         const templateId = customTemplateId || defaultTemplateId;
 
         if (!smsApiKey || !templateId) {

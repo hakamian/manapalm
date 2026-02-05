@@ -137,7 +137,7 @@ export default async function handler(req, res) {
         const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.VITE_SUPABASE_URL;
         const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
         const smsApiKey = process.env.SMS_IR_API_KEY;
-        const templateId = process.env.SMS_IR_TEMPLATE_ID;
+        const templateId = process.env.SMS_IR_OTP_TEMPLATE_ID || process.env.SMS_IR_TEMPLATE_ID;
 
         if (!supabaseUrl || !supabaseServiceKey || !smsApiKey || !templateId) {
             const missing = { supabaseUrl: !supabaseUrl, supabaseServiceKey: !supabaseServiceKey, smsApiKey: !smsApiKey, templateId: !templateId };

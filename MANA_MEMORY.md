@@ -188,8 +188,9 @@ graph TD
   1. **Integrated Purchase Flow:** در `ShopView.tsx` خرید نخل‌های میراث مستقیماً به مودال شخصی‌سازی متصل شد تا ثبت نیت و پیام اجباری شود.
   2. **Deed Personalization Preview:** افزودن پیش‌نمایش زنده (Mini Preview) از سند نخل در مرحله نهایی خرید (مودال شخصی‌سازی) برای بهبود UX.
   3. **"My Deeds" Tab:** ایجاد تب جدید «اسناد من» در `UserProfileView.tsx` برای مشاهده، دانلود و اشتراک‌گذاری تمامی اسناد صادر شده کاربر.
-  4. **SMS Template Update:** تنظیم `sms.js` برای استفاده از الگوی جدید `177096` با پارامتر اختصاصی `#ORDER_ID#` جهت اطلاع‌رسانی خودکار سفارشات.
-  5. **Timeline Stability:** افزودن محدودیت ۲ مگابایتی برای آپلود تصاویر خاطرات در `TimelineTab.tsx` و اصلاح منطق استخراج سند (Deed Extraction) در `CheckoutView.tsx` برای اطمینان از صحت ثبت داده‌ها در دیتابیس.
+  4. **SMS Infrastructure Refactoring:** جداسازی کامل الگوهای پیامک ورود (`SMS_IR_OTP_TEMPLATE_ID`) و ثبت سفارش (`SMS_IR_ORDER_TEMPLATE_ID`) در `otp.js` و `sms.js` برای جلوگیری از تداخل محتوایی و بهبود تجربه کاربری.
+  5. **Correct Image Assets:** اصلاح نمایش تصاویر نخل‌ها در سبد خرید و صدور سند با جایگزینی آدرس‌های تستی (Picsum) با تصاویر اختصاصی نخلستان.
+  6. **Timeline Stability:** افزودن محدودیت ۲ مگابایتی برای آپلود تصاویر خاطرات در `TimelineTab.tsx` و اصلاح منطق استخراج سند (Deed Extraction) در `CheckoutView.tsx`.
 - **نتیجه:** چرخه "خرید -> شخصی‌سازی -> صدور سند -> مدیریت در پروفایل" کاملاً یکپارچه و کاربرپسند شد.
 
 #### 45. OTP Authentication System Redesign (2026-02-01) ✅
@@ -974,6 +975,8 @@ graph TD
 ### ✅ Critical Blocking Issue (2025-12-24) - RESOLVED (2026-01-18)
 - **Problem:** The "Planting Flow" (PalmSelectionModal) and "Shopping Cart" interactions were failing to show visible UI, despite the state (`isOpen`) theoretically changing.
 - **Root Cause Identified:** **Split Brain Context Architecture**. The application was using two separate state managers for the cart: `CartContext` (used by the Modal) and `AppContext` (used by the UI dispatchers like 'Buy' buttons). Actions dispatched to `AppContext` were never seen by the `CartContext` listener in the modal.
+- **Action Taken:** Refactored Heritage Palm purchase flow to include mandatory personalization with a live deed preview. Updated `AppContext` to use correct product images instead of placeholders. Added "My Deeds" tab to User Profile for managing heritage palms. Refactored SMS logic to use separate environment variables for OTP (`SMS_IR_OTP_TEMPLATE_ID`) and Orders (`SMS_IR_ORDER_TEMPLATE_ID`) to prevent message template overlapping.
+- **Outcome:** Correct images are now displayed in the cart and deeds. Users can view and manage their purchased deeds. SMS notifications for orders and OTPs are correctly separated and formatted using dedicated SMS.ir templates.
 - **Resolution:**
     1.  **Unified State:** Refactored `ShoppingCartModal` to consume `AppContext` (Single Source of Truth) instead of the isolated `CartContext`.
     2.  **Logic Sync:** Ensured `GlobalModals` and all child modals listen to the same central Reducer state.
