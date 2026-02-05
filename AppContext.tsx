@@ -753,6 +753,22 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     }
                 });
 
+                // 📡 Shadow Sync: Silent Background Update from Supabase
+                setTimeout(async () => {
+                    try {
+                        const dbSettings = await dbAdapter.getAppSettings();
+                        if (dbSettings && dbSettings.usdToTomanRate && dbSettings.usdToTomanRate !== finalAppSettings.usdToTomanRate) {
+                            logger.info(`📡 [Shadow Sync] DB Rate (${dbSettings.usdToTomanRate}) differs from Local Rate (${finalAppSettings.usdToTomanRate}). Syncing...`);
+                            dispatch({
+                                type: 'BULK_UPDATE_PRICES_BY_RATE',
+                                payload: { newRate: dbSettings.usdToTomanRate }
+                            });
+                        }
+                    } catch (e) {
+                        logger.warn("📡 [Shadow Sync] Failed to sync in background", e);
+                    }
+                }, 2000); // Wait 2s for core boot to finish before heavy sync
+
                 if (cleanAuthUrl()) {
                     logger.info("Detected Auth Redirect - Navigating to Profile");
                     dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'profile' });

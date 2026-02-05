@@ -103,15 +103,16 @@ const ModernSettingsDashboard: React.FC = () => {
                     type: 'BULK_UPDATE_PRICES_BY_RATE',
                     payload: { newRate }
                 });
+                // 💾 Persist to DB for all users
+                await dbAdapter.saveAppSettings({ ...appSettings, usdToTomanRate: newRate });
             } else {
                 // Otherwise just update settings
+                const updatedSettings = { ...appSettings, usdToTomanRate: newRate };
                 dispatch({
                     type: 'UPDATE_APP_SETTINGS',
-                    payload: {
-                        ...appSettings,
-                        usdToTomanRate: newRate
-                    }
+                    payload: updatedSettings
                 });
+                await dbAdapter.saveAppSettings(updatedSettings);
             }
 
             // Simulated delay for premium feel

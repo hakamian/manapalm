@@ -435,6 +435,47 @@ export const dbAdapter = {
         }
     },
 
+    async getAppSettings(): Promise<any | null> {
+        if (!this.isLive()) return null;
+        try {
+            const { data, error } = await supabase!
+                .from('app_settings')
+                .select('settings')
+                .eq('id', 'global')
+                .maybeSingle();
+
+            if (error) {
+                logger.error("Error fetching app settings", { error: error.message });
+                return null;
+            }
+            return data?.settings || null;
+        } catch (err) {
+            logger.error("getAppSettings failed", {}, err as Error);
+            return null;
+        }
+    },
+
+    async saveAppSettings(settings: any): Promise<void> {
+        if (!this.isLive()) return;
+        try {
+            const { error } = await supabase!
+                .from('app_settings')
+                .upsert({
+                    id: 'global',
+                    settings: settings,
+                    updated_at: new Date().toISOString()
+                });
+
+            if (error) {
+                logger.error("Error saving app settings", { error: error.message });
+                throw error;
+            }
+        } catch (err) {
+            logger.error("saveAppSettings failed", {}, err as Error);
+            throw err;
+        }
+    },
+
     async getDeedById(id: string): Promise<any | null> {
         if (!this.isLive()) return null;
 
