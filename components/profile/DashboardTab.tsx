@@ -83,7 +83,7 @@ const DashboardTab: React.FC<DashboardTabProps> = ({ user, orders, onNavigateToT
                     <h3 className="font-semibold text-lg mb-2">آخرین سفارش</h3>
                     {orders.length > 0 ? (
                         <>
-                            <p>#{orders[orders.length - 1].id.slice(-6)}</p>
+                            <p>#{orders[orders.length - 1].id.slice(0, 8)}</p>
                             <p className="text-sm text-gray-400">{new Date(orders[orders.length - 1].createdAt || orders[orders.length - 1].date || new Date().toISOString()).toLocaleDateString('fa-IR')}</p>
                             <span className="text-xs bg-yellow-500 text-black px-2 py-1 rounded-full mt-2 inline-block">{orders[orders.length - 1].status}</span>
                         </>

@@ -24,7 +24,7 @@ const OrdersTab: React.FC<OrdersTabProps> = ({ orders, onNavigate, onOpenDeedMod
                                     {order.status === 'تحویل داده شده' || order.status === 'completed' ? '✅' : '📦'}
                                 </div>
                                 <div>
-                                    <p className="font-bold text-white">سفارش <span className="font-mono text-emerald-400">#{order.id.slice(-6).toUpperCase()}</span></p>
+                                    <p className="font-bold text-white">سفارش <span className="font-mono text-emerald-400">#{order.id.slice(0, 8).toUpperCase()}</span></p>
                                     <p className="text-sm text-gray-400">{new Date(order.date || order.createdAt).toLocaleDateString('fa-IR', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
                                 </div>
                             </div>
