@@ -157,13 +157,16 @@ function OTPInput({
 
 import {
     XMarkIcon, GoogleIcon, PhoneIcon, LockClosedIcon,
-    SparklesIcon, UserPlusIcon, HeartIcon, ChartBarIcon
+    SparklesIcon, UserPlusIcon, HeartIcon, ChartBarIcon,
+    EyeIcon, EyeSlashIcon
 } from './icons';
 
 export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
     const [phone, setPhone] = useState('');
     const [otp, setOtp] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [rememberMe, setRememberMe] = useState(true);
     const [mode, setMode] = useState<AuthMode>('otp');
     const [step, setStep] = useState<AuthStep>('phone_entry');
     const [loading, setLoading] = useState(false);
@@ -436,17 +439,47 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
                             </div>
 
                             {mode === 'password' && (
-                                <div className="relative group animate-fade-in-down">
-                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-emerald-500 transition-colors">
-                                        <LockClosedIcon className="w-5 h-5" />
+                                <div className="space-y-4 animate-fade-in-down">
+                                    <div className="relative group">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-emerald-500 transition-colors">
+                                            <LockClosedIcon className="w-5 h-5" />
+                                        </div>
+                                        <input
+                                            type={showPassword ? "text" : "password"}
+                                            placeholder="رمز عبور"
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            className="w-full bg-white/5 border border-white/10 focus:border-emerald-500/50 focus:bg-white/10 py-4 pl-12 pr-12 rounded-2xl text-white outline-none transition-all placeholder:text-gray-600"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-white transition-colors"
+                                        >
+                                            {showPassword ? <EyeSlashIcon className="w-5 h-5" /> : <EyeIcon className="w-5 h-5" />}
+                                        </button>
                                     </div>
-                                    <input
-                                        type="password"
-                                        placeholder="رمز عبور"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        className="w-full bg-white/5 border border-white/10 focus:border-emerald-500/50 focus:bg-white/10 py-4 pl-12 pr-6 rounded-2xl text-white outline-none transition-all placeholder:text-gray-600"
-                                    />
+
+                                    <div className="flex items-center gap-2 px-1">
+                                        <label className="flex items-center gap-2 cursor-pointer group">
+                                            <div className="relative">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={rememberMe}
+                                                    onChange={(e) => setRememberMe(e.target.checked)}
+                                                    className="sr-only"
+                                                />
+                                                <div className={`w-5 h-5 rounded border transition-all flex items-center justify-center ${rememberMe ? 'bg-emerald-500 border-emerald-500' : 'bg-white/5 border-white/20 group-hover:border-white/40'}`}>
+                                                    {rememberMe && (
+                                                        <svg className="w-3.5 h-3.5 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="4">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <span className="text-xs text-gray-400 group-hover:text-gray-300 transition-colors">مرا به خاطر بسپار</span>
+                                        </label>
+                                    </div>
                                 </div>
                             )}
 
