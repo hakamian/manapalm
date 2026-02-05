@@ -109,7 +109,11 @@ const OrdersTab: React.FC<OrdersTabProps> = ({ orders, onNavigate, onOpenDeedMod
                                         ) : order.digitalAddress ? (
                                             <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4">
                                                 <p className="text-xs text-gray-400 mb-1">تحویل دیجیتال به:</p>
-                                                <p className="text-white font-mono text-sm">{order.digitalAddress.email || order.digitalAddress.phone}</p>
+                                                <p className="text-white font-mono text-sm">
+                                                    {(order.digitalAddress.email && !order.digitalAddress.email.includes('manapalm.local'))
+                                                        ? order.digitalAddress.email
+                                                        : order.digitalAddress.phone}
+                                                </p>
                                             </div>
                                         ) : (
                                             <p className="text-gray-500 text-xs italic">اطلاعات آدرس ثبت نشده است.</p>

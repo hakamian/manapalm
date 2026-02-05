@@ -37,7 +37,7 @@ const CheckoutView: React.FC = () => {
     });
 
     const [digitalAddress, setDigitalAddress] = useState<DigitalAddress>({
-        email: user?.email || '',
+        email: (user?.email && !user.email.includes('manapalm.local')) ? user.email : '',
         phone: user?.phone || ''
     });
 
@@ -462,7 +462,7 @@ const CheckoutView: React.FC = () => {
                                     {validation.requiresDigitalAddress && (
                                         <div className="p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                                             <p className="text-sm text-gray-400 mb-1">📄 ارسال سند دیجیتال به:</p>
-                                            {digitalAddress.email && <p className="text-white">📧 {digitalAddress.email}</p>}
+                                            {digitalAddress.email && !digitalAddress.email.includes('manapalm.local') && <p className="text-white">📧 {digitalAddress.email}</p>}
                                             <p className="text-white">📱 {digitalAddress.phone}</p>
                                         </div>
                                     )}
