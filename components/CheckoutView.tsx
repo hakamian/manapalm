@@ -271,7 +271,7 @@ const CheckoutView: React.FC = () => {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             mobile: phone,
-                            message: `سفارش ${newOrder.id.slice(0, 8)} ثبت شد (در انتظار تأیید).`
+                            message: newOrder.id.slice(0, 8)
                         })
                     }).catch(err => console.error('SMS Error:', err));
                 }

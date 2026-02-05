@@ -36,7 +36,7 @@ const DeedPersonalizationModal: React.FC<DeedPersonalizationModalProps> = ({ isO
     useEffect(() => {
         if (isOpen && palm) {
             setDeedName(user?.fullName || '');
-            setFromName('');
+            setFromName(user?.fullName || '');
             setDeedMessage('');
             setQuantity(1);
             setSelectedPlan(1);

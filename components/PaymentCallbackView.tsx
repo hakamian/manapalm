@@ -91,7 +91,7 @@ const PaymentCallbackView: React.FC = () => {
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 mobile: phone,
-                                message: `سفارش ${newOrder.id.slice(0, 8)} ثبت شد.`
+                                message: newOrder.id.slice(0, 8)
                             })
                         }).catch(err => console.error('SMS Error:', err));
                     }
