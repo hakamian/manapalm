@@ -29,7 +29,7 @@ const ModernSettingsDashboard: React.FC = () => {
     const [settings, setSettings] = useState({
         siteName: 'نخلستان معنا',
         siteDescription: 'پلتفرم جامع رشد شخصی و معنوی',
-        usdToTomanRate: 600000,
+        usdToTomanRate: 1200000,
         language: 'fa',
         currency: 'IRR',
         timezone: 'Asia/Tehran',
@@ -152,6 +152,21 @@ const ModernSettingsDashboard: React.FC = () => {
                     <div style={{ paddingBottom: '0.5rem' }}>
                         <span className="text-emerald-400 font-bold">ریال</span>
                     </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
+                    <button
+                        onClick={() => setSettings(s => ({ ...s, usdToTomanRate: s.usdToTomanRate + 500000 }))}
+                        className="admin-btn" style={{ padding: '0.25rem 0.75rem', background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', fontSize: '0.8rem' }}
+                    >
+                        + ۵۰۰,۰۰۰ ریال
+                    </button>
+                    <button
+                        onClick={() => setSettings(s => ({ ...s, usdToTomanRate: Math.max(500000, s.usdToTomanRate - 500000) }))}
+                        className="admin-btn" style={{ padding: '0.25rem 0.75rem', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', fontSize: '0.8rem' }}
+                    >
+                        - ۵۰۰,۰۰۰ ریال
+                    </button>
                 </div>
                 <p className="admin-caption" style={{ marginTop: '0.75rem', color: 'rgba(255,165,0,0.8)' }}>
                     * تغییر این نرخ مستقیماً بر قیمت ابزارهای هوشمند و دوره‌ها تاثیر می‌گذارد.

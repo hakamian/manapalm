@@ -165,7 +165,7 @@ const initialState: AppState = {
         meaningCompassPrice: 50000,
         alchemyPrompt: DEFAULT_ALCHEMY_PROMPT,
         enableSystemUpgrade: false,
-        usdToTomanRate: 120000,
+        usdToTomanRate: 1200000,
     },
     apiSettings: {
         budget: 100,
@@ -444,13 +444,13 @@ function appReducer(state: AppState, action: Action): AppState {
             // Update Products
             const updatedProducts = state.products.map(p => ({
                 ...p,
-                price: p.basePrice ? Math.round(p.basePrice * newRate) : Math.round(p.price * ratio)
+                price: p.basePrice ? Math.floor(p.basePrice * newRate) : Math.floor(p.price * ratio)
             }));
 
             // Update Palm Types
             const updatedPalmTypes = state.palmTypes.map(p => ({
                 ...p,
-                price: Math.round(p.price * ratio)
+                price: Math.floor(p.price * ratio)
             }));
 
             return {
