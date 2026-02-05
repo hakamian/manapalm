@@ -27,7 +27,7 @@ const DeedPersonalizationModal: React.FC<DeedPersonalizationModalProps> = ({ isO
     const [isGeneratingMessage, setIsGeneratingMessage] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState(1);
     const dispatch = useAppDispatch();
-    const { allUsers } = useAppState();
+    const { allUsers, deedPersonalizationDefaults } = useAppState();
     const [selectedKeeperId, setSelectedKeeperId] = useState<string>('');
     const [isForSelf, setIsForSelf] = useState(false);
 
@@ -35,13 +35,23 @@ const DeedPersonalizationModal: React.FC<DeedPersonalizationModalProps> = ({ isO
 
     useEffect(() => {
         if (isOpen && palm) {
+            const initialIntention = deedPersonalizationDefaults?.intention;
+            const initialRecipient = deedPersonalizationDefaults?.recipientName;
+
             // Requirement: Empty spiritual owner at start
-            setDeedName('');
+            setDeedName(initialRecipient || '');
             setFromName(user?.fullName || '');
 
-            // Requirement: Default message based on palm type
+            // Requirement: Default message based on palm type OR explicit intention
             let defaultMessage = "با نیت خیر و برکت در مسیر آبادانی زمین و ثبت میراثی جاودان.";
-            if (palm.name.includes('ازدواج')) defaultMessage = "به مناسبت پیوند عشق و آغاز یک زندگی مشترک جاودان در نخلستان معنا.";
+
+            // Prioritize specific intention passed from Gift Landing Pages
+            if (initialIntention) {
+                if (initialIntention.includes('پیوند')) defaultMessage = "به میمنت پیوند، برای عشقی که با هر طلوع خورشید ریشه می‌دواند و سبزتر می‌شود.";
+                else if (initialIntention.includes('تولد') || initialIntention.includes('زادروز')) defaultMessage = "به شکرانه آغاز بهاری دیگر، هدیه‌ای از جنس حیات و جاودانگی.";
+                else if (initialIntention.includes('یاد')) defaultMessage = "نام و یادش در برگ‌برگ این نخل زنده و سایه‌گستر خواهد ماند.";
+            }
+            else if (palm.name.includes('ازدواج')) defaultMessage = "به مناسبت پیوند عشق و آغاز یک زندگی مشترک جاودان در نخلستان معنا.";
             else if (palm.name.includes('تولد')) defaultMessage = "به مناسبت جشن تولد و نمادی برای رشد و شکوفایی زندگی در خاک وطن.";
             else if (palm.name.includes('هدیه')) defaultMessage = "یک هدیه ماندگار و سبز برای ابراز قدردانی و مهر در صلح و برکت.";
             else if (palm.name.includes('یادبود')) defaultMessage = "برای زنده نگه داشتن یاد و خاطره عزیزی که نامش تا ابد در قلب طبیعت سبز باقی می‌ماند.";
@@ -61,7 +71,7 @@ const DeedPersonalizationModal: React.FC<DeedPersonalizationModalProps> = ({ isO
                 setSelectedKeeperId(groveKeepers[0].id);
             }
         }
-    }, [isOpen, palm, user, groveKeepers]);
+    }, [isOpen, palm, user, groveKeepers, deedPersonalizationDefaults]);
 
     useEffect(() => {
         if (isForSelf) {

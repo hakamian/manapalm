@@ -123,6 +123,7 @@ const initialState: AppState = {
     lastOrderPointsEarned: 0,
     pointsToast: null,
     selectedPalmForPersonalization: null,
+    deedPersonalizationDefaults: null,
     futureVisionDeed: null,
     voiceOfPalmDeed: null,
 
@@ -294,15 +295,25 @@ function appReducer(state: AppState, action: Action): AppState {
             return { ...state, notifications: state.notifications.map(n => ({ ...n, read: true, isRead: true })) };
 
         case 'CLOSE_DEED_MODALS':
-            return { ...state, isOrderSuccessModalOpen: false, isPalmSelectionModalOpen: false, isDeedPersonalizationModalOpen: false };
+            return { ...state, isOrderSuccessModalOpen: false, isPalmSelectionModalOpen: false, isDeedPersonalizationModalOpen: false, deedPersonalizationDefaults: null };
 
         case 'SET_WELCOME_MODAL': return { ...state, isWelcomeModalOpen: action.payload };
         case 'SET_PROFILE_TAB_AND_NAVIGATE': return { ...state, currentView: View.UserProfile, profileInitialTab: action.payload, isCartOpen: false };
         case 'HIDE_POINTS_TOAST': return { ...state, pointsToast: null };
         case 'SHOW_POINTS_TOAST': return { ...state, pointsToast: action.payload };
 
-        case 'SELECT_PALM_FOR_DEED':
-            return { ...state, selectedPalmForPersonalization: action.payload, isPalmSelectionModalOpen: false, isDeedPersonalizationModalOpen: true };
+        case 'SELECT_PALM_FOR_DEED': {
+            const hasIntention = 'initialIntention' in action.payload;
+            const palm = hasIntention ? (action.payload as any).palm : action.payload;
+            const defaults = hasIntention ? { intention: (action.payload as any).initialIntention } : null;
+            return {
+                ...state,
+                selectedPalmForPersonalization: palm,
+                deedPersonalizationDefaults: defaults,
+                isPalmSelectionModalOpen: false,
+                isDeedPersonalizationModalOpen: true
+            };
+        }
 
         case 'PERSONALIZE_DEED_AND_ADD_TO_CART': {
             const { palm, quantity, deedDetails, selectedPlan } = action.payload;

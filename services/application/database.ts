@@ -389,5 +389,27 @@ export const dbAdapter = {
         };
 
         return withTimeout(fetchProducts(), 4000, INITIAL_PRODUCTS);
+    },
+
+    async getDeedById(id: string): Promise<any | null> {
+        if (!this.isLive()) return null;
+
+        // Strategy: Search in orders. Since deeds are stored as JSON/Text, utilize 'ilike' for loose match then verify.
+        // This avoids full table scan in application memory, pushing partial filter to DB.
+        const { data, error } = await supabase!
+            .from('orders')
+            .select('deeds')
+            .ilike('deeds', `%${id}%`)
+            .limit(10); // Limit assumption: IDs are unique enough
+
+        if (error || !data) return null;
+
+        for (const order of data) {
+            const deeds = safeParse(order.deeds, []);
+            const found = deeds.find((d: any) => d.id === id);
+            if (found) return found;
+        }
+
+        return null;
     }
 };

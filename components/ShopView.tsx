@@ -7,9 +7,13 @@ import { Product } from '../types';
 import InfographicOverlay from './ui/InfographicOverlay';
 import { BreadcrumbSchema } from './seo/SchemaMarkup';
 
+import { useSearchParams } from 'next/navigation';
+
 const ShopView: React.FC = () => {
     const { products, palmTypes } = useAppState();
     const dispatch = useAppDispatch();
+    const searchParams = useSearchParams();
+    const initialIntention = searchParams.get('intention');
 
     const organicProducts = products.filter(p => p.category === 'محصولات ارگانیک');
     const heritageProducts = products.filter(p => p.category === 'نخل میراث');
@@ -25,7 +29,13 @@ const ShopView: React.FC = () => {
                 image: product.image,
                 tags: []
             } as any;
-            dispatch({ type: 'SELECT_PALM_FOR_DEED', payload: palmType });
+
+            // Pass the intention if it exists
+            const payload = initialIntention
+                ? { palm: palmType, initialIntention }
+                : palmType;
+
+            dispatch({ type: 'SELECT_PALM_FOR_DEED', payload });
         } else {
             dispatch({ type: 'ADD_TO_CART', payload: { product, quantity: 1 } });
             dispatch({ type: 'TOGGLE_CART', payload: true });

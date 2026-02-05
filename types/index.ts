@@ -71,6 +71,7 @@ export interface AppState {
     lastOrderPointsEarned: number;
     pointsToast: { points: number; action: string; type?: 'barkat' | 'mana' } | null;
     selectedPalmForPersonalization: PalmType | null;
+    deedPersonalizationDefaults: { intention?: string; recipientName?: string } | null;
     futureVisionDeed: Deed | null;
     voiceOfPalmDeed: Deed | null;
 
@@ -150,7 +151,7 @@ export type Action =
     | { type: 'SET_PROFILE_TAB_AND_NAVIGATE'; payload: string }
     | { type: 'HIDE_POINTS_TOAST' }
     | { type: 'SHOW_POINTS_TOAST'; payload: { points: number; action: string; type?: 'barkat' | 'mana' } }
-    | { type: 'SELECT_PALM_FOR_DEED'; payload: PalmType }
+    | { type: 'SELECT_PALM_FOR_DEED'; payload: PalmType | { palm: PalmType; initialIntention?: string } }
     | { type: 'PERSONALIZE_DEED_AND_ADD_TO_CART'; payload: { palm: PalmType, quantity: number, deedDetails: any, selectedPlan: number } }
     | { type: 'SHOW_COMPANION_UNLOCK_MODAL'; payload: boolean }
     | { type: 'START_COMPANION_PURCHASE' }

@@ -10,6 +10,7 @@ const vazirmatn = Vazirmatn({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://manapalm.com'),
   title: 'نخلستان معنا - جایی که معنا و تاثیر جاودانه می‌شود',
   description: 'پلتفرمی برای خلق میراث معنادار از طریق کاشت نخل، یادگیری و هم‌آفرینی',
   keywords: ['نخل', 'نخل معنا', 'معنا', 'میراث', 'گیمیفیکیشن', 'آکادمی', 'فقرزدایی', 'اشتغال‌زایی'],
@@ -49,6 +50,34 @@ export default function RootLayout({
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#10b981" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "Manapalm",
+              "alternateName": "نخلستان معنا",
+              "url": "https://manapalm.com",
+              "logo": "https://manapalm.com/icon-512x512.png",
+              "sameAs": [
+                "https://instagram.com/manapalm",
+                "https://linkedin.com/company/manapalm"
+              ],
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "telephone": "+98-21-00000000",
+                "contactType": "customer service",
+                "areaServed": "IR",
+                "availableLanguage": "Persian"
+              },
+              "description": "پلتفرمی برای خلق میراث معنادار از طریق کاشت نخل، یادگیری و هم‌آفرینی."
+            })
+          }}
+        />
         {/* Cloudinary Script for Upload Widget */}
         <script src="https://upload-widget.cloudinary.com/global/all.js" type="text/javascript" async></script>
       </head>
