@@ -169,16 +169,16 @@ const ModernSettingsDashboard: React.FC = () => {
 
                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '1rem' }}>
                     <button
-                        onClick={() => setSettings(s => ({ ...s, usdToTomanRate: s.usdToTomanRate + 500000 }))}
+                        onClick={() => setSettings(s => ({ ...s, usdToTomanRate: s.usdToTomanRate + 100000 }))}
                         className="admin-btn" style={{ padding: '0.25rem 0.75rem', background: 'rgba(16, 185, 129, 0.2)', color: '#10b981', fontSize: '0.8rem' }}
                     >
-                        + ۵۰۰,۰۰۰ ریال
+                        + ۱۰۰,۰۰۰ ریال
                     </button>
                     <button
-                        onClick={() => setSettings(s => ({ ...s, usdToTomanRate: Math.max(500000, s.usdToTomanRate - 500000) }))}
+                        onClick={() => setSettings(s => ({ ...s, usdToTomanRate: Math.max(100000, s.usdToTomanRate - 100000) }))}
                         className="admin-btn" style={{ padding: '0.25rem 0.75rem', background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', fontSize: '0.8rem' }}
                     >
-                        - ۵۰۰,۰۰۰ ریال
+                        - ۱۰۰,۰۰۰ ریال
                     </button>
                 </div>
                 <p className="admin-caption" style={{ marginTop: '0.75rem', color: 'rgba(255,165,0,0.8)' }}>
