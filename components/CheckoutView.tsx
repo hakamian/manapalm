@@ -245,9 +245,27 @@ const CheckoutView: React.FC = () => {
 
                 console.log('✅ [Checkout] Manual payment submitted');
                 setIsProcessing(false);
-                dispatch({ type: 'SET_CART_ITEMS', payload: [] });
                 setError(null);
-                dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'orders' });
+
+                // Dispatch PLACE_ORDER to update client state and show Success Modal
+                dispatch({ type: 'PLACE_ORDER', payload: newOrder });
+
+                // 📱 SEND SMS CONFIRMATION
+                const phone = physicalAddress?.phone || digitalAddress?.phone || user?.phone;
+                if (phone) {
+                    fetch('/api/sms', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            mobile: phone,
+                            message: `سفارش ${newOrder.id.slice(0, 8)} ثبت شد (در انتظار تأیید).`
+                        })
+                    }).catch(err => console.error('SMS Error:', err));
+                }
+
+                // Redirect to Home so modal is on a clean background
+                dispatch({ type: 'SET_VIEW', payload: View.Home });
+
                 return;
             }
 

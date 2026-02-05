@@ -75,21 +75,46 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ user, onStartPlantingFlow, on
     // 🛡️ DYNAMIC TIMELINE GENERATION
     // Generate events from Orders/Deeds directly, to ensure they show up even if metadata is stale
     const generatedEvents = orders.flatMap(order => {
-        if (!order.deeds || order.deeds.length === 0) return [];
-        return order.deeds.map(deed => ({
-            type: 'palm_planted',
-            date: order.date || new Date().toISOString(),
-            title: `کاشت نخل: ${deed.intention}`,
-            deedId: deed.id,
-            deedIntention: deed.intention,
-            details: {
-                title: `نخل ${deed.id.substring(0, 8)}`,
-                description: `سفارش ${order.id.substring(0, 8)}`
-            },
-            // Try to find existing memory for this deed in user.timeline
-            memoryText: user.timeline?.find(e => e.deedId === deed.id)?.memoryText || '',
-            memoryImage: user.timeline?.find(e => e.deedId === deed.id)?.memoryImage || ''
-        }));
+        const events: any[] = [];
+
+        // 1. Deed Events (Palms)
+        if (order.deeds && order.deeds.length > 0) {
+            order.deeds.forEach(deed => {
+                events.push({
+                    type: 'palm_planted',
+                    date: order.date || new Date().toISOString(),
+                    title: `کاشت نخل: ${deed.intention}`,
+                    deedId: deed.id,
+                    deedIntention: deed.intention,
+                    details: {
+                        title: `نخل ${deed.id.substring(0, 8)}`,
+                        description: `سفارش ${order.id.substring(0, 8)}`
+                    },
+                    memoryText: user.timeline?.find(e => e.deedId === deed.id)?.memoryText || '',
+                    memoryImage: user.timeline?.find(e => e.deedId === deed.id)?.memoryImage || ''
+                });
+            });
+        }
+
+        // 2. Standard Product Events (Only if no deeds, or as a separate group)
+        // If it's a "Standard Purchase" without deeds, we still want it in the timeline
+        const standardItems = order.items.filter(i => i.type !== 'heritage');
+        if (standardItems.length > 0 && (!order.deeds || order.deeds.length === 0)) {
+            events.push({
+                type: 'creative_act',
+                date: order.date || new Date().toISOString(),
+                title: 'خرید از بازارچه نخلستان',
+                deedId: `order-${order.id}`,
+                details: {
+                    title: standardItems.map(i => i.name).join('، '),
+                    description: `شماره سفارش: ${order.id.substring(0, 8)}`
+                },
+                memoryText: '',
+                memoryImage: standardItems[0].image
+            });
+        }
+
+        return events;
     });
 
     // Merge and deduplicate (prefer user.timeline if it exists, as it might have edited details)

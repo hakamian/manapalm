@@ -86,19 +86,23 @@ const PaymentCallbackView: React.FC = () => {
                     // 📱 SEND SMS CONFIRMATION
                     const phone = pendingOrder.physicalAddress?.phone || pendingOrder.digitalAddress?.phone || user?.phone;
                     if (phone) {
-                        try {
-                            fetch('/api/sms', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    mobile: phone,
-                                    message: `سفارش ${newOrder.id.slice(0, 8)} ثبت شد. کد رهگیری: ${result.refId}`
-                                })
-                            }).then(r => r.json()).then(d => console.log('📱 SMS Status:', d));
-                        } catch (smsErr) {
-                            console.error('❌ Failed to send SMS:', smsErr);
-                        }
+                        fetch('/api/sms', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                mobile: phone,
+                                message: `سفارش ${newOrder.id.slice(0, 8)} ثبت شد.`
+                            })
+                        }).catch(err => console.error('SMS Error:', err));
                     }
+
+                    // Clean URL to prevent re-verification on refresh and redirect to clean background
+                    try {
+                        window.history.replaceState({}, document.title, "/");
+                    } catch (e) {
+                        console.warn('Could not clean URL:', e);
+                    }
+                    dispatch({ type: 'SET_VIEW', payload: View.Home });
 
                     // Cleanup
                     localStorage.removeItem('pending_order');
