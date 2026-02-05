@@ -442,16 +442,20 @@ function appReducer(state: AppState, action: Action): AppState {
             const ratio = newRate / oldRate;
 
             // Update Products
-            const updatedProducts = state.products.map(p => ({
-                ...p,
-                price: p.basePrice ? Math.floor(p.basePrice * newRate) : Math.floor(p.price * ratio)
-            }));
+            const updatedProducts = state.products.map(p => {
+                const rawPrice = p.basePrice ? (p.basePrice * newRate) : (p.price * ratio);
+                // 💎 Round down to nearest 10,000 (4-digit precision)
+                const roundedPrice = Math.floor(rawPrice / 10000) * 10000;
+                return { ...p, price: roundedPrice };
+            });
 
             // Update Palm Types
-            const updatedPalmTypes = state.palmTypes.map(p => ({
-                ...p,
-                price: Math.floor(p.price * ratio)
-            }));
+            const updatedPalmTypes = state.palmTypes.map(p => {
+                const rawPrice = p.price * ratio;
+                // 💎 Round down to nearest 10,000 (4-digit precision)
+                const roundedPrice = Math.floor(rawPrice / 10000) * 10000;
+                return { ...p, price: roundedPrice };
+            });
 
             return {
                 ...state,
