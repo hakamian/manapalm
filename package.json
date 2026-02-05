@@ -23,6 +23,7 @@
     "cloudinary": "^2.8.0",
     "dompurify": "^2.5.8",
     "framer-motion": "^12.23.26",
+    "@heroicons/react": "^2.2.0",
     "jspdf": "^2.5.1",
     "next": "^16.1.1",
     "openai": "^6.15.0",
