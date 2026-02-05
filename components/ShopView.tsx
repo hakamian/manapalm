@@ -7,7 +7,7 @@ import { Product } from '../types';
 import InfographicOverlay from './ui/InfographicOverlay';
 import { BreadcrumbSchema } from './seo/SchemaMarkup';
 
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 const ShopView: React.FC = () => {
     const { products, palmTypes } = useAppState();
@@ -17,6 +17,11 @@ const ShopView: React.FC = () => {
 
     const organicProducts = products.filter(p => p.category === 'محصولات ارگانیک');
     const heritageProducts = products.filter(p => p.category === 'نخل میراث');
+
+    const router = useRouter();
+    const handleProductClick = (productId: string) => {
+        router.push(`/product/${productId}`);
+    };
 
     const handleAddToCart = (product: Product) => {
         if (product.category === 'نخل میراث' || product.type === 'heritage') {
@@ -109,6 +114,7 @@ const ShopView: React.FC = () => {
                                     key={product.id}
                                     product={product}
                                     onAddToCart={handleAddToCart}
+                                    onClick={() => handleProductClick(product.id)}
                                 />
                             ))
                         ) : (
@@ -171,6 +177,7 @@ const ShopView: React.FC = () => {
                                 key={product.id}
                                 product={product}
                                 onAddToCart={handleAddToCart}
+                                onClick={() => handleProductClick(product.id)}
                             />
                         ))}
                     </div>
