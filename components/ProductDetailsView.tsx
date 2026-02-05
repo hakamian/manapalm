@@ -9,6 +9,8 @@ import { ShoppingCartIcon, ArrowRightIcon, SparklesIcon, CheckCircleIcon, ShareI
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 
+import { INITIAL_PRODUCTS } from '../utils/dummyData';
+
 interface ProductDetailsViewProps {
     productId: string;
 }
@@ -21,11 +23,15 @@ export default function ProductDetailsView({ productId }: ProductDetailsViewProp
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        if (products.length > 0) {
-            const found = products.find(p => p.id === productId);
-            if (found) {
-                setProduct(found);
-            }
+        // Try finding in loaded products (DB) or fallback to static data
+        const found = products.find(p => p.id === productId) || INITIAL_PRODUCTS.find(p => p.id === productId);
+
+        if (found) {
+            setProduct(found);
+        }
+
+        // Only stop loading if we found it OR if we're sure DB has loaded (products.length > 0) and it's truly missing
+        if (found || products.length > 0) {
             setLoading(false);
         }
     }, [products, productId]);
