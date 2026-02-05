@@ -89,7 +89,7 @@ const GlobalModals: React.FC<GlobalModalsProps> = ({ onLoginSuccess }) => {
                     deeds={lastOrderDeeds}
                     pointsEarned={lastOrderPointsEarned}
                     onViewDeeds={() => {
-                        dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'timeline' });
+                        dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'deeds' });
                         dispatch({ type: 'CLOSE_DEED_MODALS' });
                     }}
                 />

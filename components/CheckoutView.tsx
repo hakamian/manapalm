@@ -192,7 +192,20 @@ const CheckoutView: React.FC = () => {
                     status: (paymentMethod === 'card_transfer' || paymentMethod === 'crypto') ? 'awaiting_confirmation' : 'pending',
                     date: new Date().toISOString()
                 }],
-                deeds: [],
+                deeds: cartItems
+                    .filter(item => item.deedDetails)
+                    .map((item, idx) => ({
+                        id: `deed-${orderId}-${idx}`,
+                        orderId: orderId,
+                        productId: item.productId || '',
+                        name: item.deedDetails.name,
+                        intention: item.deedDetails.intention,
+                        message: item.deedDetails.message,
+                        fromName: item.deedDetails.fromName,
+                        palmType: item.name,
+                        date: new Date().toISOString(),
+                        isPlanted: false
+                    })),
                 createdAt: new Date().toISOString(),
                 date: new Date().toISOString()
             };

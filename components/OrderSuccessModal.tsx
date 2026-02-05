@@ -319,7 +319,7 @@ const OrderSuccessModal: React.FC<OrderSuccessModalProps> = ({ isOpen, onClose, 
                   onClick={onViewDeeds}
                   className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-md transition-colors"
                 >
-                  مشاهده در گاهشمار
+                  مشاهده سند کاشت
                 </button>
               )
             )}

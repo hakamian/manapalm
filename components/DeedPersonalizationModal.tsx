@@ -53,12 +53,12 @@ const DeedPersonalizationModal: React.FC<DeedPersonalizationModalProps> = ({ isO
         if (isForSelf) {
             setDeedName(user?.fullName || '');
         } else if (deedName === user?.fullName) {
-             setDeedName('');
+            setDeedName('');
         }
     }, [isForSelf, user?.fullName]);
 
     const basePoints = palm?.points || 0;
-    const hasBonus = useMemo(() => 
+    const hasBonus = useMemo(() =>
         user?.values && palm?.tags?.some(tag => user.values?.includes(tag)),
         [user, palm]
     );
@@ -87,7 +87,7 @@ const DeedPersonalizationModal: React.FC<DeedPersonalizationModalProps> = ({ isO
             const response = await getAIAssistedText({
                 mode: hasText ? 'improve' : 'generate',
                 type: 'deed_message',
-                text: hasText ? deedMessage : '', 
+                text: hasText ? deedMessage : '',
                 context: palm.name,
             });
             setDeedMessage(response);
@@ -113,8 +113,8 @@ const DeedPersonalizationModal: React.FC<DeedPersonalizationModalProps> = ({ isO
     const animationClass = direction === 'forward' ? 'animate-slide-in-right' : 'animate-slide-in-left';
 
     return (
-         <div className="fixed inset-0 bg-black bg-opacity-80 z-[60] flex items-center justify-center p-4" onClick={onClose}>
-             <style>{`
+        <div className="fixed inset-0 bg-black bg-opacity-80 z-[60] flex items-center justify-center p-4" onClick={onClose}>
+            <style>{`
                 @keyframes slide-in-right {
                     from { transform: translateX(30px); opacity: 0; }
                     to { transform: translateX(0); opacity: 1; }
@@ -137,7 +137,7 @@ const DeedPersonalizationModal: React.FC<DeedPersonalizationModalProps> = ({ isO
                 </div>
 
                 <div className="overflow-y-auto px-6 pb-6 space-y-6 relative z-10">
-                    
+
                     {step === 'recipient' && (
                         <div key="recipient" className={`space-y-6 ${animationClass}`}>
                             <div className="text-center space-y-2">
@@ -158,7 +158,7 @@ const DeedPersonalizationModal: React.FC<DeedPersonalizationModalProps> = ({ isO
                                     </div>
                                     <span className="text-sm text-stone-300">این نخل را برای خودم می‌کارم.</span>
                                 </div>
-                                 <div>
+                                <div>
                                     <label className="block text-sm font-medium text-stone-400 mb-2 text-center">از طرف (اختیاری)</label>
                                     <input
                                         type="text"
@@ -186,100 +186,109 @@ const DeedPersonalizationModal: React.FC<DeedPersonalizationModalProps> = ({ isO
                                     className="w-full p-4 border-2 border-stone-600 rounded-xl bg-stone-800 focus:border-amber-500 focus:ring-0 transition-colors placeholder-stone-500 resize-none"
                                     placeholder="پیام خود را بنویسید..."
                                 />
-                                <button 
-                                    type="button" 
+                                <button
+                                    type="button"
                                     onClick={handleAIAssist}
-                                    disabled={isGeneratingMessage} 
+                                    disabled={isGeneratingMessage}
                                     className="absolute bottom-3 left-3 flex items-center gap-1 text-xs font-semibold text-amber-400 bg-amber-900/30 border border-amber-500/30 px-3 py-1.5 rounded-full hover:bg-amber-900/50 disabled:opacity-50 transition-colors"
                                 >
-                                    {isGeneratingMessage ? <span className="animate-pulse">در حال الهام...</span> : <><SparklesIcon className="w-3 h-3"/> {deedMessage ? 'بهبود شاعرانه' : 'پیشنهاد متن'}</>}
+                                    {isGeneratingMessage ? <span className="animate-pulse">در حال الهام...</span> : <><SparklesIcon className="w-3 h-3" /> {deedMessage ? 'بهبود شاعرانه' : 'پیشنهاد متن'}</>}
                                 </button>
                             </div>
                         </div>
                     )}
 
                     {step === 'review' && (
-                         <div key="review" className={`space-y-6 ${animationClass}`}>
-                            <div className="bg-stone-800/80 border border-stone-600 p-5 rounded-xl text-center space-y-4">
-                                <div>
-                                    <p className="text-xs text-stone-400 mb-1">نیت کاشت</p>
-                                    <h3 className="text-xl font-bold text-amber-400">{palm.name}</h3>
+                        <div key="review" className={`space-y-6 ${animationClass}`}>
+                            {/* MINI DEED PREVIEW */}
+                            <div className="relative aspect-[3/4] max-w-[280px] mx-auto bg-[#fcfaf5] rounded-lg shadow-2xl border border-stone-300 overflow-hidden text-stone-800 p-6 flex flex-col justify-between text-center select-none">
+                                <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 50% 50%, #8b4513 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+
+                                <div className="relative z-10 space-y-1">
+                                    <p className="text-[8px] tracking-[0.3em] uppercase opacity-50">MANA PALM</p>
+                                    <h4 className="text-lg font-bold font-serif border-b border-stone-200 pb-2">سند کاشت نخل</h4>
                                 </div>
-                                <div className="grid grid-cols-2 gap-4 border-t border-stone-700 pt-4">
-                                    <div>
-                                        <p className="text-xs text-stone-400">به نام</p>
-                                        <p className="font-semibold">{deedName}</p>
+
+                                <div className="relative z-10 flex flex-col items-center justify-center gap-4 py-4">
+                                    <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center">
+                                        <SparklesIcon className="w-8 h-8 text-amber-600" />
                                     </div>
-                                    {fromName && (
-                                        <div>
-                                            <p className="text-xs text-stone-400">از طرف</p>
-                                            <p className="font-semibold">{fromName}</p>
+                                    <p className="text-xl font-bold leading-tight">"{palm.name}"</p>
+
+                                    <div className="w-full space-y-1">
+                                        <p className="text-[9px] text-stone-400 uppercase">به نام</p>
+                                        <p className="text-2xl font-black font-serif text-stone-900">{deedName}</p>
+                                    </div>
+
+                                    {deedMessage && (
+                                        <div className="px-4 py-2 bg-stone-100 rounded border-y border-stone-200 w-full mt-2">
+                                            <p className="text-xs italic leading-relaxed text-stone-600">"{deedMessage}"</p>
                                         </div>
                                     )}
                                 </div>
-                                {deedMessage && (
-                                    <div className="pt-2">
-                                        <p className="text-xs text-stone-400 mb-1">پیام ماندگار</p>
-                                        <p className="italic text-stone-300">"{deedMessage}"</p>
+
+                                <div className="relative z-10 pt-4 flex justify-between items-end border-t border-stone-200">
+                                    <div className="w-10 h-10 border border-amber-600/30 rounded-full flex items-center justify-center opacity-30">
+                                        <span className="text-[6px] font-bold">SEAL</span>
                                     </div>
-                                )}
+                                    <div className="text-right">
+                                        <p className="text-[7px] text-stone-400 uppercase">Date</p>
+                                        <p className="text-xs font-bold">{new Date().toLocaleDateString('fa-IR')}</p>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="space-y-3">
+                            <div className="bg-stone-800/50 p-4 rounded-xl border border-stone-700 space-y-3">
                                 <div className="flex justify-between items-center text-sm">
                                     <span className="text-stone-400">هزینه سرمایه‌گذاری</span>
-                                    <span className="font-bold text-lg">{(palm.price * quantity).toLocaleString('fa-IR')} تومان</span>
+                                    <span className="font-bold text-lg text-emerald-400">{(palm.price * quantity).toLocaleString('fa-IR')} تومان</span>
                                 </div>
-                                
-                                {/* Payment Plan Selection */}
+
+                                {/* Payment Plan Selection (Remains the same) */}
                                 <div className="space-y-2">
-                                    <p className="text-xs text-stone-500">طرح پرداخت خود را انتخاب کنید:</p>
+                                    <p className="text-[10px] text-stone-500 uppercase tracking-widest">طرح پرداخت نخلستان</p>
                                     {allInstallmentOptions.map(opt => (
                                         (opt.installments === 1 || opt.installments > 1) && (
-                                            <label key={opt.installments} className={`flex items-center justify-between p-3 rounded-lg border transition-colors cursor-pointer ${selectedPlan === opt.installments ? 'bg-green-900/20 border-green-500' : 'bg-stone-800 border-stone-600 hover:border-stone-500'} ${!opt.isUnlocked && opt.installments > 1 ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                                            <label key={opt.installments} className={`flex items-center justify-between p-3 rounded-xl border transition-all cursor-pointer ${selectedPlan === opt.installments ? 'bg-amber-500/10 border-amber-500/50 shadow-inner shadow-amber-900/40' : 'bg-stone-800/80 border-stone-700 hover:border-stone-600'} ${!opt.isUnlocked && opt.installments > 1 ? 'opacity-50 cursor-not-allowed' : ''}`}>
                                                 <div className="flex items-center gap-3">
-                                                    <input 
-                                                        type="radio" 
-                                                        name="paymentPlan" 
-                                                        value={opt.installments} 
-                                                        checked={selectedPlan === opt.installments} 
-                                                        onChange={() => opt.isUnlocked && setSelectedPlan(opt.installments)} 
-                                                        disabled={!opt.isUnlocked && opt.installments > 1}
-                                                        className="w-4 h-4 text-green-500 focus:ring-green-500 bg-stone-700 border-stone-500"
-                                                    />
-                                                    <span className="text-sm">{opt.installments === 1 ? 'پرداخت کامل' : `${opt.installments} قسط`}</span>
+                                                    <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${selectedPlan === opt.installments ? 'border-amber-500 bg-amber-500' : 'border-stone-600'}`}>
+                                                        {selectedPlan === opt.installments && <div className="w-1.5 h-1.5 bg-white rounded-full"></div>}
+                                                    </div>
+                                                    <span className="text-sm font-medium">{opt.installments === 1 ? 'پرداخت کامل (نقدی)' : `${opt.installments} قسط ماهانه`}</span>
                                                 </div>
-                                                <div className="text-right">
-                                                    <span className="font-bold text-sm">{Math.ceil((palm.price * quantity) / opt.installments).toLocaleString('fa-IR')} ت</span>
-                                                    {opt.installments > 1 && <span className="text-xs text-stone-400 block">ماهانه</span>}
+                                                <div className="text-right flex items-center gap-3">
+                                                    <div>
+                                                        <span className="font-bold text-sm">{(Math.ceil((palm.price * quantity) / opt.installments)).toLocaleString('fa-IR')}</span>
+                                                        <span className="text-[10px] mr-1 opacity-60">ت</span>
+                                                    </div>
+                                                    {!opt.isUnlocked && opt.installments > 1 && <LockClosedIcon className="w-3 h-3 text-amber-600" />}
                                                 </div>
-                                                {!opt.isUnlocked && opt.installments > 1 && <LockClosedIcon className="w-4 h-4 text-yellow-500" />}
                                             </label>
                                         )
                                     ))}
                                 </div>
                             </div>
-                         </div>
+                        </div>
                     )}
                 </div>
 
                 <div className="p-6 border-t border-stone-700 flex justify-between items-center bg-stone-800/50 rounded-b-2xl z-10">
                     {step !== 'recipient' ? (
                         <button onClick={handlePrevStep} className="flex items-center gap-2 text-stone-400 hover:text-white transition-colors">
-                           <ArrowRightIcon className="w-5 h-5"/> بازگشت
+                            <ArrowRightIcon className="w-5 h-5" /> بازگشت
                         </button>
                     ) : (
                         <button onClick={onClose} className="text-stone-400 hover:text-white transition-colors">انصراف</button>
                     )}
-                    
+
                     {step !== 'review' ? (
                         <button onClick={handleNextStep} disabled={!deedName.trim() && step === 'recipient'} className="flex items-center gap-2 bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-6 rounded-xl transition-colors disabled:bg-stone-700 disabled:text-stone-500 disabled:cursor-not-allowed shadow-lg shadow-amber-900/20">
                             <span>مرحله بعد</span>
-                             <ArrowLeftIcon className="w-5 h-5"/>
+                            <ArrowLeftIcon className="w-5 h-5" />
                         </button>
                     ) : (
                         <button onClick={handleConfirm} className="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-8 rounded-xl transition-colors shadow-lg shadow-green-900/20 flex items-center gap-2">
-                            <CheckCircleIcon className="w-5 h-5"/>
+                            <CheckCircleIcon className="w-5 h-5" />
                             تایید نهایی
                         </button>
                     )}

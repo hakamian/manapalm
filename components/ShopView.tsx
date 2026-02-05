@@ -8,15 +8,28 @@ import InfographicOverlay from './ui/InfographicOverlay';
 import { BreadcrumbSchema } from './seo/SchemaMarkup';
 
 const ShopView: React.FC = () => {
-    const { products } = useAppState();
+    const { products, palmTypes } = useAppState();
     const dispatch = useAppDispatch();
 
     const organicProducts = products.filter(p => p.category === 'محصولات ارگانیک');
     const heritageProducts = products.filter(p => p.category === 'نخل میراث');
 
     const handleAddToCart = (product: Product) => {
-        dispatch({ type: 'ADD_TO_CART', payload: { product, quantity: 1 } });
-        dispatch({ type: 'TOGGLE_CART', payload: true });
+        if (product.category === 'نخل میراث' || product.type === 'heritage') {
+            const palmType = palmTypes.find(pt => pt.id === product.id) || {
+                id: product.id,
+                name: product.name,
+                description: product.description || '',
+                price: product.price,
+                points: product.points || 0,
+                image: product.image,
+                tags: []
+            } as any;
+            dispatch({ type: 'SELECT_PALM_FOR_DEED', payload: palmType });
+        } else {
+            dispatch({ type: 'ADD_TO_CART', payload: { product, quantity: 1 } });
+            dispatch({ type: 'TOGGLE_CART', payload: true });
+        }
     };
 
     // SEO: Product List Schema (JSON-LD)

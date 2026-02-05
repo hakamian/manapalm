@@ -6,7 +6,7 @@ import {
     UserCircleIcon, BoxIcon, HeartIcon, BellIcon, CogIcon, GiftIcon, ContributionIcon,
     HomeIcon, TrophyIcon, ClockIcon, ShieldCheckIcon, CompassIcon,
     BrainCircuitIcon, FlagIcon, PalmTreeIcon, SparklesIcon, XMarkIcon, ChartPieIcon,
-    AwardIcon, HandshakeIcon, PlayIcon, LockClosedIcon, MapPinIcon, EnvelopeIcon, EyeIcon
+    AwardIcon, HandshakeIcon, PlayIcon, LockClosedIcon, MapPinIcon, EnvelopeIcon, EyeIcon, PhotoIcon
 } from './icons';
 import { getNextLevelInfo } from '../services/gamificationService';
 import { useAppState, useAppDispatch } from '../AppContext';
@@ -171,6 +171,7 @@ const UserProfileView: React.FC = () => {
         baseTabs.push(
             { id: 'profile', label: 'ویرایش پروفایل', icon: <UserCircleIcon /> },
             { id: 'orders', label: 'سفارش‌ها', icon: <BoxIcon /> },
+            { id: 'deeds', label: 'اسناد من (نخل میراث)', icon: <PhotoIcon /> },
             { id: 'timeline', label: 'گاهشمار معنا', icon: <ClockIcon /> },
             { id: 'meaning-compass', label: 'قطب‌نمای معنا', icon: <CompassIcon /> },
             { id: 'messages', label: 'پیام‌ها', icon: <EnvelopeIcon /> },
@@ -257,6 +258,48 @@ const UserProfileView: React.FC = () => {
                 return <EditProfileTab user={user} onUpdate={onUpdate} initialSection={initialSection as any} />;
             case 'orders':
                 return <OrdersTab orders={orders} onNavigate={onNavigate} onOpenDeedModal={openDeedModal} />;
+            case 'deeds': {
+                const allDeeds = orders.flatMap(o => o.deeds || []);
+                return (
+                    <div>
+                        <h2 className="text-2xl font-bold mb-6">اسناد نخل میراث من</h2>
+                        {allDeeds.length > 0 ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                {allDeeds.map(deed => (
+                                    <div key={deed.id} className="bg-gray-800 p-1 rounded-2xl border border-gray-700 hover:border-emerald-500/50 transition-all group overflow-hidden">
+                                        <div className="aspect-[3/4] relative bg-stone-900 overflow-hidden cursor-pointer" onClick={() => openDeedModal(deed)}>
+                                            {/* Mini Deed View */}
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center p-4 text-center">
+                                                <div className="w-12 h-12 bg-amber-500/10 rounded-full flex items-center justify-center mb-3">
+                                                    <PhotoIcon className="w-6 h-6 text-amber-500" />
+                                                </div>
+                                                <p className="text-xs text-gray-500 uppercase tracking-tighter mb-1 select-none">سند میراث</p>
+                                                <p className="font-bold text-white text-sm line-clamp-1">{deed.intention}</p>
+                                                <div className="mt-4 pt-4 border-t border-gray-700 w-full">
+                                                    <p className="text-[10px] text-gray-500">به نام</p>
+                                                    <p className="text-sm font-semibold text-emerald-400">{deed.name}</p>
+                                                </div>
+                                            </div>
+                                            {/* Hover Overlay */}
+                                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <p className="bg-emerald-600 text-white text-xs font-bold py-2 px-4 rounded-full shadow-lg">مشاهده و دانلود سند</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="bg-gray-800 p-12 rounded-3xl text-center border-2 border-dashed border-gray-700">
+                                <PhotoIcon className="w-16 h-16 mx-auto text-gray-600 mb-4" />
+                                <p className="text-gray-400 mb-6">هنوز هیچ نخلی به نام شما ثبت نشده است.</p>
+                                <button onClick={() => onNavigate(View.Shop)} className="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-8 rounded-xl transition-all shadow-lg shadow-amber-900/40">
+                                    کاشت اولین نخل
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                );
+            }
             case 'timeline':
                 return <TimelineTab user={user} onStartPlantingFlow={onStartPlantingFlow} onNavigate={onNavigate} onUpdateTimelineEvent={onUpdateTimelineEvent} orders={orders} onOpenDeedModal={openDeedModal} />;
             case 'settings':

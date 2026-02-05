@@ -135,10 +135,17 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ user, onStartPlantingFlow, on
         const formData = new FormData(event.currentTarget);
         const text = editingMemoryText;
         const imageFile = formData.get('memoryImage') as File;
-
         if (imageFile && imageFile.size > 0) {
+            // 🛑 LIMIT: 2MB
+            if (imageFile.size > 2 * 1024 * 1024) {
+                alert('حجم تصویر نباید بیشتر از ۲ مگابایت باشد.');
+                return;
+            }
             fileToBase64(imageFile).then(base64Image => {
                 onUpdateTimelineEvent(deedId, { text, image: base64Image });
+            }).catch(err => {
+                console.error('Error uploading image:', err);
+                alert('خطا در بارگذاری تصویر');
             });
         } else {
             onUpdateTimelineEvent(deedId, { text });
