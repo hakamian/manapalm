@@ -35,12 +35,26 @@ const DeedPersonalizationModal: React.FC<DeedPersonalizationModalProps> = ({ isO
 
     useEffect(() => {
         if (isOpen && palm) {
-            setDeedName(user?.fullName || '');
+            // Requirement: Empty spiritual owner at start
+            setDeedName('');
             setFromName(user?.fullName || '');
-            setDeedMessage('');
+
+            // Requirement: Default message based on palm type
+            let defaultMessage = "با نیت خیر و برکت در مسیر آبادانی زمین و ثبت میراثی جاودان.";
+            if (palm.name.includes('ازدواج')) defaultMessage = "به مناسبت پیوند عشق و آغاز یک زندگی مشترک جاودان در نخلستان معنا.";
+            else if (palm.name.includes('تولد')) defaultMessage = "به مناسبت جشن تولد و نمادی برای رشد و شکوفایی زندگی در خاک وطن.";
+            else if (palm.name.includes('هدیه')) defaultMessage = "یک هدیه ماندگار و سبز برای ابراز قدردانی و مهر در صلح و برکت.";
+            else if (palm.name.includes('یادبود')) defaultMessage = "برای زنده نگه داشتن یاد و خاطره عزیزی که نامش تا ابد در قلب طبیعت سبز باقی می‌ماند.";
+            else if (palm.name.includes('ایران')) defaultMessage = "برای سربلندی و آبادانی خاک عزیزمان ایران و مشارکتی در میراث سبز وطن.";
+            else if (palm.name.includes('معنا')) defaultMessage = "در جستجوی معنای عمیق‌تر زندگی و مشارکتی در مسیر رشد و تعالی شخصی.";
+
+            setDeedMessage(defaultMessage);
+
             setQuantity(1);
             setSelectedPlan(1);
             setStep('recipient');
+            setIsForSelf(false);
+
             if (user?.isGroveKeeper) {
                 setSelectedKeeperId(user.id);
             } else if (groveKeepers.length > 0) {
