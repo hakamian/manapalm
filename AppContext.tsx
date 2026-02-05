@@ -436,6 +436,31 @@ function appReducer(state: AppState, action: Action): AppState {
                 products: state.products.filter(p => p.id !== action.payload.id)
             };
 
+        case 'BULK_UPDATE_PRICES_BY_RATE': {
+            const { newRate } = action.payload;
+            const oldRate = state.appSettings.usdToTomanRate || 1;
+            const ratio = newRate / oldRate;
+
+            // Update Products
+            const updatedProducts = state.products.map(p => ({
+                ...p,
+                price: p.basePrice ? Math.round(p.basePrice * newRate) : Math.round(p.price * ratio)
+            }));
+
+            // Update Palm Types
+            const updatedPalmTypes = state.palmTypes.map(p => ({
+                ...p,
+                price: Math.round(p.price * ratio)
+            }));
+
+            return {
+                ...state,
+                appSettings: { ...state.appSettings, usdToTomanRate: newRate },
+                products: updatedProducts,
+                palmTypes: updatedPalmTypes
+            };
+        }
+
         case 'START_PLANTING_FLOW': return { ...state, isPalmSelectionModalOpen: true };
 
         case 'QUICK_PAY': {

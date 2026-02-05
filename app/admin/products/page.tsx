@@ -9,9 +9,8 @@ import {
     CubeIcon,
     PlusIcon,
     PencilIcon,
-    TrashIcon,
-    EyeIcon,
 } from '@heroicons/react/24/outline';
+import { formatPrice } from '@/utils/formatters';
 
 export default function ProductsPage() {
     const { products = [] } = useAppState();
@@ -24,8 +23,8 @@ export default function ProductsPage() {
             className: 'w-16',
             render: (value: string, product: any) => (
                 <div className="w-12 h-12 bg-stone-800 rounded-lg overflow-hidden flex items-center justify-center">
-                    {value || product.imageUrl ? (
-                        <img src={value || product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                    {value || product.imageUrl || product.image ? (
+                        <img src={value || product.imageUrl || product.image} alt={product.name} className="w-full h-full object-cover" />
                     ) : (
                         <CubeIcon className="w-6 h-6 text-stone-600" />
                     )}
@@ -53,7 +52,7 @@ export default function ProductsPage() {
             title: 'قیمت',
             sortable: true,
             render: (value: number) => (
-                <span className="font-medium">{(value || 0).toLocaleString('fa-IR')} تومان</span>
+                <span className="font-medium">{formatPrice(value || 0)} تومان</span>
             ),
         },
         {
@@ -103,7 +102,7 @@ export default function ProductsPage() {
     // Stats
     const activeProducts = products.filter(p => p.isActive !== false).length;
     const outOfStock = products.filter(p => (p.stock ?? 0) === 0).length;
-    const categories = [...new Set(products.map(p => p.category))].length;
+    const categoriesCount = [...new Set(products.map(p => p.category))].length;
 
     return (
         <div className="space-y-6">
@@ -138,7 +137,7 @@ export default function ProductsPage() {
                 </div>
                 <div className="bg-purple-500/10 border border-purple-500/20 rounded-xl p-4">
                     <p className="text-purple-500 text-xs">دسته‌بندی‌ها</p>
-                    <p className="text-xl font-bold text-purple-400 mt-1">{categories}</p>
+                    <p className="text-xl font-bold text-purple-400 mt-1">{categoriesCount}</p>
                 </div>
             </div>
 

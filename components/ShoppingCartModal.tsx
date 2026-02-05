@@ -6,14 +6,13 @@ import { View } from '../types';
 import Modal from './Modal';
 import { TrashIcon, ShoppingCartIcon, PlusIcon, MinusIcon, ArrowLeftIcon, SparklesIcon, LeafIcon, UsersIcon, CheckCircleIcon } from './icons';
 import { useRouter } from 'next/navigation';
+import { formatPrice, toFarsiDigits } from '../utils/formatters';
 
 export default function ShoppingCartModal() {
   const { isCartOpen, cartItems } = useAppState();
   const dispatch = useAppDispatch();
   const router = useRouter();
   const [activeStep, setActiveStep] = useState(1);
-
-  console.log("🛒 ShoppingCartModal Render:", { isCartOpen, cartItemsCount: cartItems?.length });
 
   // Calculate simulated impact for Step 2
   const impact = useMemo(() => {
@@ -115,14 +114,14 @@ export default function ShoppingCartModal() {
                       <div className="flex items-center gap-4 mt-2">
                         <div className="flex items-center gap-2 bg-black/40 rounded-lg px-2 py-1 border border-white/5">
                           <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="text-gray-500 hover:text-white"><MinusIcon className="w-3 h-3" /></button>
-                          <span className="text-white text-xs font-bold">{item.quantity.toLocaleString('fa-IR')}</span>
+                          <span className="text-white text-xs font-bold">{toFarsiDigits(item.quantity)}</span>
                           <button onClick={() => updateQuantity(item.id, item.quantity + 1)} className="text-gray-500 hover:text-white"><PlusIcon className="w-3 h-3" /></button>
                         </div>
                         <button onClick={() => handleRemove(item.id)} className="text-gray-600 hover:text-red-400 transition-colors"><TrashIcon className="w-4 h-4" /></button>
                       </div>
                     </div>
                     <div className="text-left">
-                      <span className="text-emerald-400 font-black text-sm">{(item.price * item.quantity).toLocaleString('fa-IR')}</span>
+                      <span className="text-emerald-400 font-black text-sm">{formatPrice(item.price * item.quantity)}</span>
                     </div>
                   </div>
                 ))}
@@ -141,21 +140,21 @@ export default function ShoppingCartModal() {
                   <div className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl flex items-center gap-4">
                     <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center"><LeafIcon className="w-6 h-6 text-emerald-400" /></div>
                     <div>
-                      <div className="text-xl font-black text-white">{impact.trees.toLocaleString('fa-IR')} نخل</div>
-                      <div className="text-xs text-gray-500">افزایشِ ریه‌های سبز زمین</div>
+                      <div className="text-xl font-black text-white">{toFarsiDigits(impact.trees)} نخل</div>
+                      <div className="text-xs text-gray-500">افزایشِ ره‌های سبز زمین</div>
                     </div>
                   </div>
                   <div className="bg-blue-500/10 border border-blue-500/20 p-4 rounded-2xl flex items-center gap-4">
                     <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center"><UsersIcon className="w-6 h-6 text-blue-400" /></div>
                     <div>
-                      <div className="text-xl font-black text-white">{Math.ceil(impact.jobs).toLocaleString('fa-IR')} نفر-روز</div>
+                      <div className="text-xl font-black text-white">{toFarsiDigits(Math.ceil(impact.jobs))} نفر-روز</div>
                       <div className="text-xs text-gray-500">حمایت از معیشتِ باغبانان بومی</div>
                     </div>
                   </div>
                   <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-2xl flex items-center gap-4">
                     <div className="w-12 h-12 bg-amber-500/20 rounded-xl flex items-center justify-center"><SparklesIcon className="w-6 h-6 text-amber-400" /></div>
                     <div>
-                      <div className="text-xl font-black text-white">{impact.co2.toLocaleString('fa-IR')} کیلوگرم</div>
+                      <div className="text-xl font-black text-white">{toFarsiDigits(impact.co2)} کیلوگرم</div>
                       <div className="text-xs text-gray-500">جذب کربن در طول حیات نخل</div>
                     </div>
                   </div>
@@ -173,11 +172,11 @@ export default function ShoppingCartModal() {
                 <div className="bg-gray-800/50 p-6 rounded-3xl border border-white/5 space-y-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-500">تعداد آیتم‌ها</span>
-                    <span className="text-white font-bold">{cartItems.length.toLocaleString('fa-IR')} عدد</span>
+                    <span className="text-white font-bold">{toFarsiDigits(cartItems.length)} عدد</span>
                   </div>
                   <div className="flex justify-between text-lg">
                     <span className="text-gray-400">جمع نهایی برکت</span>
-                    <span className="text-emerald-400 font-black">{totalPrice.toLocaleString('fa-IR')} تومان</span>
+                    <span className="text-emerald-400 font-black">{formatPrice(totalPrice)} تومان</span>
                   </div>
                 </div>
               </div>
@@ -210,7 +209,7 @@ export default function ShoppingCartModal() {
               {activeStep === 1 && (
                 <div className="flex justify-between items-center px-4 py-2">
                   <span className="text-gray-500 text-xs">مجموع سبد:</span>
-                  <span className="text-white font-bold">{totalPrice.toLocaleString('fa-IR')} تومان</span>
+                  <span className="text-white font-bold">{formatPrice(totalPrice)} تومان</span>
                 </div>
               )}
             </div>

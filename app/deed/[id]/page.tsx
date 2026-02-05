@@ -24,7 +24,8 @@ export async function generateMetadata(
     { params }: Props,
     parent: ResolvingMetadata
 ): Promise<Metadata> {
-    const deed = await dbAdapter.getDeedById(params.id);
+    const { id } = await params;
+    const deed = await dbAdapter.getDeedById(id);
 
     if (!deed) {
         return {
@@ -50,7 +51,8 @@ export async function generateMetadata(
 }
 
 export default async function PublicDeedPage({ params }: Props) {
-    const deed = await dbAdapter.getDeedById(params.id);
+    const { id } = await params;
+    const deed = await dbAdapter.getDeedById(id);
 
     if (!deed) {
         notFound();

@@ -17,6 +17,7 @@ export interface Product {
     name: string;
     description?: string;
     price: number;
+    basePrice?: number; // USD/Base currency value for global price updates
 
     image: string; // mapped to image_url in DB
 

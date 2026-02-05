@@ -6,6 +6,7 @@ import { XMarkIcon, LockClosedIcon } from './icons';
 import InstallmentInfo from './InstallmentInfo';
 import { canPurchaseMeaningPalm } from '../services/gamificationService';
 import { useAppDispatch } from '../AppContext';
+import { formatPrice, toFarsiDigits } from '../utils/formatters';
 
 interface PalmSelectionModalProps {
     isOpen: boolean;
@@ -51,14 +52,14 @@ const PalmSelectionModal: React.FC<PalmSelectionModalProps> = ({ isOpen, onClose
                                         <div className="text-center space-y-1 my-4 opacity-50">
                                             <div>
                                                 <p className="text-xs font-semibold text-green-300">مبلغ سرمایه‌گذاری اجتماعی شما</p>
-                                                <span className="text-2xl font-bold text-green-300">{(palm.price * 0.9).toLocaleString('fa-IR')}</span>
+                                                <span className="text-2xl font-bold text-green-300">{formatPrice(palm.price * 0.9)}</span>
                                                 <span className="text-lg font-semibold text-green-300"> تومان</span>
                                             </div>
                                             <p className="text-xs text-gray-500">
-                                                (از هزینه کل: {palm.price.toLocaleString('fa-IR')} تومان)
+                                                (از هزینه کل: {formatPrice(palm.price)} تومان)
                                             </p>
                                         </div>
-                                        <p className="text-sm text-yellow-400/50 mt-2 text-center">+{palm.points.toLocaleString('fa-IR')} امتیاز</p>
+                                        <p className="text-sm text-yellow-400/50 mt-2 text-center">+{toFarsiDigits(palm.points)} امتیاز</p>
                                         <p className="text-sm text-amber-300/70 my-2 text-center">یک دستاورد ارزشمند در انتظار شماست.</p>
                                         <button onClick={() => { onClose(); dispatch({ type: 'TOGGLE_MEANING_PALM_ACTIVATION_MODAL', payload: true }); }} className="w-full mt-4 bg-amber-600 hover:bg-amber-700 text-white font-bold py-2 rounded-md transition-colors">
                                             مشاهده مسیر فعال‌سازی
@@ -77,14 +78,14 @@ const PalmSelectionModal: React.FC<PalmSelectionModalProps> = ({ isOpen, onClose
                                     <div className="text-center space-y-1 my-4">
                                         <div>
                                             <p className="text-xs font-semibold text-green-300">مبلغ سرمایه‌گذاری اجتماعی شما</p>
-                                            <span className="text-2xl font-bold text-green-300">{(palm.price * 0.9).toLocaleString('fa-IR')}</span>
+                                            <span className="text-2xl font-bold text-green-300">{formatPrice(palm.price * 0.9)}</span>
                                             <span className="text-lg font-semibold text-green-300"> تومان</span>
                                         </div>
                                         <p className="text-xs text-gray-500">
-                                            (از هزینه کل: {palm.price.toLocaleString('fa-IR')} تومان)
+                                            (از هزینه کل: {formatPrice(palm.price)} تومان)
                                         </p>
                                     </div>
-                                    <p className="text-sm text-yellow-400 mt-2 text-center">+{palm.points.toLocaleString('fa-IR')} امتیاز</p>
+                                    <p className="text-sm text-yellow-400 mt-2 text-center">+{toFarsiDigits(palm.points)} امتیاز</p>
                                     <InstallmentInfo user={user} price={palm.price} />
                                     <button onClick={() => onSelectPalm(palm)} className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 rounded-md transition-colors">
                                         انتخاب

@@ -182,6 +182,7 @@ export type Action =
     | { type: 'UPDATE_PRODUCT'; payload: { id: string, data: Partial<Product> } }
     | { type: 'ADD_PRODUCT'; payload: { product: Product } }
     | { type: 'DELETE_PRODUCT'; payload: { id: string } }
+    | { type: 'BULK_UPDATE_PRICES_BY_RATE'; payload: { newRate: number } }
     | { type: 'START_PLANTING_FLOW' }
     | { type: 'QUICK_PAY'; payload: any }
     | { type: 'CONFIRM_PLANTING'; payload: { deedId: string, photoBase64: string } }

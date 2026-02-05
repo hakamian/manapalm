@@ -360,7 +360,7 @@ export const dbAdapter = {
     async getAllProducts(): Promise<Product[]> {
         if (!this.isLive()) return INITIAL_PRODUCTS;
 
-        const fetchProducts = async () => {
+        const fetchProducts = async (): Promise<Product[]> => {
             const { data, error } = await supabase!
                 .from('products')
                 .select('*')
@@ -373,6 +373,7 @@ export const dbAdapter = {
                 id: p.id,
                 name: p.name || '',
                 price: p.price || 0,
+                basePrice: p.base_price || 0,
                 category: p.category || '',
                 image: p.image_url || '',
                 description: p.description || '',
@@ -388,7 +389,50 @@ export const dbAdapter = {
             }));
         };
 
-        return withTimeout(fetchProducts(), 4000, INITIAL_PRODUCTS);
+        return withTimeout(fetchProducts(), 4000, INITIAL_PRODUCTS as Product[]);
+    },
+
+    async saveProduct(product: Product): Promise<void> {
+        if (!this.isLive()) return;
+
+        const productData = {
+            id: product.id,
+            name: product.name,
+            price: product.price,
+            base_price: product.basePrice,
+            category: product.category,
+            image_url: product.image || (product as any).imageUrl,
+            description: product.description,
+            type: product.type || (product as any).category,
+            stock: product.stock,
+            points: product.points,
+            is_active: product.isActive ?? true,
+            updated_at: new Date().toISOString()
+        };
+
+        const { error } = await supabase!.from('products').upsert(productData);
+        if (error) {
+            logger.error("Error saving product", { error });
+            throw error;
+        }
+    },
+
+    async bulkUpdateProducts(products: Product[]): Promise<void> {
+        if (!this.isLive()) return;
+
+        // Note: For large datasets, use a single query or RPC. For now, upsert since we usually have < 50 items.
+        const data = products.map(p => ({
+            id: p.id,
+            price: p.price,
+            base_price: p.basePrice,
+            updated_at: new Date().toISOString()
+        }));
+
+        const { error } = await supabase!.from('products').upsert(data);
+        if (error) {
+            logger.error("Error in bulk update", { error });
+            throw error;
+        }
     },
 
     async getDeedById(id: string): Promise<any | null> {

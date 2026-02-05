@@ -56,7 +56,7 @@ type Props = {
 
 // --- METADATA GENERATION ---
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const occasion = params.occasion;
+    const { occasion } = await params;
     const data = OCCASIONS[occasion];
 
     if (!data) return { title: 'هدیه معنادار | نخلستان معنا' };
@@ -74,8 +74,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 // --- PAGE COMPONENT ---
-export default function GiftLandingPage({ params }: Props) {
-    const { occasion } = params;
+export default async function GiftLandingPage({ params }: Props) {
+    const { occasion } = await params;
     const data = OCCASIONS[occasion];
 
     if (!data) notFound();
