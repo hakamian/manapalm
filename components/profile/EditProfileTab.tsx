@@ -45,6 +45,8 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
     const [maritalStatus, setMaritalStatus] = useState(user.maritalStatus || 'مجرد');
     const [childrenCount, setChildrenCount] = useState(user.childrenCount ?? '');
     const [birthYear, setBirthYear] = useState(user.birthYear ?? '');
+    const [birthMonth, setBirthMonth] = useState(user.birthMonth ?? '');
+    const [birthDay, setBirthDay] = useState(user.birthDay ?? '');
     const [nationalId, setNationalId] = useState(user.nationalId || '');
     const [fatherName, setFatherName] = useState(user.fatherName || '');
     const [motherName, setMotherName] = useState(user.motherName || '');
@@ -126,13 +128,13 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
     const completionPercentage = useMemo(() => {
         const fields = [
             firstName, lastName, email, description, avatar, // Basic (5)
-            maritalStatus, childrenCount, birthYear, // Personal (3)
+            maritalStatus, childrenCount, birthYear, birthMonth, birthDay, // Personal (5)
             nationalId, fatherName, motherName, occupation // Identity (4)
         ];
         const filled = fields.filter(f => f !== '' && f !== undefined && f !== null).length;
         const addressBonus = (user.addresses && user.addresses.length > 0) ? 1 : 0;
         return Math.min(100, Math.round(((filled + addressBonus) / (fields.length + 1)) * 100));
-    }, [firstName, lastName, email, description, avatar, maritalStatus, childrenCount, birthYear, nationalId, fatherName, motherName, occupation, user.addresses]);
+    }, [firstName, lastName, email, description, avatar, maritalStatus, childrenCount, birthYear, birthMonth, birthDay, nationalId, fatherName, motherName, occupation, user.addresses]);
 
     const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -215,6 +217,8 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
             maritalStatus,
             childrenCount: childrenCount !== '' ? Number(childrenCount) : undefined,
             birthYear: birthYear !== '' ? Number(birthYear) : undefined,
+            birthMonth: birthMonth !== '' ? Number(birthMonth) : undefined,
+            birthDay: birthDay !== '' ? Number(birthDay) : undefined,
             nationalId,
             fatherName,
             motherName,
@@ -426,11 +430,46 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
                                         اطلاعات شخصی
                                     </h3>
                                     <div className="space-y-4">
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <label className="text-sm text-gray-400">سال تولد</label>
-                                                <input type="number" value={birthYear} onChange={e => setBirthYear(e.target.value)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
+                                        <div className="space-y-2">
+                                            <label className="text-sm text-gray-400">تاریخ تولد</label>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                <select
+                                                    value={birthYear}
+                                                    onChange={e => setBirthYear(e.target.value)}
+                                                    className="bg-gray-900/50 border border-gray-700 rounded-xl p-2.5 text-sm focus:border-green-500 outline-none text-gray-200"
+                                                >
+                                                    <option value="">سال</option>
+                                                    {Array.from({ length: 100 }, (_, i) => 1402 - i).map(year => (
+                                                        <option key={year} value={year}>{year.toLocaleString('fa-IR', { useGrouping: false })}</option>
+                                                    ))}
+                                                </select>
+                                                <select
+                                                    value={birthMonth}
+                                                    onChange={e => setBirthMonth(e.target.value)}
+                                                    className="bg-gray-900/50 border border-gray-700 rounded-xl p-2.5 text-sm focus:border-green-500 outline-none text-gray-200"
+                                                >
+                                                    <option value="">ماه</option>
+                                                    {[
+                                                        'فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور',
+                                                        'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'
+                                                    ].map((month, idx) => (
+                                                        <option key={idx + 1} value={idx + 1}>{month}</option>
+                                                    ))}
+                                                </select>
+                                                <select
+                                                    value={birthDay}
+                                                    onChange={e => setBirthDay(e.target.value)}
+                                                    className="bg-gray-900/50 border border-gray-700 rounded-xl p-2.5 text-sm focus:border-green-500 outline-none text-gray-200"
+                                                >
+                                                    <option value="">روز</option>
+                                                    {Array.from({ length: 31 }, (_, i) => i + 1).map(day => (
+                                                        <option key={day} value={day}>{day.toLocaleString('fa-IR')}</option>
+                                                    ))}
+                                                </select>
                                             </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
                                                 <label className="text-sm text-gray-400">وضعیت تاهل</label>
                                                 <select value={maritalStatus} onChange={e => setMaritalStatus(e.target.value as any)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none">
@@ -438,10 +477,10 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
                                                     <option value="متاهل">متاهل</option>
                                                 </select>
                                             </div>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="text-sm text-gray-400">تعداد فرزندان</label>
-                                            <input type="number" value={childrenCount} onChange={e => setChildrenCount(e.target.value)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
+                                            <div className="space-y-2">
+                                                <label className="text-sm text-gray-400">تعداد فرزندان</label>
+                                                <input type="number" value={childrenCount} onChange={e => setChildrenCount(e.target.value)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -453,9 +492,15 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
                                         اطلاعات هویتی
                                     </h3>
                                     <div className="space-y-4">
-                                        <div className="space-y-2">
-                                            <label className="text-sm text-gray-400">کد ملی</label>
-                                            <input type="text" value={nationalId} onChange={e => setNationalId(e.target.value)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-sm text-gray-400">کد ملی</label>
+                                                <input type="text" value={nationalId} onChange={e => setNationalId(e.target.value)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-sm text-gray-400">شغل</label>
+                                                <input type="text" value={occupation} onChange={e => setOccupation(e.target.value)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
+                                            </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
@@ -463,8 +508,8 @@ const EditProfileTab: React.FC<EditProfileTabProps> = ({ user, onUpdate, initial
                                                 <input type="text" value={fatherName} onChange={e => setFatherName(e.target.value)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
                                             </div>
                                             <div className="space-y-2">
-                                                <label className="text-sm text-gray-400">شغل</label>
-                                                <input type="text" value={occupation} onChange={e => setOccupation(e.target.value)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
+                                                <label className="text-sm text-gray-400">نام مادر</label>
+                                                <input type="text" value={motherName} onChange={e => setMotherName(e.target.value)} className="w-full bg-gray-900/50 border border-gray-700 rounded-xl p-3 focus:border-green-500 outline-none" />
                                             </div>
                                         </div>
                                     </div>

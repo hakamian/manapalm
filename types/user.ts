@@ -67,6 +67,8 @@ export interface User {
     maritalStatus?: 'مجرد' | 'متاهل';
     childrenCount?: number;
     birthYear?: number;
+    birthMonth?: number;
+    birthDay?: number;
     nationalId?: string;
     fatherName?: string;
     motherName?: string;
