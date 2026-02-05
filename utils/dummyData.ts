@@ -334,7 +334,7 @@ export const INITIAL_PRODUCTS: Product[] = [
 
     },
 
-    { id: 'p_heritage_memory', name: 'نخل ازدواج', price: 8500000, points: 42500, category: 'نخل میراث', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875042/Gemini_Generated_Image_5wpcrn5wpcrn5wpc_oyspdy.png', popularity: 91, dateAdded: getPastDate(18), stock: 25, description: 'ثبت پیوند عشق و زندگی مشترک با کاشت یک نخل جاودان.', type: 'physical', isActive: true, tags: ['memory', 'love'] },
+    { id: 'p_heritage_memory', name: 'نخل ازدواج', price: 8500000, points: 42500, category: 'نخل میراث', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875042/Gemini_Generated_Image_5wpcrn5wpcrn5wpc_oyspdy.png', realImage: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1769018493/Gemini_Generated_Image_ejuij6ejuij6ejui_ouyqvx.png', popularity: 91, dateAdded: getPastDate(18), stock: 25, description: 'ثبت پیوند عشق و زندگی مشترک با کاشت یک نخل جاودان.', type: 'physical', isActive: true, tags: ['memory', 'love'] },
 
 
 

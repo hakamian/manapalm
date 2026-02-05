@@ -204,8 +204,8 @@ const ModernShopManagement: React.FC<ModernShopManagementProps> = ({
             <div className="admin-animate-fade-in" style={{ marginBottom: '2rem' }}>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center' }}>
                     {/* Search */}
-                    <div className="admin-input-group" style={{ flex: 1, minWidth: '200px' }}>
-                        <MagnifyingGlassIcon className="admin-input-icon" />
+                    <div className="admin-input-group" style={{ flex: 1, minWidth: '200px', position: 'relative' }}>
+                        <MagnifyingGlassIcon className="w-4 h-4" style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--admin-text-muted)', pointerEvents: 'none' }} />
                         <input
                             type="text"
                             placeholder="جستجوی محصول..."

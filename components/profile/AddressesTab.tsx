@@ -20,6 +20,7 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
         postalCode: '',
         plaque: '',
         unit: '',
+        floor: '',
         recipientName: user.fullName || user.name || '',
         phone: user.phone || '',
         title: 'خانه',
@@ -70,6 +71,7 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
             postalCode: '',
             plaque: '',
             unit: '',
+            floor: '',
             recipientName: user.fullName || user.name || '',
             phone: user.phone || '',
             title: 'خانه', // 🏠 Default
@@ -142,6 +144,16 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
                             />
                         </div>
                         <div className="space-y-2">
+                            <label className="text-sm text-gray-400 block pb-1">پلاک</label>
+                            <input
+                                type="text"
+                                value={formData.plaque || ''}
+                                onChange={e => setFormData({ ...formData, plaque: e.target.value })}
+                                className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500"
+                                placeholder="مثلا ۱۲"
+                            />
+                        </div>
+                        <div className="space-y-2">
                             <label className="text-sm text-gray-400 block pb-1">نام گیرنده</label>
                             <input
                                 type="text"
@@ -206,23 +218,23 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
 
                         <div className="grid grid-cols-2 gap-4 md:col-span-2">
                             <div className="space-y-2">
-                                <label className="text-sm text-gray-400 block pb-1">پلاک</label>
+                                <label className="text-sm text-gray-400 block pb-1">طبقه</label>
                                 <input
                                     type="text"
-                                    value={formData.plaque}
-                                    onChange={e => setFormData({ ...formData, plaque: e.target.value })}
+                                    value={formData.floor || ''}
+                                    onChange={e => setFormData({ ...formData, floor: e.target.value })}
                                     className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500"
-                                    placeholder="مثلا ۱۲"
+                                    placeholder="مثلا ۳"
                                 />
                             </div>
                             <div className="space-y-2">
-                                <label className="text-sm text-gray-400 block pb-1">واحد / طبقه</label>
+                                <label className="text-sm text-gray-400 block pb-1">واحد</label>
                                 <input
                                     type="text"
-                                    value={formData.unit}
+                                    value={formData.unit || ''}
                                     onChange={e => setFormData({ ...formData, unit: e.target.value })}
                                     className="w-full bg-gray-800 border border-gray-600 rounded-md p-2 text-white focus:border-green-500"
-                                    placeholder="مثلا ۳ شمالی"
+                                    placeholder="مثلا شمالی"
                                 />
                             </div>
                         </div>
@@ -295,6 +307,7 @@ const AddressesTab: React.FC<AddressesTabProps> = ({ user, onUpdate }) => {
                                             {address.neighborhood ? `، ${address.neighborhood}` : ''}
                                             {`، ${address.fullAddress}`}
                                             {address.plaque ? `، پلاک ${address.plaque}` : ''}
+                                            {address.floor ? `، طبقه ${address.floor}` : ''}
                                             {address.unit ? `، واحد ${address.unit}` : ''}
                                         </p>
                                         <div className="flex gap-6 text-sm text-gray-400 pt-2">

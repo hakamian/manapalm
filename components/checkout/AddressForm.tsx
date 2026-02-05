@@ -215,20 +215,48 @@ const AddressForm: React.FC<AddressFormProps> = ({
                             </div>
                         )}
 
+                        {/* Plaque, Floor, Unit - Compact Row */}
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-300 mb-2">پلاک / طبقه / واحد</label>
+                            <div className="grid grid-cols-3 gap-3">
+                                <input
+                                    type="text"
+                                    value={physical.plaque || ''}
+                                    onChange={(e) => updatePhysical('plaque', e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white placeholder-gray-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors text-center"
+                                    placeholder="پلاک"
+                                />
+                                <input
+                                    type="text"
+                                    value={physical.floor || ''}
+                                    onChange={(e) => updatePhysical('floor', e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white placeholder-gray-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors text-center"
+                                    placeholder="طبقه"
+                                />
+                                <input
+                                    type="text"
+                                    value={physical.unit || ''}
+                                    onChange={(e) => updatePhysical('unit', e.target.value)}
+                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white placeholder-gray-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors text-center"
+                                    placeholder="واحد"
+                                />
+                            </div>
+                        </div>
+
                         {/* Full Address */}
                         <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-gray-300 mb-2">آدرس کامل *</label>
                             <textarea
                                 value={physical.fullAddress}
                                 onChange={(e) => updatePhysical('fullAddress', e.target.value)}
-                                rows={3}
+                                rows={2}
                                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors resize-none"
-                                placeholder="خیابان، کوچه، پلاک، واحد..."
+                                placeholder="خیابان، کوچه..."
                             />
                         </div>
 
                         {/* Postal Code */}
-                        <div>
+                        <div className="md:col-span-2">
                             <label className="block text-sm font-medium text-gray-300 mb-2">کد پستی *</label>
                             <input
                                 type="text"
@@ -239,30 +267,6 @@ const AddressForm: React.FC<AddressFormProps> = ({
                                 dir="ltr"
                                 maxLength={10}
                             />
-                        </div>
-
-                        {/* Plaque & Unit */}
-                        <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">پلاک</label>
-                                <input
-                                    type="text"
-                                    value={physical.plaque || ''}
-                                    onChange={(e) => updatePhysical('plaque', e.target.value)}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
-                                    placeholder="۱۲"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-2">واحد / طبقه</label>
-                                <input
-                                    type="text"
-                                    value={physical.unit || physical.floor || ''}
-                                    onChange={(e) => updatePhysical('unit', e.target.value)}
-                                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-colors"
-                                    placeholder="واحد ۳"
-                                />
-                            </div>
                         </div>
                     </div>
                 </div>

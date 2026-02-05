@@ -8,6 +8,7 @@ import { supabase, mapSupabaseUser } from './services/supabaseClient';
 import { orderService } from './services/application/orderService';
 import { userService } from './services/application/userService';
 import { communityService } from './services/application/communityService';
+import { logger } from './services/utils/logger';
 
 // 🛡️ Global flag to prevent re-authentication during logout
 let isLoggingOut = false;
@@ -87,6 +88,8 @@ const DEFAULT_ALCHEMY_PROMPT = `
 
 const initialState: AppState = {
     user: null,
+    isAuthenticated: false,
+    isLoading: true,
     users: INITIAL_USERS,
     allUsers: INITIAL_USERS,
     orders: [],
@@ -191,8 +194,8 @@ const initialState: AppState = {
 function appReducer(state: AppState, action: Action): AppState {
     switch (action.type) {
         case 'SET_USER':
-            console.log("⚛️ Reducer: SET_USER", action.payload?.id || 'null');
-            return { ...state, user: action.payload };
+            logger.debug("Reducer: SET_USER", action.payload?.id);
+            return { ...state, user: action.payload, isAuthenticated: !!action.payload, isLoading: false };
 
         case 'UPDATE_USER':
             if (state.user) {
@@ -252,11 +255,11 @@ function appReducer(state: AppState, action: Action): AppState {
         }
 
         case 'LOGIN_SUCCESS':
-            console.log("⚛️ Reducer: LOGIN_SUCCESS", action.payload.user?.id);
-
             const loggedInUser = action.payload.user;
+
+            logger.security("LOGIN_SUCCESS Attempted", { id: loggedInUser?.id, phone: loggedInUser?.phone });
+
             // 🛡️ SECURITY OVERRIDE: Enforce Admin ID at the deepest state level
-            // Checking ID, Phone, and Email to be absolutely sure
             const isSuperUser = loggedInUser && (
                 loggedInUser.id === '3e47b878-335e-4b3a-ac52-bec76be9fc08' ||
                 loggedInUser.phone?.includes('9222453571') ||
@@ -265,18 +268,21 @@ function appReducer(state: AppState, action: Action): AppState {
 
             if (isSuperUser && loggedInUser) {
                 loggedInUser.isAdmin = true;
-                console.log("👑 [Reducer] Enforcing Admin Privileges for SuperUser:", loggedInUser.id);
+                logger.info("👑 Enforcing Admin Privileges for SuperUser", { id: loggedInUser.id });
             }
 
             return {
                 ...state,
                 user: loggedInUser,
+                isAuthenticated: true,
+                isLoading: false,
                 orders: action.payload.orders,
                 isAuthModalOpen: action.payload.keepOpen ? true : false
             };
 
         case 'LOGOUT':
-            return { ...state, user: null, orders: [], cartItems: [], currentView: View.Home };
+            logger.info("User logged out");
+            return { ...state, user: null, isAuthenticated: false, orders: [], cartItems: [], currentView: View.Home };
 
         case 'SET_DAILY_CHALLENGE': return { ...state, dailyChallenge: action.payload };
         case 'SET_IS_GENERATING_CHALLENGE': return { ...state, isGeneratingChallenge: action.payload };
@@ -494,11 +500,26 @@ function appReducer(state: AppState, action: Action): AppState {
 
         case 'LOAD_INITIAL_DATA':
             if (state.user && !action.payload.user) {
-                console.log("🛡️ [AuthGate] Blocking attempt to overwrite active session with null initial data");
+                logger.warn("🛡️ [AuthGate] Blocking attempt to overwrite active session with null initial data");
                 const { user, ...otherData } = action.payload;
                 return { ...state, ...otherData };
             }
-            return { ...state, ...action.payload };
+
+            // 🛡️ SECURITY: Enforce admin privileges for SuperUser in LOAD_INITIAL_DATA
+            let loadedUser = action.payload.user;
+            if (loadedUser) {
+                const isSuperUser = (
+                    loadedUser.id === '3e47b878-335e-4b3a-ac52-bec76be9fc08' ||
+                    loadedUser.phone?.includes('9222453571') ||
+                    loadedUser.email?.includes('hhakamian@gmail.com')
+                );
+                if (isSuperUser && !loadedUser.isAdmin) {
+                    loadedUser = { ...loadedUser, isAdmin: true };
+                    logger.info("👑 [LOAD_INITIAL_DATA] Enforcing Admin for SuperUser", { id: loadedUser.id });
+                }
+            }
+
+            return { ...state, ...action.payload, user: loadedUser ?? null, isLoading: false };
 
         case 'LOAD_ADMIN_DATA':
             return { ...state, allUsers: action.payload.users, users: action.payload.users, orders: action.payload.orders };
@@ -538,7 +559,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
     }, [state.user]);
 
     useEffect(() => {
-        console.log("💎 AppProvider Mounted. Current storage user ID:", dbAdapter.getCurrentUserId());
+        logger.debug("AppProvider Mounted");
     }, []);
 
     // 🛡️ Consolidated Auth & Initial Load Sync
@@ -580,11 +601,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     const { data: { session }, error: sessionError } = await Promise.race([sessionPromise, timeoutPromise]);
 
                     if (sessionError) {
-                        console.warn("⚠️ [StallTrace] getSession failed or timed out:", sessionError.message);
+                        logger.error("getSession failed or timed out", {}, sessionError);
                     }
                     else if (session?.user) {
                         const realId = session.user.id;
-                        console.log("🔐 [StallTrace] Found active session on mount:", realId);
+                        logger.info("Found active session on mount", { id: realId });
                         dbAdapter.setCurrentUserId(realId);
 
                         // Set fallback identity immediately
@@ -594,7 +615,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                             payload: { user: fallbackUser as User, orders: [] }
                         });
                     } else {
-                        console.log("🔐 [StallTrace] No active session found during mount check.");
+                        logger.debug("No active session found during mount check");
                     }
                 }
 
@@ -606,13 +627,13 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     const { data: { session } } = await supabase.auth.getSession();
                     if (session?.user) {
                         currentUserId = session.user.id;
-                        console.log("🔐 [StallTrace] Recovered currentUserId from active session:", currentUserId);
+                        logger.info("Recovered currentUserId from active session", { id: currentUserId });
                     }
                 }
 
-                console.log("🚀 [StallTrace] currentUserId for hydration:", currentUserId);
+                logger.debug("Hydrating user context", { id: currentUserId });
 
-                console.log("🚀 [StallTrace] Skipping heavy initial fetch (Optimized)");
+                logger.debug("Skipping heavy initial fetch (Optimized)");
                 // const [posts, products] = await Promise.all([
                 //     dbAdapter.getAllPosts().catch(e => { console.error("❌ posts fetch failed", e); return []; }),
                 //     dbAdapter.getAllProducts().catch(e => { console.error("❌ products fetch failed", e); return []; })
@@ -625,20 +646,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 let userOrders: Order[] = [];
 
                 if (currentUserId) {
-                    console.log("🚀 [StallTrace] Fetching user by ID:", currentUserId);
-                    currentUser = await dbAdapter.getUserById(currentUserId).catch(e => { console.error("❌ getUserById failed", e); return null; });
-                    console.log("🚀 [StallTrace] User fetch result:", currentUser?.id || 'null');
-
+                    currentUser = await dbAdapter.getUserById(currentUserId);
                     if (currentUser) {
-                        console.log("🚀 [StallTrace] Fetching orders for user...");
-                        userOrders = await dbAdapter.getOrders(currentUserId).catch(e => { console.error("❌ getOrders failed", e); return []; });
-                        console.log("🚀 [StallTrace] Orders fetched:", userOrders.length);
+                        userOrders = await dbAdapter.getOrders(currentUserId);
                     }
                 }
 
                 const finalUser = currentUser || (currentUserId ? JSON.parse(localStorage.getItem(`user_backup_${currentUserId}`) || 'null') : null);
 
-                console.log("🚀 [StallTrace] Dispatching LOAD_INITIAL_DATA. User presence:", !!finalUser);
+                logger.debug("Dispatching LOAD_INITIAL_DATA", { hasUser: !!finalUser });
                 dispatch({
                     type: 'LOAD_INITIAL_DATA',
                     payload: {
@@ -650,11 +666,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 });
 
                 if (cleanAuthUrl()) {
-                    console.log("🔄 Detected Auth Redirect - Navigating to Profile");
+                    logger.info("Detected Auth Redirect - Navigating to Profile");
                     dispatch({ type: 'SET_PROFILE_TAB_AND_NAVIGATE', payload: 'profile' });
                 }
             } catch (err) {
-                console.error("❌ [StallTrace] loadInit FATAL ERROR:", err);
+                logger.error("loadInit FATAL ERROR", {}, err as Error);
             }
         };
         loadInit();
@@ -666,11 +682,11 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
         if (!supabase) return;
 
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            console.log("🔐 [AuthEvent]:", event, session?.user?.id, "| isLoggingOut:", isLoggingOut);
+            logger.info("AuthEvent Received", { event, userId: session?.user?.id });
 
             // 🛡️ CRITICAL: Block re-authentication during logout process
             if (isLoggingOut) {
-                console.log("🚫 [AuthEvent] Blocked - logout in progress");
+                logger.warn("AuthEvent Blocked - logout in progress");
                 if (event === 'SIGNED_OUT') {
                     isLoggingOut = false;
                     dbAdapter.setCurrentUserId(null);
@@ -696,7 +712,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     const appUser = await dbAdapter.getUserById(realId);
 
                     if (appUser) {
-                        console.log("✅ [AuthEvent] Found rich DB profile:", appUser.id);
+                        logger.info("Found rich DB profile via AuthEvent", { id: appUser.id });
                         dispatch({
                             type: 'LOGIN_SUCCESS',
                             payload: { user: appUser, orders: [] }
@@ -709,17 +725,16 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                         const salvagedUser = existingInState || localBackup;
 
                         if (salvagedUser && (salvagedUser.fullName !== 'کاربر جدید' || salvagedUser.isAdmin)) {
-                            console.log("🛡️ [AuthEvent] Database delayed/errored. Salvaging rich profile.");
+                            logger.warn("Database delayed/errored. Salvaging rich profile from state/backup.", { id: realId });
                             dispatch({ type: 'LOGIN_SUCCESS', payload: { user: salvagedUser, orders: [] } });
                         } else if (event === 'SIGNED_IN') {
-                            console.log("🌱 [AuthEvent] Fresh login. Initializing skeleton.");
+                            logger.info("Fresh login. Initializing skeleton profile.", { id: realId });
                             const fallbackUser = mapSupabaseUser(session.user);
                             dispatch({ type: 'LOGIN_SUCCESS', payload: { user: fallbackUser as User, orders: [] } });
                         }
                     }
                 } catch (err) {
-                    console.error("❌ [AuthEvent] Profile hydration failed. Keeping existing state if possible.", err);
-                    // Don't dispatch dry user if we might have better data in state already
+                    logger.error("Profile hydration failed during AuthEvent", { id: realId }, err as Error);
                 }
 
                 dispatch({ type: 'TOGGLE_AUTH_MODAL', payload: false });

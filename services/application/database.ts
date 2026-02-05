@@ -1,4 +1,6 @@
-import { supabase } from '../infrastructure/supabase';
+
+import { supabase } from '../supabaseClient';
+import { logger } from '../utils/logger';
 import { User, Order, CommunityPost, AgentActionLog, Product } from '../../types';
 import { INITIAL_USERS, INITIAL_ORDERS, INITIAL_POSTS, INITIAL_PRODUCTS } from '../../utils/dummyData';
 
@@ -23,7 +25,7 @@ const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, fallback: 
     let timeoutHandle: any;
     const timeoutPromise = new Promise<T>((resolve) => {
         timeoutHandle = setTimeout(() => {
-            console.warn(`⏳ [DB Timeout] Operation exceeded ${timeoutMs}ms. Using fallback.`);
+            logger.warn(`⏳ [DB Timeout] Operation exceeded ${timeoutMs}ms. Using fallback.`);
             resolve(fallback);
         }, timeoutMs);
     });
@@ -35,18 +37,18 @@ const withTimeout = async <T>(promise: Promise<T>, timeoutMs: number, fallback: 
 
         // Performance Monitoring Log
         if (duration > 5000) {
-            console.log(`🐢 [DB Performance] VERY SLOW: ${duration}ms`);
+            logger.error(`🐢 [DB Performance] VERY SLOW: ${duration}ms`, { duration });
         } else if (duration > 1000) {
-            console.log(`⏳ [DB Performance] Slow: ${duration}ms`);
+            logger.warn(`⏳ [DB Performance] Slow: ${duration}ms`, { duration });
         } else {
-            console.log(`⚡ [DB Performance] Fast: ${duration}ms`);
+            logger.debug(`⚡ [DB Performance] Fast: ${duration}ms`, { duration });
         }
 
         return result;
     } catch (err) {
         clearTimeout(timeoutHandle);
         const duration = Date.now() - startTime;
-        console.error(`❌ [DB Error] Operation failed after ${duration}ms`, err);
+        logger.error(`❌ [DB Error] Operation failed after ${duration}ms`, { duration }, err as Error);
         return fallback;
     }
 };
@@ -62,7 +64,7 @@ const mapProfileToUser = (profile: any): User => {
             try {
                 metadata = JSON.parse(rawMetadata);
             } catch (e) {
-                console.error("❌ Failed to parse metadata string:", rawMetadata);
+                logger.error("Failed to parse metadata string", { id: profile.id });
             }
         }
     }
@@ -70,16 +72,16 @@ const mapProfileToUser = (profile: any): User => {
     let addresses = (metadata as any)?.addresses || [];
 
     // 🛡️ RECOVERY: If server returns empty addresses but we have a local backup, use the backup.
-    // This prevents addresses from disappearing during hydration or sync delays.
     if (addresses.length === 0 && typeof localStorage !== 'undefined') {
         try {
-            const localBackup = JSON.parse(localStorage.getItem(`user_backup_${profile.id}`) || 'null');
+            const localBackupJson = localStorage.getItem(`user_backup_${profile.id}`);
+            const localBackup = localBackupJson ? JSON.parse(localBackupJson) : null;
             if (localBackup && localBackup.addresses && localBackup.addresses.length > 0) {
-                console.log(`📡 [DB] Recovered ${localBackup.addresses.length} addresses from LocalStorage for ${profile.id}`);
+                logger.info(`Recovered ${localBackup.addresses.length} addresses from LocalStorage`, { id: profile.id });
                 addresses = localBackup.addresses;
             }
         } catch (e) {
-            console.error("❌ Failed to recover addresses from backup", e);
+            logger.error("Failed to recover addresses from backup", { id: profile.id });
         }
     }
 
@@ -111,7 +113,6 @@ const mapProfileToUser = (profile: any): User => {
         messages: (metadata as any)?.messages || [],
         recentViews: (metadata as any)?.recentViews || [],
 
-        // 🛡️ Mapped missing mandatory fields to prevent hydration failure
         conversations: (metadata as any)?.conversations || [],
         notifications: (metadata as any)?.notifications || [],
         reflectionAnalysesRemaining: (metadata as any)?.reflectionAnalysesRemaining || 0,
@@ -124,17 +125,30 @@ export const dbAdapter = {
         return !!supabase;
     },
 
+    setCurrentUserId(id: string | null) {
+        if (typeof localStorage !== 'undefined') {
+            if (id) localStorage.setItem('nakhlestan_current_user_id', id);
+            else localStorage.removeItem('nakhlestan_current_user_id');
+        }
+    },
+
+    getCurrentUserId(): string | null {
+        if (typeof localStorage !== 'undefined') {
+            return localStorage.getItem('nakhlestan_current_user_id');
+        }
+        return null;
+    },
+
     async getSystemHealth(): Promise<{ status: string; scalabilityScore: number; issues: string[] }> {
         if (!this.isLive()) {
             return { status: 'Local Mock Mode', scalabilityScore: 0, issues: ['Running on local dummy data (No DB connection).'] };
         }
         try {
-            // Optimization: Just check for connectivity, don't count all rows.
             const { error } = await supabase!.from('products').select('id').limit(1).maybeSingle();
             if (error) throw error;
             return { status: 'Healthy (Connected)', scalabilityScore: 95, issues: [] };
         } catch (e: any) {
-            console.error("DB Health Check Failed:", e);
+            logger.error("DB Health Check Failed", {}, e);
             return { status: 'Connection Error', scalabilityScore: 0, issues: ['Database connection failed', e.message] };
         }
     },
@@ -156,7 +170,7 @@ export const dbAdapter = {
         const { data, error, count } = await query.range(from, to);
 
         if (error) {
-            console.error('DB Error (getUsers):', error.message);
+            logger.error('DB Error (getUsers)', { error: error.message });
             return { data: [], total: 0 };
         }
 
@@ -170,16 +184,15 @@ export const dbAdapter = {
     },
 
     async getUserById(id: string): Promise<User | null> {
-        // 🧪 Handle Test/Mock IDs: Check LocalStorage backup FIRST, then fallback to INITIAL_USERS
         if (id && (id === 'user_test_manapalm' || id === 'user_admin_hh' || id.startsWith('user_gen_'))) {
             if (typeof localStorage !== 'undefined') {
-                const localBackup = localStorage.getItem(`user_backup_${id}`);
-                if (localBackup) {
+                const localBackupJson = localStorage.getItem(`user_backup_${id}`);
+                if (localBackupJson) {
                     try {
-                        console.log("💾 [DB] Loading Mock User from LocalStorage backup:", id);
-                        return JSON.parse(localBackup);
+                        logger.debug("Loading Mock User from LocalStorage backup", { id });
+                        return JSON.parse(localBackupJson);
                     } catch (e) {
-                        console.error("❌ Failed to parse mock user backup", e);
+                        logger.error("Failed to parse mock user backup", { id });
                     }
                 }
             }
@@ -192,33 +205,36 @@ export const dbAdapter = {
         }
 
         const fetchUser = async () => {
-            console.log("🔍 [DB StallTrace] Starting getUserById for:", id);
+            const startTime = Date.now();
             try {
                 const { data, error } = await supabase!
                     .from('profiles')
-                    .select('*')
+                    .select('id, full_name, phone, email, metadata, is_admin, is_guardian, is_grove_keeper, created_at')
                     .eq('id', id)
                     .maybeSingle();
 
+                const duration = Date.now() - startTime;
+                if (duration > 500) {
+                    logger.warn("Slow DB Query: getUserById", { id, duration });
+                }
+
                 if (error) {
-                    console.error("❌ [DB StallTrace] Error in getUserById:", error.message);
+                    logger.error("Error in getUserById", { id, error: error.message });
                     return null;
                 }
 
                 if (!data) {
-                    // Fallback to initial users if not found in DB (e.g. migration period)
+                    logger.info("User profile not found in DB", { id });
                     const fallback = INITIAL_USERS.find(u => u.id === id);
                     if (fallback) return fallback;
-
-                    console.log("⚠️ [DB StallTrace] User profile not found in DB or Initial data for:", id);
                     return null;
                 }
 
                 const user = mapProfileToUser(data);
-                console.log("📥 [DB StallTrace] Profile hydrated successfully:", user.id);
+                logger.debug("Profile hydrated successfully", { id: user.id });
                 return user;
             } catch (err: any) {
-                console.error("❌ [DB StallTrace] getUserById failed:", err.message);
+                logger.error("getUserById failed", { id }, err);
                 return null;
             }
         };
@@ -227,40 +243,24 @@ export const dbAdapter = {
     },
 
     async saveUser(user: User): Promise<User | null> {
-        if (!this.isLive()) {
-            console.log("[Mock DB] User saved:", user.id);
-            return user;
-        }
-
-        if (user.id.startsWith('user_') && typeof localStorage !== 'undefined' && localStorage.getItem('supabase.auth.token')) {
-            console.warn("⚠️ Blocked save of temporary user over active session:", user.id);
-            return null;
-        }
+        if (!this.isLive()) return user;
 
         try {
-            const userId = user.id;
             const { data: { session } } = await supabase!.auth.getSession();
             const token = session?.access_token;
 
-            console.log('📤 [Client Auth] Checking Session for User:', userId);
-
             if (!token) {
-                console.warn('⚠️ [Client Auth] No token found. Saving to LocalStorage fallback.');
                 if (typeof localStorage !== 'undefined') {
-                    localStorage.setItem('nakhlestan_current_user_id', user.id);
                     localStorage.setItem(`user_backup_${user.id}`, JSON.stringify(user));
                 }
                 return user;
             }
 
-            console.log('✅ [Client Auth] Token found, sending request...');
-
             const response = await fetch('/api/update-user-v2', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
-                    'X-Mana-Token': token
+                    'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({ user })
             });
@@ -268,61 +268,18 @@ export const dbAdapter = {
             const result = await response.json();
 
             if (result.success) {
-                console.log("✅ User successfully saved via Server API", result.debug || '');
-
-                // 🛡️ Map the result from DB back to User type
                 const savedUser = mapProfileToUser(result.user);
-
                 if (typeof localStorage !== 'undefined') {
-                    localStorage.setItem('nakhlestan_current_user_id', savedUser.id);
                     localStorage.setItem(`user_backup_${savedUser.id}`, JSON.stringify(savedUser));
                 }
                 return savedUser;
             } else {
-                console.error('❌ Server API Error:', result.error || 'Unknown error');
+                logger.error('Server API Error (saveUser)', { error: result.error });
                 return null;
             }
         } catch (e: any) {
-            console.error('❌ Critical Error in saveUser:', e.message);
+            logger.error('Critical Error in saveUser', {}, e);
             return null;
-        }
-    },
-
-    async spendBarkatPoints(amount: number): Promise<boolean> {
-        if (!this.isLive()) return true;
-
-        const { data: { session } } = await supabase!.auth.getSession();
-        if (!session?.access_token) {
-            console.log("ℹ️ [Client Auth] Dummy user: Skipping remote point sync.");
-            return true;
-        }
-
-        try {
-            const { error } = await supabase!.rpc('spend_points', { amount });
-            if (error) throw error;
-            return true;
-        } catch (e) {
-            console.warn("RPC spend_points failed.");
-            return true;
-        }
-    },
-
-    async spendManaPoints(amount: number): Promise<boolean> {
-        if (!this.isLive()) return true;
-
-        const { data: { session } } = await supabase!.auth.getSession();
-        if (!session?.access_token) {
-            console.log("ℹ️ [Client Auth] Dummy user: Skipping remote mana sync.");
-            return true;
-        }
-
-        try {
-            const { error } = await supabase!.rpc('spend_mana', { amount });
-            if (error) throw error;
-            return true;
-        } catch (e) {
-            console.warn("RPC spend_mana failed.");
-            return true;
         }
     },
 
@@ -338,13 +295,12 @@ export const dbAdapter = {
 
         const { data, error } = await query.order('created_at', { ascending: false }).limit(50);
         if (error) {
-            console.error("Error fetching orders:", error);
+            logger.error("Error fetching orders", { error });
             return [];
         }
 
         return data.map((o: any) => {
             const statusHistory = safeParse(o.status_history, []);
-            // Extract payment info from status history if it's not a top-level column
             const paymentInfo = statusHistory.find((h: any) => h.paymentMethod) || {};
 
             return {
@@ -367,15 +323,9 @@ export const dbAdapter = {
         });
     },
 
-    async getAllOrders(): Promise<Order[]> {
-        return this.getOrders();
-    },
-
     async saveOrder(order: Order): Promise<void> {
         if (!this.isLive()) return;
 
-        // 🛡️ SCHEMA FIX: 'payment_method' and 'payment_proof' don't exist as columns in 'orders' table.
-        // We store them in status_history to keep them in the DB without changing schema.
         const initialHistory = {
             status: order.status,
             date: order.date || new Date().toISOString(),
@@ -400,181 +350,11 @@ export const dbAdapter = {
 
         const operation = (async () => {
             const { error: orderError } = await supabase!.from('orders').upsert(orderData);
-            if (orderError) {
-                console.error('Error saving order:', orderError.message);
-                throw orderError;
-            }
+            if (orderError) throw orderError;
             return true;
         })();
 
-        // Use withTimeout to prevent hanging
-        const success = await withTimeout(operation, 15000, false);
-
-        if (!success) {
-            console.warn('⚠️ [DB] saveOrder timed out or failed. Continuing with local backup.');
-        }
-
-        // 🛡️ Also save to normalized order_items table for reporting
-        if (success && order.items && order.items.length > 0) {
-            const itemsToInsert = order.items.map(item => ({
-                order_id: order.id,
-                product_id: item.productId || item.id,
-                quantity: item.quantity,
-                price_at_time: item.price,
-                created_at: new Date().toISOString()
-            }));
-
-            const itemsOperation = (async () => {
-                const { error } = await supabase!.from('order_items').insert(itemsToInsert);
-                if (error) throw error;
-                return true;
-            })();
-            await withTimeout(itemsOperation, 10000, null);
-        }
-    },
-
-    async updateOrderStatus(orderId: string, status: string, refId?: string): Promise<void> {
-        if (!this.isLive()) return;
-
-        const { data: order } = await supabase!.from('orders').select('status_history').eq('id', orderId).single();
-        const currentHistory = safeParse(order?.status_history, []);
-
-        const newHistory = [...currentHistory, { status, date: new Date().toISOString(), refId }];
-
-        const updateData: any = {
-            status: status,
-            status_history: newHistory
-        };
-
-        const { error } = await supabase!.from('orders').update(updateData).eq('id', orderId);
-        if (error) console.error('Error updating order status:', error.message);
-    },
-
-    // --- NEW E-COMMERCE METHODS (NORMALIZED) ---
-
-    /**
-     * Finalizes a checkout by creating an order and its constituent items.
-     * This follows the new normalized schema with order_items table.
-     */
-    async processCheckout(userId: string, cartItems: any[]) {
-        if (!this.isLive()) return { success: false, error: 'Database disconnected' };
-
-        try {
-            // 1. Create the main Order record
-            const total = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
-            const { data: order, error: orderErr } = await supabase!
-                .from('orders')
-                .insert({
-                    user_id: userId,
-                    total_amount: total,
-                    status: 'pending',
-                    items: cartItems // Keep items JSON for legacy compatibility
-                })
-                .select()
-                .single();
-
-            if (orderErr) throw orderErr;
-
-            // 2. Insert into Order_Items table (Normalized)
-            const itemsToInsert = cartItems.map(item => ({
-                order_id: order.id,
-                product_id: item.id,
-                quantity: item.quantity,
-                price_at_time: item.price
-            }));
-
-            const { error: itemsErr } = await supabase!
-                .from('order_items')
-                .insert(itemsToInsert);
-
-            if (itemsErr) throw itemsErr;
-
-            // 3. Clear User's Persistent Cart
-            await supabase!.from('cart').delete().eq('user_id', userId);
-
-            return { success: true, orderId: order.id };
-        } catch (err: any) {
-            console.error("❌ Checkout Failed:", err.message);
-            return { success: false, error: err.message };
-        }
-    },
-
-    /**
-     * Synchronizes a single item in the persistent user cart.
-     */
-    async syncCartItem(userId: string, productId: string, quantity: number) {
-        if (!this.isLive()) return;
-        try {
-            if (quantity <= 0) {
-                await supabase!.from('cart').delete().match({ user_id: userId, product_id: productId });
-            } else {
-                await supabase!.from('cart').upsert({
-                    user_id: userId,
-                    product_id: productId,
-                    quantity: quantity
-                });
-            }
-        } catch (e) {
-            console.warn("Cart Sync Failed:", e);
-        }
-    },
-
-    /**
-     * Fetches the persistent cart for a user.
-     */
-    async getPersistentCart(userId: string) {
-        if (!this.isLive()) return [];
-        const { data, error } = await supabase!
-            .from('cart')
-            .select(`
-                quantity,
-                products (*)
-            `)
-            .eq('user_id', userId);
-
-        if (error) return [];
-        return (data || []).map((c: any) => ({
-            ...c.products,
-            quantity: c.quantity
-        }));
-    },
-
-    async getAllPosts(): Promise<CommunityPost[]> {
-        if (!this.isLive()) return INITIAL_POSTS;
-
-        const fetchPosts = async () => {
-            const { data, error } = await supabase!
-                .from('posts')
-                .select(`*, profiles(full_name, avatar_url)`)
-                .order('created_at', { ascending: false })
-                .limit(20);
-
-            if (error) throw error;
-            return (data || []).map((p: any) => ({
-                id: p.id,
-                authorId: p.author_id,
-                authorName: p.profiles?.full_name || 'کاربر ناشناس',
-                authorAvatar: p.profiles?.avatar_url || '',
-                text: p.content,
-                likes: p.likes_count || 0,
-                timestamp: p.created_at
-            }));
-        };
-
-        return withTimeout(fetchPosts(), 4000, INITIAL_POSTS);
-    },
-
-    async savePost(post: CommunityPost): Promise<void> {
-        if (!this.isLive()) return;
-        const postData = {
-            id: post.id,
-            author_id: post.authorId,
-            content: post.text,
-            likes_count: post.likes,
-            created_at: post.timestamp
-        };
-        const { error } = await supabase!.from('posts').insert(postData);
-        if (error) console.error("Error saving post:", error);
+        await withTimeout(operation, 15000, false);
     },
 
     async getAllProducts(): Promise<Product[]> {
@@ -591,12 +371,12 @@ export const dbAdapter = {
 
             return (data || []).map((p: any) => ({
                 id: p.id,
-                name: p.name,
-                price: p.price,
-                category: p.category,
-                image: p.image_url,
-                description: p.description,
-                type: p.type || 'physical',
+                name: p.name || '',
+                price: p.price || 0,
+                category: p.category || '',
+                image: p.image_url || '',
+                description: p.description || '',
+                type: (p.type as any) || 'physical',
                 stock: p.stock ?? 0,
                 points: p.points ?? 0,
                 popularity: p.popularity || 0,
@@ -608,263 +388,6 @@ export const dbAdapter = {
             }));
         };
 
-        const dbProducts = await withTimeout(fetchProducts(), 4000, []);
-
-        // Merge with initial for robust display
-        const merged = [...INITIAL_PRODUCTS.map(p => ({ ...p, isActive: true }))];
-        dbProducts.forEach(dbP => {
-            const index = merged.findIndex(p => p.id === dbP.id);
-            if (index > -1) merged[index] = dbP;
-            else merged.unshift(dbP);
-        });
-
-        return merged as Product[];
-    },
-
-    async createProduct(product: Omit<Product, 'id' | 'dateAdded' | 'popularity'>): Promise<Product | null> {
-        if (!this.isLive()) {
-            // Local Storage Persistence
-            if (typeof localStorage === 'undefined') return null;
-
-            const allProducts = await this.getAllProducts();
-            const newId = `p_local_${Date.now()}`;
-            const newProduct: Product = {
-                ...product,
-                id: newId,
-                dateAdded: new Date().toISOString(),
-                popularity: 0,
-                isActive: true,
-                tags: product.tags || []
-            };
-
-            const updatedList = [newProduct, ...allProducts];
-            localStorage.setItem('nakhlestan_local_products', JSON.stringify(updatedList));
-            return newProduct;
-        }
-
-        // Use API route with service role key for reliable writes
-        console.log("🔄 Creating product via API:", product.name);
-
-        try {
-            const { data: { session } } = await supabase!.auth.getSession();
-            const token = session?.access_token;
-
-            const response = await fetch('/api/update-product', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : ''
-                },
-                body: JSON.stringify({ action: 'create', product })
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                console.error("❌ API Error:", result.error);
-                throw new Error(result.error);
-            }
-
-            console.log("✅ Product created successfully:", result.product?.id);
-            return {
-                ...product,
-                id: result.product.id,
-                dateAdded: result.product.created_at,
-                popularity: result.product.popularity || 0,
-                image: result.product.image_url
-            };
-        } catch (error) {
-            console.error("❌ Failed to create product:", error);
-            throw error;
-        }
-    },
-
-    async updateProduct(id: string, updates: Partial<Product>): Promise<void> {
-        if (!this.isLive()) {
-            if (typeof localStorage === 'undefined') return;
-            const allProducts = await this.getAllProducts();
-            const updatedList = allProducts.map(p => p.id === id ? { ...p, ...updates } : p);
-            localStorage.setItem('nakhlestan_local_products', JSON.stringify(updatedList));
-            return;
-        }
-
-        // Use API route with service role key for reliable writes
-        console.log("🔄 Updating product via API:", { id, updates });
-
-        try {
-            const { data: { session } } = await supabase!.auth.getSession();
-            const token = session?.access_token;
-
-            const response = await fetch('/api/update-product', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : ''
-                },
-                body: JSON.stringify({ id, updates })
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                console.error("❌ API Error:", result.error);
-                throw new Error(result.error);
-            }
-
-            console.log("✅ Product updated successfully:", id);
-        } catch (error) {
-            console.error("❌ Failed to update product:", error);
-            throw error;
-        }
-    },
-
-    async deleteProduct(id: string): Promise<void> {
-        if (!this.isLive()) {
-            if (typeof localStorage === 'undefined') return;
-            const allProducts = await this.getAllProducts();
-            const updatedList = allProducts.filter(p => p.id !== id);
-            localStorage.setItem('nakhlestan_local_products', JSON.stringify(updatedList));
-            return;
-        }
-
-        // Use API route with service role key for reliable writes
-        console.log("🔄 Deleting product via API:", id);
-
-        try {
-            const { data: { session } } = await supabase!.auth.getSession();
-            const token = session?.access_token;
-
-            const response = await fetch('/api/update-product', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': token ? `Bearer ${token}` : ''
-                },
-                body: JSON.stringify({ action: 'delete', id })
-            });
-
-            const result = await response.json();
-
-            if (!response.ok) {
-                console.error("❌ API Error:", result.error);
-                throw new Error(result.error);
-            }
-
-            console.log("✅ Product deleted successfully:", id);
-        } catch (error) {
-            console.error("❌ Failed to delete product:", error);
-            throw error;
-        }
-    },
-
-    async getAgentLogs(): Promise<AgentActionLog[]> {
-        if (!this.isLive()) {
-            try {
-                const stored = localStorage.getItem('nakhlestan_agent_logs');
-                return stored ? JSON.parse(stored) : [];
-            } catch { return []; }
-        }
-
-        const { data, error } = await supabase!
-            .from('agent_tasks')
-            .select('*')
-            .order('created_at', { ascending: false })
-            .limit(50);
-
-        if (error) return [];
-
-        return data.map((t: any) => ({
-            id: t.id,
-            action: t.type,
-            details: typeof t.payload === 'string' ? t.payload : JSON.stringify(t.payload),
-            timestamp: t.created_at
-        }));
-    },
-
-    async saveAgentLog(log: AgentActionLog): Promise<void> {
-        if (!this.isLive()) {
-            const logs = await this.getAgentLogs();
-            logs.unshift(log);
-            localStorage.setItem('nakhlestan_agent_logs', JSON.stringify(logs.slice(0, 50)));
-            return;
-        }
-
-        await supabase!.from('agent_tasks').insert({
-            type: log.action,
-            status: 'completed',
-            payload: { details: log.details },
-            created_at: log.timestamp
-        });
-    },
-
-    async spendAICredits(seconds: number): Promise<boolean> {
-        if (!this.isLive()) return true;
-        const userId = this.getCurrentUserId();
-        if (!userId) return false;
-
-        const user = await this.getUserById(userId);
-        if (!user) return false;
-
-        const currentSeconds = user.hoshmanaLiveAccess?.remainingSeconds || 0;
-        const newSeconds = Math.max(0, currentSeconds - seconds);
-
-        const metadata = {
-            ...(user as any).metadata,
-            hoshmanaLiveAccess: {
-                ...(user.hoshmanaLiveAccess || {}),
-                remainingSeconds: newSeconds
-            }
-        };
-
-        const { error } = await supabase!.from('profiles').update({ metadata }).eq('id', userId);
-        if (error) return false;
-        return true;
-    },
-
-    async signOut() {
-        console.log("🚪 Logging out: Clearing sessions and tokens...");
-        if (supabase) {
-            try {
-                // Use global scope to sign out from all devices/sessions
-                await supabase.auth.signOut({ scope: 'global' });
-            } catch (e) {
-                console.error("Supabase signOut error:", e);
-            }
-        }
-
-        this.setCurrentUserId(null);
-        if (typeof window !== 'undefined') {
-            // Hard clear all potential auth and app keys
-            localStorage.removeItem('supabase.auth.token');
-            localStorage.removeItem('nakhlestan_current_user_id');
-
-            // Clear any backup keys and supabase internal storage
-            Object.keys(localStorage).forEach(key => {
-                if (key.startsWith('user_backup_') || key.toLowerCase().includes('supabase') || key.includes('sb-')) {
-                    localStorage.removeItem(key);
-                }
-            });
-
-            // Clear cookies
-            document.cookie.split(";").forEach((c) => {
-                document.cookie = c
-                    .replace(/^ +/, "")
-                    .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-            });
-
-            // Also clear session storage
-            sessionStorage.clear();
-        }
-    },
-
-    getCurrentUserId(): string | null {
-        if (typeof localStorage === 'undefined') return null;
-        return localStorage.getItem('nakhlestan_current_user_id');
-    },
-
-    setCurrentUserId(id: string | null) {
-        if (typeof localStorage === 'undefined') return;
-        if (id) localStorage.setItem('nakhlestan_current_user_id', id);
-        else localStorage.removeItem('nakhlestan_current_user_id');
+        return withTimeout(fetchProducts(), 4000, INITIAL_PRODUCTS);
     }
 };

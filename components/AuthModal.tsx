@@ -360,7 +360,7 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
                     {/* Background Image / Overlay */}
                     <div className="absolute inset-0 z-0 overflow-hidden">
                         <img
-                            src="https://res.cloudinary.com/dk2x11rvs/image/upload/v1769335277/Gemini_Generated_Image_3d_palm_oasis_v2_f8z8z8.jpg"
+                            src="https://res.cloudinary.com/dk2x11rvs/image/upload/v1768902857/Gemini_Generated_Image_76q0fx76q0fx76q0_tnaldu.png"
                             className="w-full h-full object-cover opacity-60 scale-105 animate-pulse-soft"
                             alt="Mana Palm Oasis"
                         />

@@ -36,6 +36,8 @@ export interface StrategicDecree {
 
 export interface AppState {
     user: User | null;
+    isAuthenticated: boolean;
+    isLoading: boolean;
     users: User[];
     allUsers: User[];
     orders: Order[];

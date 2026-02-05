@@ -235,7 +235,7 @@ const HowItWorksSection: React.FC<{ onStartPlantingFlow: () => void }> = ({ onSt
 
                     <InfographicOverlay
 
-                        imageSrc="https://res.cloudinary.com/dk2x11rvs/image/upload/v1768905595/Gemini_Generated_Image_psyf3epsyf3epsyf_uckzp1.png"
+                        imageSrc="https://res.cloudinary.com/dk2x11rvs/image/upload/v1765110314/aerial-view_vwdbw2.png"
 
                         alt="Interest to Heritage Infographic"
 
