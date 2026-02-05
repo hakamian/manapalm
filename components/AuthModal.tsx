@@ -193,15 +193,45 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
     }, [timer]);
 
     const handleGoogleLogin = async () => {
-        if (!supabase) return;
+        if (!supabase) {
+            setError('سیستم احراز هویت در حال بارگذاری است. لطفا چند لحظه دیگر تلاش کنید.');
+            return;
+        }
+
+        setLoading(true);
+        setError('');
+
         try {
+            console.log("🚀 [Auth] Initiating Google OAuth Login...");
+
+            // 🌐 Optimized OAuth with account selection to ensure user can "switch" or "register"
             const { error } = await supabase.auth.signInWithOAuth({
                 provider: 'google',
-                options: { redirectTo: `${window.location.origin}/` },
+                options: {
+                    redirectTo: `${window.location.origin}/`,
+                    queryParams: {
+                        prompt: 'select_account',
+                        access_type: 'offline',
+                    }
+                },
             });
-            if (error) throw error;
+
+            if (error) {
+                console.error("❌ [Auth] Google OAuth Error:", error);
+                throw error;
+            }
+
+            // Note: On success, the browser will redirect away, so we don't need to setLoading(false) here.
+            // But if it fails to redirect, we should handle it.
+            setTimeout(() => {
+                setLoading(false);
+                setError('زمان درخواست به پایان رسید یا مرورگر درخواست را متوقف کرد. لطفا دوباره تلاش کنید.');
+            }, 8000);
+
         } catch (err: any) {
-            setError(err.message || 'خطا در ورود با گوگل');
+            console.error('❌ Google login failed:', err);
+            setError(err.message || 'خطا در ورود با گوگل. لطفا از روش پیامکی استفاده کنید.');
+            setLoading(false);
         }
     };
 
@@ -526,10 +556,17 @@ export default function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModal
 
                             <button
                                 onClick={handleGoogleLogin}
-                                className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95"
+                                disabled={loading}
+                                className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white font-bold py-4 rounded-2xl flex items-center justify-center gap-3 transition-all active:scale-95 disabled:opacity-50"
                             >
-                                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
-                                <span>حساب گوگل</span>
+                                {loading ? (
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                ) : (
+                                    <>
+                                        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" className="w-5 h-5" alt="Google" />
+                                        <span>حساب گوگل</span>
+                                    </>
+                                )}
                             </button>
 
                             <div className="text-center pt-4">

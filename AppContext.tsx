@@ -629,15 +629,17 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                     console.log("🔐 [StallTrace] Proactively checking for session...");
                     const sessionPromise = supabase.auth.getSession();
 
-                    // Simple inline timeout for getSession
+                    // 🧪 CTO IMPROVEMENT: Increase timeout for slow mobile networks during OAuth return
                     const timeoutPromise = new Promise<{ data: { session: null }, error: any }>(resolve =>
-                        setTimeout(() => resolve({ data: { session: null }, error: new Error("getSession timeout") }), 3000)
+                        setTimeout(() => {
+                            resolve({ data: { session: null }, error: new Error("getSession timeout (8s)") });
+                        }, 8000)
                     );
 
                     const { data: { session }, error: sessionError } = await Promise.race([sessionPromise, timeoutPromise]);
 
                     if (sessionError) {
-                        logger.error("getSession failed or timed out", {}, sessionError);
+                        logger.error("🔐 [Auth] getSession failed or timed out", {}, sessionError);
                     }
                     else if (session?.user) {
                         const realId = session.user.id;

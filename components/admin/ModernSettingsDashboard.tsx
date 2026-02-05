@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     CogIcon,
     BellIcon,
@@ -6,9 +6,12 @@ import {
     GlobeIcon,
     EnvelopeIcon,
     KeyIcon,
-    CheckCircleIcon
+    CheckCircleIcon,
+    BanknotesIcon
 } from '../icons';
 import '../../styles/admin-dashboard.css';
+import { useAppState, useAppDispatch } from '../../AppContext';
+import { dbAdapter } from '../../services/dbAdapter';
 
 interface SettingSection {
     id: string;
@@ -19,10 +22,14 @@ interface SettingSection {
 }
 
 const ModernSettingsDashboard: React.FC = () => {
+    const { appSettings } = useAppState();
+    const dispatch = useAppDispatch();
+
     const [activeSection, setActiveSection] = useState('general');
     const [settings, setSettings] = useState({
         siteName: 'نخلستان معنا',
         siteDescription: 'پلتفرم جامع رشد شخصی و معنوی',
+        usdToTomanRate: 600000,
         language: 'fa',
         currency: 'IRR',
         timezone: 'Asia/Tehran',
@@ -37,11 +44,24 @@ const ModernSettingsDashboard: React.FC = () => {
         accentColor: '#f59e0b'
     });
 
+    const [isSaving, setIsSaving] = useState(false);
+
+    // Sync from global state on mount
+    useEffect(() => {
+        if (appSettings) {
+            setSettings(prev => ({
+                ...prev,
+                usdToTomanRate: appSettings.usdToTomanRate || 600000,
+                // Add other syncs if needed
+            }));
+        }
+    }, [appSettings]);
+
     const sections: SettingSection[] = [
         {
             id: 'general',
             title: 'تنظیمات عمومی',
-            description: 'اطلاعات پایه و تنظیمات سایت',
+            description: 'اطلاعات پایه و نرخ ارز سایت',
             icon: CogIcon,
             gradient: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)'
         },
@@ -68,23 +88,88 @@ const ModernSettingsDashboard: React.FC = () => {
         }
     ];
 
-    const handleSave = () => {
-        console.log('Saving settings:', settings);
-        alert('تنظیمات با موفقیت ذخیره شد!');
+    const handleSave = async () => {
+        setIsSaving(true);
+        console.log('💾 [Admin] Saving modern settings:', settings);
+
+        try {
+            // Update global state
+            dispatch({
+                type: 'UPDATE_APP_SETTINGS',
+                payload: {
+                    ...appSettings,
+                    usdToTomanRate: settings.usdToTomanRate
+                }
+            });
+
+            // Simulated delay for premium feel
+            setTimeout(() => {
+                setIsSaving(false);
+                alert('تنظیمات با موفقیت ذخیره شد!');
+            }, 800);
+
+        } catch (err) {
+            console.error("Failed to save settings", err);
+            setIsSaving(false);
+            alert('خطا در ذخیره تنظیمات');
+        }
+    };
+
+    const formatNumber = (num: number) => {
+        return num.toLocaleString('fa-IR');
+    };
+
+    const parseNumber = (str: string): number => {
+        const englishStr = str
+            .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d).toString())
+            .replace(/,/g, '');
+        const num = Number(englishStr);
+        return isNaN(num) ? 0 : num;
     };
 
     const renderGeneralSettings = () => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div>
-                <label className="admin-label" style={{ display: 'block', marginBottom: '0.5rem' }}>
-                    نام سایت
-                </label>
-                <input
-                    type="text"
-                    value={settings.siteName}
-                    onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
-                    className="admin-input"
-                />
+            <div className="admin-card" style={{ padding: '1.5rem', background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.3)', marginBottom: '0.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+                    <BanknotesIcon className="w-8 h-8 text-emerald-400" />
+                    <div>
+                        <h3 className="admin-heading-3" style={{ fontSize: '1.1rem', marginBottom: '0.25rem' }}>مدیریت نرخ ارز (دلار به ریال)</h3>
+                        <p className="admin-caption">نرخ پایه برای محاسبات قیمتی و تبدیل ارز در کل پلتفرم</p>
+                    </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'flex-end' }}>
+                    <div style={{ flex: 1 }}>
+                        <label className="admin-label" style={{ display: 'block', marginBottom: '0.5rem' }}>نرخ هر دلار (ریال)</label>
+                        <input
+                            type="text"
+                            value={settings.usdToTomanRate.toLocaleString('fa-IR')}
+                            onChange={(e) => setSettings({ ...settings, usdToTomanRate: parseNumber(e.target.value) })}
+                            className="admin-input"
+                            style={{ fontSize: '1.25rem', fontWeight: 'bold', fontFamily: 'monospace', textAlign: 'left', direction: 'ltr' }}
+                        />
+                    </div>
+                    <div style={{ paddingBottom: '0.5rem' }}>
+                        <span className="text-emerald-400 font-bold">ریال</span>
+                    </div>
+                </div>
+                <p className="admin-caption" style={{ marginTop: '0.75rem', color: 'rgba(255,165,0,0.8)' }}>
+                    * تغییر این نرخ مستقیماً بر قیمت ابزارهای هوشمند و دوره‌ها تاثیر می‌گذارد.
+                </p>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                <div>
+                    <label className="admin-label" style={{ display: 'block', marginBottom: '0.5rem' }}>
+                        نام سایت
+                    </label>
+                    <input
+                        type="text"
+                        value={settings.siteName}
+                        onChange={(e) => setSettings({ ...settings, siteName: e.target.value })}
+                        className="admin-input"
+                    />
+                </div>
             </div>
 
             <div>
@@ -99,6 +184,7 @@ const ModernSettingsDashboard: React.FC = () => {
                     style={{ resize: 'vertical' }}
                 />
             </div>
+
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', background: 'var(--admin-bg-tertiary)', borderRadius: 'var(--admin-radius-md)' }}>
                 <input
@@ -391,11 +477,16 @@ const ModernSettingsDashboard: React.FC = () => {
                 <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid var(--admin-border)' }}>
                     <button
                         onClick={handleSave}
+                        disabled={isSaving}
                         className="admin-btn admin-btn-success"
-                        style={{ minWidth: '200px' }}
+                        style={{ minWidth: '200px', opacity: isSaving ? 0.7 : 1 }}
                     >
-                        <CheckCircleIcon className="w-5 h-5" />
-                        ذخیره تغییرات
+                        {isSaving ? (
+                            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        ) : (
+                            <CheckCircleIcon className="w-5 h-5" />
+                        )}
+                        {isSaving ? 'در حال ذخیره...' : 'ذخیره تغییرات'}
                     </button>
                 </div>
             </div>
