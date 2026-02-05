@@ -594,9 +594,15 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
             const storageKey = `user_backup_${state.user.id}`;
             localStorage.setItem(storageKey, JSON.stringify(state.user));
             localStorage.setItem('last_active_user_id', state.user.id);
-            // console.log("💾 [Persistence] Real-time memory sync completed");
         }
-    }, [state.user]);
+
+        // 💰 Persistence for currency and pricing
+        if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('nakhlestan_app_settings', JSON.stringify(state.appSettings));
+            localStorage.setItem('nakhlestan_products_cache', JSON.stringify(state.products));
+            localStorage.setItem('nakhlestan_palm_types_cache', JSON.stringify(state.palmTypes));
+        }
+    }, [state.user, state.appSettings, state.products, state.palmTypes]);
 
     useEffect(() => {
         logger.debug("AppProvider Mounted");
@@ -697,11 +703,51 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
                 const finalUser = currentUser || (currentUserId ? JSON.parse(localStorage.getItem(`user_backup_${currentUserId}`) || 'null') : null);
 
                 logger.debug("Dispatching LOAD_INITIAL_DATA", { hasUser: !!finalUser });
+                // 💰 Hydrate settings and prices from local storage if available
+                let finalProducts = products.length > 0 ? products : INITIAL_PRODUCTS;
+                let finalPalmTypes = PALM_TYPES_DATA;
+                let finalAppSettings = state.appSettings;
+
+                if (typeof localStorage !== 'undefined') {
+                    const savedSettings = localStorage.getItem('nakhlestan_app_settings');
+                    if (savedSettings) {
+                        try {
+                            const parsed = JSON.parse(savedSettings);
+                            finalAppSettings = { ...state.appSettings, ...parsed };
+                            logger.info("Restored AppSettings from LocalStorage");
+                        } catch (e) { logger.error("Failed to parse saved settings", e); }
+                    }
+
+                    const savedProducts = localStorage.getItem('nakhlestan_products_cache');
+                    if (savedProducts) {
+                        try {
+                            const parsed = JSON.parse(savedProducts);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                finalProducts = parsed;
+                                logger.info("Restored Products from cache");
+                            }
+                        } catch (e) { logger.error("Failed to parse saved products", e); }
+                    }
+
+                    const savedPalmTypes = localStorage.getItem('nakhlestan_palm_types_cache');
+                    if (savedPalmTypes) {
+                        try {
+                            const parsed = JSON.parse(savedPalmTypes);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                                finalPalmTypes = parsed;
+                                logger.info("Restored PalmTypes from cache");
+                            }
+                        } catch (e) { logger.error("Failed to parse saved palm types", e); }
+                    }
+                }
+
                 dispatch({
                     type: 'LOAD_INITIAL_DATA',
                     payload: {
                         communityPosts: posts,
-                        products: products.length > 0 ? products : INITIAL_PRODUCTS,
+                        products: finalProducts,
+                        palmTypes: finalPalmTypes,
+                        appSettings: finalAppSettings,
                         user: finalUser,
                         orders: userOrders
                     }
