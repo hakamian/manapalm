@@ -1,14 +1,10 @@
 'use client';
 
 import React from 'react';
-
 import { Product } from '../types';
-
 import { ShoppingCartIcon, SparklesIcon } from './icons';
-
-
-
 import Image from 'next/image';
+import { formatPrice } from '../utils/formatters';
 
 interface ProductCardProps {
   product: Product;
@@ -48,8 +44,8 @@ export default function ProductCard({
             height={300}
             priority={true}
             className={`w-full h-full object-cover transition-all duration-700 ease-in-out ${realImageSrc
-                ? 'group-hover:opacity-0 group-hover:scale-110 group-hover:blur-sm'
-                : 'group-hover:scale-105'
+              ? 'group-hover:opacity-0 group-hover:scale-110 group-hover:blur-sm'
+              : 'group-hover:scale-105'
               }`}
           />
         )}
@@ -97,7 +93,7 @@ export default function ProductCard({
           <div className="flex flex-col">
             <span className="text-xs text-gray-500">قیمت</span>
             <span className="text-emerald-400 font-bold text-lg">
-              {product.price === 0 ? 'رایگان' : `${product.price.toLocaleString('fa-IR')} تومان`}
+              {product.price === 0 ? 'رایگان' : `${formatPrice(product.price)} تومان`}
             </span>
           </div>
 
