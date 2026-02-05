@@ -10,8 +10,10 @@ interface Props {
 }
 
 // Generate Metadata for SEO
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-    const product = INITIAL_PRODUCTS.find((p) => p.id === params.id);
+// Generate Metadata for SEO
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+    const resolvedParams = await params;
+    const product = INITIAL_PRODUCTS.find((p) => p.id === resolvedParams.id);
 
     if (!product) {
         return {
@@ -45,6 +47,7 @@ export async function generateStaticParams() {
     }));
 }
 
-export default function ProductPage({ params }: Props) {
-    return <ProductDetailsView productId={params.id} />;
+export default async function ProductPage({ params }: { params: Promise<{ id: string }> }) {
+    const resolvedParams = await params;
+    return <ProductDetailsView productId={resolvedParams.id} />;
 }
