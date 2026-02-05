@@ -93,19 +93,31 @@ const ModernSettingsDashboard: React.FC = () => {
         console.log('💾 [Admin] Saving modern settings:', settings);
 
         try {
-            // Update global state
-            dispatch({
-                type: 'UPDATE_APP_SETTINGS',
-                payload: {
-                    ...appSettings,
-                    usdToTomanRate: settings.usdToTomanRate
-                }
-            });
+            const newRate = settings.usdToTomanRate;
+            const oldRate = appSettings.usdToTomanRate || 1;
+
+            // 🚀 If rate changed, trigger global price recalculation 
+            if (newRate !== oldRate) {
+                console.log(`💱 [Admin] Rate changed from ${oldRate} to ${newRate}. Triggering price update...`);
+                dispatch({
+                    type: 'BULK_UPDATE_PRICES_BY_RATE',
+                    payload: { newRate }
+                });
+            } else {
+                // Otherwise just update settings
+                dispatch({
+                    type: 'UPDATE_APP_SETTINGS',
+                    payload: {
+                        ...appSettings,
+                        usdToTomanRate: newRate
+                    }
+                });
+            }
 
             // Simulated delay for premium feel
             setTimeout(() => {
                 setIsSaving(false);
-                alert('تنظیمات با موفقیت ذخیره شد!');
+                alert('تنظیمات با موفقیت ذخیره شد و قیمت‌ها به‌روزرسانی شدند!');
             }, 800);
 
         } catch (err) {
