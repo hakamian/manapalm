@@ -313,7 +313,7 @@ function appReducer(state: AppState, action: Action): AppState {
                 name: palm.name,
                 price: palm.price,
                 quantity: quantity,
-                image: `https://picsum.photos/seed/${palm.id}/400/400`,
+                image: palm.image || 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875042/Gemini_Generated_Image_7b34e97b34e97b34_2_zythle.png',
                 stock: 999,
                 type: 'heritage',
                 points: palm.points,

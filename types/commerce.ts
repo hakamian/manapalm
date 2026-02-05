@@ -140,6 +140,7 @@ export interface PalmType {
     price: number;
     points: number;
     description: string;
+    image: string;
     tags: string[];
 }
 

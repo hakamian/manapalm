@@ -828,20 +828,14 @@ export const INITIAL_CAMPAIGNS: Campaign[] = [
 
 
 export const PALM_TYPES_DATA: PalmType[] = [
-
-    { id: 'p_heritage_meaning', name: 'نخل معنا', price: 30000000, points: 150000, description: 'کاشت نخلی برای یافتن و بزرگداشت معنای شخصی زندگی.', tags: ['growth', 'self-discovery'] },
-
-    { id: 'p_heritage_memory', name: 'نخل ازدواج', price: 8500000, points: 42500, description: 'ثبت پیوند عشق و زندگی مشترک با کاشت یک نخل جاودان.', tags: ['memory', 'love'] },
-
-    { id: 'p_heritage_gift', name: 'نخل هدیه', price: 8500000, points: 42500, description: 'یک هدیه متفاوت و ماندگار برای کسانی که دوستشان دارید.', tags: ['family', 'gratitude'] },
-
-    { id: 'p_heritage_iran', name: 'نخل ایران', price: 9000000, points: 45000, description: 'برای سربلندی و آبادانی ایران، یک نخل در خاک وطن بکارید.', tags: ['community', 'patriotism'] },
-    { id: 'p_heritage_memorial', name: 'نخل یادبود', price: 8900000, points: 44500, description: 'زنده نگه داشتن یاد و خاطره عزیزان با هدیه کردن یک زندگی جدید به طبیعت.', tags: ['legacy', 'family', 'memory'] },
-    { id: 'p_heritage_occasion', name: 'نخل مناسبت', price: 8800000, points: 44000, description: 'جشن گرفتن یک رویداد خاص مانند سالگرد ازدواج یا فارغ‌التحصیلی.', tags: ['celebration', 'memory'] },
-    { id: 'p_heritage_birthday', name: 'نخل تولد', price: 8600000, points: 43000, description: 'کاشت یک درخت به مناسبت تولد، نمادی از رشد و زندگی.', tags: ['celebration', 'family'] },
-    { id: 'p_heritage_gift', name: 'نخل هدیه', price: 8500000, points: 42500, description: 'یک هدیه متفاوت و ماندگار برای کسانی که دوستشان دارید.', tags: ['family', 'gratitude'] },
-    { id: 'p_heritage_campaign_100', name: 'نخل کمپین ۱۰۰ میراث', price: 8500000, points: 42500, description: 'با کاشت این نخل، در هدف جمعی ما برای کاشت ۱۰۰ نخل جدید سهیم شوید.', tags: ['community'] },
-    // { id: 'p_companion_unlock', name: 'نخل آگاهی', price: 250000, points: 1250, description: 'با کاشت این نخل، قابلیت «همراه معنا» (مربی صوتی هوشمند) را برای خود فعال کنید.', tags: ['growth', 'self-discovery'] },
+    { id: 'p_heritage_meaning', name: 'نخل معنا', price: 30000000, points: 150000, description: 'کاشت نخلی برای یافتن و بزرگداشت معنای شخصی زندگی.', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875044/Gemini_Generated_Image_gm29jpgm29jpgm29_yjcxkb.png', tags: ['growth', 'self-discovery'] },
+    { id: 'p_heritage_memory', name: 'نخل ازدواج', price: 8500000, points: 42500, description: 'ثبت پیوند عشق و زندگی مشترک با کاشت یک نخل جاودان.', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875042/Gemini_Generated_Image_5wpcrn5wpcrn5wpc_oyspdy.png', tags: ['memory', 'love'] },
+    { id: 'p_heritage_gift', name: 'نخل هدیه', price: 8500000, points: 42500, description: 'یک هدیه متفاوت و ماندگار برای کسانی که دوستشان دارید.', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875042/Gemini_Generated_Image_6ght726ght726ght_q3cte8.png', tags: ['family', 'gratitude'] },
+    { id: 'p_heritage_iran', name: 'نخل ایران', price: 9000000, points: 45000, description: 'برای سربلندی و آبادانی ایران، یک نخل در خاک وطن بکارید.', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875045/Gemini_Generated_Image_tdq3istdq3istdq3_bglhb0.png', tags: ['community', 'patriotism'] },
+    { id: 'p_heritage_memorial', name: 'نخل یادبود', price: 8900000, points: 44500, description: 'زنده نگه داشتن یاد و خاطره عزیزان با هدیه کردن یک زندگی جدید به طبیعت.', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875045/Gemini_Generated_Image_uj2rf2uj2rf2uj2r_mne2wd.png', tags: ['legacy', 'family', 'memory'] },
+    { id: 'p_heritage_occasion', name: 'نخل مناسبت', price: 8800000, points: 44000, description: 'جشن گرفتن یک رویداد خاص مانند سالگرد ازدواج یا فارغ‌التحصیلی.', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875046/Gemini_Generated_Image_xfq6sgxfq6sgxfq6_ouukqu.png', tags: ['celebration', 'memory'] },
+    { id: 'p_heritage_birthday', name: 'نخل تولد', price: 8600000, points: 43000, description: 'کاشت یک درخت به مناسبت تولد، نمادی از رشد و زندگی.', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875048/Gemini_Generated_Image_xygki6xygki6xygk_w3rtvt.png', tags: ['celebration', 'family'] },
+    { id: 'p_heritage_campaign_100', name: 'نخل کمپین ۱۰۰ میراث', price: 8500000, points: 42500, description: 'با کاشت این نخل، در هدف جمعی ما برای کاشت ۱۰۰ نخل جدید سهیم شوید.', image: 'https://res.cloudinary.com/dk2x11rvs/image/upload/v1767875042/Gemini_Generated_Image_7b34e97b34e97b34_2_zythle.png', tags: ['community'] },
 ];
 
 export const INITIAL_REVIEWS: Review[] = [
