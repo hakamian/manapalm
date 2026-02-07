@@ -261,14 +261,23 @@ const Header: React.FC = () => {
 
     return (
         <>
-            <header className={`fixed ${hasBanner ? 'top-12' : 'top-4'} left-1/2 -translate-x-1/2 z-50 transition-all duration-500 w-[95%] max-w-7xl rounded-2xl border border-white/10 ${isScrolled ? 'bg-black/80 backdrop-blur-xl h-16 py-2 shadow-lg' : 'bg-black/40 backdrop-blur-md h-20 py-4'} flex items-center shadow-2xl`}>
+            <header
+                role="banner"
+                className={`fixed ${hasBanner ? 'top-12' : 'top-4'} left-1/2 -translate-x-1/2 z-50 transition-all duration-500 w-[95%] max-w-7xl rounded-2xl border border-white/10 ${isScrolled ? 'bg-black/80 backdrop-blur-xl h-16 py-2 shadow-lg' : 'bg-black/40 backdrop-blur-md h-20 py-4'} flex items-center shadow-2xl`}
+            >
                 <div className="container mx-auto px-6 h-full flex items-center">
                     <div className="flex items-center justify-between w-full">
                         <div className="flex items-center">
-                            <SmartLink view={View.Home} className="flex items-center gap-3 group transition-transform duration-300 hover:scale-105 active:scale-95">
+                            <SmartLink
+                                view={View.Home}
+                                className="flex items-center gap-3 group transition-transform duration-300 hover:scale-105 active:scale-95"
+                                aria-label="خانه - نخلستان معنا"
+                            >
                                 <img
                                     src="https://res.cloudinary.com/dk2x11rvs/image/upload/v1765131783/manapal-logo-3d_zpdvkd.png"
-                                    alt="Mana Palm Logo"
+                                    alt="لوگوی نخلستان معنا"
+                                    width={40}
+                                    height={40}
                                     className="h-10 w-auto drop-shadow-[0_0_15px_rgba(16,185,129,0.3)] group-hover:drop-shadow-[0_0_20px_rgba(16,185,129,0.5)] transition-all"
                                 />
                                 <span className="text-xl font-black text-white tracking-tight">نخلستان معنا</span>
@@ -276,12 +285,16 @@ const Header: React.FC = () => {
                         </div>
 
                         {/* Desktop Mega Menu */}
-                        <nav className="hidden md:flex items-center space-x-reverse space-x-1">
+                        <nav role="navigation" aria-label="منوی اصلی" className="hidden md:flex items-center space-x-reverse space-x-1">
                             {megaNavItems.map((categoryItem) => (
                                 <div key={categoryItem.category} className="relative group px-3 py-2" id={`nav-category-${categoryItem.category}`}>
-                                    <button className="flex items-center text-white hover:text-green-300 transition-colors duration-200">
+                                    <button
+                                        aria-haspopup="true"
+                                        aria-expanded="false"
+                                        className="flex items-center text-white hover:text-green-300 transition-colors duration-200"
+                                    >
                                         <span>{categoryItem.category}</span>
-                                        <ChevronDownIcon />
+                                        <ChevronDownIcon aria-hidden="true" />
                                     </button>
                                     <div className="absolute top-full left-1/2 -translate-x-1/2 mt-3 p-4 w-max max-w-4xl bg-black bg-opacity-80 backdrop-blur-sm text-white rounded-lg shadow-lg transition-all duration-300 ease-in-out opacity-0 group-hover:opacity-100 invisible group-hover:visible transform translate-y-2 group-hover:translate-y-0">
                                         <div className="grid grid-cols-2 gap-x-8 gap-y-4">

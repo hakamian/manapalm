@@ -1,6 +1,6 @@
 # 🧠 MANA Memory - حافظه بلند مدت پروژه نخلستان معنا
 
-> **آخرین به‌روزرسانی:** 2026-02-05 | Unified Meaning OS V7.5 (Integrated Deed Management & Premium UX)
+> **آخرین به‌روزرسانی:** 2026-02-05 | Unified Meaning OS V7.6 (Dedicated Product Pages & Clean Deployment)
 > **وضعیت سیستم:** Anti-Gravity Environment | Active | Reality-Check Mode
 
 ---
@@ -180,6 +180,23 @@ graph TD
 ## ✅ اقدامات انجام شده (Completed)
 
 ### 🚀 اقدامات اخیر (Live & Active)
+
+#### 48. Database Cleanup, PDP Implementation & UX Refinements (2026-02-05) ✅
+- **تاریخ:** ۱۷ بهمن ۱۴۰۴
+- **هدف:** رفع خطاهای دیتابیس، استانداردسازی لینک‌های فروشگاه برای درگاه پرداخت و بهبود تجربه کاربری.
+- **اقدامات:**
+  1. **Database Schema Fix:** اصلاح نام ستون `user_id` به `owner_id` در کوئری‌های حذف سند (`deeds`) که باعث خطای SQL می‌شد.
+  2. **Data Cleanup:** اجرای اسکریپت‌های SQL برای پاک‌سازی سفارشات، اسناد و پروفایل‌های کاربران غیر ادمین جهت آماده‌سازی برای لانچ.
+  3. **Dedicated Product Pages (PDP):**
+     - ایجاد مسیر پویا `app/product/[id]/page.tsx` برای نمایش جزئیات هر محصول.
+     - پشتیبانی از پارامترهای آسنکرون (`await params`) سازگار با Next.js 16.
+     - پیاده‌سازی مکانیزم Fallback برای نمایش محصولات استاتیک (مثل نخل معنا) حتی در صورت عدم وجود در دیتابیس.
+  4. **Shop Navigation Upgrade:** آپدیت `ShopView` برای هدایت کاربران به صفحه اختصاصی محصول به جای افزودن مستقیم به سبد خرید (در موارد خاص).
+  5. **UI/UX Polishing:**
+     - مخفی‌سازی ایمیل‌های سیستمی (`@manapalm.local`) در بخش‌های "تاریخچه سفارشات" و "تسویه حساب".
+     - تغییر گام‌های تنظیم نرخ ارز در داشبورد ادمین از ۵۰۰,۰۰۰ به ۱۰۰,۰۰۰ ریال.
+     - فعال‌سازی نوتیفیکیشن‌های `react-hot-toast` برای فیدبک‌های کاربری.
+- **نتیجه:** لینک‌دهی محصولات برای درگاه پرداخت استاندارد شد، دیتابیس تمیز و بدون خطا گردید و تجربه کاربری بهبود یافت.
 
 #### 47. Order ID Standardization & Deed Personalization UX (2026-02-05) ✅
 - **تاریخ:** ۱۷ بهمن ۱۴۰۴ (امروز)
@@ -970,6 +987,16 @@ graph TD
 - **Code Hygiene**: ⚠️ **Mixed Module System**. ESM in package.json but some legacy CommonJS patterns remain.
 
 **Critical Path Forward:**
+1.- [x] **Technical & SEO Audit (Google Expert Team Phase 1):**
+    - [x] **Advanced SEO:** Upgraded `layout.tsx` metadata (OpenGraph, Twitter Cards, App specific tags) and optimized Schema.org data.
+    - [x] **Sitemap & Robots:** Fully dynamic `sitemap.ts` including all products/heritage palms and enhanced `robots.txt` for better crawler management.
+    - [x] **Performance Optimization:** Enabled `reactStrictMode` and Next.js Image optimization in `next.config.mjs`.
+    - [x] **UX Resilience:** Implemented custom `ErrorBoundary` and a premium global `loading.tsx` and `error.tsx`.
+    - [x] **Accessibility:** Improved ARIA labels and semantic HTML in `Header.tsx`.
+    - [x] **PWA Readiness:** Created `manifest.json` for progressive web app support.
+    - [x] **Design Tokens:** Expanded CSS variables in `globals.css` for a more consistent design system.
+    - [x] **Code Health:** Fixed lint errors in `dbAdapter` and added `signOut` functionality.
+- [ ] **Infrastructure Cleanup:** Move remaining 17+ `test-*.js` files to a dedicated `tests/` directory. (Pending)
 1.  **Immediate (Task 2.1)**: Complete Vercel Environment Variables setup using updated guide. Use `npm run verify:env` before Redeploy.
 2.  **Before Migration**: Resolve Planting Flow Bug (Modal rendering issue reported 2025-12-24). Test E2E flows with live DB.
 3.  **Migration to Next.js 16**: Only after Env + DB stability confirmed. Follow roadmap in `docs/SETUP_COMPLETE.md`.

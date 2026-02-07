@@ -153,6 +153,20 @@ export const dbAdapter = {
         }
     },
 
+    async signOut(): Promise<void> {
+        if (!this.isLive()) {
+            this.setCurrentUserId(null);
+            return;
+        }
+        try {
+            await supabase!.auth.signOut();
+            this.setCurrentUserId(null);
+            logger.info("User signed out from Supabase");
+        } catch (e: any) {
+            logger.error("SignOut Failed", {}, e);
+        }
+    },
+
     async getUsers(page: number = 1, limit: number = 20, search: string = ''): Promise<{ data: User[], total: number }> {
         if (!this.isLive()) {
             const filtered = search

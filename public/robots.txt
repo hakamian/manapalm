@@ -1,8 +1,34 @@
+# Manapalm - نخلستان معنا
+# https://manapalm.com
+
+# Allow all crawlers
 User-agent: *
 Allow: /
+
+# Disallow admin and private areas
 Disallow: /admin/
 Disallow: /api/
+Disallow: /profile/
 Disallow: /_next/
-Disallow: /static/
+Disallow: /*.json$
 
+# Allow specific API endpoints for rich snippets
+Allow: /api/og-image
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Sitemaps
 Sitemap: https://manapalm.com/sitemap.xml
+
+# Google specific
+User-agent: Googlebot
+Allow: /
+Disallow: /admin/
+Crawl-delay: 0
+
+# Bing specific
+User-agent: Bingbot
+Allow: /
+Disallow: /admin/
+Crawl-delay: 1

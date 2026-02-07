@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Image from 'next/image';
 import {
     LeafIcon,
     HeartIcon,
@@ -43,12 +44,15 @@ const ImpactInfographic: React.FC = () => {
     return (
         <div className="relative w-full aspect-[9/16] max-w-[400px] mx-auto select-none rounded-[2.5rem] overflow-hidden border border-white/5 shadow-2xl bg-[#fcfaf7] transition-all duration-700">
 
-            {/* Background Image - Responsive Cloudinary Asset */}
+            {/* Background Image - Responsive Cloudinary Asset optimized with Next.js */}
             <div className="absolute inset-0 z-0">
-                <img
+                <Image
                     src="https://res.cloudinary.com/dk2x11rvs/image/upload/v1768902857/Gemini_Generated_Image_76q0fx76q0fx76q0_tnaldu.png"
-                    alt="Ma'na Impact Canvas"
-                    className="w-full h-full object-cover"
+                    alt="Ma'na Impact Canvas - طرح گرافیکی قدرت ما"
+                    fill
+                    sizes="(max-width: 768px) 100vw, 400px"
+                    className="object-cover"
+                    priority={false}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"></div>
             </div>
