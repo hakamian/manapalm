@@ -56,8 +56,9 @@ const ShopView = React.lazy(() => import('../ShopView'));
 const HeritagePage = React.lazy(() => import('../HeritagePage'));
 const AboutView = React.lazy(() => import('../AboutView'));
 const ContactView = React.lazy(() => import('../ContactView'));
-import UserProfileView from '../UserProfileView';
-// const UserProfileView = React.lazy(() => import('../UserProfileView'));
+const UserProfileView = React.lazy(() => import('../UserProfileView'));
+const SubscriptionView = React.lazy(() => import('../SubscriptionView'));
+const CollaborationView = React.lazy(() => import('../CollaborationView'));
 
 const MainContent: React.FC = () => {
     const {
@@ -171,6 +172,8 @@ const MainContent: React.FC = () => {
             case View.HallOfHeritage: return <HeritagePage />;
             case View.About: return <AboutView />;
             case View.Contact: return <ContactView />;
+            case View.Subscription: return <SubscriptionView />;
+            case View.Collaboration: return <CollaborationView />;
             default: return <HomeView />;
         }
     };

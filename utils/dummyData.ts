@@ -65,6 +65,51 @@ export const INITIAL_PRODUCTS: Product[] = [
         tags: ['community', 'starter']
 
     },
+    {
+        id: 'p_support_javan',
+        name: 'حامی جوانه (کمک به تحقیقات)',
+        price: 100000,
+        category: 'donation',
+        image: 'https://images.unsplash.com/photo-1599591037488-8a3064850d59?q=80&w=800&auto=format&fit=crop',
+        popularity: 90,
+        dateAdded: getPastDate(0),
+        stock: 9999,
+        description: 'کمک به تحقیقات اولیه فاز زیرساخت نخلستان.',
+        type: 'digital',
+        isActive: true,
+        points: 500,
+        tags: ['support', 'javan']
+    },
+    {
+        id: 'p_support_root',
+        name: 'حامی ریشه (تأمین نهاده‌ها)',
+        price: 200000,
+        category: 'donation',
+        image: 'https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?q=80&w=800&auto=format&fit=crop',
+        popularity: 95,
+        dateAdded: getPastDate(0),
+        stock: 9999,
+        description: 'سهم شما در تأمین نهاده‌های اولیه برای کاشت نخل.',
+        type: 'digital',
+        isActive: true,
+        points: 1000,
+        tags: ['support', 'root']
+    },
+    {
+        id: 'p_support_palm',
+        name: 'حامی نخل (حمایت از تملک زمین)',
+        price: 1000000,
+        category: 'donation',
+        image: 'https://images.unsplash.com/photo-1501746733220-b827e8d47b6a?q=80&w=800&auto=format&fit=crop',
+        popularity: 99,
+        dateAdded: getPastDate(0),
+        stock: 9999,
+        description: 'حمایت مستقیم از تملک زمین برای احیای نخلستان.',
+        type: 'digital',
+        isActive: true,
+        points: 5000,
+        tags: ['support', 'palm']
+    },
 
     {
 

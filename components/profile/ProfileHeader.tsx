@@ -1,7 +1,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { User } from '../../types';
-import { SproutIcon, SaplingIcon, TreeIcon, MatureTreeIcon, BrainCircuitIcon, HeartIcon, ShareIcon, ChevronDownIcon } from '../icons';
+import { SproutIcon, SaplingIcon, TreeIcon, MatureTreeIcon, BrainCircuitIcon, HeartIcon, ShareIcon, ChevronDownIcon, ShieldCheckIcon } from '../icons';
 import { getGrowthLevel } from '../../services/gamificationService';
 
 interface ProfileHeaderProps {
@@ -117,9 +117,9 @@ const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                             <span>{getGrowthLevel(user.manaPoints || 0).name}</span>
                         </div>
                         {user.isMonthlySubscriber && (
-                            <div className="flex items-center gap-1.5 text-sm text-yellow-300 bg-yellow-900/50 px-3 py-1 rounded-full border border-yellow-700/50">
-                                <HeartIcon className="w-4 h-4" />
-                                <span>حامی ماهانه</span>
+                            <div className="flex items-center gap-1.5 text-sm font-bold text-amber-300 bg-gradient-to-r from-amber-600/30 to-amber-900/40 px-4 py-1.5 rounded-full border border-amber-500/50 shadow-lg shadow-amber-900/20">
+                                <ShieldCheckIcon className="w-4 h-4 text-amber-400" />
+                                <span>نگهبان نخلستان</span>
                             </div>
                         )}
                     </div>

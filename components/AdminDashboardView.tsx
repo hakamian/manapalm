@@ -26,7 +26,8 @@ import {
     SparklesIcon, LightBulbIcon, ChatBubbleLeftRightIcon, ChartBarIcon, UserGroupIcon, CpuChipIcon, TrophyIcon, HeartIcon,
     TrashIcon, PencilIcon, ArrowPathIcon, ArrowTrendingUpIcon, FunnelIcon, MegaphoneIcon, BullseyeIcon, UserFrownIcon,
     ChevronDownIcon, RadarIcon, CogIcon, SaplingIcon, TreeIcon, MatureTreeIcon, PencilSquareIcon, PaperAirplaneIcon,
-    SunIcon, CheckCircleIcon, XMarkIcon, CalculatorIcon, ShieldExclamationIcon, PhotoIcon, ShoppingCartIcon, AcademicCapIcon, BoltIcon
+    SunIcon, CheckCircleIcon, XMarkIcon, CalculatorIcon, ShieldExclamationIcon, PhotoIcon, ShoppingCartIcon, AcademicCapIcon, BoltIcon,
+    ShieldCheckIcon
 } from './icons';
 import BarChartDisplay from './BarChartDisplay';
 import ActionableDraftCard from './ActionableDraftCard';
@@ -63,6 +64,7 @@ import ModernContentFactoryDashboard from './admin/ModernContentFactoryDashboard
 import ModernAcademiesDashboard from './admin/ModernAcademiesDashboard';
 import AiArtStudioDashboard from './admin/AiArtStudioDashboard';
 import ContactMessagesManager from './admin/ContactMessagesManager';
+import SubscriptionManager from './admin/SubscriptionManager';
 import { timeAgo } from '../utils/time';
 
 interface AdminDashboardViewProps {
@@ -89,7 +91,7 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
             const fetchAdminData = async () => {
                 const [fetchedUsers, fetchedOrders] = await Promise.all([
                     dbAdapter.getAllUsers(),
-                    dbAdapter.getAllOrders()
+                    dbAdapter.getOrders()
                 ]);
                 dispatch({
                     type: 'LOAD_ADMIN_DATA',
@@ -173,7 +175,8 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
         { id: 'settings', label: 'تنظیمات', icon: <CogIcon className="w-5 h-5" /> },
         { id: 'auto_ceo', label: 'مدیر عامل خودکار', icon: <BoltIcon className="w-5 h-5" /> },
         { id: 'art_studio', label: 'استودیو هنری AI', icon: <PhotoIcon className="w-5 h-5" /> },
-        { id: 'contact_messages', label: 'پیام‌های تماس', icon: <ChatBubbleLeftRightIcon className="w-5 h-5" /> }
+        { id: 'contact_messages', label: 'پیام‌های تماس', icon: <ChatBubbleLeftRightIcon className="w-5 h-5" /> },
+        { id: 'subscriptions', label: 'مدیریت اشتراک‌ها', icon: <ShieldCheckIcon className="w-5 h-5" /> }
     ];
 
     return (
@@ -282,8 +285,9 @@ const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({ users, orders, 
                     {activeTab === 'security' && <ModernSecurityDashboard users={users} logs={[]} transactions={orders} />}
                     {activeTab === 'api_management' && <ApiManagementDashboard />}
                     {activeTab === 'settings' && <ModernSettingsDashboard />}
-                    {activeTab === 'auto_ceo' && <AutoCEOView />}
+                    {activeTab === 'auto_ceo' && <div className="p-8 text-center text-gray-500">مدیر عامل خودکار به زودی فعال می‌شود.</div>}
                     {activeTab === 'contact_messages' && <ContactMessagesManager />}
+                    {activeTab === 'subscriptions' && <SubscriptionManager />}
                 </main>
             </div>
         </div>

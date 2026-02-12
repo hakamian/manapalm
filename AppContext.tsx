@@ -21,6 +21,8 @@ const initialNavigation = [
             { view: View.HallOfHeritage, icon: 'SproutIcon', title: 'تالار میراث', description: 'میراث خود را با کاشت یک نخل جاودانه کنید.' },
             { view: View.OurGrove, icon: 'TreeIcon', title: 'نخلستان ما', description: 'تاثیر جمعی و نقشه زنده نخلستان را ببینید.' },
             { view: View.Shop, icon: 'ShoppingCartIcon', title: 'فروشگاه', description: 'محصولات ارگانیک و صنایع دستی محلی.' },
+            { view: View.Subscription, icon: 'ShieldCheckIcon', title: 'نگهبان نخلستان', description: 'اشتراک حمایتی و عضویت در کانون نگهبانان.' },
+            { view: View.Collaboration, icon: 'HandCoinIcon', title: 'خدمات دیجیتال و حمایت', description: 'طراحی سایت و حمایت مستقیم از احیای نخلستان.' },
             { view: View.Corporate, icon: 'BuildingOfficeIcon', title: 'همکاری سازمانی', description: 'با سازمان خود در این جنبش شریک شوید.' },
             { view: undefined, icon: 'ShoppingCartIcon', title: 'مشاهده سبد خرید', description: 'بررسی آیتم‌ها و تکمیل فرآیند برکت.', isCartTrigger: true },
         ]

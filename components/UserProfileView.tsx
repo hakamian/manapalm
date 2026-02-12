@@ -37,6 +37,7 @@ import MentorTab from './MentorTab';
 import ValueDashboardTab from './profile/ValueDashboardTab';
 import MessagesTab from './profile/MessagesTab';
 import RecentViewsTab from './profile/RecentViewsTab';
+import SubscriptionTab from './profile/SubscriptionTab';
 
 // declare const html2canvas: any;
 
@@ -187,6 +188,7 @@ const UserProfileView: React.FC = () => {
             { id: 'leaderboard', label: 'تابلوی قهرمانان', icon: <TrophyIcon /> },
             { id: 'wishlist', label: 'علاقه‌مندی‌ها', icon: <HeartIcon /> },
             { id: 'referral', label: 'معرفی دوستان', icon: <GiftIcon /> },
+            { id: 'subscription', label: 'اشتراک نگهبان', icon: <ShieldCheckIcon /> },
             { id: 'contributions', label: 'هم‌آفرینی و مشارکت', icon: <HandshakeIcon /> },
             { id: 'notifications', label: 'اعلان‌ها', icon: <BellIcon /> },
         );
@@ -495,6 +497,8 @@ const UserProfileView: React.FC = () => {
                     </div>
                 );
             }
+            case 'subscription':
+                return <SubscriptionTab userId={user.id} />;
             case 'grovekeeper': {
                 const onConfirmPlanting = (deedId: string, photoBase64: string) => {
                     dispatch({ type: 'CONFIRM_PLANTING', payload: { deedId, photoBase64 } });

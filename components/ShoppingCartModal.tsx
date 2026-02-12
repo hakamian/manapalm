@@ -4,7 +4,7 @@ import React, { useState, useMemo } from 'react';
 import { useAppState, useAppDispatch } from '../AppContext';
 import { View } from '../types';
 import Modal from './Modal';
-import { TrashIcon, ShoppingCartIcon, PlusIcon, MinusIcon, ArrowLeftIcon, SparklesIcon, LeafIcon, UsersIcon, CheckCircleIcon } from './icons';
+import { TrashIcon, ShoppingCartIcon, PlusIcon, MinusIcon, ArrowLeftIcon, SparklesIcon, LeafIcon, UsersIcon, CheckCircleIcon, ShieldCheckIcon } from './icons';
 import { useRouter } from 'next/navigation';
 import { formatPrice, toFarsiDigits } from '../utils/formatters';
 
@@ -174,9 +174,29 @@ export default function ShoppingCartModal() {
                     <span className="text-gray-500">تعداد آیتم‌ها</span>
                     <span className="text-white font-bold">{toFarsiDigits(cartItems.length)} عدد</span>
                   </div>
+
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">جمع کل برکت</span>
+                    <span className="text-white font-bold">{formatPrice(totalPrice)} تومان</span>
+                  </div>
+
+                  {useAppState().user?.isMonthlySubscriber && (
+                    <div className="flex justify-between text-sm text-amber-400 font-bold bg-amber-500/10 p-2 rounded-xl border border-amber-500/20">
+                      <span className="flex items-center gap-1">
+                        <ShieldCheckIcon className="w-4 h-4" />
+                        هدیه نگهبان (۱۰٪ تخفیف)
+                      </span>
+                      <span>- {formatPrice(totalPrice * 0.1)} تومان</span>
+                    </div>
+                  )}
+
+                  <div className="h-[1px] bg-white/5 my-2" />
+
                   <div className="flex justify-between text-lg">
                     <span className="text-gray-400">جمع نهایی برکت</span>
-                    <span className="text-emerald-400 font-black">{formatPrice(totalPrice)} تومان</span>
+                    <span className="text-emerald-400 font-black">
+                      {formatPrice(useAppState().user?.isMonthlySubscriber ? totalPrice * 0.9 : totalPrice)} تومان
+                    </span>
                   </div>
                 </div>
               </div>
