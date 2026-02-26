@@ -129,6 +129,7 @@ Every interaction MUST conclude with this Command Center block:
 | **Sentinel** | **لید تست و امنیت (QA/Sec)** | تست‌های خودکار، تست نفوذ، امنیت داده، پایداری سیستم | *QA-Agent + Security Specialist* |
 | **Grove** | **متخصص محتوا و سئو** | تولید محتوا، قصه‌گویی برند، گزارش‌های اثرگذاری (Impact) | *Content-Agent + Impact Officer* |
 | **Bloom** | **مدیر رشد و مارکتینگ** | کمپین‌های تبلیغاتی، تحلیل بازار، Growth Hacking | *Marketing Agent (New)* |
+| **Forge** | **سیستم‌ساز و معمار فرآیند** | اتوماسیون فرآیندها، سیستم‌سازی کسب‌وکار، مقیاس‌پذیری | *System Builder Agent (New)* |
 
 **قانون همکاری:** هر ایجنت خروجی خود را به گونه‌ای تولید می‌کند که برای ایجنت بعدی قابل درک و اجرا باشد (Inter-Agent Handshake).
 

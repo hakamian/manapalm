@@ -235,7 +235,7 @@ const HowItWorksSection: React.FC<{ onStartPlantingFlow: () => void }> = ({ onSt
 
                     <InfographicOverlay
 
-                        imageSrc="https://res.cloudinary.com/dk2x11rvs/image/upload/v1765110314/aerial-view_vwdbw2.png"
+                        imageSrc="https://res.cloudinary.com/dk2x11rvs/image/upload/v1768908658/Gemini_Generated_Image_mpvjtqmpvjtqmpvj_vup9c0.png"
 
                         alt="Interest to Heritage Infographic"
 
@@ -575,12 +575,12 @@ const HomeView: React.FC = () => {
                 {/* 0. How It Works (Infographic) */}
                 <HowItWorksSection onStartPlantingFlow={onStartPlantingFlow} />
 
-                {/* 1. Spring of Meaning (Daily Engagement) */}
-                <SpringOfMeaning
+                {/* 1. Spring of Meaning (Daily Engagement) - Temporarily hidden based on feedback */}
+                {/* <SpringOfMeaning
                     allUsers={allUsers}
                     allInsights={allUsers.flatMap(u => u.timeline || [])}
                     setPage={onNavigate}
-                />
+                /> */}
 
                 {/* 2. Collective Impact (Social Proof) */}
                 <CollectiveImpactSection />

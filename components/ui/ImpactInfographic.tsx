@@ -47,7 +47,7 @@ const ImpactInfographic: React.FC = () => {
             {/* Background Image - Responsive Cloudinary Asset optimized with Next.js */}
             <div className="absolute inset-0 z-0">
                 <Image
-                    src="https://res.cloudinary.com/dk2x11rvs/image/upload/v1768902857/Gemini_Generated_Image_76q0fx76q0fx76q0_tnaldu.png"
+                    src="https://res.cloudinary.com/dk2x11rvs/image/upload/v1765131329/A_young__vibrant_palm_tree_sapling__freshly_planted_and_reaching_towards_the_sky__The_background_is__jk3i9l.png"
                     alt="Ma'na Impact Canvas - طرح گرافیکی قدرت ما"
                     fill
                     sizes="(max-width: 768px) 100vw, 400px"

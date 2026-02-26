@@ -69,6 +69,15 @@ This document defines the roles and responsibilities of the specialized AI agent
 - Monitoring system stability and error reporting.
 - Ensuring data privacy and compliance.
 
+### 8. Forge (System Builder) - *New Member ⚒️*
+**Role:** System Builder & Process Architect
+**Focus:** Workflow Automation, Templates, Scalability.
+**Responsibilities:**
+- Developing reproducible systems and boilerplate templates.
+- Automating business and operational workflows.
+- Creating Standard Operating Procedures (SOPs).
+- Ensuring the agency model can scale without friction.
+
 ---
 
 ## 🔄 Collaboration Protocol
@@ -80,3 +89,4 @@ This document defines the roles and responsibilities of the specialized AI agent
 5.  **Sentinel** validates the *Quality* (Testing).
 6.  **Grove** communicates the *Story* (Content).
 7.  **Bloom** drives the *Growth* (Marketing).
+8.  **Forge** ensures the *Process* is scalable (Systematization).

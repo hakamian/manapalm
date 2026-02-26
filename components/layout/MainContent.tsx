@@ -59,6 +59,7 @@ const ContactView = React.lazy(() => import('../ContactView'));
 const UserProfileView = React.lazy(() => import('../UserProfileView'));
 const SubscriptionView = React.lazy(() => import('../SubscriptionView'));
 const CollaborationView = React.lazy(() => import('../CollaborationView'));
+const ServicesAgencyView = React.lazy(() => import('../services/ServicesAgencyView'));
 
 const MainContent: React.FC = () => {
     const {
@@ -174,6 +175,7 @@ const MainContent: React.FC = () => {
             case View.Contact: return <ContactView />;
             case View.Subscription: return <SubscriptionView />;
             case View.Collaboration: return <CollaborationView />;
+            case View.ServicesAgency: return <ServicesAgencyView />;
             default: return <HomeView />;
         }
     };

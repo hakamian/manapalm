@@ -32,7 +32,7 @@ export default async function handler(req, res) {
 
   const PAYMENT_GATEWAY_URL = IS_SANDBOX
     ? 'https://sandbox.zarinpal.com/pg/StartPay/'
-    : 'https://www.zarinpal.com/pg/StartPay/';
+    : 'https://manapay.manapalm.com/pg/StartPay/';
 
   if (!MERCHANT_ID && !IS_SANDBOX) {
     console.error("CRITICAL: Missing ZARINPAL_MERCHANT_ID in production mode.");

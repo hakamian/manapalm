@@ -56,7 +56,8 @@ export enum View {
     CampaignLanding = 'CAMPAIGN_LANDING',
     Terms = 'TERMS',
     Subscription = 'SUBSCRIPTION',
-    Collaboration = 'COLLABORATION'
+    Collaboration = 'COLLABORATION',
+    ServicesAgency = 'SERVICES_AGENCY'
 }
 
 export type Page = View;
